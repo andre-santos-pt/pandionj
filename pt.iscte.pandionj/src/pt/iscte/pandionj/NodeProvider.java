@@ -34,6 +34,9 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 	
 	@Override
 	public Object[] getElements(Object input) {
+		if(model == null)
+			return EMPTY;
+		
 		List<ModelElement> elements = new ArrayList<>(model.getVariables());
 		for(ModelElement obj : model.getObjects()) {
 			if(obj instanceof ObjectModel)
@@ -44,12 +47,12 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		return elements.toArray();
 	}
 
-	private void addReferences(ObjectModel obj, List<ModelElement> elements) {
-		if(!elements.contains(obj)) {
-			elements.add(obj);
-			for(ModelElement e : obj.getReferences().values())
-				if(e instanceof ObjectModel)
-					addReferences((ObjectModel) e, elements);
+	private void addReferences(ModelElement e, List<ModelElement> elements) {
+		if(!elements.contains(e)) {
+			elements.add(e);
+			if(e instanceof ObjectModel)
+				for(ModelElement ref : ((ObjectModel) e).getReferences().values())
+					addReferences(ref, elements);
 		}
 	}
 	

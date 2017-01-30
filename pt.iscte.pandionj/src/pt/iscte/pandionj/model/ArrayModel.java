@@ -18,7 +18,7 @@ public class ArrayModel extends Observable implements ModelElement {
 	private IJavaArray array;
 	private IJavaValue[] elements;
 
-	private List<PrimitiveVariableModel> vars;
+	private List<ValueModel> vars;
 	
 	public ArrayModel(IJavaArray array) {
 		assert array != null;
@@ -31,7 +31,7 @@ public class ArrayModel extends Observable implements ModelElement {
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
-		vars = new ArrayList<PrimitiveVariableModel>();
+		vars = new ArrayList<ValueModel>();
 	}
 
 	public void update() {
@@ -64,23 +64,32 @@ public class ArrayModel extends Observable implements ModelElement {
 		return array;
 	}
 	
-	public void addVar(PrimitiveVariableModel v) {
+	public void addVar(ValueModel v) {
 		vars.add(v);
 		setChanged();
 		notifyObservers(v);
 	}
 
-	public Collection<PrimitiveVariableModel> getVars() {
+	public Collection<ValueModel> getVars() {
 		return Collections.unmodifiableCollection(vars);
 	}
 	
 	@Override
 	public IFigure createFigure() {
 		ArrayValueFigure fig = new ArrayValueFigure(this);
-//		List<PrimitiveVariableModel> arrayVars = model.getArrayVars();
-//		for(PrimitiveVariableModel v : arrayVars)
-//			fig.addVariable(v);
 		return fig;
+	}
+	
+	@Override
+	public String toString() {
+		String els = "{";
+		for(int i = 0; i < elements.length; i++) {
+			if(i != 0)
+				els += ", ";
+			els += get(i);
+		}
+		els += "}";
+		return ArrayModel.class.getSimpleName() + " " + els;
 	}
 
 }

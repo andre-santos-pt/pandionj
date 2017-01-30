@@ -10,20 +10,15 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import pt.iscte.pandionj.figures.NullFigure;
 
 public class NullModel implements ModelElement {
-	private static NullModel instance = null;
 	
 	private static Map<ModelElement, NullModel> map = new HashMap<>();
 	
-//	public static NullModel getInstance(IJavaObject nullObject) {
-//		if(instance == null)
-//			instance = new NullModel(nullObject);
-//		return new NullModel(nullObject);
-//	}
-	
 	public static NullModel getInstance(ModelElement pointer, IJavaObject nullObject) {
 		NullModel n = map.get(pointer);
-		if(n == null)
+		if(n == null) {
 			n = new NullModel(nullObject);
+			map.put(pointer, n);
+		}
 		return n;
 	}
 	

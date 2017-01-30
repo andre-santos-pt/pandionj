@@ -8,8 +8,8 @@ import pt.iscte.pandionj.Constants;
 public class NullFigure extends Label {
 
 	public NullFigure() {
-		setOpaque(false);
-		setPreferredSize(Constants.MARGIN, Constants.MARGIN);
+		setOpaque(true);
+		setPreferredSize(Constants.MARGIN*2, Constants.MARGIN*2);
 		setSize(-1,-1);
 	}
 	

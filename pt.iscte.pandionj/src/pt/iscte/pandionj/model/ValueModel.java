@@ -9,16 +9,17 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
+import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.figures.ValueFigure;
 
-public class PrimitiveVariableModel extends Observable implements ModelElement {
+public class ValueModel extends Observable implements ModelElement {
 
 	private IJavaVariable variable;
 	private List<IValue> history;
 
-	public PrimitiveVariableModel(IJavaVariable variable) throws DebugException {
+	public ValueModel(IJavaVariable variable) throws DebugException {
 		assert variable.getValue() instanceof IJavaPrimitiveValue;
 		this.variable = variable;
 		history = new ArrayList<>();
@@ -58,9 +59,9 @@ public class PrimitiveVariableModel extends Observable implements ModelElement {
 	}
 
 	@Override
-	public IJavaPrimitiveValue getContent() {
+	public IJavaValue getContent() {
 		try {
-			return (IJavaPrimitiveValue) variable.getValue();
+			return (IJavaValue) variable.getValue();
 		}
 		catch(DebugException e) {
 			e.printStackTrace();

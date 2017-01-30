@@ -36,7 +36,7 @@ import org.eclipse.swt.widgets.Shell;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.model.ArrayModel;
-import pt.iscte.pandionj.model.PrimitiveVariableModel;
+import pt.iscte.pandionj.model.ValueModel;
 
 public class ArrayValueFigure extends Figure implements Observer {
 //	static final int POSITION_WIDTH_EMPTY = Constants.POSITION_WIDTH/2;
@@ -129,6 +129,7 @@ public class ArrayValueFigure extends Figure implements Observer {
 
 		GridLayout layout = new GridLayout(1, true);
 		Label lengthLabel = new Label("length = " + N);
+		layout.setConstraint(lengthLabel, new GridData(SWT.RIGHT, SWT.CENTER, true, false));
 		add(lengthLabel);
 		setLayoutManager(layout);
 	
@@ -163,7 +164,7 @@ public class ArrayValueFigure extends Figure implements Observer {
 
 		model.addObserver(this);
 
-		for(PrimitiveVariableModel v : model.getVars())
+		for(ValueModel v : model.getVars())
 			addVariable(v);
 		
 		
@@ -177,7 +178,7 @@ public class ArrayValueFigure extends Figure implements Observer {
 				);
 	}
 
-	private void addVariable(PrimitiveVariableModel varModel) {
+	private void addVariable(ValueModel varModel) {
 
 		setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), 3, false);
 		varModel.addObserver(new Observer() {
@@ -202,8 +203,8 @@ public class ArrayValueFigure extends Figure implements Observer {
 			}
 			getPosition(i).setValue(model.get(i));
 		}
-		else if(index instanceof PrimitiveVariableModel) {
-			addVariable((PrimitiveVariableModel) index);
+		else if(index instanceof ValueModel) {
+			addVariable((ValueModel) index);
 		}
 	}
 
@@ -399,77 +400,8 @@ public class ArrayValueFigure extends Figure implements Observer {
 		}
 	}
 
-	static int i = 0;
-	static int j = 0;
 	private Figure positionsFig;
-	public static void main(String args[]) {
-		Shell shell = new Shell();
-
-
-		LightweightSystem lws = new LightweightSystem(shell);
-		Figure parent = new Figure();
-		parent.setLayoutManager(new ToolbarLayout(true));
-		lws.setContents(parent);
-
-		int[] v = {12,2,33,4};
-		ArrayValueFigure array = new ArrayValueFigure(null);
-		//		for(int i = 0; i < v.length; i++)
-		//			array.setValue(i, Integer.toString(v[i]));
-		//
-		//		array.setVar("next", j, v.length-1, false);
-		//		array.setVar("prev", i, "next", false);
-
-
-		//				array.addOutOfUpperBound(4);
-		parent.add(array);
-
-		Button b = new Button("dec");
-		b.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				j--;
-				array.setVar("next", j, null, false);
-				//				array.setVar("prev", ++i, "next", false);
-			}
-		});
-		parent.add(b);
-
-		Button b2 = new Button("inc");
-		b2.addActionListener(new ActionListener() {
-
-			@Override
-			public void actionPerformed(ActionEvent arg0) {
-				j+=2;
-				array.setVar("next", j, v.length-1, false);
-				//				array.setVar("prev", ++i, "next", false);
-			}
-		});
-		parent.add(b2);
-
-		shell.setSize(array.getSize().width + 100, array.getSize().height);
-		//		shell.pack();
-
-		shell.open();
-
-		Display display = Display.getDefault();
-		while (!shell.isDisposed()) {
-			if (!display.readAndDispatch())
-				display.sleep();
-		}
-	}
-
-	static void shuffleArray(int[] ar, ArrayValueFigure fig)
-	{
-		Random rnd = new Random();
-		for (int i = ar.length - 1; i > 0; i--)
-		{
-			int index = rnd.nextInt(i + 1);
-			int a = ar[index];
-			ar[index] = ar[i];
-			ar[i] = a;
-		}
-	}
+	
 
 	public void highlight(int i) {
 		getPosition(i).highlight();

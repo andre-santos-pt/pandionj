@@ -1,11 +1,15 @@
 package pt.iscte.pandionj;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IValue;
@@ -14,11 +18,24 @@ import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.DebugContextEvent;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
+import org.eclipse.jdt.core.dom.Message;
+import org.eclipse.jdt.debug.core.IJavaBreakpoint;
+import org.eclipse.jdt.debug.core.IJavaBreakpointListener;
+import org.eclipse.jdt.debug.core.IJavaDebugTarget;
+import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
+import org.eclipse.jdt.debug.core.IJavaThread;
+import org.eclipse.jdt.debug.core.IJavaType;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
@@ -27,95 +44,130 @@ import org.eclipse.zest.core.viewers.IZoomableWorkbenchPart;
 import org.eclipse.zest.core.viewers.ZoomContributionViewItem;
 import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.ZestStyles;
+import org.eclipse.zest.layouts.LayoutEntity;
+import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 
 import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.parser.data.NullableOptional;
 
 
-public class PandionJView extends ViewPart implements IZoomableWorkbenchPart {
+public class PandionJView extends ViewPart { // implements IZoomableWorkbenchPart {
 
-	private StackView view;
+//	private StackView view;
 	private CallStackModel model;
+//	private StackLayout stackLayout;
 	
-	@Override
-	public AbstractZoomableViewer getZoomableViewer() {
-		return view.viewer;
-	}
-	
+//	@Override
+//	public AbstractZoomableViewer getZoomableViewer() {
+//		return view.viewer;
+//	}
+
 	@Override
 	public void createPartControl(Composite parent) {
-		view = new StackView(parent, 0);
+		parent.setLayout(new GridLayout(1,true));
 		model = new CallStackModel();
 		
 		IDebugContextListener listener = new IDebugContextListener() {
 			@Override
 			public void debugContextChanged(DebugContextEvent event) {
 				ISelection context = event.getContext();
-				
+
 				if (context instanceof StructuredSelection) {
 					Object data = ((StructuredSelection) context).getFirstElement();
 					if (data instanceof IStackFrame) {
 						IStackFrame stackFrame = (IStackFrame) data;
 						try {
 							IStackFrame[] frames = stackFrame.getThread().getStackFrames();
-							if(frames.length == 0)
-								return;
-							
-							StackFrameModel top = model.getSize() > 0 ? model.getTopFrame() : null;
 							model.handle(frames);
-							if(model.getTopFrame() != top)
-								view.setInput(model.getTopFrame());
-							else
-								model.update();
+							List<StackFrameModel> stackPath = model.getStackPath();
+							Control[] children = parent.getChildren();
+							
+							for(int i = 0; i < stackPath.size(); i++) {
+								StackView view = i >= children.length ? new StackView(parent, 0) : (StackView)children[i];
+								StackFrameModel model = stackPath.get(i);
+								if(view.model != model)
+									view.setInput(model);
+								else
+									model.update();
+							}
+							
+							children = parent.getChildren();
+							for(int i = stackPath.size(); i < children.length; i++)
+								children[i].dispose();
+							
+							parent.layout();
 							
 						} catch (DebugException e) {
 							e.printStackTrace();
 						}
-					} 
+					}
 				}
 
 			}
 		};
 		DebugUITools.getDebugContextManager().addDebugContextListener(listener);
-		ZoomContributionViewItem toolbarZoomContributionViewItem = new ZoomContributionViewItem(this);
+//		ZoomContributionViewItem toolbarZoomContributionViewItem = new ZoomContributionViewItem(this);
 		IActionBars bars = getViewSite().getActionBars();
-		bars.getMenuManager().add(toolbarZoomContributionViewItem);
+		bars.getToolBarManager().add(new Action("GC") {
+			@Override
+			public void run() {
+				System.out.println("GC!");
+			}
+		});
 
+		bars.getMenuManager().add(new Action("REC") {
+			@Override
+			public void run() {
+				System.out.println("REC!");
+			}
+		});
 	}
 
+
 	
-	
+
 	private class StackView extends Composite {
-		private GraphViewer viewer;
-		
+		GraphViewer viewer;
+		StackFrameModel model;
 		public StackView(Composite parent, int index) {
 			super(parent, SWT.BORDER);
 			setLayout(new FillLayout());
-			viewer = new GraphViewer(this, SWT.BORDER);
-//			viewer.setLayoutAlgorithm(new GridLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING));
+			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+			viewer = new MyGraphViewer(this, SWT.BORDER);
+			//			viewer.setLayoutAlgorithm(new GridLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING));
 			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
+//			viewer.setLayoutAlgorithm(new SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
 			viewer.setContentProvider(new NodeProvider());
 			viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 			viewer.setLabelProvider(new FigureProvider());
 		}
-		
+
 		void setInput(StackFrameModel model) {
+			this.model = model;
 			viewer.setInput(model);
-			model.addObserver(new Observer() {
-				public void update(Observable o, Object e) {
-					System.out.println(e);
-					viewer.refresh();
-					viewer.applyLayout();
-				}
-			});
+			if(model != null)
+				model.addObserver(new Observer() {
+					public void update(Observable o, Object e) {
+						viewer.refresh();
+						viewer.applyLayout();
+					}
+				});
 		}
 	}
+
 	
-	
+	private static class MyGraphViewer extends GraphViewer {
+		public MyGraphViewer(Composite composite, int style) {
+			super(composite, style);
+			getZoomManager().setZoom(1);
+		}
+		
+	}
+
 	@Override
 	public void setFocus() {
-//		viewer.getControl().setFocus();
+		//		viewer.getControl().setFocus();
 	}
 
 	private static NullableOptional<String> valueOfExpression(IStackFrame stackFrame, String expression) {

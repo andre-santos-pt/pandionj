@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,48 +20,55 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.StringFigure;
 
-public class ObjectModel implements ModelElement {
+public class ObjectModel extends Observable implements ModelElement {
 
 	private IJavaObject object;
 	private StackFrameModel model;
-	private Map<String, ModelElement> map;
-	private Set<String> values;
+	private Map<String, ValueModel> values;
+	private Map<String, ReferenceModel> references;
 
-	private TypeHandler typeHandler = new PrimitiveWrapperHandler();
+
+	private TypeHandler valueHandler = new PrimitiveWrapperHandler();
 
 	public ObjectModel(IJavaObject object, StackFrameModel model) {
 		assert object != null;
 		this.object = object;
 		this.model = model;
-		update();
-	}
-
-	@Override
-	public void update() {
-		map = new LinkedHashMap<String, ModelElement>();
-		values = new HashSet<>();
+		values = new LinkedHashMap<String, ValueModel>();
+		references = new LinkedHashMap<String, ReferenceModel>();
+		
 		try {
-			for(IVariable v : object.getVariables()) {
-				IJavaVariable var = (IJavaVariable) v;
-				if(!var.isStatic()) {
-					String name = var.getName();
-					if(!map.containsKey(name) && var.getJavaType() instanceof IJavaReferenceType) {
-						map.put(name, model.getObject(this, (IJavaObject) v.getValue()));
-						if(typeHandler.qualifies((IJavaValue) v.getValue()))
-							values.add(name);
-					}
-					else {
-						map.put(name, new PrimitiveVariableModel(var));
-						values.add(name);
-					}
+		for(IVariable v : object.getVariables()) {
+			IJavaVariable var = (IJavaVariable) v;
+			if(!var.isStatic()) {
+				String name = var.getName();
+				if(var.getJavaType() instanceof IJavaReferenceType && !valueHandler.qualifies((IJavaValue) v.getValue())) {
+					references.put(name, new ReferenceModel(var, model));
+				}
+				else {
+					ValueModel val = new ValueModel(var);
+					val.addObserver(new Observer() {
+						
+						@Override
+						public void update(Observable o, Object arg) {
+							setChanged();
+							notifyObservers(name);
+						}
+					});
+					values.put(name, val);
 				}
 			}
-
-
+		}
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Override
+	public void update() {
+		values.values().forEach(val -> val.update());
+//		references.values().forEach(ref -> ref.update());
 	}
 
 	@Override
@@ -80,15 +89,15 @@ public class ObjectModel implements ModelElement {
 	}
 
 	public Set<String> getFields() {
-		return Collections.unmodifiableSet(values);
+		return Collections.unmodifiableSet(values.keySet());
 	}
 
 	public String getValue(String field) {
-		assert values.contains(field);
+		assert values.containsKey(field);
 		try {
-			IJavaValue val = map.get(field).getContent();
-			if(typeHandler.qualifies(val))
-				return typeHandler.getTextualValue(val);
+			IJavaValue val = values.get(field).getContent();
+			if(valueHandler.qualifies(val))
+				return valueHandler.getTextualValue(val);
 			else
 				return val.getValueString();
 		} catch (DebugException e) {
@@ -98,9 +107,11 @@ public class ObjectModel implements ModelElement {
 	}
 
 	public Map<String, ModelElement> getReferences() {
-		return map.entrySet().stream().filter(e -> !values.contains(e.getKey())).collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue()));
+		return references.entrySet().stream()
+				.filter(e -> !values.containsKey(e.getKey()))
+				.collect(Collectors.toMap(e -> e.getKey(), v -> model.getObject(this, v.getValue().getContent())));
 	}
 
-	
+
 
 }

@@ -18,12 +18,12 @@ import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
-import pt.iscte.pandionj.model.PrimitiveVariableModel;
+import pt.iscte.pandionj.model.ValueModel;
 import pt.iscte.pandionj.model.ReferenceModel;
 
 public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
-	private static final int REF_OBJ_GAP = Constants.POSITION_WIDTH + Constants.MARGIN*2;
+	private static final int REF_OBJ_GAP = Constants.POSITION_WIDTH*2;
 	@Override
 	public void applyLayout(LayoutEntity[] entitiesToLayout, LayoutRelationship[] relationshipsToConsider, double x,
 			double y, double width, double height, boolean asynchronous, boolean continuous)
@@ -40,46 +40,35 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			ModelElement element = (ModelElement) node.getData();
 
 			if(element instanceof ObjectModel || element instanceof ArrayModel || element instanceof NullModel) {
-				e.setLocationInLayout(x + REF_OBJ_GAP, y + objY);
+				e.setLocationInLayout(x + (element instanceof NullModel ? Constants.POSITION_WIDTH : REF_OBJ_GAP), y + objY);
 				objY += Constants.MARGIN + e.getHeightInLayout();
 				yMap.put(element, e);
 			}
 		}
-		
+
 		Map<NullModel, LayoutEntity> nullRefYMap = new HashMap<>();
-		
+
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement element = (ModelElement) node.getData();
 			if(element instanceof ReferenceModel) {
 				ModelElement target = ((ReferenceModel) element).getTarget();
-//				if(target instanceof NullModel) {
-//					nullRefYMap.put((NullModel) target, e);
-//					e.setLocationInLayout(x + Constants.MARGIN, 100);
-//				}
-//				else {
-					Integer count = refCount.containsKey(target) ? refCount.get(target) : 0;
-					LayoutEntity ent = yMap.get(target);
+				Integer count = refCount.containsKey(target) ? refCount.get(target) : 0;
+				LayoutEntity ent = yMap.get(target);
+				if(ent != null) {
 					refY = (int) (ent.getYInLayout() + ent.getHeightInLayout());
 					e.setLocationInLayout(x + Constants.MARGIN, ent.getYInLayout() + count * Constants.OBJECT_SPACING);
 					count += 1;
 					refCount.put(target, count);
-//				}
+				}
+				//				}
 			}
-			else if(!(element instanceof ObjectModel || element instanceof ArrayModel || element instanceof NullModel)){
+			else if(element instanceof ValueModel){
 				e.setLocationInLayout(x, refY);
 				refY += e.getHeightInLayout() + Constants.MARGIN;
 			}
 		}
-		
-		for(LayoutEntity e : entitiesToLayout) {
-			GraphNode node = (GraphNode) e.getGraphData();
-			ModelElement element = (ModelElement) node.getData();
-			if(element instanceof NullModel) {
-				LayoutEntity refEnt = nullRefYMap.get(element);
-//				e.setLocationInLayout(x + REF_OBJ_GAP, refEnt.getYInLayout());
-			}
-		}
+	
 	}
 
 	@Override

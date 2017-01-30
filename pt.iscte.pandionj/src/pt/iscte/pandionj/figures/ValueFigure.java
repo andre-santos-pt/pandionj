@@ -14,11 +14,11 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 
 import pt.iscte.pandionj.Constants;
-import pt.iscte.pandionj.model.PrimitiveVariableModel;
+import pt.iscte.pandionj.model.ValueModel;
 
 public class ValueFigure extends Figure {
 
-	public ValueFigure(PrimitiveVariableModel model) {
+	public ValueFigure(ValueModel model) {
 		GridLayout layout = new GridLayout(2,false);
 		setLayoutManager(layout);
 		

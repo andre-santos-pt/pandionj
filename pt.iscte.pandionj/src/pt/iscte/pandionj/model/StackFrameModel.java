@@ -1,11 +1,12 @@
 package pt.iscte.pandionj.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Semaphore;
@@ -35,7 +36,7 @@ public class StackFrameModel extends Observable {
 	public StackFrameModel(IStackFrame stackFrame) {
 		this.stackFrame = stackFrame;
 		vars = new LinkedHashMap<>();
-		objects = new LinkedHashMap<>();
+		objects = new HashMap<>();
 		handleVariables();
 	}
 
@@ -47,52 +48,69 @@ public class StackFrameModel extends Observable {
 
 	private void handleVariables() {
 		try {
-			for(String var : vars.keySet()) {
+			Iterator<Entry<String, ModelElement>> iterator = vars.entrySet().iterator();
+			while(iterator.hasNext()) {
+				String var = iterator.next().getKey();
 				boolean contains = false;
 				for(IVariable v : stackFrame.getVariables()) {
 					if(v.getName().equals(var))
 						contains = true;
 				}
 				if(!contains) {
-					vars.remove(var);
+					iterator.remove();
 					setChanged();
 					notifyObservers();
 				}
 			}
 
+			IJavaVariable thisVar = null;
 			for(IVariable v : stackFrame.getVariables()) {
 				IJavaVariable jv = (IJavaVariable) v;
-				IJavaType type = jv.getJavaType();
 				String varName = v.getName();
-				if(vars.containsKey(varName)) {
-					vars.get(varName).update();
-				}
-				else {
-					ModelElement newElement = type instanceof IJavaReferenceType ? new ReferenceModel(jv, this) : new PrimitiveVariableModel(jv);
-					vars.put(varName, newElement);
 
-					if(newElement instanceof ReferenceModel)
-						((ReferenceModel) newElement).addObserver(new Observer() {
-
-							@Override
-							public void update(Observable o, Object arg) {
-								setChanged();
-								notifyObservers(newElement);
-							}
-						});
-
-					// TODO TEST
-					if(varName.equals("i"))
-						((ArrayModel) ((ReferenceModel) vars.get("v")).getTarget()).addVar((PrimitiveVariableModel) newElement);
-
-					setChanged();
-					notifyObservers(newElement);
-				}
+				if(varName.equals("this"))
+					thisVar = jv;
+				else
+					handleVar(jv);
 			}
+			
+			if(thisVar != null)
+				for (IVariable v : thisVar.getValue().getVariables())
+					handleVar((IJavaVariable) v);
 
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void handleVar(IJavaVariable jv) throws DebugException {
+		String varName = jv.getName();
+		IJavaType type = jv.getJavaType();
+
+		if(vars.containsKey(varName)) {
+			vars.get(varName).update();
+		}
+		else {
+			ModelElement newElement = type instanceof IJavaReferenceType ? new ReferenceModel(jv, this) : new ValueModel(jv);
+			vars.put(varName, newElement);
+
+			if(newElement instanceof ReferenceModel)
+				((ReferenceModel) newElement).addObserver(new Observer() {
+
+					@Override
+					public void update(Observable o, Object arg) {
+						setChanged();
+						notifyObservers(newElement);
+					}
+				});
+
+			// TODO TEST
+//			if(varName.equals("next"))
+//				((ArrayModel) ((ReferenceModel) vars.get("elements")).getTarget()).addVar((PrimitiveVariableModel) newElement);
+
+			setChanged();
+			notifyObservers(newElement);
 		}
 	}
 
@@ -101,15 +119,16 @@ public class StackFrameModel extends Observable {
 	}
 
 	public Collection<ModelElement> getObjects() {
-		List<ModelElement> objs = new ArrayList<>();
-		for(ModelElement e : vars.values())
-			if(e instanceof ReferenceModel) {
-				ModelElement t = ((ReferenceModel) e).getTarget();
-				objs.add(t);
-			}
-
-
-		return objs;
+		return Collections.unmodifiableCollection(objects.values());
+//		List<ModelElement> objs = new ArrayList<>();
+//		for(ModelElement e : vars.values())
+//			if(e instanceof ReferenceModel) {
+//				ModelElement t = ((ReferenceModel) e).getTarget();
+//				objs.add(t);
+//			}
+//
+//
+//		return objs;
 	}
 
 	public IStackFrame getStackFrame() {
@@ -121,7 +140,7 @@ public class StackFrameModel extends Observable {
 		try {
 			if(obj.isNull())
 				return NullModel.getInstance(pointer, obj);
-			
+
 			ModelElement e = objects.get(obj.getUniqueId());
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType)
@@ -138,16 +157,43 @@ public class StackFrameModel extends Observable {
 			return null;
 		}
 	}
+	
+	
+	public void simulateGC() {
+		boolean removals = false;
+		Iterator<Entry<Long, ModelElement>> iterator = objects.entrySet().iterator();
+		while(iterator.hasNext()) {
+			Entry<Long, ModelElement> e = iterator.next();
+			if(!vars.containsValue(e.getValue())) {
+				iterator.remove();
+				removals = true;
+			}
+		}
+		if(removals) {
+			setChanged();
+			notifyObservers();
+		}
+		
+	}
 
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+	@Override
+	public String toString() {
+		try {
+			return stackFrame.getName();
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return super.toString();
+		}
+	}
+
+
+
+
+
+
+
+
 
 	public String eval(String expression) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
@@ -174,4 +220,6 @@ public class StackFrameModel extends Observable {
 		}
 		return res.value == null ? "NULL" : res.value.toString();
 	}
+
+	
 }
