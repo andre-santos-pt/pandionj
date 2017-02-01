@@ -1,15 +1,12 @@
 package pt.iscte.pandionj;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
-import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IValue;
@@ -22,161 +19,371 @@ import org.eclipse.jdt.core.dom.Message;
 import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaBreakpointListener;
 import org.eclipse.jdt.debug.core.IJavaDebugTarget;
+import org.eclipse.jdt.debug.core.IJavaExceptionBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ExpandAdapter;
+import org.eclipse.swt.events.ExpandEvent;
+import org.eclipse.swt.events.ExpandListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.ui.IActionBars;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.ExpandBar;
+import org.eclipse.swt.widgets.ExpandItem;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.zest.core.viewers.AbstractZoomableViewer;
 import org.eclipse.zest.core.viewers.GraphViewer;
-import org.eclipse.zest.core.viewers.IZoomableWorkbenchPart;
-import org.eclipse.zest.core.viewers.ZoomContributionViewItem;
+import org.eclipse.zest.core.viewers.internal.ZoomManager;
 import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.ZestStyles;
-import org.eclipse.zest.layouts.LayoutEntity;
-import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 
 import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.parser.data.NullableOptional;
 
-
-public class PandionJView extends ViewPart { // implements IZoomableWorkbenchPart {
-
-//	private StackView view;
+public class PandionJView extends ViewPart { // implements
 	private CallStackModel model;
-//	private StackLayout stackLayout;
-	
-//	@Override
-//	public AbstractZoomableViewer getZoomableViewer() {
-//		return view.viewer;
-//	}
+	private Composite area;
+
+	ExpandBar callStack;
+	private Label label;
 
 	@Override
 	public void createPartControl(Composite parent) {
-		parent.setLayout(new GridLayout(1,true));
-		model = new CallStackModel();
+		parent.setLayout(new FillLayout());
+		ScrolledComposite scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL );
+		area = new Composite(scroll, SWT.NONE);
 		
-		IDebugContextListener listener = new IDebugContextListener() {
-			@Override
-			public void debugContextChanged(DebugContextEvent event) {
-				ISelection context = event.getContext();
+		scroll.setContent(area);
+		scroll.setExpandHorizontal(true);
+		scroll.setExpandVertical(true);
+		scroll.setMinHeight(0);
+		scroll.setMinWidth(300);
 
-				if (context instanceof StructuredSelection) {
-					Object data = ((StructuredSelection) context).getFirstElement();
-					if (data instanceof IStackFrame) {
-						IStackFrame stackFrame = (IStackFrame) data;
-						try {
-							IStackFrame[] frames = stackFrame.getThread().getStackFrames();
-							model.handle(frames);
-							List<StackFrameModel> stackPath = model.getStackPath();
-							Control[] children = parent.getChildren();
-							
-							for(int i = 0; i < stackPath.size(); i++) {
-								StackView view = i >= children.length ? new StackView(parent, 0) : (StackView)children[i];
-								StackFrameModel model = stackPath.get(i);
-								if(view.model != model)
-									view.setInput(model);
-								else
-									model.update();
-							}
-							
-							children = parent.getChildren();
-							for(int i = stackPath.size(); i < children.length; i++)
-								children[i].dispose();
-							
-							parent.layout();
-							
-						} catch (DebugException e) {
-							e.printStackTrace();
-						}
-					}
+		GridLayout layout = new GridLayout(1, true);
+		layout.marginLeft = 0;
+		layout.marginRight = 0;
+		layout.marginTop = 0;
+		layout.marginBottom = 0;
+		area.setLayout(layout);
+
+		label = new Label(area, SWT.NONE);
+		label.setText("This view will be populated once the execution of the Java debugger hits a breakpoint.");
+		
+		model = new CallStackModel();
+
+		callStack = new ExpandBar(area, SWT.NONE);
+		callStack.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		callStack.addExpandListener(new ExpandAdapter() {
+			
+			@Override
+			public void itemExpanded(ExpandEvent e) {
+				StackView view = (StackView) ((ExpandItem) e.item).getControl();
+				try {
+					int lineNumber = view.model.getStackFrame().getLineNumber();
+					System.out.println(lineNumber);
+				} catch (DebugException e1) {
+					e1.printStackTrace();
+				}
+			}
+		});
+
+		DebugUITools.getDebugContextManager().addDebugContextListener(new DebugListener());
+		JDIDebugModel.addJavaBreakpointListener(new ExceptionListener());
+		addToolBarItems();
+	}
+
+
+	private class DebugListener implements IDebugContextListener {
+
+		@Override
+		public void debugContextChanged(DebugContextEvent event) {
+			IStackFrame f = getSelectedFrame(event.getContext());
+			if ((event.getFlags() & DebugContextEvent.STATE) != 0) {
+				try {
+					IStackFrame[] frames = f == null ? new IStackFrame[0] : f.getThread().getStackFrames();
+					handleFrames(frames);
+				}
+				catch (DebugException e) {
+					e.printStackTrace();
+				}
+			}
+			else if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
+				select(f);
+			}
+		}
+
+		private void select(IStackFrame f) {
+			for(ExpandItem e : callStack.getItems())
+//				if(((StackView) e.getControl()).model.getStackFrame() == f)
+					e.setExpanded(((StackView) e.getControl()).model.getStackFrame() == f);
+					
+		}
+
+		//		private boolean contains(IStackFrame[] frames, IStackFrame f) {
+		//			for (IStackFrame e : frames)
+		//				if (e == f)
+		//					return true;
+		//			return false;
+		//		}
+
+		private IStackFrame getSelectedFrame(ISelection context) {
+			if (context instanceof StructuredSelection) {
+				Object data = ((StructuredSelection) context).getFirstElement();
+				if (data instanceof IStackFrame)
+					return (IStackFrame) data;
+			}
+			return null;
+		}
+	}
+
+	final Image image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame.gif")); 
+	final Image imageRun = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame_run.gif")); 
+
+	private void handleFrames(IStackFrame[] frames) {
+		assert frames != null;
+		model.handle2(frames);
+		model.update();
+		List<StackFrameModel> stackPath = model.getStackPath();
+		Display.getDefault().syncExec(new Runnable() {
+
+			@Override
+			public void run() {
+//				label.setText(stackPath.size() != 0 ? "" : "??");
+//				label.setVisible(stackPath.size() != 0);
+				label.setLayoutData(new GridData(SWT.DEFAULT, stackPath.size() == 0 ? 0 : 30));
+				int diff = stackPath.size() - callStack.getItemCount();
+				while(diff > 0) {
+					diff--;
+					ExpandItem e = new ExpandItem(callStack, SWT.NONE);
+					StackView view = new StackView(callStack);
+					e.setControl(view);
+					e.setHeight(400);
+				}
+				while(diff < 0) {
+					diff++;
+					ExpandItem item = callStack.getItem(callStack.getItemCount()-1);
+					item.getControl().dispose();
+					item.dispose();
+				}
+
+				assert callStack.getItemCount() == stackPath.size();
+
+				ExpandItem[] items = callStack.getItems();
+				for(int i = 0; i < items.length; i++) {
+					StackFrameModel model = stackPath.get(i);
+					((StackView) items[i].getControl()).setInput(model);
+					items[i].setText(model.toString());
+					items[i].setExpanded(i == items.length-1);
+					items[i].setImage(i == items.length-1 ? imageRun : image);
+				}
+			}
+		});
+	}
+
+//	private void handleFrames(Composite parent, IStackFrame[] frames) {
+//		assert frames != null;
+//
+//		model.handle(frames);
+//		List<StackFrameModel> stackPath = model.getStackPath();
+//
+//		Display.getDefault().syncExec(new Runnable() {
+//			@Override
+//			public void run() {
+//				Control[] children = parent.getChildren();
+//				for (int i = 0; i < stackPath.size(); i++) {
+//					StackView view = i >= children.length ? new StackView(parent) : (StackView) children[i];
+//					StackFrameModel model = stackPath.get(i);
+//					model.update();
+//					if (view.model != model)
+//						view.setInput(model);
+//				}
+//
+//				children = parent.getChildren();
+//				for (int i = stackPath.size(); i < children.length; i++)
+//					children[i].dispose();
+//
+//				parent.layout();
+//			}
+//		});
+//
+//	}
+
+	private class ExceptionListener implements IJavaBreakpointListener {
+		public int breakpointHit(IJavaThread thread, IJavaBreakpoint breakpoint) {
+			if(breakpoint instanceof IJavaLineBreakpoint) {
+				try {
+					IStackFrame[] frames = thread.getStackFrames(); 
+					handleFrames(frames);
+				} catch (DebugException e) {
+					e.printStackTrace();
 				}
 
 			}
-		};
-		DebugUITools.getDebugContextManager().addDebugContextListener(listener);
-//		ZoomContributionViewItem toolbarZoomContributionViewItem = new ZoomContributionViewItem(this);
-		IActionBars bars = getViewSite().getActionBars();
-		bars.getToolBarManager().add(new Action("GC") {
+			else if (breakpoint instanceof IJavaExceptionBreakpoint) {
+				IJavaExceptionBreakpoint exc = (IJavaExceptionBreakpoint) breakpoint;
+				System.out.println("EXC:" + exc.getExceptionTypeName());
+			}
+			return IJavaBreakpointListener.DONT_CARE;
+		}
+
+		public int installingBreakpoint(IJavaDebugTarget target, IJavaBreakpoint breakpoint, IJavaType type) {
+			return IJavaBreakpointListener.DONT_CARE;
+		}
+
+		public void breakpointRemoved(IJavaDebugTarget target, IJavaBreakpoint breakpoint) { }
+		public void breakpointInstalled(IJavaDebugTarget target, IJavaBreakpoint breakpoint) { }
+		public void breakpointHasRuntimeException(IJavaLineBreakpoint breakpoint, DebugException exception) { }
+		public void addingBreakpoint(IJavaDebugTarget target, IJavaBreakpoint breakpoint) { }
+		public void breakpointHasCompilationErrors(IJavaLineBreakpoint breakpoint, Message[] errors) { }
+	}
+
+	private void addToolBarItems() {
+		IToolBarManager toolBar = getViewSite().getActionBars().getToolBarManager();
+		toolBar.add(new Action("GC") {
 			@Override
 			public void run() {
 				System.out.println("GC!");
 			}
 		});
 
-		bars.getMenuManager().add(new Action("REC") {
+		toolBar.add(new Action("REC") {
 			@Override
 			public void run() {
 				System.out.println("REC!");
 			}
 		});
+
+		toolBar.add(new Action("+") {
+			@Override
+			public void run() {
+				for (ExpandItem expandItem : callStack.getItems()) {
+					((StackView) expandItem.getControl()).increaseZoom();
+				}
+			}
+		});
+		
+		toolBar.add(new Action("-") {
+			@Override
+			public void run() {
+				for (ExpandItem expandItem : callStack.getItems()) {
+					((StackView) expandItem.getControl()).decreaseZoom();
+				}
+			}
+		});
 	}
 
-
-	
-
 	private class StackView extends Composite {
-		GraphViewer viewer;
+		MyGraphViewer viewer;
 		StackFrameModel model;
-		public StackView(Composite parent, int index) {
+
+		public StackView(Composite parent) {
 			super(parent, SWT.BORDER);
 			setLayout(new FillLayout());
 			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			viewer = new MyGraphViewer(this, SWT.BORDER);
-			//			viewer.setLayoutAlgorithm(new GridLayoutAlgorithm(LayoutStyles.NO_LAYOUT_NODE_RESIZING));
-			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
-//			viewer.setLayoutAlgorithm(new SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
+			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm()); // SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
 			viewer.setContentProvider(new NodeProvider());
 			viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 			viewer.setLabelProvider(new FigureProvider());
+			
+			Graph graph = viewer.getGraphControl();
+
+			Menu menu = new Menu(graph);
+			MenuItem recItem = new MenuItem(menu, SWT.TOGGLE);
+			recItem.setText("Recording");
+			recItem.addSelectionListener(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					System.out.println("Rec...");
+				}
+			});
+			graph.setMenu(menu);
+		}
+
+		public void decreaseZoom() {
+			viewer.decreaseZoom();
+
+		}
+
+		public void increaseZoom() {
+			viewer.increaseZoom();
 		}
 
 		void setInput(StackFrameModel model) {
-			this.model = model;
-			viewer.setInput(model);
-			if(model != null)
-				model.addObserver(new Observer() {
-					public void update(Observable o, Object e) {
-						viewer.refresh();
-						viewer.applyLayout();
-					}
-				});
+			if(this.model == model) {
+				this.model.update();
+			}
+			else {
+				this.model = model;
+				viewer.setInput(model);
+				if (model != null)
+					model.addObserver(new Observer() {
+						public void update(Observable o, Object e) {
+							Display.getDefault().syncExec(new Runnable() {
+
+								@Override
+								public void run() {
+									viewer.refresh();
+									viewer.applyLayout();
+								}
+							});
+
+						}
+					});
+			}
 		}
 	}
 
-	
 	private static class MyGraphViewer extends GraphViewer {
-		public MyGraphViewer(Composite composite, int style) {
+		
+		MyGraphViewer(Composite composite, int style) {
 			super(composite, style);
 			getZoomManager().setZoom(1);
 		}
-		
+
+		public void decreaseZoom() {
+			ZoomManager mng = getZoomManager();
+			mng.setZoom(mng.getZoom()*.95);
+		}
+
+		void increaseZoom() {
+			ZoomManager mng = getZoomManager();
+			mng.setZoom(mng.getZoom()*1.05);
+		}
 	}
 
 	@Override
 	public void setFocus() {
-		//		viewer.getControl().setFocus();
+		// viewer.getControl().setFocus();
 	}
 
 	private static NullableOptional<String> valueOfExpression(IStackFrame stackFrame, String expression) {
-		//TODO fix code. This is a work-around making asynchronous WatchExpressionDelegate synced because WatchExpression wouldn't work
+		// TODO fix code. This is a work-around making asynchronous
+		// WatchExpressionDelegate synced because WatchExpression wouldn't work
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getModelIdentifier());
+		IWatchExpressionDelegate delegate = expressionManager
+				.newWatchExpressionDelegate(stackFrame.getModelIdentifier());
 		class Wrapper<T> {
 			T value = null;
-		};
+		}
+		;
 		Wrapper<IValue> res = new Wrapper<>();
 		Semaphore sem = new Semaphore(0);
 
@@ -191,66 +398,28 @@ public class PandionJView extends ViewPart { // implements IZoomableWorkbenchPar
 
 		try {
 			sem.acquire();
-		} catch (InterruptedException e) { }
+		} catch (InterruptedException e) {
+		}
 
 		IValue value = res.value;
 		NullableOptional<String> result = null;
 		try {
-			if(value == null){
+			if (value == null) {
 				System.out.println("EVAL <" + expression + ">" + " yields empty");
 				result = NullableOptional.ofEmpty();
-			}
-			else if("null".equals(value.getValueString())){
+			} else if ("null".equals(value.getValueString())) {
 				System.out.println("EVAL <" + expression + ">" + " yields null");
 				result = NullableOptional.ofNull();
-			}else {
+			} else {
 				System.out.println("EVAL <" + expression + ">" + " yields " + value.getValueString());
 				result = NullableOptional.ofNonNull(value.getValueString());
 			}
 		} catch (DebugException e) {
 		} finally {
-			if(result == null)
+			if (result == null)
 				result = NullableOptional.ofEmpty();
 		}
 		return result;
-	}
-
-	//	public static void redrawStack(IStackFrame[] frames) throws DebugException {
-	//		frames = reverseOf(frames);
-	//		String exceptionClassName = null;
-	//		for(IStackFrame frame : frames)
-	//			for(IVariable var : frame.getVariables())
-	//				if(isException(var.getValue().getReferenceTypeName()))
-	//					exceptionClassName = var.getValue().getReferenceTypeName();
-	//		instance.panel.setFrameSize(frames.length);
-	//		for(int i = 0 ; i < frames.length; i++){
-	//			IStackFrame frame = frames[i];
-	//			File srcFile = (File) frame.getLaunch().getSourceLocator().getSourceElement(frame);
-	//			ParserResult parserResult = null;
-	//			if(srcFile == null || !srcFile.exists())
-	//				break;
-	//			parserResult = ParserAPI.parseFile(srcFile.getRawLocation().toString());
-	//			instance.panel.setFrameLine(i, frame, frame.getName(), parserResult, frame.getLineNumber());
-	//
-	//			if(exceptionClassName == null)
-	//				for(IVariable var : frame.getVariables()){
-	//					if(var.getName().equals("this"))
-	//						for (IVariable subVar : var.getValue().getVariables())
-	//							updateVariableValue(frame, subVar);
-	//					else
-	//						updateVariableValue(frame, var);
-	//				}
-	//		}
-	//		instance.panel.draw(exceptionClassName);
-	//		//RealView.redraw(stackFrame.getLineNumber(), lastExceptionClassName);
-	//	}
-
-	private static IStackFrame[] reverseOf(IStackFrame[] array){
-		IStackFrame[] reverse = new IStackFrame[array.length];
-		for (int i = 0; i < reverse.length; i++) {
-			reverse[i] = array[array.length - 1 - i];
-		}
-		return reverse;
 	}
 
 	private static boolean isException(String referenceTypeName) {
@@ -262,117 +431,5 @@ public class PandionJView extends ViewPart { // implements IZoomableWorkbenchPar
 			return false;
 		}
 	}
-
-	//	private static void updateVariableValue(IStackFrame stackFrame, IVariable var, boolean addRef, String parentName) throws DebugException{
-	//		String typeName = var.getReferenceTypeName();
-	//		String valueStr = var.getValue().toString();
-	//		if("null".equals(valueStr)){
-	//			if(addRef)
-	//				instance.panel.updateNullReference(stackFrame, var.getName());
-	//		} else if(isPrimitiveTypeName(typeName) || typeName.equals("java.lang.String")){
-	//			if(addRef)
-	//				instance.panel.updatePrimitiveOrString(stackFrame, var.getName(), valueStr);
-	//		} else if(isArrayTypeName(typeName)){
-	//			String strippedTypeName = removeArrayBrackets(var.getReferenceTypeName());
-	//			int objId = getObjectId(valueStr);
-	//			if(addRef)
-	//				instance.panel.updateReference(stackFrame, var.getName(), objId);
-	//			if(isPrimitiveTypeName(strippedTypeName) || strippedTypeName.equals("java.lang.String")){
-	//				IVariable[] subVars = var.getValue().getVariables();
-	//				String[] strValues = new String[subVars.length];
-	//				for (int i = 0; i < subVars.length; i++) 
-	//					strValues[i] = subVars[i].getValue().getValueString();
-	//				instance.panel.updatePrimitiveOrStringArray(stackFrame, objId, strValues);
-	//			}
-	//			else {
-	//				IVariable[] subVars = var.getValue().getVariables();
-	//				int[] refIds = new int[subVars.length];
-	//				for (int i = 0; i < subVars.length; i++){
-	//					String subValueStr = subVars[i].getValue().getValueString();
-	//					if(subValueStr.equals("null"))
-	//						refIds[i] = PandionJArea.NULL_REFERENCE_ID;
-	//					else if(isArrayTypeName(subVars[i].getValue().getReferenceTypeName())){
-	//						int id = getObjectId(subValueStr);
-	//						String arrayTypeName = removeArrayBrackets(subVars[i].getValue().getReferenceTypeName());
-	//						refIds[i] = id;
-	//						if(isPrimitiveTypeName(arrayTypeName) || arrayTypeName.equals("java.lang.String")){
-	//							IVariable[] arrayPrimitiveVars = subVars[i].getValue().getVariables();
-	//							String[] strValues = new String[arrayPrimitiveVars.length];
-	//							for (int j = 0; j < arrayPrimitiveVars.length; j++) 
-	//								strValues[j] = arrayPrimitiveVars[j].getValue().getValueString();
-	//							instance.panel.updatePrimitiveOrStringArray(stackFrame, refIds[i], strValues);
-	//						} else {
-	//							IVariable[] arrayVars = subVars[i].getValue().getVariables();
-	//							int[] subIds = new int[arrayVars.length];
-	//							for (int j = 0; j < arrayVars.length; j++)
-	//								if(arrayVars[j].getValue().getValueString().equals("null"))
-	//									subIds[j] = PandionJArea.NULL_REFERENCE_ID;
-	//								else if(arrayVars[j].getValue().getReferenceTypeName().equals("java.lang.String")){
-	//									String value = arrayVars[j].getValue().toString();
-	//									subIds[j] = instance.panel.generateNewObjectId();
-	//									instance.panel.updateObject(stackFrame, subIds[j], value);
-	//								} else
-	//									subIds[j] = getObjectId(arrayVars[j].getValue().toString());
-	//							instance.panel.updateReferenceArray(stackFrame, id, subIds);
-	//							for(IVariable arrayVar : arrayVars)
-	//								if(!arrayVar.getValue().getReferenceTypeName().equals("java.lang.String"))
-	//									updateVariableValue(stackFrame, arrayVar, false, "((Object[])" + (parentName == null ? "" : parentName) + var.getName() + subVars[i].getName() + ")");
-	//						}
-	//					} else if(subVars[i].getValue().getReferenceTypeName().equals("java.lang.String")){
-	//						String value = subVars[i].getValue().toString();
-	//						refIds[i] = instance.panel.generateNewObjectId();
-	//						instance.panel.updateObject(stackFrame, refIds[i], value);
-	//					} else {
-	//						int id = getObjectId(subValueStr);
-	//						refIds[i] = id;
-	//						NullableOptional<String> valueOp = valueOfExpression(stackFrame, var.getName() + subVars[i].getName() + ".toString()");
-	//						valueOp.ifNonNullPresent(str -> instance.panel.updateObject(stackFrame, id, str));
-	//					}
-	//				}
-	//				instance.panel.updateReferenceArray(stackFrame, objId, refIds);
-	//			}
-	//		} else {
-	//			int objId = getObjectId(var.getValue().toString());
-	//			if(addRef)
-	//				instance.panel.updateReference(stackFrame, var.getName(), objId);
-	//			String varName = (parentName == null? "" : parentName) + var.getName();
-	//			final String objToStr = valueOfExpression(stackFrame, varName + ".toString()").orElse("No toString() availlable.");
-	//			instance.panel.updateObject(stackFrame, objId, objToStr);
-	//		}
-	//	}
-
-	//	public static void updateVariableValue(IStackFrame stackFrame, IVariable var) throws DebugException{
-	//		updateVariableValue(stackFrame, var, true, null);
-	//	}
-
-	private static int getObjectId(String str){
-		if(str == null || !str.contains("(id="))
-			throw new IllegalArgumentException(str);
-		return Integer.parseInt(str.substring(str.indexOf("=")+1, str.indexOf(")")));
-	}
-
-	private static boolean isArrayTypeName(String typeName){
-		return typeName.indexOf('[') >= 0;
-	}
-
-	private static String removeArrayBrackets(String typeName){
-		int bracketIndex = typeName.lastIndexOf('[');
-		return bracketIndex >= 0 ? typeName.substring(0, bracketIndex) : typeName;
-	}
-
-	private static boolean isPrimitiveTypeName(String typeName){
-		switch(typeName){
-		case "int":
-		case "boolean":
-		case "double":
-		case "float":
-		case "char":
-		case "byte":
-			return true;
-		default:
-			return false;
-		}
-	}
-
 
 }

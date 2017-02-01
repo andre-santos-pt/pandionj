@@ -136,7 +136,7 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	ModelElement getObject(ModelElement pointer, IJavaObject obj) {
+	 ModelElement getObject(ModelElement pointer, IJavaObject obj) {
 		try {
 			if(obj.isNull())
 				return NullModel.getInstance(pointer, obj);

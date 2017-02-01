@@ -5,8 +5,9 @@
          point="org.eclipse.ui.views">
       <view
             class="pt.iscte.pandionj.PandionJView"
+            icon="images/pandionj.gif"
             id="pt.iscte.pandionj2.view1"
-            name="PANDION"
+            name="PandionJ"
             restorable="true">
       </view>
    </extension>

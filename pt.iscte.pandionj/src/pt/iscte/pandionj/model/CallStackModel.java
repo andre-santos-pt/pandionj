@@ -91,7 +91,7 @@ public class CallStackModel extends Observable {
 			}
 
 			IFile srcFile = (IFile) f.getLaunch().getSourceLocator().getSourceElement(f);
-//			System.out.println(f + "   " + f.getThread() + "   " + srcFile + "  " + srcFile.getProject());
+			//			System.out.println(f + "   " + f.getThread() + "   " + srcFile + "  " + srcFile.getProject());
 		}
 		boolean notify = false;
 
@@ -102,7 +102,7 @@ public class CallStackModel extends Observable {
 			current = null;
 		}
 		else {
-			if(root == null || root.frame.getStackFrame() !=  stack[stack.length-1]) {
+			if(root == null || root.frame.getStackFrame() != stack[stack.length-1]) {
 				root = new Node(stack[stack.length-1]);
 				current = root;
 				notify = true;
@@ -124,6 +124,47 @@ public class CallStackModel extends Observable {
 		}
 	}
 
+	public void handle2(IStackFrame[] stack) {
+		assert stack != null;
+
+		for(IStackFrame f : stack) {
+			if(!(f.getLaunch().getSourceLocator().getSourceElement(f) instanceof IFile)) {
+				return;
+			}
+
+			IFile srcFile = (IFile) f.getLaunch().getSourceLocator().getSourceElement(f);
+			//			System.out.println(f + "   " + f.getThread() + "   " + srcFile + "  " + srcFile.getProject());
+		}
+		boolean notify = false;
+
+		if(stack.length == 0) {
+			if(root != null)
+				notify = true;
+			root = null;
+			current = null;
+		}
+		else {
+			if(root == null || root.frame.getStackFrame() != stack[stack.length-1]) {
+				root = new Node(stack[stack.length-1]);
+				current = root;
+				notify = true;
+			}
+			Node n = root;
+			for(int i = stack.length-2; i >= 0; i--) {
+				n = n.addChild(stack[i]);	
+			}
+			if(current != n)
+				notify = true;
+
+			current = n;
+		}
+		if(notify) {
+			setChanged();
+			notifyObservers();
+		}
+	}
+
+
 	public StackFrameModel getTopFrame() {
 		assert current != null;
 		return current.frame;
@@ -134,8 +175,8 @@ public class CallStackModel extends Observable {
 	}
 
 	public void update() {
-		assert current != null;
-		current.update();
+		if(current != null)
+			current.update();
 	}
 
 	public List<StackFrameModel> getStackPath() {

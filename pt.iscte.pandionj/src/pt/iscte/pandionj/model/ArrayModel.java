@@ -9,13 +9,17 @@ import java.util.Observable;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
+import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
+import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.ArrayValueFigure;
 
 public class ArrayModel extends Observable implements ModelElement {
 
+	
 	private IJavaArray array;
+	private boolean referenceType;
 	private IJavaValue[] elements;
 
 	private List<ValueModel> vars;
@@ -24,6 +28,7 @@ public class ArrayModel extends Observable implements ModelElement {
 		assert array != null;
 		try{
 			this.array = array;
+			referenceType = array.getSize() > 0 && array.getValue(0) instanceof IJavaObject;
 			elements = new IJavaValue[array.getLength()];
 			for(int i = 0; i < elements.length; i++)
 				elements[i] = array.getValue(i);
@@ -76,8 +81,7 @@ public class ArrayModel extends Observable implements ModelElement {
 	
 	@Override
 	public IFigure createFigure() {
-		ArrayValueFigure fig = new ArrayValueFigure(this);
-		return fig;
+		return referenceType ? new ArrayReferenceFigure(this) : new ArrayValueFigure(this);
 	}
 	
 	@Override

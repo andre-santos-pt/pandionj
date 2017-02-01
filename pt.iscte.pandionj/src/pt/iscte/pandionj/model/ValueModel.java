@@ -20,7 +20,7 @@ public class ValueModel extends Observable implements ModelElement {
 	private List<IValue> history;
 
 	public ValueModel(IJavaVariable variable) throws DebugException {
-		assert variable.getValue() instanceof IJavaPrimitiveValue;
+//		assert variable.getValue() instanceof IJavaPrimitiveValue;
 		this.variable = variable;
 		history = new ArrayList<>();
 		history.add(variable.getValue());

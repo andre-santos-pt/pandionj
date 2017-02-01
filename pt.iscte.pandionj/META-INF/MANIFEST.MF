@@ -3,7 +3,6 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Pandionj2
 Bundle-SymbolicName: pt.iscte.pandionj;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Activator: pt.iscte.pandionj.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.runtime,

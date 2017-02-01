@@ -12,6 +12,7 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.model.ValueModel;
@@ -38,8 +39,13 @@ public class ValueFigure extends Figure {
 		model.addObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				valueLabel.setText(model.getCurrentValue());
-				valueLabel.setBackgroundColor(ColorConstants.cyan);
+				Display.getDefault().syncExec(new Runnable() {
+					public void run() {
+						valueLabel.setText(model.getCurrentValue());
+						valueLabel.setBackgroundColor(ColorConstants.cyan);
+					}
+				});
+			
 			}
 		});
 	}

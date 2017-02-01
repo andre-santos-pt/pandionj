@@ -38,7 +38,7 @@ import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ValueModel;
 
-public class ArrayValueFigure extends Figure implements Observer {
+public class ArrayReferenceFigure extends Figure implements Observer {
 //	static final int POSITION_WIDTH_EMPTY = Constants.POSITION_WIDTH/2;
 
 	private static final int INDEX_FONT_SIZE = 14;
@@ -60,23 +60,17 @@ public class ArrayValueFigure extends Figure implements Observer {
 		final Color color;
 		List<Integer> indexes;
 		Object bound;
-		boolean isBar;
-		Var(String id, int index, Object bound, boolean isBar, Color color) {
+		Var(String id, int index, Object bound, Color color) {
 			assert bound == null || bound instanceof Integer || bound instanceof String && vars.containsKey((String) bound);
 			this.id = id;
 			this.indexes = new ArrayList<>();
 			indexes.add(index);
 			this.bound = bound;
 			this.color = color;
-			this.isBar = isBar;
 		}
 
 		int getCurrentIndex() {
 			return indexes.get(indexes.size()-1);
-		}
-
-		boolean isVarBounded() {
-			return bound instanceof String;
 		}
 
 		boolean isBounded() {
@@ -94,10 +88,6 @@ public class ArrayValueFigure extends Figure implements Observer {
 			int i =  getCurrentIndex() ;
 			int b = getBound();
 			return b == -1 || b == i ? Direction.NONE : i < b ? Direction.FORWARD : Direction.BACKWARD;
-		}
-
-		boolean isBar() {
-			return isBar;
 		}
 
 		public void updateIndex(int index) {
@@ -119,7 +109,7 @@ public class ArrayValueFigure extends Figure implements Observer {
 	private GridLayout layout;
 	private ArrayModel model;
 
-	public ArrayValueFigure(ArrayModel model) {
+	public ArrayReferenceFigure(ArrayModel model) {
 		this.model = model;
 		N = model.getLength();
 		lowerOffSet = 0;
@@ -128,21 +118,15 @@ public class ArrayValueFigure extends Figure implements Observer {
 		vars = new HashMap<>();
 
 		GridLayout layout = new GridLayout(1, true);
-		Label lengthLabel = new Label("length = " + N);
-		layout.setConstraint(lengthLabel, new GridData(SWT.RIGHT, SWT.CENTER, true, false));
-		add(lengthLabel);
 		setLayoutManager(layout);
 	
-		GridLayout layout2 = new GridLayout(Math.max(1, N), true);
+		GridLayout layout2 = new GridLayout(1, true);
 		layout2.horizontalSpacing = POSITION_SPACING;
 		
 		positionsFig = new Figure();
 		positionsFig.setLayoutManager(layout2);
 		add(positionsFig);
-	
-		for(int i = 1; i < N; i++)
-			add(new Label());
-		
+			
 		if(N == 0) {
 			positionsFig.add(new Position(null, true));
 		}
@@ -155,6 +139,11 @@ public class ArrayValueFigure extends Figure implements Observer {
 				positions.add(p);
 			}
 		}
+		
+		Label lengthLabel = new Label("length = " + N);
+		layout.setConstraint(lengthLabel, new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+		add(lengthLabel);
+
 		
 		
 		//		setOpaque(true);
@@ -173,9 +162,9 @@ public class ArrayValueFigure extends Figure implements Observer {
 	@Override
 	public Dimension getPreferredSize(int wHint, int hHint) {
 		return new Dimension(
-				Constants.MARGIN * 3 + (positions.size() == 0 ?  Constants.POSITION_WIDTH : POSITION_SPACING + (Constants.POSITION_WIDTH + POSITION_SPACING*2)*positions.size()), 
-				Constants.MARGIN * 2 + (int) (Constants.POSITION_WIDTH*(N==0 ? 1.5 : 2.0)) + vars.size() * Constants.ARROW_EDGE * 2
-				);
+				Constants.MARGIN * 2 + (int) (Constants.POSITION_WIDTH*(N==0 ? 1.5 : 2.0)) + vars.size() * Constants.ARROW_EDGE * 2,
+				Constants.MARGIN * 3 + (positions.size() == 0 ?  Constants.POSITION_WIDTH : POSITION_SPACING + (Constants.POSITION_WIDTH + POSITION_SPACING*2)*positions.size())
+		);
 	}
 
 	private void addVariable(ValueModel varModel) {
@@ -255,18 +244,9 @@ public class ArrayValueFigure extends Figure implements Observer {
 			int i = v.getCurrentIndex();
 			boolean forward = v.getDirection().equals(Direction.FORWARD);
 
-			if(v.isBar()) {
-				Point from = getPosition(i).getLocation().getTranslated(Constants.POSITION_WIDTH/2-Constants.ARROW_LINE_WIDTH*3, -Constants.MARGIN);
-				Point to = from.getTranslated(0, y + vars.size()*(Constants.ARROW_EDGE*2));
-				graphics.drawLine(from, to);
-				graphics.drawText(v.id, to);
-			}
-
 
 			Point from = getPosition(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.id, VAR_FONT)/2, y);
-			if(!v.isBar()) {
-				graphics.drawText(v.id, from);
-			}
+			graphics.drawText(v.id, from);
 
 			List<Integer> indexes = v.getIndexes();
 			for(int iOld = 0; iOld < indexes.size()-1; iOld++) {
@@ -303,28 +283,27 @@ public class ArrayValueFigure extends Figure implements Observer {
 
 		Var v = vars.get(id);
 		if(v == null) {
-			v = new Var(id, index, bound, isBar, VARCOLORS[vars.size()]);
+			v = new Var(id, index, bound, VARCOLORS[vars.size()]);
 			vars.put(id, v);
 		}
 		else {
 			v.updateIndex(index);
 			v.bound = bound;
-			v.isBar = isBar;
 		}
 		repaint();
 	}
 
 	public void addVarBound(int index, String id) {
-		vars.put(id, new Var(id, index, -1, false, VARCOLORS[vars.size()]));
+		vars.put(id, new Var(id, index, -1, VARCOLORS[vars.size()]));
 		repaint();
 	}
 
-	public boolean setValue(int index, Object value) {
-		Position p = getPosition(index);
-		boolean change = !p.getValue().equals(value.toString());
-		p.setValue(value.toString());
-		return change;
-	}
+//	public boolean setValue(int index, Object value) {
+//		Position p = getPosition(index);
+//		boolean change = !p.getValue().equals(value.toString());
+//		p.setValue(value.toString());
+//		return change;
+//	}
 
 	private class Position extends Figure {
 
@@ -340,12 +319,19 @@ public class ArrayValueFigure extends Figure implements Observer {
 			width = index != null ? Constants.POSITION_WIDTH : Constants.POSITION_WIDTH;
 			GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
 			GridData layoutData = new GridData(width, Constants.POSITION_WIDTH);
-			GridLayout layout = new GridLayout(1, true);
+			GridLayout layout = new GridLayout(2, false);
 			layout.verticalSpacing = 0;
 			layout.horizontalSpacing = 0;
 			layout.marginWidth = 0;
 			layout.marginHeight = 0;
 
+			Label indexLabel = new Label(indexText(index));
+			indexLabel.setFont(new Font(null, "Arial", INDEX_FONT_SIZE, SWT.NONE));
+			indexLabel.setLabelAlignment(SWT.CENTER);
+			indexLabel.setForegroundColor(ColorConstants.gray);
+			layout.setConstraint(indexLabel, layoutCenter);
+			add(indexLabel);
+			
 			setLayoutManager(layout);
 			valueLabel = new Label("");
 			valueLabel.setFont(new Font(null, "Arial", Constants.VALUE_FONT_SIZE, SWT.NONE));
@@ -357,13 +343,7 @@ public class ArrayValueFigure extends Figure implements Observer {
 			layout.setConstraint(valueLabel, layoutData);
 			add(valueLabel);
 
-			Label indexLabel = new Label(indexText(index));
-			indexLabel.setFont(new Font(null, "Arial", INDEX_FONT_SIZE, SWT.NONE));
-			//			indexLabel.setOpaque(true);
-			indexLabel.setLabelAlignment(SWT.CENTER);
-			indexLabel.setForegroundColor(ColorConstants.gray);
-			layout.setConstraint(indexLabel, layoutCenter);
-			add(indexLabel);
+
 		}
 
 		public String getValue() {
@@ -372,7 +352,7 @@ public class ArrayValueFigure extends Figure implements Observer {
 
 		private String indexText(Integer index) {
 			if(index == null) return "";
-			else if(index == ArrayValueFigure.this.N) return index + " (length)";
+			else if(index == ArrayReferenceFigure.this.N) return index + " (length)";
 			else return Integer.toString(index);
 		}
 		

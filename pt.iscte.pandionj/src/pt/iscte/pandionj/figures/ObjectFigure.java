@@ -40,10 +40,11 @@ public class ObjectFigure extends Figure {
 		}
 		add(fig);
 		setBorder(new LineBorder(ColorConstants.black, Constants.ARROW_LINE_WIDTH));
-		
+		setOpaque(true);
 		setSize(-1, -1);
+		setBackgroundColor(ColorConstants.lightGray);
 		setPreferredSize(Constants.POSITION_WIDTH, Math.max(Constants.POSITION_WIDTH, model.getFields().size()*30));
-
+		
 		model.addObserver(new Observer() {
 			
 			@Override
