@@ -3,8 +3,11 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
+import java.util.Set;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
@@ -22,7 +25,10 @@ public class ArrayModel extends Observable implements ModelElement {
 	private boolean referenceType;
 	private IJavaValue[] elements;
 
-	private List<ValueModel> vars;
+	private Map<String, ValueModel> vars;
+	private ArrayValueFigure fig;
+	
+	private String varError;
 	
 	public ArrayModel(IJavaArray array) {
 		assert array != null;
@@ -36,7 +42,7 @@ public class ArrayModel extends Observable implements ModelElement {
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
-		vars = new ArrayList<ValueModel>();
+		vars = new HashMap<>();
 	}
 
 	public void update() {
@@ -70,18 +76,30 @@ public class ArrayModel extends Observable implements ModelElement {
 	}
 	
 	public void addVar(ValueModel v) {
-		vars.add(v);
+		if(!vars.containsKey(v.getName())) {
+			vars.put(v.getName(), v);
+			setChanged();
+			notifyObservers(v);
+		}
+	}
+	
+	public void setVarError(String var) {
+		varError = var;
 		setChanged();
-		notifyObservers(v);
+		notifyObservers(new RuntimeException(var));
 	}
 
 	public Collection<ValueModel> getVars() {
-		return Collections.unmodifiableCollection(vars);
+		return Collections.unmodifiableCollection(vars.values());
 	}
 	
 	@Override
 	public IFigure createFigure() {
 		return referenceType ? new ArrayReferenceFigure(this) : new ArrayValueFigure(this);
+	}
+	
+	public ArrayValueFigure getFigure() {
+		return fig;
 	}
 	
 	@Override

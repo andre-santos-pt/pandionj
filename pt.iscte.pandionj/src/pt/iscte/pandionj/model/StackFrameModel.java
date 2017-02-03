@@ -1,16 +1,20 @@
 package pt.iscte.pandionj.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
@@ -26,18 +30,49 @@ import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import com.google.common.collect.Multimap;
+
+import pt.iscte.pandionj.parser.ParserAPI;
+import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
+import pt.iscte.pandionj.parser.exception.JavaException;
+import pt.iscte.pandionj.parser.exception.JavaException.ArrayOutOfBounds;
+import pt.iscte.pandionj.parser.variable.Stepper.ArrayIterator;
+import pt.iscte.pandionj.parser.variable.Variable;
+
 
 
 public class StackFrameModel extends Observable {
 	private IStackFrame stackFrame;
 	private Map<String, ModelElement> vars;
 	private Map<Long, ModelElement> objects;
+	private ParserResult codeAnalysis;
 
-	public StackFrameModel(IStackFrame stackFrame) {
-		this.stackFrame = stackFrame;
+	public StackFrameModel(IStackFrame frame) {
+		this.stackFrame = frame;
 		vars = new LinkedHashMap<>();
 		objects = new HashMap<>();
+		IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
+		codeAnalysis = ParserAPI.parseFile(srcFile.getRawLocation().toString());
 		handleVariables();
+		Multimap<Integer, JavaException> lineExceptions = codeAnalysis.lineExceptions;
+		System.out.println(lineExceptions);
+	}
+
+
+	public Variable getLocalVariable(String name) {
+		try {
+			int line = stackFrame.getLineNumber();
+			Collection<Variable> collection = codeAnalysis.variableRoles.get(name);
+			for(Variable v : collection) {
+				if(v.name.equals(name) && line >= v.scopeLineStart && line <= v.scopeLineEnd) {
+					return v;
+				}
+			}
+		}
+		catch(DebugException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 	public void update() {
@@ -73,15 +108,50 @@ public class StackFrameModel extends Observable {
 				else
 					handleVar(jv);
 			}
-			
+
 			if(thisVar != null)
 				for (IVariable v : thisVar.getValue().getVariables())
 					handleVar((IJavaVariable) v);
+
+			handleArrayIterators();
 
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
+	}
+
+
+
+	private void handleArrayIterators() {
+		for (Entry<String, ModelElement> e : vars.entrySet()) {
+			if(e.getValue().isReference()) {
+				ReferenceModel refModel = e.getValue().asReference();
+				if(refModel.isArray() && !refModel.isNull()) {
+					ArrayModel array = (ArrayModel) refModel.getTarget();
+					for(String itVar : findArrayIterators(e.getKey())) {
+						if(vars.containsKey(itVar))
+							array.addVar(vars.get(itVar).asValue());
+					}
+				}
+			}
+		}
+	}
+
+
+	private Collection<String> findArrayIterators(String pointerVar) {
+		List<String> iterators = new ArrayList<>(2);
+		for (Variable var : codeAnalysis.variableRoles.values()) {
+			if(var instanceof ArrayIterator) {
+				ArrayIterator it = (ArrayIterator) var;
+				Multimap<Integer, Variable> arrayDimensions = it.getArrayDimensions();
+				Collection<Variable> collection = arrayDimensions.get(1);
+				for(Variable v : collection)
+					if(v.name.equals(pointerVar))
+						iterators.add(var.name);
+			}
+		}
+		return iterators;
 	}
 
 	private void handleVar(IJavaVariable jv) throws DebugException {
@@ -92,7 +162,7 @@ public class StackFrameModel extends Observable {
 			vars.get(varName).update();
 		}
 		else {
-			ModelElement newElement = type instanceof IJavaReferenceType ? new ReferenceModel(jv, this) : new ValueModel(jv);
+			ModelElement newElement = type instanceof IJavaReferenceType ? new ReferenceModel(jv, this) : new ValueModel(jv, this);
 			vars.put(varName, newElement);
 
 			if(newElement instanceof ReferenceModel)
@@ -105,10 +175,6 @@ public class StackFrameModel extends Observable {
 					}
 				});
 
-			// TODO TEST
-//			if(varName.equals("next"))
-//				((ArrayModel) ((ReferenceModel) vars.get("elements")).getTarget()).addVar((PrimitiveVariableModel) newElement);
-
 			setChanged();
 			notifyObservers(newElement);
 		}
@@ -120,15 +186,6 @@ public class StackFrameModel extends Observable {
 
 	public Collection<ModelElement> getObjects() {
 		return Collections.unmodifiableCollection(objects.values());
-//		List<ModelElement> objs = new ArrayList<>();
-//		for(ModelElement e : vars.values())
-//			if(e instanceof ReferenceModel) {
-//				ModelElement t = ((ReferenceModel) e).getTarget();
-//				objs.add(t);
-//			}
-//
-//
-//		return objs;
 	}
 
 	public IStackFrame getStackFrame() {
@@ -136,7 +193,7 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	 ModelElement getObject(ModelElement pointer, IJavaObject obj) {
+	ModelElement getObject(ModelElement pointer, IJavaObject obj) {
 		try {
 			if(obj.isNull())
 				return NullModel.getInstance(pointer, obj);
@@ -157,8 +214,10 @@ public class StackFrameModel extends Observable {
 			return null;
 		}
 	}
-	
-	
+
+
+
+
 	public void simulateGC() {
 		boolean removals = false;
 		Iterator<Entry<Long, ModelElement>> iterator = objects.entrySet().iterator();
@@ -173,7 +232,7 @@ public class StackFrameModel extends Observable {
 			setChanged();
 			notifyObservers();
 		}
-		
+
 	}
 
 
@@ -190,7 +249,24 @@ public class StackFrameModel extends Observable {
 
 
 
-
+	public void processException() {
+		try {
+			int line = stackFrame.getLineNumber();
+			Collection<JavaException> collection = codeAnalysis.lineExceptions.get(line);
+			for(JavaException e : collection)
+				if(e instanceof ArrayOutOfBounds) {
+					ArrayOutOfBounds ae = (ArrayOutOfBounds) e;
+					System.out.println(ae.arrayName + " " + ae.arrayAccess);
+					ArrayModel arrayModel = (ArrayModel) ((ReferenceModel) vars.get(ae.arrayName)).getTarget();
+					arrayModel.setVarError(ae.arrayAccess);
+				}
+		} catch (DebugException e1) {
+			e1.printStackTrace();
+		}
+		
+		
+		
+	}
 
 
 
@@ -221,5 +297,10 @@ public class StackFrameModel extends Observable {
 		return res.value == null ? "NULL" : res.value.toString();
 	}
 
+
 	
+
+
+
+
 }

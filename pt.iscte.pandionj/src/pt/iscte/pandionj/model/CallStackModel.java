@@ -10,6 +10,8 @@ import java.util.Observable;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.model.IStackFrame;
 
+import pt.iscte.pandionj.parser.ParserAPI;
+
 
 
 public class CallStackModel extends Observable {
@@ -90,7 +92,7 @@ public class CallStackModel extends Observable {
 				return;
 			}
 
-			IFile srcFile = (IFile) f.getLaunch().getSourceLocator().getSourceElement(f);
+//			IFile srcFile = (IFile) f.getLaunch().getSourceLocator().getSourceElement(f);
 			//			System.out.println(f + "   " + f.getThread() + "   " + srcFile + "  " + srcFile.getProject());
 		}
 		boolean notify = false;
@@ -199,4 +201,7 @@ public class CallStackModel extends Observable {
 		for(Node c : n.children)
 			simulateGC(c);
 	}
+
+
+	
 }

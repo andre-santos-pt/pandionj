@@ -306,10 +306,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 //	}
 
 	private class Position extends Figure {
-
-		//		private final Integer index;
 		private final Label valueLabel;
-		//		private final Label varsLabel;
 		private boolean outOfBounds;
 		private int width;
 

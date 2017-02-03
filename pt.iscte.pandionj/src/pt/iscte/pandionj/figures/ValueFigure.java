@@ -16,10 +16,11 @@ import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.model.ValueModel;
+import pt.iscte.pandionj.model.ValueModel.Role;
 
 public class ValueFigure extends Figure {
 
-	public ValueFigure(ValueModel model) {
+	public ValueFigure(ValueModel model, Role role) {
 		GridLayout layout = new GridLayout(2,false);
 		setLayoutManager(layout);
 		
@@ -30,23 +31,25 @@ public class ValueFigure extends Figure {
 		Label valueLabel = new Label(model.getCurrentValue());
 		valueLabel.setOpaque(true);
 		valueLabel.setFont(new Font(null, "Arial", 42, SWT.NONE));
-		valueLabel.setBorder(new LineBorder(ColorConstants.black, 1, SWT.LINE_SOLID));
-		layout.setConstraint(valueLabel, new GridData(Constants.POSITION_WIDTH,Constants.POSITION_WIDTH));
+		valueLabel.setBorder(new LineBorder(ColorConstants.black, 2, SWT.LINE_SOLID));
+		layout.setConstraint(valueLabel, new GridData(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH));
 		add(valueLabel);
+		
+		if(Role.FIXED_VALUE.equals(role))
+			setBackgroundColor(ColorConstants.lightGray);
 		
 		setSize(-1, -1);
 		
 		model.addObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				Display.getDefault().syncExec(new Runnable() {
-					public void run() {
+				Display.getDefault().syncExec(() -> {
 						valueLabel.setText(model.getCurrentValue());
-						valueLabel.setBackgroundColor(ColorConstants.cyan);
-					}
+						valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR);
 				});
-			
 			}
 		});
+		
+		setToolTip(new Label(role == null ? "no role" : role.toString()));
 	}
 }

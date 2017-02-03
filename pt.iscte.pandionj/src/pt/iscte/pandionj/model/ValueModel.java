@@ -8,22 +8,45 @@ import java.util.Observable;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.figures.ValueFigure;
+import pt.iscte.pandionj.parser.variable.FixedValue;
+import pt.iscte.pandionj.parser.variable.Gatherer;
+import pt.iscte.pandionj.parser.variable.Variable;
 
 public class ValueModel extends Observable implements ModelElement {
-
+	public enum Role {
+		FIXED_VALUE,
+		STEPPER,
+		GATHERER,
+		MOST_WANTED_HOLDER;
+		
+		
+		static Role matchRole(Variable v) {
+			if(v instanceof FixedValue)
+				return FIXED_VALUE;
+			else if(v instanceof Gatherer)
+				return GATHERER;
+			else
+				return null;
+		}
+	}
+	
 	private IJavaVariable variable;
 	private List<IValue> history;
-
-	public ValueModel(IJavaVariable variable) throws DebugException {
+	private Role role;
+	
+	public ValueModel(IJavaVariable variable, StackFrameModel model) throws DebugException {
 //		assert variable.getValue() instanceof IJavaPrimitiveValue;
 		this.variable = variable;
 		history = new ArrayList<>();
 		history.add(variable.getValue());
+		Variable var = model.getLocalVariable(variable.getName());
+		role = Role.matchRole(var);
+			
+		
 	}
 
 	public String getName() {
@@ -71,7 +94,7 @@ public class ValueModel extends Observable implements ModelElement {
 
 	@Override
 	public IFigure createFigure() {
-		return new ValueFigure(this);
+		return new ValueFigure(this, role);
 	}
 
 }

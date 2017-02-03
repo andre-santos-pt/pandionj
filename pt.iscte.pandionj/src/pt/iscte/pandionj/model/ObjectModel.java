@@ -46,7 +46,7 @@ public class ObjectModel extends Observable implements ModelElement {
 					references.put(name, new ReferenceModel(var, model));
 				}
 				else {
-					ValueModel val = new ValueModel(var);
+					ValueModel val = new ValueModel(var, model);
 					val.addObserver(new Observer() {
 						
 						@Override
