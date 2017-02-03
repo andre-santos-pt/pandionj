@@ -36,14 +36,16 @@ public interface Constants {
 	
 	Color ARRAY_POSITION_COLOR = ColorConstants.white;
 
-	Color HIGHLIGHT_COLOR = new Color(null, 153, 204, 255);
+	Color HIGHLIGHT_COLOR = new Color(null, 223, 234, 255);
 
 	
 	Color[] VARCOLORS = {
-			ColorConstants.blue, ColorConstants.green
+			ColorConstants.darkBlue, ColorConstants.darkGreen
 	};
 
 	Color ERROR_COLOR = ColorConstants.red;
+
+	String START_MESSAGE = "This view will be populated once the execution of the Java debugger hits a breakpoint.";
 	
 	static Color getVarColor(int i) {
 		assert i >= 0;

@@ -49,9 +49,7 @@ public class ArrayValueFigure extends Figure {
 		positions = new ArrayList<>(N+2);
 		lowerOffSet = 0;
 
-		vars = new HashMap<>();
-		for(ValueModel v : model.getVars())
-			addVariable(v);
+
 
 		setOpaque(false);
 		setLayoutManager(getOneColGridLayout());
@@ -72,6 +70,10 @@ public class ArrayValueFigure extends Figure {
 
 		positionsFig = createPositionsFig(model);
 		fig.add(positionsFig);
+
+		vars = new HashMap<>();
+		for(ValueModel v : model.getVars())
+			addVariable(v);
 	}
 
 	@Override
@@ -80,7 +82,7 @@ public class ArrayValueFigure extends Figure {
 		return super.getPreferredSize(wHint, hHint).expand(0, + varSpace);
 	}
 
-	
+
 	private Figure createPositionsFig(ArrayModel model) {
 		Figure fig = new Figure();
 		GridLayout layout = new GridLayout(Math.max(1, N), true);
@@ -145,7 +147,7 @@ public class ArrayValueFigure extends Figure {
 				Display.getDefault().syncExec(() -> {
 					setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false);
 					repaint();}
-				);
+						);
 			}
 		});
 	}
@@ -187,8 +189,10 @@ public class ArrayValueFigure extends Figure {
 		}
 		else if(index instanceof RuntimeException) {
 			String v = ((RuntimeException) index).getMessage();
-			int currentIndex = vars.get(v).getCurrentIndex();
-			positions.get(lowerOffSet + currentIndex).markError();
+			if(vars.containsKey(v)) {
+				int currentIndex = vars.get(v).getCurrentIndex();
+				positions.get(lowerOffSet + currentIndex).markError(); // TODO check if out of bounds
+			}
 		}
 	}
 
@@ -224,11 +228,11 @@ public class ArrayValueFigure extends Figure {
 			Point from = positions.get(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.id, VAR_FONT)/2, y);
 			if(!v.isBar()) {
 				graphics.drawText(v.id, from);
-//				Dimension box = TextUtilities.INSTANCE.getTextExtents(v.id, graphics.getFont()).expand(10, 10);
-//				if(v.markError) {
-//					graphics.setForegroundColor(ColorConstants.red);
-//					graphics.drawOval(from.x-5, from.y-5, box.width, box.height);
-//				}
+				//				Dimension box = TextUtilities.INSTANCE.getTextExtents(v.id, graphics.getFont()).expand(10, 10);
+				//				if(v.markError) {
+				//					graphics.setForegroundColor(ColorConstants.red);
+				//					graphics.drawOval(from.x-5, from.y-5, box.width, box.height);
+				//				}
 			}
 
 			List<Integer> indexes = v.getIndexes();
@@ -270,7 +274,7 @@ public class ArrayValueFigure extends Figure {
 		private int width;
 		private boolean error;
 		private Label indexLabel;
-		
+
 		public Position(Integer index, boolean outOfBounds) {
 			this.outOfBounds = outOfBounds;
 
@@ -279,7 +283,7 @@ public class ArrayValueFigure extends Figure {
 			GridData layoutData = new GridData(width, POSITION_WIDTH);
 			GridLayout layout = Constants.getOneColGridLayout();
 			setLayoutManager(layout);
-			
+
 			valueLabel = new Label("");
 			SET_FONT(valueLabel, VALUE_FONT_SIZE);
 
@@ -305,11 +309,11 @@ public class ArrayValueFigure extends Figure {
 			return valueLabel.getText();
 		}
 
-//		private String indexText(Integer index) {
-//			if(index == null) return "";
-//			else if(index == ArrayValueFigure.this.N) return index + " (length)";
-//			else return Integer.toString(index);
-//		}
+		//		private String indexText(Integer index) {
+		//			if(index == null) return "";
+		//			else if(index == ArrayValueFigure.this.N) return index + " (length)";
+		//			else return Integer.toString(index);
+		//		}
 
 		@Override
 		protected void paintFigure(Graphics graphics) {
@@ -334,11 +338,14 @@ public class ArrayValueFigure extends Figure {
 		public void unhighlight() {
 			Display.getDefault().syncExec(() -> valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR));
 		}
-		
+
 		public void markError() {
 			error = true;
-			indexLabel.setForegroundColor(Constants.ERROR_COLOR);
-			repaint();
+			Display.getDefault().syncExec(() -> {
+				indexLabel.setForegroundColor(Constants.ERROR_COLOR);
+				setToolTip(new Label("Illegal access to position " + indexLabel.getText()));
+				repaint();
+			});
 		}
 	}
 
@@ -363,7 +370,7 @@ public class ArrayValueFigure extends Figure {
 		Object bound;
 		boolean isBar;
 		boolean markError;
-		
+
 		Var(String id, int index, Object bound, boolean isBar, Color color) {
 			assert bound == null || bound instanceof Integer || bound instanceof String && vars.containsKey((String) bound);
 			this.id = id;
@@ -407,7 +414,7 @@ public class ArrayValueFigure extends Figure {
 		List<Integer> getIndexes() {
 			return indexes;
 		}
-		
+
 		void markError() {
 			markError = true;
 		}

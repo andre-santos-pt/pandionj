@@ -31,7 +31,8 @@ public class ValueFigure extends Figure {
 		Label valueLabel = new Label(model.getCurrentValue());
 		valueLabel.setOpaque(true);
 		valueLabel.setFont(new Font(null, "Arial", 42, SWT.NONE));
-		valueLabel.setBorder(new LineBorder(ColorConstants.black, 2, SWT.LINE_SOLID));
+		int lineWidth = Role.FIXED_VALUE.equals(role) ? 4 : 2;
+		valueLabel.setBorder(new LineBorder(ColorConstants.black, lineWidth, SWT.LINE_SOLID));
 		layout.setConstraint(valueLabel, new GridData(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH));
 		add(valueLabel);
 		
@@ -50,6 +51,7 @@ public class ValueFigure extends Figure {
 			}
 		});
 		
-		setToolTip(new Label(role == null ? "no role" : role.toString()));
+		if(role != null)
+			setToolTip(new Label(role.toString()));
 	}
 }

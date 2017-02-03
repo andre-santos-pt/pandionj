@@ -1,23 +1,28 @@
 package pt.iscte.pandionj;
 
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
-import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.IExecutionListener;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IStackFrame;
+import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.DebugContextEvent;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jdt.core.dom.Message;
 import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaBreakpointListener;
@@ -33,14 +38,15 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.events.ExpandAdapter;
-import org.eclipse.swt.events.ExpandEvent;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -51,6 +57,8 @@ import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.viewers.GraphViewer;
 import org.eclipse.zest.core.viewers.internal.ZoomManager;
@@ -58,7 +66,6 @@ import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.model.CallStackModel;
-import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.parser.data.NullableOptional;
 
@@ -71,6 +78,7 @@ public class PandionJView extends ViewPart {
 
 	private String exception;
 	private IStackFrame exceptionFrame;
+
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -95,7 +103,7 @@ public class PandionJView extends ViewPart {
 
 		label = new Label(area, SWT.NONE);
 		label.setFont(new Font(null, Constants.FONT_FACE, Constants.INDEX_FONT_SIZE, SWT.NONE));
-		label.setText("This view will be populated once the execution of the Java debugger hits a breakpoint.");
+		label.setText(Constants.START_MESSAGE);
 		label.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDoubleClick(MouseEvent e) {
@@ -106,99 +114,35 @@ public class PandionJView extends ViewPart {
 
 		callStack = new ExpandBar(area, SWT.NONE);
 		callStack.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		System.out.println(callStack.getBackground());
-		DebugUITools.getDebugContextManager().addDebugContextListener(new DebugListener());
+		
+		DebugUITools.getDebugContextManager().addDebugContextListener(new DebugUIListener());
 		JDIDebugModel.addJavaBreakpointListener(new ExceptionListener());
 		addToolBarItems();
+
+		DebugPlugin.getDefault().addDebugEventListener(new DebugListener());
 	}
 
-
-	private class DebugListener implements IDebugContextListener {
-
-		@Override
-		public void debugContextChanged(DebugContextEvent event) {
-			IStackFrame f = getSelectedFrame(event.getContext());
-			if(exception != null) {
-				area.setBackground(Constants.ERROR_COLOR);
-				try {
-					label.setText("Error: " + exception + " on line " + exceptionFrame.getLineNumber());
-				} catch (DebugException e) {
-					e.printStackTrace();
-				}
-				model.getTopFrame().processException();
-			}
-			else {
-				if ((event.getFlags() & DebugContextEvent.STATE) != 0) {
+	private class DebugListener implements IDebugEventSetListener {
+		public void handleDebugEvents(DebugEvent[] events) {
+			//				System.out.println("EVENTS: " + Arrays.toString(events));
+			if(events.length > 0) {
+				DebugEvent e = events[0];
+				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
+					IThread thread = (IThread) e.getSource();
+//					System.out.println(events[0].getData() + " " + thread);
 					try {
-						IStackFrame[] frames = f == null ? new IStackFrame[0] : f.getThread().getStackFrames();
-						handleFrames(frames);
-					}
-					catch (DebugException e) {
-						e.printStackTrace();
+						handleFrames(thread.getStackFrames());
+					} catch (DebugException ex) {
+						ex.printStackTrace();
 					}
 				}
-				else if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
-					select(f);
+				else if(e.getKind() == DebugEvent.TERMINATE) {
+					clearView(true);
 				}
 			}
-		}
-
-		private void select(IStackFrame f) {
-			for(ExpandItem e : callStack.getItems())
-				e.setExpanded(((StackView) e.getControl()).model.getStackFrame() == f);
-		}
-
-		private IStackFrame getSelectedFrame(ISelection context) {
-			if (context instanceof IStructuredSelection) {
-				Object data = ((IStructuredSelection) context).getFirstElement();
-				System.out.println(data);
-				if (data instanceof IStackFrame)
-					return (IStackFrame) data;
-			}
-			return null;
 		}
 	}
 
-	final Image image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame.gif")); 
-	final Image imageRun = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame_run.gif")); 
-
-	private void handleFrames(IStackFrame[] frames) {
-		assert frames != null;
-		model.handle2(frames);
-		model.update();
-		List<StackFrameModel> stackPath = model.getStackPath();
-		Display.getDefault().syncExec(new Runnable() {
-
-			@Override
-			public void run() {
-				int diff = stackPath.size() - callStack.getItemCount();
-				while(diff > 0) {
-					diff--;
-					ExpandItem e = new ExpandItem(callStack, SWT.NONE);
-					StackView view = new StackView(callStack);
-					e.setControl(view);
-					e.setHeight(400);
-				}
-				while(diff < 0) {
-					diff++;
-					ExpandItem item = callStack.getItem(callStack.getItemCount()-1);
-					item.getControl().dispose();
-					item.dispose();
-				}
-
-				assert callStack.getItemCount() == stackPath.size();
-
-				ExpandItem[] items = callStack.getItems();
-				for(int i = 0; i < items.length; i++) {
-					StackFrameModel model = stackPath.get(i);
-					((StackView) items[i].getControl()).setInput(model);
-					items[i].setText(model.toString());
-					items[i].setExpanded(i == items.length-1);
-					items[i].setImage(i == items.length-1 ? imageRun : image);
-				}
-			}
-		});
-	}
 
 
 	private class ExceptionListener implements IJavaBreakpointListener {
@@ -207,10 +151,7 @@ public class PandionJView extends ViewPart {
 				try {
 					exception = null;
 					exceptionFrame = null;
-					Display.getDefault().syncExec(() -> {
-						label.setText("");
-						area.setBackground(null);
-					});
+					Display.getDefault().syncExec(() -> { clearView(false); });
 					IStackFrame[] frames = thread.getStackFrames(); 
 					handleFrames(frames);
 				} catch (DebugException e) {
@@ -220,11 +161,17 @@ public class PandionJView extends ViewPart {
 			}
 			else if (breakpoint instanceof IJavaExceptionBreakpoint) {
 				IJavaExceptionBreakpoint exc = (IJavaExceptionBreakpoint) breakpoint;
-				//				IMarker marker = exc.getMarker();//thread.getTopStackFrame().getLineNumber()
 				try {
 					exception = exc.getExceptionTypeName();
 					exceptionFrame = thread.getTopStackFrame();
-					//					System.out.println("EXC:" + exc.getExceptionTypeName() + " " + thread.getTopStackFrame().getLineNumber());
+					IStackFrame[] frames = thread.getStackFrames(); 
+					handleFrames(frames);
+					int line = exceptionFrame.getLineNumber();
+					Display.getDefault().syncExec(() -> {
+						area.setBackground(Constants.ERROR_COLOR);
+						label.setText("Error: " + exception + " on line " + line);
+					});
+					model.getTopFrame().processException();
 				} catch (DebugException e) {
 					e.printStackTrace();
 				}
@@ -242,6 +189,122 @@ public class PandionJView extends ViewPart {
 		public void addingBreakpoint(IJavaDebugTarget target, IJavaBreakpoint breakpoint) { }
 		public void breakpointHasCompilationErrors(IJavaLineBreakpoint breakpoint, Message[] errors) { }
 	}
+
+
+	private class DebugUIListener implements IDebugContextListener {
+
+		@Override
+		public void debugContextChanged(DebugContextEvent event) {
+			IStackFrame f = getSelectedFrame(event.getContext());
+			if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
+				openExpandItem(f);
+			}
+
+			//			if(exception != null) {
+			//				area.setBackground(Constants.ERROR_COLOR);
+			//				try {
+			//					label.setText("Error: " + exception + " on line " + exceptionFrame.getLineNumber());
+			//				} catch (DebugException e) {
+			//					e.printStackTrace();
+			//				}
+			//				if(!model.isEmpty()) {
+			//					model.getTopFrame().processException();
+			//					openExpandItem(exceptionFrame);
+			//				}
+			//				else {
+			//					clearView(true);
+			//				}
+			//			}
+			//			else {
+			//				if ((event.getFlags() & DebugContextEvent.STATE) != 0) {
+			//					try {
+			//						IStackFrame[] frames = f == null ? new IStackFrame[0] : f.getThread().getStackFrames();
+			//						handleFrames(frames);
+			//					}
+			//					catch (DebugException e) {
+			//						e.printStackTrace();
+			//					}
+			//				}
+			//				else if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
+			//					openExpandItem(f);
+			//				}
+			//			}
+		}
+
+
+
+		private void openExpandItem(IStackFrame f) {
+			for(ExpandItem e : callStack.getItems())
+				e.setExpanded(((StackView) e.getControl()).model.getStackFrame() == f);
+		}
+
+		private IStackFrame getSelectedFrame(ISelection context) {
+			if (context instanceof IStructuredSelection) {
+				Object data = ((IStructuredSelection) context).getFirstElement();
+				if (data instanceof IStackFrame)
+					return (IStackFrame) data;
+			}
+			return null;
+		}
+	}
+
+	private void clearView(boolean startMsg) {
+		exception = null;
+		exceptionFrame = null;
+		model = new CallStackModel();
+		handleFrames(new IStackFrame[0]);
+		Display.getDefault().syncExec(() -> {
+			label.setText(startMsg ? Constants.START_MESSAGE : "");
+			area.setBackground(null);
+		});
+
+	}
+
+	final Image image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame.gif")); 
+	final Image imageRun = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame_run.gif")); 
+
+	private void handleFrames(IStackFrame[] frames) {
+		assert frames != null;
+		model.handle(frames);
+		model.update();
+		List<StackFrameModel> stackPath = model.getStackPath();
+		Display.getDefault().syncExec(new Runnable() {
+
+			@Override
+			public void run() {
+				int diff = stackPath.size() - callStack.getItemCount();
+				while(diff > 0) {
+					diff--;
+					ExpandItem e = new ExpandItem(callStack, SWT.NONE);
+					StackView view = new StackView(callStack, e);
+					e.setControl(view);
+					e.setHeight(100);
+				}
+				while(diff < 0) {
+					diff++;
+					ExpandItem item = callStack.getItem(callStack.getItemCount()-1);
+					item.getControl().dispose();
+					item.dispose();
+				}
+
+				assert callStack.getItemCount() == stackPath.size();
+
+				ExpandItem[] items = callStack.getItems();
+				for(int i = 0; i < items.length; i++) {
+					StackFrameModel model = stackPath.get(i);
+					((StackView) items[i].getControl()).setInput(model);
+					items[i].setText(model.toString());
+					items[i].setExpanded(i == items.length-1);
+//					int height = ((StackView) items[i].getControl()).getClientArea().height;
+//					items[i].setHeight(height);
+					items[i].setImage(i == items.length-1 ? imageRun : image);
+				}
+			}
+		});
+	}
+
+
+
 
 	private void addToolBarItems() {
 		IToolBarManager toolBar = getViewSite().getActionBars().getToolBarManager();
@@ -281,9 +344,10 @@ public class PandionJView extends ViewPart {
 	private class StackView extends Composite {
 		MyGraphViewer viewer;
 		StackFrameModel model;
-
-		public StackView(Composite parent) {
+		ExpandItem barItem;
+		public StackView(Composite parent, ExpandItem barItem) {
 			super(parent, SWT.BORDER);
+			this.barItem = barItem;
 			setLayout(new FillLayout());
 			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			viewer = new MyGraphViewer(this, SWT.BORDER);
@@ -304,6 +368,23 @@ public class PandionJView extends ViewPart {
 				}
 			});
 			graph.setMenu(menu);
+			
+			viewer.getGraphControl().addControlListener(new ControlListener() {
+				
+				@Override
+				public void controlResized(ControlEvent e) {
+					
+					Point size = viewer.getGraphControl().computeSize(area.getBounds().width, SWT.DEFAULT);
+//					barItem.setHeight(size.y);
+//					System.out.println(size);
+				}
+				
+				@Override
+				public void controlMoved(ControlEvent e) {
+					// TODO Auto-generated method stub
+					
+				}
+			});
 		}
 
 
@@ -333,6 +414,9 @@ public class PandionJView extends ViewPart {
 						}
 					});
 			}
+			Point size = viewer.getGraphControl().computeSize(area.getBounds().width, SWT.DEFAULT);
+			barItem.setHeight(Math.max(100, size.y + Constants.MARGIN));
+			System.out.println(size);
 		}
 	}
 

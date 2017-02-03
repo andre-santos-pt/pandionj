@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.eclipse.core.resources.IFile;
@@ -53,9 +52,6 @@ public class StackFrameModel extends Observable {
 		objects = new HashMap<>();
 		IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		codeAnalysis = ParserAPI.parseFile(srcFile.getRawLocation().toString());
-		handleVariables();
-		Multimap<Integer, JavaException> lineExceptions = codeAnalysis.lineExceptions;
-		System.out.println(lineExceptions);
 	}
 
 
@@ -105,7 +101,7 @@ public class StackFrameModel extends Observable {
 
 				if(varName.equals("this"))
 					thisVar = jv;
-				else
+				else if(!jv.isSynthetic())
 					handleVar(jv);
 			}
 
@@ -263,9 +259,6 @@ public class StackFrameModel extends Observable {
 		} catch (DebugException e1) {
 			e1.printStackTrace();
 		}
-		
-		
-		
 	}
 
 

@@ -84,53 +84,6 @@ public class CallStackModel extends Observable {
 
 		for(IStackFrame f : stack) {
 			if(!(f.getLaunch().getSourceLocator().getSourceElement(f) instanceof IFile)) {
-				//				try {
-				//					f.getDebugTarget().resume();
-				//				} catch (DebugException e) {
-				//					e.printStackTrace();
-				//				}
-				return;
-			}
-
-//			IFile srcFile = (IFile) f.getLaunch().getSourceLocator().getSourceElement(f);
-			//			System.out.println(f + "   " + f.getThread() + "   " + srcFile + "  " + srcFile.getProject());
-		}
-		boolean notify = false;
-
-		if(stack.length == 0) {
-			if(root != null)
-				notify = true;
-			root = null;
-			current = null;
-		}
-		else {
-			if(root == null || root.frame.getStackFrame() != stack[stack.length-1]) {
-				root = new Node(stack[stack.length-1]);
-				current = root;
-				notify = true;
-			}
-			else {
-				Node n = root;
-				for(int i = stack.length-2; i >= 0; i--) {
-					n = n.addChild(stack[i]);	
-				}
-				if(current != n)
-					notify = true;
-
-				current = n;
-			}
-		}
-		if(notify) {
-			setChanged();
-			notifyObservers();
-		}
-	}
-
-	public void handle2(IStackFrame[] stack) {
-		assert stack != null;
-
-		for(IStackFrame f : stack) {
-			if(!(f.getLaunch().getSourceLocator().getSourceElement(f) instanceof IFile)) {
 				return;
 			}
 
@@ -166,9 +119,12 @@ public class CallStackModel extends Observable {
 		}
 	}
 
+	public boolean isEmpty() {
+		return root == null;
+	}
 
 	public StackFrameModel getTopFrame() {
-		assert current != null;
+		assert !isEmpty();
 		return current.frame;
 	}
 
