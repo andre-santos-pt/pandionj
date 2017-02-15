@@ -22,8 +22,8 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 	private static final Object[] EMPTY = new Object[0];
 
 	private StackFrameModel model;
-	
-	
+
+
 	@Override
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		model = (StackFrameModel) newInput;
@@ -33,18 +33,18 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 	public void dispose() {
 
 	}
-	
+
 	@Override
 	public Object[] getElements(Object input) {
 		if(model == null)
 			return EMPTY;
-		
+
 		List<ModelElement> elements = new ArrayList<>(model.getVariables());
 		for(ModelElement obj : new ArrayList<ModelElement>(model.getObjects())) {
 			if(obj instanceof ObjectModel) {
 				try {
-					IJavaType type = obj.getContent().getJavaType();
-					addReferences(type, (ObjectModel) obj, elements);
+					ObjectModel type = (ObjectModel) obj; 
+					addReferences(type.getContent().getJavaType(), type, elements);
 				} catch (DebugException e) {
 					e.printStackTrace();
 				}
@@ -55,29 +55,22 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		return elements.toArray();
 	}
 
-	private void addReferences(IJavaType type, ModelElement e, List<ModelElement> elements) throws DebugException {
-		if(type.equals(e.getContent().getJavaType()) && !elements.contains(e)) {
-			elements.add(e);
-			if(e instanceof ObjectModel)
-				for(ModelElement ref : ((ObjectModel) e).getReferences().values())
-					addReferences(type, ref, elements);
+	private void addReferences(IJavaType startType, ObjectModel type, List<ModelElement> elements) throws DebugException {
+		if(!elements.contains(type) && startType.equals(type.getContent().getJavaType())) {
+			elements.add(type);
+			for(ModelElement ref : type.getReferences().values()) {
+				if(ref instanceof ObjectModel)
+					addReferences(startType, (ObjectModel) ref, elements);
+			}
 		}
 	}
-	
-//	@Override
-//	public Object[] getConnectedTo(Object entity) {
-//		if(entity instanceof ReferenceModel)
-//			return new Object[] { ((ReferenceModel) entity).getTarget() };
-//		else if(entity instanceof ObjectModel)
-//			return ((ObjectModel) entity).getReferences().values().toArray();
-//		else
-//			return EMPTY;
-//	}
+
 
 	@Override
 	public Object[] getRelationships(Object source, Object dest) {
-		if(source instanceof ReferenceModel && ((ReferenceModel) source).getTarget().equals(dest))
+		if(source instanceof ReferenceModel && ((ReferenceModel) source).getTarget().equals(dest)) {
 			return new Object[] { new Pointer((ModelElement) source, (ModelElement) dest) };
+		}
 		else if(source instanceof ObjectModel) {
 			Map<String, ModelElement> pointers = ((ObjectModel) source).getReferences();
 			List<Pointer> ret = new ArrayList<>();
@@ -89,27 +82,28 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		else
 			return EMPTY;
 	}
-	
+
+
 	static class Pointer {
 		final String refName;
 		final ModelElement source;
 		final ModelElement target;
-		
+
 		public Pointer(ModelElement source, ModelElement target) {
 			this("", source, target);
 		}
-		
+
 		public Pointer(String refName, ModelElement source, ModelElement target) {
 			this.refName = refName;
 			this.source = source;
 			this.target = target;
 		}
-		
+
 		@Override
 		public String toString() {
 			return source + " -> " + target;
 		}
-		
+
 		public boolean isNull() {
 			return target instanceof NullModel;
 		}

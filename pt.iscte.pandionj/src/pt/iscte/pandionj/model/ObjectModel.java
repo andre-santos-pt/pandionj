@@ -1,9 +1,11 @@
 package pt.iscte.pandionj.model;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -32,33 +34,34 @@ public class ObjectModel extends Observable implements ModelElement {
 
 	public ObjectModel(IJavaObject object, StackFrameModel model) {
 		assert object != null;
+
 		this.object = object;
 		this.model = model;
 		values = new LinkedHashMap<String, ValueModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
-		
+
 		try {
-		for(IVariable v : object.getVariables()) {
-			IJavaVariable var = (IJavaVariable) v;
-			if(!var.isStatic()) {
-				String name = var.getName();
-				if(var.getJavaType() instanceof IJavaReferenceType && !valueHandler.qualifies((IJavaValue) v.getValue())) {
-					references.put(name, new ReferenceModel(var, model));
-				}
-				else {
-					ValueModel val = new ValueModel(var, model);
-					val.addObserver(new Observer() {
-						
-						@Override
-						public void update(Observable o, Object arg) {
-							setChanged();
-							notifyObservers(name);
-						}
-					});
-					values.put(name, val);
+			for(IVariable v : object.getVariables()) {
+				IJavaVariable var = (IJavaVariable) v;
+				if(!var.isStatic()) {
+					String name = var.getName();
+					if(var.getJavaType() instanceof IJavaReferenceType && !valueHandler.qualifies((IJavaValue) v.getValue())) {
+						references.put(name, new ReferenceModel(var, model));
+					}
+					else {
+						ValueModel val = new ValueModel(var, model);
+						val.addObserver(new Observer() {
+
+							@Override
+							public void update(Observable o, Object arg) {
+								setChanged();
+								notifyObservers(name);
+							}
+						});
+						values.put(name, val);
+					}
 				}
 			}
-		}
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -68,7 +71,7 @@ public class ObjectModel extends Observable implements ModelElement {
 	@Override
 	public void update() {
 		values.values().forEach(val -> val.update());
-//		references.values().forEach(ref -> ref.update());
+		//		references.values().forEach(ref -> ref.update());
 	}
 
 	@Override
@@ -109,9 +112,51 @@ public class ObjectModel extends Observable implements ModelElement {
 	public Map<String, ModelElement> getReferences() {
 		return references.entrySet().stream()
 				.filter(e -> !values.containsKey(e.getKey()))
-				.collect(Collectors.toMap(e -> e.getKey(), v -> model.getObject(this, v.getValue().getContent())));
+				.collect(Collectors.toMap(e -> e.getKey(), v -> model.getObject(this, v.getValue().getContent(), false)));
+
 	}
 
+	public Collection<ReferenceModel> getReferencePointers() {
+		return model.getReferencesTo(this);
+	}
 
+	//	public String eval(String expression) {
+	//		return model.eval(thisexpression);
+	//	}
 
+	public String toStringValue() {
+		return model.evalMethod(this, "toString()");
+	}
+
+	@Override
+	public String toString() {
+		try {
+			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
+			for(Entry<String, ReferenceModel> e : references.entrySet())
+				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
+			return s;
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return super.toString();
+		}
+	}
+
+	@Override
+	public int hashCode() {
+		try {
+			return (int) object.getUniqueId();
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return super.hashCode();
+		}
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return 
+				obj instanceof ObjectModel &&
+				((ObjectModel) obj).hashCode() == hashCode();
+	}
+	
+	
 }

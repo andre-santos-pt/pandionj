@@ -20,6 +20,7 @@ import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
+import org.eclipse.debug.core.model.IWatchExpression;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.jdt.debug.core.IJavaArray;
@@ -110,7 +111,6 @@ public class StackFrameModel extends Observable {
 					handleVar((IJavaVariable) v);
 
 			handleArrayIterators();
-
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -184,12 +184,30 @@ public class StackFrameModel extends Observable {
 		return Collections.unmodifiableCollection(objects.values());
 	}
 
+	public String getReferenceNameTo(ModelElement object) {
+		for(Entry<String, ModelElement> e : vars.entrySet())
+			if(((ReferenceModel) e.getValue()).getTarget().equals(object))
+				return e.getKey();
+		
+		return null;
+	}
+	
+	public Collection<ReferenceModel> getReferencesTo(ModelElement object) {
+		List<ReferenceModel> refs = new ArrayList<>(3);
+		for (ModelElement e : vars.values()) {
+			if(e instanceof ReferenceModel && ((ReferenceModel) e).getTarget().equals(object))
+				refs.add((ReferenceModel) e);
+		}
+		return refs;
+	}
+	
+	
 	public IStackFrame getStackFrame() {
 		return stackFrame;
 	}
 
 
-	ModelElement getObject(ModelElement pointer, IJavaObject obj) {
+	ModelElement getObject(ModelElement pointer, IJavaObject obj, boolean addToModel) {
 		try {
 			if(obj.isNull())
 				return NullModel.getInstance(pointer, obj);
@@ -201,7 +219,8 @@ public class StackFrameModel extends Observable {
 				else
 					e = new ObjectModel(obj, this);
 
-				objects.put(obj.getUniqueId(), e);
+				if(addToModel)
+					objects.put(obj.getUniqueId(), e);
 			}
 			return e;
 		}
@@ -235,7 +254,8 @@ public class StackFrameModel extends Observable {
 	@Override
 	public String toString() {
 		try {
-			return stackFrame.getName();
+			String name = stackFrame.getName();
+			return (name.equals("<init>") ? "new" : name) + "(...)";
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.toString();
@@ -264,8 +284,11 @@ public class StackFrameModel extends Observable {
 
 
 
-	public String eval(String expression) {
+	public String evalMethod(ObjectModel obj, String expression) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+		IWatchExpression newWatchExpression = expressionManager.newWatchExpression(expression);
+		newWatchExpression.evaluate();
+		
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getModelIdentifier());
 		class Wrapper<T> {
 			T value = null;
@@ -280,19 +303,37 @@ public class StackFrameModel extends Observable {
 				sem.release();
 			}
 		};
-		delegate.evaluateExpression(expression, stackFrame, valueListener);
+		String refName = getReferenceNameTo(obj);
+		if(refName == null)
+			return null;
+		
+		delegate.evaluateExpression(refName + "." + expression, stackFrame, valueListener);
 		try {
 			sem.acquire();
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return res.value == null ? "NULL" : res.value.toString();
+		try {
+			return res.value == null ? "NULL" : res.value.getValueString();
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
+		return null;
 	}
 
 
 	
+	public void evalMethod2(ObjectModel obj, String expression, IWatchExpressionListener listener) {
+		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+		
+		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getModelIdentifier());
 
+		String refName = getReferenceNameTo(obj);
+		if(refName == null)
+			return;
+		
+		delegate.evaluateExpression(refName + "." + expression, stackFrame, listener);
+	}
 
 
 

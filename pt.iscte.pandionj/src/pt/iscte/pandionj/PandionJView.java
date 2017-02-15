@@ -1,15 +1,10 @@
 package pt.iscte.pandionj;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.concurrent.Semaphore;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.IExecutionListener;
-import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -38,12 +33,10 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
@@ -55,14 +48,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.zest.core.viewers.GraphViewer;
-import org.eclipse.zest.core.viewers.internal.ZoomManager;
-import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.model.CallStackModel;
@@ -70,20 +56,54 @@ import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.parser.data.NullableOptional;
 
 public class PandionJView extends ViewPart { 
+	
 	private CallStackModel model;
+	private IStackFrame exceptionFrame;
+	private String exception;
+	
+	private IDebugContextListener debugUiListener;
+	private IDebugEventSetListener debugEventListener;
+	private IJavaBreakpointListener exceptionListener;
+	
+	private ScrolledComposite scroll; 
 	private Composite area;
-
 	private ExpandBar callStack;
 	private Label label;
-
-	private String exception;
-	private IStackFrame exceptionFrame;
-
+	private Image image;
+	private Image imageRun;
+	
 
 	@Override
 	public void createPartControl(Composite parent) {
+		createWidgets(parent);
+		addToolBarItems();
+		image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame.gif")); 
+		imageRun = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame_run.gif"));
+		
+		model = new CallStackModel();
+		debugEventListener = (new DebugListener());
+		debugUiListener = new DebugUIListener();
+		exceptionListener = new ExceptionListener();
+
+		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
+//		DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
+		JDIDebugModel.addJavaBreakpointListener(exceptionListener);
+	}
+
+	@Override
+	public void dispose() {
+		super.dispose();
+		DebugPlugin.getDefault().removeDebugEventListener(debugEventListener);
+		DebugUITools.getDebugContextManager().removeDebugContextListener(debugUiListener);
+		JDIDebugModel.removeJavaBreakpointListener(exceptionListener);
+		image.dispose();
+		imageRun.dispose();
+	}
+
+	private void createWidgets(Composite parent) {
 		parent.setLayout(new FillLayout());
-		ScrolledComposite scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL );
+		
+		scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL );
 		area = new Composite(scroll, SWT.NONE);
 
 		scroll.setContent(area);
@@ -110,26 +130,24 @@ public class PandionJView extends ViewPart {
 				System.out.println("OPEN FILE"); // TODO
 			}
 		});
-		model = new CallStackModel();
 
 		callStack = new ExpandBar(area, SWT.NONE);
 		callStack.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		
-		DebugUITools.getDebugContextManager().addDebugContextListener(new DebugUIListener());
-		JDIDebugModel.addJavaBreakpointListener(new ExceptionListener());
-		addToolBarItems();
-
-		DebugPlugin.getDefault().addDebugEventListener(new DebugListener());
+	}
+	
+	@Override
+	public void setFocus() {
+		scroll.setFocus();
 	}
 
+	
+	
 	private class DebugListener implements IDebugEventSetListener {
 		public void handleDebugEvents(DebugEvent[] events) {
-			//				System.out.println("EVENTS: " + Arrays.toString(events));
 			if(events.length > 0) {
 				DebugEvent e = events[0];
 				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 					IThread thread = (IThread) e.getSource();
-//					System.out.println(events[0].getData() + " " + thread);
 					try {
 						handleFrames(thread.getStackFrames());
 					} catch (DebugException ex) {
@@ -143,6 +161,30 @@ public class PandionJView extends ViewPart {
 		}
 	}
 
+	
+
+	private class DebugUIListener implements IDebugContextListener {
+		public void debugContextChanged(DebugContextEvent event) {
+			IStackFrame f = getSelectedFrame(event.getContext());
+			if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
+				openExpandItem(f);
+			}
+		}
+
+		private void openExpandItem(IStackFrame f) {
+			for(ExpandItem e : callStack.getItems())
+				e.setExpanded(((StackView) e.getControl()).model.getStackFrame() == f);
+		}
+
+		private IStackFrame getSelectedFrame(ISelection context) {
+			if (context instanceof IStructuredSelection) {
+				Object data = ((IStructuredSelection) context).getFirstElement();
+				if (data instanceof IStackFrame)
+					return (IStackFrame) data;
+			}
+			return null;
+		}
+	}
 
 
 	private class ExceptionListener implements IJavaBreakpointListener {
@@ -191,62 +233,6 @@ public class PandionJView extends ViewPart {
 	}
 
 
-	private class DebugUIListener implements IDebugContextListener {
-
-		@Override
-		public void debugContextChanged(DebugContextEvent event) {
-			IStackFrame f = getSelectedFrame(event.getContext());
-			if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
-				openExpandItem(f);
-			}
-
-			//			if(exception != null) {
-			//				area.setBackground(Constants.ERROR_COLOR);
-			//				try {
-			//					label.setText("Error: " + exception + " on line " + exceptionFrame.getLineNumber());
-			//				} catch (DebugException e) {
-			//					e.printStackTrace();
-			//				}
-			//				if(!model.isEmpty()) {
-			//					model.getTopFrame().processException();
-			//					openExpandItem(exceptionFrame);
-			//				}
-			//				else {
-			//					clearView(true);
-			//				}
-			//			}
-			//			else {
-			//				if ((event.getFlags() & DebugContextEvent.STATE) != 0) {
-			//					try {
-			//						IStackFrame[] frames = f == null ? new IStackFrame[0] : f.getThread().getStackFrames();
-			//						handleFrames(frames);
-			//					}
-			//					catch (DebugException e) {
-			//						e.printStackTrace();
-			//					}
-			//				}
-			//				else if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
-			//					openExpandItem(f);
-			//				}
-			//			}
-		}
-
-
-
-		private void openExpandItem(IStackFrame f) {
-			for(ExpandItem e : callStack.getItems())
-				e.setExpanded(((StackView) e.getControl()).model.getStackFrame() == f);
-		}
-
-		private IStackFrame getSelectedFrame(ISelection context) {
-			if (context instanceof IStructuredSelection) {
-				Object data = ((IStructuredSelection) context).getFirstElement();
-				if (data instanceof IStackFrame)
-					return (IStackFrame) data;
-			}
-			return null;
-		}
-	}
 
 	private void clearView(boolean startMsg) {
 		exception = null;
@@ -257,11 +243,9 @@ public class PandionJView extends ViewPart {
 			label.setText(startMsg ? Constants.START_MESSAGE : "");
 			area.setBackground(null);
 		});
-
 	}
 
-	final Image image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame.gif")); 
-	final Image imageRun = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame_run.gif")); 
+
 
 	private void handleFrames(IStackFrame[] frames) {
 		assert frames != null;
@@ -279,6 +263,7 @@ public class PandionJView extends ViewPart {
 					StackView view = new StackView(callStack, e);
 					e.setControl(view);
 					e.setHeight(100);
+					
 				}
 				while(diff < 0) {
 					diff++;
@@ -292,11 +277,10 @@ public class PandionJView extends ViewPart {
 				ExpandItem[] items = callStack.getItems();
 				for(int i = 0; i < items.length; i++) {
 					StackFrameModel model = stackPath.get(i);
-					((StackView) items[i].getControl()).setInput(model);
+					StackView view = (StackView) items[i].getControl();
+					view.setInput(model);
 					items[i].setText(model.toString());
 					items[i].setExpanded(i == items.length-1);
-//					int height = ((StackView) items[i].getControl()).getClientArea().height;
-//					items[i].setHeight(height);
 					items[i].setImage(i == items.length-1 ? imageRun : image);
 				}
 			}
@@ -342,7 +326,7 @@ public class PandionJView extends ViewPart {
 	}
 
 	private class StackView extends Composite {
-		MyGraphViewer viewer;
+		GraphViewerZoomable viewer;
 		StackFrameModel model;
 		ExpandItem barItem;
 		public StackView(Composite parent, ExpandItem barItem) {
@@ -350,47 +334,20 @@ public class PandionJView extends ViewPart {
 			this.barItem = barItem;
 			setLayout(new FillLayout());
 			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-			viewer = new MyGraphViewer(this, SWT.BORDER);
+			viewer = new GraphViewerZoomable(this, SWT.BORDER);
 			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm()); // SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
 			viewer.setContentProvider(new NodeProvider());
 			viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 			viewer.setLabelProvider(new FigureProvider());
-
-			Graph graph = viewer.getGraphControl();
-
-			Menu menu = new Menu(graph);
-			MenuItem recItem = new MenuItem(menu, SWT.TOGGLE);
-			recItem.setText("Recording");
-			recItem.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					System.out.println("Rec...");
-				}
-			});
-			graph.setMenu(menu);
-			
-			viewer.getGraphControl().addControlListener(new ControlListener() {
-				
-				@Override
+			viewer.getGraphControl().addControlListener(new ControlAdapter() {
 				public void controlResized(ControlEvent e) {
-					
-					Point size = viewer.getGraphControl().computeSize(area.getBounds().width, SWT.DEFAULT);
-//					barItem.setHeight(size.y);
-//					System.out.println(size);
-				}
-				
-				@Override
-				public void controlMoved(ControlEvent e) {
-					// TODO Auto-generated method stub
-					
+					adaptBarHeight(barItem);
 				}
 			});
 		}
 
-
 		public void decreaseZoom() {
 			viewer.decreaseZoom();
-
 		}
 
 		public void increaseZoom() {
@@ -407,42 +364,39 @@ public class PandionJView extends ViewPart {
 				if (frameModel != null)
 					frameModel.addObserver(new Observer() {
 						public void update(Observable o, Object e) {
-							Display.getDefault().syncExec(() -> {
+							Display.getDefault().asyncExec(() -> {
 								viewer.refresh();
 								viewer.applyLayout();
 							});
 						}
 					});
 			}
-			Point size = viewer.getGraphControl().computeSize(area.getBounds().width, SWT.DEFAULT);
-			barItem.setHeight(Math.max(100, size.y + Constants.MARGIN));
-			System.out.println(size);
+//			adaptBarHeight(barItem);
 		}
 	}
 
-	private static class MyGraphViewer extends GraphViewer {
-
-		MyGraphViewer(Composite composite, int style) {
-			super(composite, style);
-			getZoomManager().setZoom(1);
-		}
-
-		public void decreaseZoom() {
-			ZoomManager mng = getZoomManager();
-			mng.setZoom(mng.getZoom()*.95);
-		}
-
-		void increaseZoom() {
-			ZoomManager mng = getZoomManager();
-			mng.setZoom(mng.getZoom()*1.05);
-		}
+	
+	
+	private void adaptBarHeight(ExpandItem barItem) {
+		Point size = barItem.getControl().computeSize(area.getBounds().width, SWT.DEFAULT);
+		barItem.setHeight(Math.max(100, size.y + Constants.MARGIN));
 	}
-
-	@Override
-	public void setFocus() {
-		// viewer.getControl().setFocus();
-	}
-
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	private static NullableOptional<String> valueOfExpression(IStackFrame stackFrame, String expression) {
 		// TODO fix code. This is a work-around making asynchronous
 		// WatchExpressionDelegate synced because WatchExpression wouldn't work

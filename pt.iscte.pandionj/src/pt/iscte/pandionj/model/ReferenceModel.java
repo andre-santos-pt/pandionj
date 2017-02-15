@@ -69,7 +69,7 @@ public class ReferenceModel extends Observable implements ModelElement {
 	}
 
 	public ModelElement getTarget() {
-		return  model.getObject(this, getContent());
+		return  model.getObject(this, getContent(), true);
 	}
 
 	public boolean isNull() {

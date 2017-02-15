@@ -87,7 +87,7 @@ public class CallStackModel extends Observable {
 				return;
 			}
 
-			IFile srcFile = (IFile) f.getLaunch().getSourceLocator().getSourceElement(f);
+//			IFile srcFile = (IFile) f.getLaunch().getSourceLocator().getSourceElement(f);
 			//			System.out.println(f + "   " + f.getThread() + "   " + srcFile + "  " + srcFile.getProject());
 		}
 		boolean notify = false;
