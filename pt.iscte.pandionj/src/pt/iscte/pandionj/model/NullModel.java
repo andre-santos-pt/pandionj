@@ -10,27 +10,27 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import pt.iscte.pandionj.figures.NullFigure;
 
 public class NullModel implements ModelElement {
-	
-	private static Map<ModelElement, NullModel> map = new HashMap<>();
-	
-	public static NullModel getInstance(ModelElement pointer, IJavaObject nullObject) {
-		NullModel n = map.get(pointer);
-		if(n == null) {
-			n = new NullModel(nullObject);
-			map.put(pointer, n);
-		}
-		return n;
-	}
-	
-	private IJavaObject nullObject;
-	
-	private NullModel(IJavaObject nullObject) {
+
+	//	private static Map<ModelElement, NullModel> map = new HashMap<>();
+	//	
+	//	public static NullModel getInstance(ModelElement pointer, IJavaObject nullObject) {
+	//		NullModel n = map.get(pointer);
+	//		if(n == null) {
+	//			n = new NullModel(nullObject);
+	//			map.put(pointer, n);
+	//		}
+	//		return n;
+	//	}
+
+	private final IJavaObject nullObject;
+
+	NullModel(IJavaObject nullObject) {
 		this.nullObject = nullObject;
 	}
 
 	@Override
 	public void update() {
-		
+
 	}
 
 	@Override
@@ -43,5 +43,9 @@ public class NullModel implements ModelElement {
 		return new NullFigure();
 	}
 
-	
+	@Override
+	public String toString() {
+		return "NULL";
+	}
+
 }

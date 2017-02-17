@@ -25,7 +25,7 @@ public class ValueFigure extends Figure {
 		setLayoutManager(layout);
 		
 		Label nameLabel = new Label(model.getName());
-		nameLabel.setFont(new Font(null, "Arial", 16, SWT.NONE));
+		nameLabel.setFont(new Font(null, Constants.FONT_FACE, Constants.VAR_FONT_SIZE, SWT.NONE));
 		add(nameLabel);
 		
 		Label valueLabel = new Label(model.getCurrentValue());

@@ -28,7 +28,11 @@ import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
+import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.viewers.DoubleClickEvent;
+import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -56,22 +60,22 @@ import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.parser.data.NullableOptional;
 
 public class PandionJView extends ViewPart { 
-	
+
 	private CallStackModel model;
 	private IStackFrame exceptionFrame;
 	private String exception;
-	
+
 	private IDebugContextListener debugUiListener;
 	private IDebugEventSetListener debugEventListener;
 	private IJavaBreakpointListener exceptionListener;
-	
+
 	private ScrolledComposite scroll; 
 	private Composite area;
 	private ExpandBar callStack;
 	private Label label;
 	private Image image;
 	private Image imageRun;
-	
+
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -79,14 +83,14 @@ public class PandionJView extends ViewPart {
 		addToolBarItems();
 		image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame.gif")); 
 		imageRun = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame_run.gif"));
-		
+
 		model = new CallStackModel();
 		debugEventListener = (new DebugListener());
 		debugUiListener = new DebugUIListener();
 		exceptionListener = new ExceptionListener();
 
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
-//		DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
+		//		DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
 		JDIDebugModel.addJavaBreakpointListener(exceptionListener);
 	}
 
@@ -102,7 +106,7 @@ public class PandionJView extends ViewPart {
 
 	private void createWidgets(Composite parent) {
 		parent.setLayout(new FillLayout());
-		
+
 		scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL );
 		area = new Composite(scroll, SWT.NONE);
 
@@ -134,14 +138,14 @@ public class PandionJView extends ViewPart {
 		callStack = new ExpandBar(area, SWT.NONE);
 		callStack.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 	}
-	
+
 	@Override
 	public void setFocus() {
 		scroll.setFocus();
 	}
 
-	
-	
+
+
 	private class DebugListener implements IDebugEventSetListener {
 		public void handleDebugEvents(DebugEvent[] events) {
 			if(events.length > 0) {
@@ -161,7 +165,7 @@ public class PandionJView extends ViewPart {
 		}
 	}
 
-	
+
 
 	private class DebugUIListener implements IDebugContextListener {
 		public void debugContextChanged(DebugContextEvent event) {
@@ -263,7 +267,7 @@ public class PandionJView extends ViewPart {
 					StackView view = new StackView(callStack, e);
 					e.setControl(view);
 					e.setHeight(100);
-					
+
 				}
 				while(diff < 0) {
 					diff++;
@@ -306,7 +310,8 @@ public class PandionJView extends ViewPart {
 			}
 		});
 
-		toolBar.add(new Action("+") {
+//		Image zoomImage = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("zoom.gif"));
+		toolBar.add(new Action("Zoom in", ImageDescriptor.createFromFile( PandionJView.class, "zoom.gif")) {
 			@Override
 			public void run() {
 				for (ExpandItem expandItem : callStack.getItems()) {
@@ -323,6 +328,22 @@ public class PandionJView extends ViewPart {
 				}
 			}
 		});
+
+
+		Action hightlightAction = new Action("Highlight", Action.AS_CHECK_BOX) {
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				super.run();
+			}
+		};
+		Image image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("highlight.gif"));
+		hightlightAction.setImageDescriptor(ImageDescriptor.createFromImage(image));
+		toolBar.add(hightlightAction);
+		
+		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
+		menuManager.add(new Action("highlight color") {
+		});
 	}
 
 	private class StackView extends Composite {
@@ -335,13 +356,24 @@ public class PandionJView extends ViewPart {
 			setLayout(new FillLayout());
 			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			viewer = new GraphViewerZoomable(this, SWT.BORDER);
-			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm()); // SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
+			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm2()); // SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
 			viewer.setContentProvider(new NodeProvider());
 			viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 			viewer.setLabelProvider(new FigureProvider());
 			viewer.getGraphControl().addControlListener(new ControlAdapter() {
 				public void controlResized(ControlEvent e) {
 					adaptBarHeight(barItem);
+				}
+			});
+			viewer.addDoubleClickListener(new IDoubleClickListener() {
+				
+				@Override
+				public void doubleClick(DoubleClickEvent event) {
+					System.out.println(event.getSelection());
+					if(!event.getSelection().isEmpty()) {
+						IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+						Object obj = selection.getFirstElement();
+					}
 				}
 			});
 		}
@@ -371,32 +403,32 @@ public class PandionJView extends ViewPart {
 						}
 					});
 			}
-//			adaptBarHeight(barItem);
+			//			adaptBarHeight(barItem);
 		}
 	}
 
-	
-	
+
+
 	private void adaptBarHeight(ExpandItem barItem) {
 		Point size = barItem.getControl().computeSize(area.getBounds().width, SWT.DEFAULT);
 		barItem.setHeight(Math.max(100, size.y + Constants.MARGIN));
 	}
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 	private static NullableOptional<String> valueOfExpression(IStackFrame stackFrame, String expression) {
 		// TODO fix code. This is a work-around making asynchronous
 		// WatchExpressionDelegate synced because WatchExpression wouldn't work

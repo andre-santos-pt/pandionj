@@ -19,6 +19,8 @@ public class ReferenceModel extends Observable implements ModelElement {
 	private List<IJavaObject> history;
 	private StackFrameModel model;
 
+	private NullModel nullModel;
+	
 	ReferenceModel(IJavaVariable var, StackFrameModel model) {
 		this.model = model;
 		try {
@@ -69,7 +71,17 @@ public class ReferenceModel extends Observable implements ModelElement {
 	}
 
 	public ModelElement getTarget() {
-		return  model.getObject(this, getContent(), true);
+		IJavaObject obj = getContent();
+		return obj.isNull() ? getNullInstance(obj) : model.getObject(getContent(), true);
+	}
+
+	
+	
+	private NullModel getNullInstance(IJavaObject nullObj) {
+		assert nullObj.isNull();
+		if(nullModel == null)
+			nullModel = new NullModel(nullObj);
+		return nullModel;
 	}
 
 	public boolean isNull() {

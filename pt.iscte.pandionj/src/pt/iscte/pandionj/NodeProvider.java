@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaType;
+import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.zest.core.viewers.IGraphEntityContentProvider;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
@@ -40,31 +41,23 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			return EMPTY;
 
 		List<ModelElement> elements = new ArrayList<>(model.getVariables());
-		for(ModelElement obj : new ArrayList<ModelElement>(model.getObjects())) {
-			if(obj instanceof ObjectModel) {
-				try {
-					ObjectModel type = (ObjectModel) obj; 
-					addReferences(type.getContent().getJavaType(), type, elements);
-				} catch (DebugException e) {
-					e.printStackTrace();
+		
+		for(ModelElement e : elements.toArray(new ModelElement[elements.size()])) {
+			if(e instanceof ReferenceModel) {
+				ModelElement t = ((ReferenceModel) e).getTarget();
+					
+				if(t instanceof ObjectModel) {
+					((ObjectModel) t).traverseSiblings((o,d,f) -> {
+						elements.add(o);
+					}, true);
 				}
+				else 
+					elements.add(t);
 			}
-			else
-				elements.add(obj);
 		}
+		
 		return elements.toArray();
 	}
-
-	private void addReferences(IJavaType startType, ObjectModel type, List<ModelElement> elements) throws DebugException {
-		if(!elements.contains(type) && startType.equals(type.getContent().getJavaType())) {
-			elements.add(type);
-			for(ModelElement ref : type.getReferences().values()) {
-				if(ref instanceof ObjectModel)
-					addReferences(startType, (ObjectModel) ref, elements);
-			}
-		}
-	}
-
 
 	@Override
 	public Object[] getRelationships(Object source, Object dest) {

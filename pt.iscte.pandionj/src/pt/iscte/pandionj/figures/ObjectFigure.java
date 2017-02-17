@@ -82,7 +82,7 @@ public class ObjectFigure extends Figure {
 		});
 
 		try {
-			setToolTip(new Label(model.getContent().getJavaType().getName()));
+			setToolTip(new Label(":" + model.getContent().getJavaType().getName()+ "\n" + "FIELD VALUES"));
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}

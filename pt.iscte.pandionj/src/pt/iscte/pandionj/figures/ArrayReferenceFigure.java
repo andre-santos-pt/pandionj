@@ -161,10 +161,11 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 	
 	@Override
 	public Dimension getPreferredSize(int wHint, int hHint) {
-		return new Dimension(
-				Constants.MARGIN * 2 + (int) (Constants.POSITION_WIDTH*(N==0 ? 1.5 : 2.0)) + vars.size() * Constants.ARROW_EDGE * 2,
-				Constants.MARGIN * 3 + (positions.size() == 0 ?  Constants.POSITION_WIDTH : POSITION_SPACING + (Constants.POSITION_WIDTH + POSITION_SPACING*2)*positions.size())
-		);
+		return super.getPreferredSize(wHint, hHint);
+//		return new Dimension(
+//				Constants.MARGIN * 2 + (int) (Constants.POSITION_WIDTH*(N==0 ? 1.5 : 2.0)) + vars.size() * Constants.ARROW_EDGE * 2,
+//				Constants.MARGIN * 3 + (positions.size() == 0 ?  Constants.POSITION_WIDTH : POSITION_SPACING + (Constants.POSITION_WIDTH + POSITION_SPACING*2)*positions.size())
+//		);
 	}
 
 	private void addVariable(ValueModel varModel) {

@@ -1,5 +1,22 @@
 package pt.iscte.pandionj.figures;
 
+import static pt.iscte.pandionj.Constants.ARRAY_POSITION_COLOR;
+import static pt.iscte.pandionj.Constants.ARRAY_POSITION_SPACING;
+import static pt.iscte.pandionj.Constants.ARROW_EDGE;
+import static pt.iscte.pandionj.Constants.ARROW_LINE_WIDTH;
+import static pt.iscte.pandionj.Constants.FONT_FACE;
+import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
+import static pt.iscte.pandionj.Constants.MARGIN;
+import static pt.iscte.pandionj.Constants.OBJECT_COLOR;
+import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
+import static pt.iscte.pandionj.Constants.POSITION_LINE_WIDTH;
+import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
+import static pt.iscte.pandionj.Constants.SET_FONT;
+import static pt.iscte.pandionj.Constants.VALUE_FONT_SIZE;
+import static pt.iscte.pandionj.Constants.VAR_FONT_SIZE;
+import static pt.iscte.pandionj.Constants.getOneColGridLayout;
+import static pt.iscte.pandionj.Constants.getVarColor;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,16 +33,15 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MarginBorder;
+import org.eclipse.draw2d.MouseEvent;
+import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.RoundedRectangle;
-import org.eclipse.draw2d.TextUtilities;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
-
-import static pt.iscte.pandionj.Constants.*;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.model.ArrayModel;
@@ -48,8 +64,6 @@ public class ArrayValueFigure extends Figure {
 
 		positions = new ArrayList<>(N+2);
 		lowerOffSet = 0;
-
-
 
 		setOpaque(false);
 		setLayoutManager(getOneColGridLayout());

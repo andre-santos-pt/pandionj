@@ -180,13 +180,13 @@ public class StackFrameModel extends Observable {
 		return Collections.unmodifiableCollection(vars.values());
 	}
 
-	public Collection<ModelElement> getObjects() {
-		return Collections.unmodifiableCollection(objects.values());
-	}
+//	public Collection<ModelElement> getObjects() {
+//		return Collections.unmodifiableCollection(objects.values());
+//	}
 
 	public String getReferenceNameTo(ModelElement object) {
 		for(Entry<String, ModelElement> e : vars.entrySet())
-			if(((ReferenceModel) e.getValue()).getTarget().equals(object))
+			if(e.getValue() instanceof ReferenceModel && ((ReferenceModel) e.getValue()).getTarget().equals(object))
 				return e.getKey();
 		
 		return null;
@@ -207,11 +207,9 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	ModelElement getObject(ModelElement pointer, IJavaObject obj, boolean addToModel) {
+	ModelElement getObject(IJavaObject obj, boolean addToModel) {
+		assert !obj.isNull() || !addToModel;
 		try {
-			if(obj.isNull())
-				return NullModel.getInstance(pointer, obj);
-
 			ModelElement e = objects.get(obj.getUniqueId());
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType)

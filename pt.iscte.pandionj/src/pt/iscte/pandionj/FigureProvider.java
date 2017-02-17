@@ -89,7 +89,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			PolylineDecoration decoration = new PolylineDecoration();
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
 			decoration.setScale(10, 7);
-			((PolylineConnection) connection.getConnectionFigure()).setTargetDecoration(decoration);	
+			((PolylineConnection) connection.getConnectionFigure()).setTargetDecoration(decoration);
 		}
 	}
 
