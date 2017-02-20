@@ -8,9 +8,11 @@ import pt.iscte.pandionj.Constants;
 public class NullFigure extends Label {
 
 	public NullFigure() {
-		setOpaque(true);
+		setOpaque(false);
 		setPreferredSize(Constants.MARGIN*2, Constants.MARGIN*2);
 		setSize(-1,-1);
+		setText("  ");
+		setToolTip(new Label("null"));
 	}
 	
 }

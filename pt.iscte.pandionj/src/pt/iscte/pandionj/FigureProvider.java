@@ -33,17 +33,21 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	
 	@Override
 	public String getText(Object element) {
-		if(element instanceof EntityConnectionData)
-			return "";
-		else if(element instanceof Pointer)
-			return ((Pointer) element).refName;
-		else
-			return element.toString();
+//		if(element instanceof EntityConnectionData)
+//			return "";
+//		else if(element instanceof Pointer)
+//			return ((Pointer) element).refName;
+//		else
+//			return element.toString();
+		return "";
 	}
 
 	@Override
 	public IFigure getTooltip(Object entity) {
-		return new Label(entity.toString());
+		if(entity instanceof Pointer)
+			return new Label(((Pointer) entity).refName);
+		else
+			return new Label(entity.toString());
 	}
 
 	@Override
@@ -77,18 +81,25 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		if(((Pointer) element).isNull()) {
 			PolygonDecoration decoration = new PolygonDecoration();
 			PointList points = new PointList();
-			points.addPoint(1,-2);
-			points.addPoint(-1, 2);
+			points.addPoint(0,-2); // 1
+			points.addPoint(0, 2); // -1
 			decoration.setTemplate(points);
-			decoration.setScale(5, 5);
+			decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
 			decoration.setOpaque(true);
 			((PolylineConnection) connection.getConnectionFigure()).setTargetDecoration(decoration);	
 		}
 		else {
 			PolylineDecoration decoration = new PolylineDecoration();
+			PointList points = new PointList();
+			points.addPoint(-2, -2);
+			points.addPoint(0, 0);
+			points.addPoint(-2, 2);
+			decoration.setTemplate(points);
+			decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
-			decoration.setScale(10, 7);
+			decoration.setOpaque(true);
+			
 			((PolylineConnection) connection.getConnectionFigure()).setTargetDecoration(decoration);
 		}
 	}

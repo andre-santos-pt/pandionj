@@ -40,15 +40,13 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement element = (ModelElement) node.getData();
-
+			
 			if(element instanceof ObjectModel || element instanceof ArrayModel || element instanceof NullModel) {
 				e.setLocationInLayout(x + (element instanceof NullModel ? Constants.POSITION_WIDTH : REF_OBJ_GAP), y + objY);
 				objY += Constants.MARGIN + e.getHeightInLayout();
 				yMap.put(element, e);
 			}
 		}
-
-		Map<NullModel, LayoutEntity> nullRefYMap = new HashMap<>();
 
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
@@ -75,7 +73,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
 	@Override
 	public boolean isRunning() {
-		return true;
+		return false;
 	}
 
 	@Override

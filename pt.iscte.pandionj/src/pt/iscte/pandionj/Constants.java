@@ -13,8 +13,8 @@ import org.eclipse.swt.widgets.Display;
 public interface Constants {
 	String PLUGIN_ID = Constants.class.getPackage().getName();
 
-	int ARROW_EDGE = 2;
-	int ARROW_LINE_WIDTH = 2;
+	int ARROW_EDGE = 3;
+	int ARROW_LINE_WIDTH = 1;
 	int POSITION_WIDTH = 64;
 	
 	int MARGIN = 5;

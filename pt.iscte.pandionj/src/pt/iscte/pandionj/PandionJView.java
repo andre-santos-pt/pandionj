@@ -310,7 +310,6 @@ public class PandionJView extends ViewPart {
 			}
 		});
 
-//		Image zoomImage = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("zoom.gif"));
 		toolBar.add(new Action("Zoom in", ImageDescriptor.createFromFile( PandionJView.class, "zoom.gif")) {
 			@Override
 			public void run() {
@@ -356,7 +355,8 @@ public class PandionJView extends ViewPart {
 			setLayout(new FillLayout());
 			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			viewer = new GraphViewerZoomable(this, SWT.BORDER);
-			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm2()); // SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
+			PandionJLayoutAlgorithm2 layout = new PandionJLayoutAlgorithm2();
+			viewer.setLayoutAlgorithm(layout); // SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
 			viewer.setContentProvider(new NodeProvider());
 			viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 			viewer.setLabelProvider(new FigureProvider());

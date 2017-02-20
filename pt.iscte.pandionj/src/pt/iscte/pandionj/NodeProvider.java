@@ -47,7 +47,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 				ModelElement t = ((ReferenceModel) e).getTarget();
 					
 				if(t instanceof ObjectModel) {
-					((ObjectModel) t).traverseSiblings((o,d,f) -> {
+					((ObjectModel) t).traverseSiblings((o,p,i,d,f) -> {
 						elements.add(o);
 					}, true);
 				}
@@ -67,7 +67,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		else if(source instanceof ObjectModel) {
 			Map<String, ModelElement> pointers = ((ObjectModel) source).getReferences();
 			List<Pointer> ret = new ArrayList<>();
-			for(Entry<String, ModelElement> field : pointers.entrySet())
+			for(Entry<String, ModelElement> field : pointers.entrySet()) 
 				if(dest.equals(field.getValue()))
 					ret.add(new Pointer(field.getKey(), (ObjectModel) source, (ModelElement) dest));
 			return ret.toArray();

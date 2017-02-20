@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.model;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +33,7 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import com.google.common.collect.Multimap;
 
+import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.parser.ParserAPI;
 import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
 import pt.iscte.pandionj.parser.exception.JavaException;
@@ -180,18 +182,58 @@ public class StackFrameModel extends Observable {
 		return Collections.unmodifiableCollection(vars.values());
 	}
 
-//	public Collection<ModelElement> getObjects() {
-//		return Collections.unmodifiableCollection(objects.values());
-//	}
+	//	public Collection<ModelElement> getObjects() {
+	//		return Collections.unmodifiableCollection(objects.values());
+	//	}
 
 	public String getReferenceNameTo(ModelElement object) {
 		for(Entry<String, ModelElement> e : vars.entrySet())
 			if(e.getValue() instanceof ReferenceModel && ((ReferenceModel) e.getValue()).getTarget().equals(object))
 				return e.getKey();
-		
+
 		return null;
 	}
-	
+
+	private static class PathVisitor implements SiblingVisitor {
+		ArrayList<String> path;
+		boolean found;
+		ModelElement target;
+
+		public PathVisitor(ModelElement target) {
+			path = new ArrayList<>();
+			this.target = target;
+			found = false;
+		}
+
+		public void accept(ModelElement o, ModelElement parent, int index, int depth, String field) {
+			if(!found) {
+				while(path.size() > 0 && path.size() >= depth)
+					path.remove(path.size()-1);
+
+				if(field != null)
+					path.add(field);
+				
+				if(o.equals(target))
+					found = true;
+			}
+		}
+	}
+
+	public String getReferenceNameTo2(ModelElement object) {
+		for(Entry<String, ModelElement> e : vars.entrySet()) {
+			if(e.getValue() instanceof ReferenceModel) {
+				ModelElement el = ((ReferenceModel) e.getValue()).getTarget();
+				if(el instanceof ObjectModel) {
+					PathVisitor v = new PathVisitor(object);
+					((ObjectModel) el).traverseSiblings(v, false);
+					if(v.found)
+						return  v.path.isEmpty() ? e.getKey() : e.getKey() + "." + String.join(".", v.path);
+				}
+			}
+		}
+		return null;
+	}
+
 	public Collection<ReferenceModel> getReferencesTo(ModelElement object) {
 		List<ReferenceModel> refs = new ArrayList<>(3);
 		for (ModelElement e : vars.values()) {
@@ -200,8 +242,8 @@ public class StackFrameModel extends Observable {
 		}
 		return refs;
 	}
-	
-	
+
+
 	public IStackFrame getStackFrame() {
 		return stackFrame;
 	}
@@ -286,7 +328,7 @@ public class StackFrameModel extends Observable {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		IWatchExpression newWatchExpression = expressionManager.newWatchExpression(expression);
 		newWatchExpression.evaluate();
-		
+
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getModelIdentifier());
 		class Wrapper<T> {
 			T value = null;
@@ -301,10 +343,11 @@ public class StackFrameModel extends Observable {
 				sem.release();
 			}
 		};
-		String refName = getReferenceNameTo(obj);
+		String refName = getReferenceNameTo2(obj);
+//		System.out.println(refName);
 		if(refName == null)
 			return null;
-		
+
 		delegate.evaluateExpression(refName + "." + expression, stackFrame, valueListener);
 		try {
 			sem.acquire();
@@ -320,16 +363,16 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	
+
 	public void evalMethod2(ObjectModel obj, String expression, IWatchExpressionListener listener) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-		
+
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getModelIdentifier());
 
 		String refName = getReferenceNameTo(obj);
 		if(refName == null)
 			return;
-		
+
 		delegate.evaluateExpression(refName + "." + expression, stackFrame, listener);
 	}
 

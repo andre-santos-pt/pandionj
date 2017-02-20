@@ -1,13 +1,14 @@
 package pt.iscte.pandionj.model;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Consumer;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
@@ -34,7 +35,7 @@ public class ObjectModel extends Observable implements ModelElement {
 	private StackFrameModel model;
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
-	private Set<String> varsOfSameType;
+	private List<String> varsOfSameType;
 
 	private TypeHandler valueHandler = new PrimitiveWrapperHandler();
 
@@ -45,13 +46,13 @@ public class ObjectModel extends Observable implements ModelElement {
 		this.model = model;
 		values = new LinkedHashMap<String, ValueModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
-		varsOfSameType = new HashSet<>();
+		varsOfSameType = new ArrayList<>();
 		try {
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
 				if(var.getJavaType().equals(object.getJavaType()))
 					varsOfSameType.add(var.getName());
-					
+
 				if(!var.isStatic()) {
 					String name = var.getName();
 					if(var.getJavaType() instanceof IJavaReferenceType && !valueHandler.qualifies((IJavaValue) v.getValue())) {
@@ -120,7 +121,7 @@ public class ObjectModel extends Observable implements ModelElement {
 	public Map<String, ModelElement> getReferences() {
 		return references.entrySet().stream()
 				.filter(e -> !values.containsKey(e.getKey()))
-				.collect(Collectors.toMap(e -> e.getKey(), v -> model.getObject(v.getValue().getContent(), false)));
+				.collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue().getTarget()));
 
 	}
 
@@ -139,10 +140,11 @@ public class ObjectModel extends Observable implements ModelElement {
 	@Override
 	public String toString() {
 		try {
-			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
-			for(Entry<String, ReferenceModel> e : references.entrySet())
-				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
-			return s;
+			return "(" + object.getJavaType().getName() + ")";
+			//			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
+			//			for(Entry<String, ReferenceModel> e : references.entrySet())
+			//				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
+			//			return s;
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.toString();
@@ -168,7 +170,7 @@ public class ObjectModel extends Observable implements ModelElement {
 
 
 	public interface SiblingVisitor {
-		void accept(ModelElement object, int depth, String field);
+		void accept(ModelElement object, ModelElement parent, int index, int depth, String field);
 	}
 
 
@@ -176,7 +178,7 @@ public class ObjectModel extends Observable implements ModelElement {
 		class SiblingVisitorDepth implements SiblingVisitor {
 			int max;
 			@Override
-			public void accept(ModelElement o, int d, String f) {
+			public void accept(ModelElement o, ModelElement parent, int index, int d, String f) {
 				max = Math.max(max, d);
 			}
 		};
@@ -188,7 +190,7 @@ public class ObjectModel extends Observable implements ModelElement {
 	public int siblingsBreath() {
 		class SiblingVisitorBreath implements SiblingVisitor {
 			Multiset<Integer> count = HashMultiset.create();
-			public void accept(ModelElement o, int d, String f) {
+			public void accept(ModelElement o, ModelElement parent, int index, int d, String f) {
 				count.add(d);
 			}
 			public int max() {
@@ -201,37 +203,108 @@ public class ObjectModel extends Observable implements ModelElement {
 		return v.max();
 	}
 
+	public int numberOfSiblings() {
+		return varsOfSameType.size();
+	}
+
 	public void traverseSiblings(SiblingVisitor v) {
 		traverseSiblings(v, false);
 	}
-	
+
 	public void traverseSiblings(SiblingVisitor v, boolean visitNulls) {
 		try {
-			traverseSiblings(this, new HashSet<>(), v, 0, null, visitNulls);
+			traverseSiblings(this, null, -1, new HashSet<>(), v, 0, null, visitNulls);
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
 	}
 
-	private void traverseSiblings(ObjectModel obj, Set<ObjectModel> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
+	private void traverseSiblings(ObjectModel obj, ObjectModel parent, int index, Set<ObjectModel> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
 		if(!set.contains(obj)) {
 			set.add(obj);
-			v.accept(obj, depth, field);
-			for (Entry<String, ReferenceModel> e : obj.references.entrySet()) {
-				if(varsOfSameType.contains(e.getKey())) {
-					ModelElement o = e.getValue().getTarget();
-					if(o instanceof ObjectModel)
-						traverseSiblings((ObjectModel) o, set, v, depth+1, e.getKey(), visitNulls);
-					else if(o instanceof NullModel && visitNulls)
-						v.accept(o, depth+1, e.getKey());
-				}
+			v.accept(obj, parent, index, depth, field);
+			int i = 0;
+			for(String siblingRef : varsOfSameType) {
+				ReferenceModel refModel = obj.references.get(siblingRef);
+				ModelElement o = refModel.getTarget();
+				if(o instanceof ObjectModel)
+					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
+				else if(o instanceof NullModel && visitNulls)
+					v.accept(o, parent, i++, depth+1, siblingRef);
 			}
 		}
 	}
 
+	private boolean noSiblings() {
+		for(String siblingRef : varsOfSameType) {
+			ReferenceModel refModel = references.get(siblingRef);
+			ModelElement o = refModel.getTarget();
+			if(!(o instanceof NullModel))
+				return false;
+		}
+		return true;
+	}
 
 
+	public void traverseSiblingsDepth(SiblingVisitor v, boolean visitNulls) {
+		try {
+			traverseSiblingsInfix(this, null, -1, new HashSet<>(), v, 0, null, visitNulls);
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
+	}
 
+	private void traverseSiblingsInfix(ObjectModel obj, ObjectModel parent, int index, Set<ObjectModel> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
+		if(set.contains(obj))
+			return;
 
+		if(noSiblings()) {
+			set.add(obj);
+			if(visitNulls) {
+				int i = 0;
+				for(String siblingRef : varsOfSameType) {
+					ReferenceModel refModel = obj.references.get(siblingRef);
+					ModelElement o = refModel.getTarget();
+					v.accept(o, this, i++, depth+1, siblingRef);
+				}
+			}
+			
+		}
+		else {
+			int i = 0;
+			for(String siblingRef : varsOfSameType) {
+				ReferenceModel refModel = obj.references.get(siblingRef);
+				ModelElement o = refModel.getTarget();
+				if(o instanceof ObjectModel)
+					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
+				else if(o instanceof NullModel && visitNulls)
+					v.accept(o, this, i++, depth+1, siblingRef);
+			}
+			v.accept(obj, parent, index, depth, field);
+		}
+	}
+
+	private void traverseSiblingsDepth(ObjectModel obj, ObjectModel parent, int index, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
+		Set<ModelElement> visited = new HashSet<>();
+		ArrayDeque<ModelElement> stack = new ArrayDeque<>();
+		stack.push(obj);
+
+		while(!stack.isEmpty()) {
+			ModelElement e = stack.pop();
+			if(!visited.contains(e)) {
+				visited.add(e);
+				v.accept(e, parent, index, depth, field);
+				
+				if(e instanceof ObjectModel)
+					for(String siblingRef : ((ObjectModel) e).varsOfSameType) {
+						ReferenceModel refModel = ((ObjectModel) e).references.get(siblingRef);
+						ModelElement o = refModel.getTarget();
+//						if(!(o instanceof NullModel && !visitNulls))
+							stack.push(o);
+					}
+				
+			}
+		}
+	}
 
 }
