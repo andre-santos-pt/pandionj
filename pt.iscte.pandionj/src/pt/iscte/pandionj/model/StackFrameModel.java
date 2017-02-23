@@ -1,6 +1,5 @@
 package pt.iscte.pandionj.model;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -48,7 +47,8 @@ public class StackFrameModel extends Observable {
 	private Map<String, ModelElement> vars;
 	private Map<Long, ModelElement> objects;
 	private ParserResult codeAnalysis;
-
+	
+	
 	public StackFrameModel(IStackFrame frame) {
 		this.stackFrame = frame;
 		vars = new LinkedHashMap<>();
@@ -78,6 +78,19 @@ public class StackFrameModel extends Observable {
 		handleVariables();
 		for(ModelElement e : vars.values())
 			e.update();
+		
+		for(ModelElement o : objects.values().toArray(new ModelElement[objects.size()])) {
+			if(o instanceof ArrayModel)
+				o.update();
+			else if(o instanceof ObjectModel)
+				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
+					
+					@Override
+					public void accept(ModelElement object, ModelElement parent, int index, int depth, String field) {
+						((ObjectModel) object).update();
+					}
+				});
+		}
 	}
 
 	private void handleVariables() {
@@ -162,11 +175,8 @@ public class StackFrameModel extends Observable {
 		else {
 			ModelElement newElement = type instanceof IJavaReferenceType ? new ReferenceModel(jv, this) : new ValueModel(jv, this);
 			vars.put(varName, newElement);
-
 			if(newElement instanceof ReferenceModel)
-				((ReferenceModel) newElement).addObserver(new Observer() {
-
-					@Override
+				((ReferenceModel) newElement).registerObserver(new Observer() {
 					public void update(Observable o, Object arg) {
 						setChanged();
 						notifyObservers(newElement);
@@ -256,9 +266,15 @@ public class StackFrameModel extends Observable {
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType)
 					e = new ArrayModel((IJavaArray) obj);
-				else
+				else {
 					e = new ObjectModel(obj, this);
-
+					e.registerObserver(new Observer() {
+						public void update(Observable o, Object arg) {
+							setChanged();
+							notifyObservers();
+						}
+					});
+				}
 				if(addToModel)
 					objects.put(obj.getUniqueId(), e);
 			}
@@ -302,6 +318,9 @@ public class StackFrameModel extends Observable {
 		}
 	}
 
+	public void registerObserver(Observer o) {
+		addObserver(o);
+	}
 
 
 

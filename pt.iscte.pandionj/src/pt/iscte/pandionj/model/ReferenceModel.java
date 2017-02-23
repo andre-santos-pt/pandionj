@@ -3,6 +3,7 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Observable;
+import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
@@ -53,7 +54,7 @@ public class ReferenceModel extends Observable implements ModelElement {
 				setChanged();
 				notifyObservers(getTarget());
 			}
-			getTarget().update();
+//			getTarget().update();
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -115,5 +116,10 @@ public class ReferenceModel extends Observable implements ModelElement {
 			e.printStackTrace();
 		}
 		return super.toString();
+	}
+	
+	@Override
+	public void registerObserver(Observer o) {
+		addObserver(o);
 	}
 }

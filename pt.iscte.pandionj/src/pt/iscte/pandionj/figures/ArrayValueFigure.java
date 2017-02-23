@@ -60,7 +60,7 @@ public class ArrayValueFigure extends Figure {
 
 	public ArrayValueFigure(ArrayModel model) {
 		this.model = model;
-		model.addObserver((o, index) -> observerAction(o, index));
+		model.registerObserver((o, index) -> observerAction(o, index));
 		N = model.getLength();
 
 		positions = new ArrayList<>(N+2);
@@ -157,7 +157,7 @@ public class ArrayValueFigure extends Figure {
 	private void addVariable(ValueModel varModel) {
 
 		Display.getDefault().syncExec(() -> setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false));
-		varModel.addObserver(new Observer() {
+		varModel.registerObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
 				Display.getDefault().syncExec(() -> {

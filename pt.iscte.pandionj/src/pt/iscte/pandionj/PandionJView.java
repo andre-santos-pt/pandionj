@@ -122,7 +122,7 @@ public class PandionJView extends ViewPart {
 		scroll.setContent(area);
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
-		scroll.setMinHeight(0);
+		scroll.setMinHeight(100);
 		scroll.setMinWidth(300);
 
 		GridLayout layout = new GridLayout(1, true);
@@ -413,7 +413,7 @@ public class PandionJView extends ViewPart {
 				this.model = frameModel;
 				viewer.setInput(frameModel);
 				if (frameModel != null)
-					frameModel.addObserver(new Observer() {
+					frameModel.registerObserver(new Observer() {
 						public void update(Observable o, Object e) {
 							Display.getDefault().asyncExec(() -> {
 								viewer.refresh();

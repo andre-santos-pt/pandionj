@@ -1,13 +1,19 @@
 package pt.iscte.pandionj;
 
+import org.eclipse.draw2d.AbstractConnectionAnchor;
+import org.eclipse.draw2d.AnchorListener;
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.draw2d.ConnectionAnchor;
+import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
 import org.eclipse.draw2d.RotatableDecoration;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.zest.core.viewers.EntityConnectionData;
@@ -78,7 +84,8 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	
 	@Override
 	public void selfStyleConnection(Object element, GraphConnection connection) {
-
+		PolylineConnection fig = (PolylineConnection) connection.getConnectionFigure();
+		
 		if(((Pointer) element).isNull()) {
 			PolygonDecoration decoration = new PolygonDecoration();
 			PointList points = new PointList();
@@ -88,7 +95,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
 			decoration.setOpaque(true);
-			((PolylineConnection) connection.getConnectionFigure()).setTargetDecoration(decoration);	
+			fig.setTargetDecoration(decoration);	
 		}
 		else {
 			PolylineDecoration decoration = new PolylineDecoration();
@@ -100,10 +107,60 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
 			decoration.setOpaque(true);
-			
-			((PolylineConnection) connection.getConnectionFigure()).setTargetDecoration(decoration);
+			fig.setTargetDecoration(decoration);
+	
+//			fig.setSourceAnchor(new PositionAnchor(connection.getSource().getNodeFigure(), Position.RIGHT));
+//			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		}
 	}
 
+	enum Position {
+		TOP {
+			@Override
+			Point getPoint(Rectangle r) {
+				return new Point(r.x + r.width/2, r.y);
+			}
+		},
+		RIGHT {
+			@Override
+			Point getPoint(Rectangle r) {
+				return new Point(r.x + r.width, r.y + r.height/2);
+			}
+		},
+		BOTTOM {
+			@Override
+			Point getPoint(Rectangle r) {
+				return new Point(r.x + r.width/2, r.y + r.height);
+			}
+		},
+		LEFT {
+			@Override
+			Point getPoint(Rectangle r) {
+				return new Point(r.x, r.y + r.height/2);
+			}
+		};
+
+		abstract Point getPoint(org.eclipse.draw2d.geometry.Rectangle r);
+	}
 	
+	private class PositionAnchor extends AbstractConnectionAnchor {
+
+		private Position position;
+
+		public PositionAnchor(IFigure fig, Position position) {
+			super(fig);
+			this.position = position;
+		}
+
+		@Override
+		public Point getLocation(Point reference) {
+			org.eclipse.draw2d.geometry.Rectangle r =  org.eclipse.draw2d.geometry.Rectangle.SINGLETON;
+			r.setBounds(getOwner().getBounds());
+			r.translate(0, 0);
+			r.resize(1, 1);
+			getOwner().translateToAbsolute(r);
+			return position.getPoint(r);
+		}
+
+	}
 }

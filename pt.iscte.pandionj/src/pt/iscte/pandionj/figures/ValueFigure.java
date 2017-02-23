@@ -41,7 +41,7 @@ public class ValueFigure extends Figure {
 		
 		setSize(-1, -1);
 		
-		model.addObserver(new Observer() {
+		model.registerObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
 				Display.getDefault().syncExec(() -> {

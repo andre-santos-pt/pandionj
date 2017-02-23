@@ -6,12 +6,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.TextUtilities;
@@ -75,7 +72,7 @@ public class ObjectFigure extends Figure {
 		//			}
 		//		});
 		
-		model.addObserver(new Observer() {
+		model.registerObserver(new Observer() {
 			public void update(Observable o, Object arg) {
 				Display.getDefault().syncExec(() -> {
 					label.setText(model.toStringValue());
@@ -99,4 +96,6 @@ public class ObjectFigure extends Figure {
 		setPreferredSize(textExtents.expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
 		layout();
 	}
+	
+	
 }

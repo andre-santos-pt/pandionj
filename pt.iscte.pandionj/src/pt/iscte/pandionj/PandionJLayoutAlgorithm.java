@@ -39,11 +39,11 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 	private double refY = Constants.MARGIN;
 
 	private void setLocation(LayoutEntity e, double x, double y) {
-		refY = Math.max(refY, e.getYInLayout() + e.getHeightInLayout() + Constants.MARGIN);
 		if(dirty.contains(e)) {
 			e.setLocationInLayout(x, y);
 			dirty.remove(e);
 		}
+		refY = Math.max(refY, e.getYInLayout() + e.getHeightInLayout() + Constants.MARGIN);
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			if(!map.containsKey(element)) {
 				map.put(element, e);
 				if(element instanceof ReferenceModel)
-					element.asReference().addObserver((o,a) -> dirty.add(e));
+					element.asReference().registerObserver((o,a) -> dirty.add(e));
 
 				dirty.add(e);
 			}
@@ -68,7 +68,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement element = (ModelElement) node.getData();
 			if(element instanceof ValueModel || element instanceof ReferenceModel){
-				setLocation(e, x, refY);
+				setLocation(e, Constants.MARGIN + x, refY);
 
 //				refY = Math.max(refY, e.getYInLayout() + e.getHeightInLayout());
 
@@ -126,7 +126,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 					}
 					else {
 						int dist = target instanceof NullModel ? Constants.NODE_SPACING / 2 : Constants.NODE_SPACING;
-						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + dist, e.getYInLayout());
+						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 					}
 				}
 			}

@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import org.eclipse.debug.core.DebugException;
@@ -114,4 +115,8 @@ public class ArrayModel extends Observable implements ModelElement {
 		return ArrayModel.class.getSimpleName() + " " + els;
 	}
 
+	@Override
+	public void registerObserver(Observer o) {
+		addObserver(o);
+	}
 }

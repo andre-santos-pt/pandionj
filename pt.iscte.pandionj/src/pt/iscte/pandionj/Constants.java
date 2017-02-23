@@ -19,12 +19,12 @@ public interface Constants {
 	int ARROW_LINE_WIDTH = 1;
 	int POSITION_WIDTH = 32;
 	
-	int MARGIN = 10;
+	int MARGIN = 20;
 	int NODE_SPACING = 128;
 	
 	Color OBJECT_COLOR = new Color(Display.getDefault(), 240, 240, 240);
 	Dimension OBJECT_CORNER = new Dimension(10, 10);
-	int OBJECT_PADDING = 3;
+	int OBJECT_PADDING = 5;
 	
 	int VALUE_FONT_SIZE = 20;
 	String FONT_FACE = "Arial";

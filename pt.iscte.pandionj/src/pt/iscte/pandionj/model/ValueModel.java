@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
+import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
@@ -96,5 +97,9 @@ public class ValueModel extends Observable implements ModelElement {
 	public IFigure createFigure() {
 		return new ValueFigure(this, role);
 	}
-
+	
+	@Override
+	public void registerObserver(Observer o) {
+		addObserver(o);
+	}
 }

@@ -18,9 +18,7 @@ public class ReferenceFigure extends Label {
 		super(model.getName());
 		setFont(new Font(null, Constants.FONT_FACE, Constants.VAR_FONT_SIZE, SWT.NONE));
 		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
-		model.addObserver(new Observer() {
-			
-			@Override
+		model.registerObserver(new Observer() {
 			public void update(Observable o, Object target) {
 				if(target instanceof NullModel)
 					setToolTip(new Label("null reference"));

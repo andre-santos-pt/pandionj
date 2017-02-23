@@ -30,7 +30,7 @@ import com.google.common.collect.Multiset;
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.StringFigure;
 
-public class ObjectModel extends Observable implements ModelElement {
+public class ObjectModel extends Observable  implements ModelElement {
 
 	private IJavaObject object;
 	private StackFrameModel model;
@@ -58,11 +58,18 @@ public class ObjectModel extends Observable implements ModelElement {
 				if(!var.isStatic()) {
 					String name = var.getName();
 					if(var.getJavaType() instanceof IJavaReferenceType && !valueHandler.qualifies((IJavaValue) v.getValue())) {
-						references.put(name, new ReferenceModel(var, model));
+						ReferenceModel refModel = new ReferenceModel(var, model);
+						refModel.registerObserver(new Observer() {
+							public void update(Observable o, Object arg) {
+								setChanged();
+								notifyObservers(name);
+							}
+						});
+						references.put(name, refModel);
 					}
 					else {
 						ValueModel val = new ValueModel(var, model);
-						val.addObserver(new Observer() {
+						val.registerObserver(new Observer() {
 							public void update(Observable o, Object arg) {
 								setChanged();
 								notifyObservers(name);
@@ -81,7 +88,7 @@ public class ObjectModel extends Observable implements ModelElement {
 	@Override
 	public void update() {
 		values.values().forEach(val -> val.update());
-//		references.values().forEach(ref -> ref.update()); // TODO
+		references.values().forEach(ref -> ref.update());
 	}
 
 	@Override
@@ -347,6 +354,11 @@ public class ObjectModel extends Observable implements ModelElement {
 			infixTraverse((ObjectModel) rightTarget, left, right, depth+1, v);
 		else
 			v.accept(rightTarget, null, -1, depth+1, null);
+	}
+
+	@Override
+	public void registerObserver(Observer o) {
+		addObserver(o);
 	}
 	
 }

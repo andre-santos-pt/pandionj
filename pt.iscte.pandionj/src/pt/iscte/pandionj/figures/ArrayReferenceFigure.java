@@ -151,7 +151,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		setSize(-1,-1);
 
-		model.addObserver(this);
+		model.registerObserver(this);
 
 		for(ValueModel v : model.getVars())
 			addVariable(v);
@@ -171,7 +171,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 	private void addVariable(ValueModel varModel) {
 
 		setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), 3, false);
-		varModel.addObserver(new Observer() {
+		varModel.registerObserver(new Observer() {
 
 			@Override
 			public void update(Observable o, Object arg) {

@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.model;
 
+import java.util.Observer;
+
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
@@ -7,6 +9,10 @@ public interface ModelElement {
 	void update();
 	IJavaValue getContent();
 	IFigure createFigure();
+	void registerObserver(Observer o);
+	
+	
+
 	
 	default boolean isReference() {
 		return this instanceof ReferenceModel;
@@ -25,6 +31,7 @@ public interface ModelElement {
 		assert isValue();
 		return (ValueModel) this;
 	}
+	
 	
 //	default boolean isArray() {
 //		return this instanceof ArrayModel; 
