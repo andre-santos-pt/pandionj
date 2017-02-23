@@ -13,34 +13,38 @@ import org.eclipse.swt.widgets.Display;
 public interface Constants {
 	String PLUGIN_ID = Constants.class.getPackage().getName();
 
-	int ARROW_EDGE = 3;
+	int MESSAGE_FONT_SIZE = 12;
+	
+	int ARROW_EDGE = 4;
 	int ARROW_LINE_WIDTH = 1;
-	int POSITION_WIDTH = 64;
+	int POSITION_WIDTH = 32;
 	
-	int MARGIN = 5;
+	int MARGIN = 10;
+	int NODE_SPACING = 128;
 	
-	int OBJECT_SPACING = MARGIN*4;
 	Color OBJECT_COLOR = new Color(Display.getDefault(), 240, 240, 240);
 	Dimension OBJECT_CORNER = new Dimension(10, 10);
+	int OBJECT_PADDING = 3;
 	
-	int VALUE_FONT_SIZE = 32;
+	int VALUE_FONT_SIZE = 20;
 	String FONT_FACE = "Arial";
 
 	int POSITION_LINE_WIDTH = 1;
-	int INDEX_FONT_SIZE = 14;
+	int INDEX_FONT_SIZE = 10;
 
 	int ARRAY_POSITION_SPACING = 1;
 	int ARRAY_LINE_WIDTH = 1;
 	
-	int VAR_FONT_SIZE = 20;
+	int VAR_FONT_SIZE = 18;
 	
 	Color ARRAY_POSITION_COLOR = ColorConstants.white;
 
-	Color HIGHLIGHT_COLOR = new Color(null, 223, 234, 255);
+	Color HIGHLIGHT_COLOR = new Color(Display.getDefault(), 223, 234, 255);
 
+	Color SELECT_COLOR = new Color(Display.getDefault(), 0, 0, 200);
 	
 	Color[] VARCOLORS = {
-			ColorConstants.darkBlue, ColorConstants.darkGreen
+			ColorConstants.darkBlue, ColorConstants.darkGreen, ColorConstants.orange
 	};
 
 	Color ERROR_COLOR = ColorConstants.red;

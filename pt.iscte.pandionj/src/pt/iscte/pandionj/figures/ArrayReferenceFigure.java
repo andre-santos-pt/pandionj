@@ -148,7 +148,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 		
 		//		setOpaque(true);
 		setBackgroundColor(ColorConstants.white);
-		setBorder(new MarginBorder(Constants.MARGIN));
+		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		setSize(-1,-1);
 
 		model.addObserver(this);
@@ -237,7 +237,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 		super.paintFigure(graphics);
 		Dimension dim = N == 0 ? new Dimension(5, 5) : getPosition(0).getSize();
 		int pWidth = dim.width / 2;
-		int y = Constants.MARGIN + dim.height;
+		int y = Constants.OBJECT_PADDING + dim.height;
 		graphics.setLineWidth(Constants.ARROW_LINE_WIDTH);
 		graphics.setFont(VAR_FONT);
 		for(Var v : vars.values()) {

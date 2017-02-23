@@ -16,6 +16,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaObject;
@@ -50,6 +51,7 @@ public class ObjectModel extends Observable implements ModelElement {
 		try {
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
+//				IValue value = var.getValue(); // to load
 				if(var.getJavaType().equals(object.getJavaType()))
 					varsOfSameType.add(var.getName());
 
@@ -61,8 +63,6 @@ public class ObjectModel extends Observable implements ModelElement {
 					else {
 						ValueModel val = new ValueModel(var, model);
 						val.addObserver(new Observer() {
-
-							@Override
 							public void update(Observable o, Object arg) {
 								setChanged();
 								notifyObservers(name);
@@ -81,6 +81,7 @@ public class ObjectModel extends Observable implements ModelElement {
 	@Override
 	public void update() {
 		values.values().forEach(val -> val.update());
+//		references.values().forEach(ref -> ref.update()); // TODO
 	}
 
 	@Override
@@ -163,9 +164,7 @@ public class ObjectModel extends Observable implements ModelElement {
 
 	@Override
 	public boolean equals(Object obj) {
-		return 
-				obj instanceof ObjectModel &&
-				((ObjectModel) obj).hashCode() == hashCode();
+		return obj instanceof ObjectModel && ((ObjectModel) obj).hashCode() == hashCode();
 	}
 
 
@@ -268,7 +267,6 @@ public class ObjectModel extends Observable implements ModelElement {
 					v.accept(o, this, i++, depth+1, siblingRef);
 				}
 			}
-			
 		}
 		else {
 			int i = 0;
@@ -307,4 +305,48 @@ public class ObjectModel extends Observable implements ModelElement {
 		}
 	}
 
+	
+	public boolean isBinaryTree() {
+		if(varsOfSameType.size() != 2)
+			return false;
+		
+		return isBinaryTree(this, varsOfSameType.get(0), varsOfSameType.get(1), new HashSet<>());
+	}
+	
+	
+	private static boolean isBinaryTree(ObjectModel obj, String left, String right, Set<ObjectModel> visited) {	
+		if(visited.contains(obj))
+			return false;
+		else
+			visited.add(obj);
+		
+		ModelElement leftTarget = obj.references.get(left).getTarget();
+		ModelElement rightTarget = obj.references.get(right).getTarget();
+		
+		return (leftTarget instanceof NullModel || isBinaryTree((ObjectModel) leftTarget, left, right, visited)) &&
+			(rightTarget instanceof NullModel || isBinaryTree((ObjectModel) rightTarget, left, right, visited));
+	}
+	
+	public void infixTraverse(SiblingVisitor v) {
+		assert isBinaryTree();
+		
+		infixTraverse(this, varsOfSameType.get(0), varsOfSameType.get(1), 0,  v);
+	}
+	
+	private static void infixTraverse(ObjectModel obj, String left, String right, int depth, SiblingVisitor v) {
+		ModelElement leftTarget = obj.references.get(left).getTarget();
+		if(leftTarget instanceof ObjectModel)
+			infixTraverse((ObjectModel) leftTarget, left, right, depth+1, v);
+		else
+			v.accept(leftTarget, null, -1, depth+1, null);
+		
+		v.accept(obj, null, -1, depth, null);
+		
+		ModelElement rightTarget = obj.references.get(right).getTarget();
+		if(rightTarget instanceof ObjectModel)
+			infixTraverse((ObjectModel) rightTarget, left, right, depth+1, v);
+		else
+			v.accept(rightTarget, null, -1, depth+1, null);
+	}
+	
 }

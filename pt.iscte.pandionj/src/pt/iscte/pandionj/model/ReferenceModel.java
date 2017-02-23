@@ -51,7 +51,7 @@ public class ReferenceModel extends Observable implements ModelElement {
 			if(!equals) {
 				history.add((IJavaObject) var.getValue());
 				setChanged();
-				notifyObservers();
+				notifyObservers(getTarget());
 			}
 			getTarget().update();
 		}

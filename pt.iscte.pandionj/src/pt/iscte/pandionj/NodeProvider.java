@@ -100,5 +100,9 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		public boolean isNull() {
 			return target instanceof NullModel;
 		}
+		
+		public boolean isTopLevel() {
+			return refName == null;
+		}
 	}
 }

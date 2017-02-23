@@ -32,14 +32,15 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	
 	
 	@Override
-	public String getText(Object element) {
+	public String getText(Object e) {
 //		if(element instanceof EntityConnectionData)
 //			return "";
 //		else if(element instanceof Pointer)
 //			return ((Pointer) element).refName;
 //		else
 //			return element.toString();
-		return "";
+//		if(e instanceof Pointer && !((Pointer) e).isTopLevel())
+		return null;
 	}
 
 	@Override
@@ -62,7 +63,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 
 	@Override
 	public Color getHighlightColor(Object rel) {
-		return ColorConstants.blue;
+		return Constants.SELECT_COLOR;
 	}
 
 	@Override
@@ -81,8 +82,8 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		if(((Pointer) element).isNull()) {
 			PolygonDecoration decoration = new PolygonDecoration();
 			PointList points = new PointList();
-			points.addPoint(0,-2); // 1
-			points.addPoint(0, 2); // -1
+			points.addPoint(0,-1); // 1
+			points.addPoint(0, 1); // -1
 			decoration.setTemplate(points);
 			decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
@@ -92,9 +93,9 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		else {
 			PolylineDecoration decoration = new PolylineDecoration();
 			PointList points = new PointList();
-			points.addPoint(-2, -2);
+			points.addPoint(-1, -1);
 			points.addPoint(0, 0);
-			points.addPoint(-2, 2);
+			points.addPoint(-1, 1);
 			decoration.setTemplate(points);
 			decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);

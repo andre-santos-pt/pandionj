@@ -16,6 +16,8 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.TextUtilities;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.Constants;
@@ -38,7 +40,7 @@ public class ObjectFigure extends Figure {
 		RoundedRectangle fig = new RoundedRectangle();
 		fig.setCornerDimensions(new Dimension(10, 10));
 		fig.setLayoutManager(layout);
-		fig.setBorder(new MarginBorder(Constants.MARGIN));
+		fig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		fig.setBackgroundColor(Constants.OBJECT_COLOR);
 
 		fieldLabels = new HashMap<String, Label>();
@@ -49,11 +51,12 @@ public class ObjectFigure extends Figure {
 		//		}
 
 		label = new Label();
+		label.setFont(new Font(null, Constants.FONT_FACE, Constants.VALUE_FONT_SIZE, SWT.NONE));
 		fig.add(label);
 		add(fig);
 
 
-		setBorder(new MarginBorder(Constants.MARGIN));
+		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		//		setBorder(new LineBorder(ColorConstants.black, Constants.ARROW_LINE_WIDTH));
 		setOpaque(false);
 		setSize(-1, -1);
@@ -87,13 +90,13 @@ public class ObjectFigure extends Figure {
 			e.printStackTrace();
 		}
 		label.setText(model.toStringValue());
-		setPreferredSize(getPreferredSize().expand(Constants.MARGIN, Constants.MARGIN));
+		setPreferredSize(getPreferredSize().expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
 	}
 	
 	private void updateSize() {
 		Dimension textExtents = TextUtilities.INSTANCE.getTextExtents(label.getText(), label.getFont());
 		System.out.println(getPreferredSize());
-		setPreferredSize(textExtents.expand(Constants.MARGIN, Constants.MARGIN));
+		setPreferredSize(textExtents.expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
 		layout();
 	}
 }

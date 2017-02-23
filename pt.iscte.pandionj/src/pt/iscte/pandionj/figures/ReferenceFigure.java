@@ -8,13 +8,25 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 
+import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ReferenceModel;
 
 public class ReferenceFigure extends Label {
 
 	public ReferenceFigure(ReferenceModel model) {
 		super(model.getName());
-		setFont(new Font(null, "Arial", 16, SWT.NONE));
-		setBorder(new MarginBorder(10));
+		setFont(new Font(null, Constants.FONT_FACE, Constants.VAR_FONT_SIZE, SWT.NONE));
+		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
+		model.addObserver(new Observer() {
+			
+			@Override
+			public void update(Observable o, Object target) {
+				if(target instanceof NullModel)
+					setToolTip(new Label("null reference"));
+				else
+					setToolTip(null);
+			}
+		});
 	}
 }

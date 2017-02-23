@@ -12,7 +12,7 @@ public class StringFigure extends Label {
 
 	public StringFigure(String content) {
 		setText("\"" + content + "\"");
-		setFont(new Font(null,"Arial", Constants.VALUE_FONT_SIZE, SWT.NONE));
-		setBorder(new MarginBorder(Constants.MARGIN));
+		setFont(new Font(null, Constants.FONT_FACE, Constants.VALUE_FONT_SIZE, SWT.NONE));
+		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 	}
 }

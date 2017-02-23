@@ -30,8 +30,8 @@ public class ValueFigure extends Figure {
 		
 		Label valueLabel = new Label(model.getCurrentValue());
 		valueLabel.setOpaque(true);
-		valueLabel.setFont(new Font(null, "Arial", 42, SWT.NONE));
-		int lineWidth = Role.FIXED_VALUE.equals(role) ? 4 : 2;
+		valueLabel.setFont(new Font(null, Constants.FONT_FACE, Constants.VALUE_FONT_SIZE, SWT.NONE));
+		int lineWidth = Role.FIXED_VALUE.equals(role) ? Constants.ARRAY_LINE_WIDTH * 2: Constants.ARRAY_LINE_WIDTH;
 		valueLabel.setBorder(new LineBorder(ColorConstants.black, lineWidth, SWT.LINE_SOLID));
 		layout.setConstraint(valueLabel, new GridData(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH));
 		add(valueLabel);

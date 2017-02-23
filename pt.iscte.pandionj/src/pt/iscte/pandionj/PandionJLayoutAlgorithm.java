@@ -2,8 +2,12 @@ package pt.iscte.pandionj;
 
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.WeakHashMap;
+import java.util.function.Consumer;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.zest.core.widgets.GraphNode;
@@ -11,74 +15,131 @@ import org.eclipse.zest.layouts.Filter;
 import org.eclipse.zest.layouts.InvalidLayoutConfiguration;
 import org.eclipse.zest.layouts.LayoutAlgorithm;
 import org.eclipse.zest.layouts.LayoutEntity;
+import org.eclipse.zest.layouts.LayoutGraph;
 import org.eclipse.zest.layouts.LayoutRelationship;
 import org.eclipse.zest.layouts.progress.ProgressListener;
+
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
 
 import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
+import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.model.ValueModel;
 import pt.iscte.pandionj.model.ReferenceModel;
 
 public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
-	private static final int REF_OBJ_GAP = Constants.POSITION_WIDTH*2;
-	
-	
+
+	// index model -> layout
+	private Map<ModelElement, LayoutEntity> map = new WeakHashMap<>();
+	private Set<LayoutEntity> dirty = new HashSet<>();
+	private double refY = Constants.MARGIN;
+
+	private void setLocation(LayoutEntity e, double x, double y) {
+		refY = Math.max(refY, e.getYInLayout() + e.getHeightInLayout() + Constants.MARGIN);
+		if(dirty.contains(e)) {
+			e.setLocationInLayout(x, y);
+			dirty.remove(e);
+		}
+	}
+
 	@Override
 	public void applyLayout(LayoutEntity[] entitiesToLayout, LayoutRelationship[] relationshipsToConsider, double x,
 			double y, double width, double height, boolean asynchronous, boolean continuous)
 					throws InvalidLayoutConfiguration {
 
-		int refY = Constants.MARGIN;
-		int objY = Constants.MARGIN;
-
-		Map<ModelElement, LayoutEntity> yMap = new HashMap<ModelElement, LayoutEntity>();
-		Map<ModelElement, Integer> refCount = new HashMap<>();
-
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement element = (ModelElement) node.getData();
-			
-			if(element instanceof ObjectModel || element instanceof ArrayModel || element instanceof NullModel) {
-				e.setLocationInLayout(x + (element instanceof NullModel ? Constants.POSITION_WIDTH : REF_OBJ_GAP), y + objY);
-				objY += Constants.MARGIN + e.getHeightInLayout();
-				yMap.put(element, e);
+			if(!map.containsKey(element)) {
+				map.put(element, e);
+				if(element instanceof ReferenceModel)
+					element.asReference().addObserver((o,a) -> dirty.add(e));
+
+				dirty.add(e);
 			}
 		}
 
+		
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement element = (ModelElement) node.getData();
-			if(element instanceof ReferenceModel) {
-				ModelElement target = ((ReferenceModel) element).getTarget();
-				Integer count = refCount.containsKey(target) ? refCount.get(target) : 0;
-				LayoutEntity ent = yMap.get(target);
-				if(ent != null) {
-					refY = (int) (ent.getYInLayout() + ent.getHeightInLayout());
-					e.setLocationInLayout(x + Constants.MARGIN, ent.getYInLayout() + count * Constants.OBJECT_SPACING);
-					count += 1;
-					refCount.put(target, count);
+			if(element instanceof ValueModel || element instanceof ReferenceModel){
+				setLocation(e, x, refY);
+
+//				refY = Math.max(refY, e.getYInLayout() + e.getHeightInLayout());
+
+				if(element instanceof ReferenceModel) {
+					ModelElement target = ((ReferenceModel) element).getTarget();
+					LayoutEntity targetE = map.get(target);
+					if(targetE == null) {
+						System.err.println("!! " + target);
+						continue;
+					}
+
+//					refY = Math.max(refY, targetE.getYInLayout() + targetE.getHeightInLayout());
+					
+					if(target instanceof ObjectModel) {
+						ObjectModel obj = (ObjectModel) target;
+						if(obj.isBinaryTree()) {
+							int yy = (int) refY;
+							obj.infixTraverse(new SiblingVisitor() {
+								int x = Constants.NODE_SPACING/4;
+								@Override
+								public void accept(ModelElement object, ModelElement parent, int index, int depth, String field) {
+									setLocation(map.get(object), Constants.NODE_SPACING + x, yy + depth*Constants.NODE_SPACING/2);
+									x += Constants.NODE_SPACING/4;
+								}
+							});
+						}
+						else {
+							class Visitor implements SiblingVisitor {
+								public void accept(ModelElement o, ModelElement parent, int index, int d, String field) {
+									if(map.containsKey(o)) {
+										LayoutEntity n = map.get(o);
+										switch(index) {
+										case 1:
+											setLocation(n, x + d * Constants.NODE_SPACING, e.getYInLayout() + Constants.NODE_SPACING/2);
+											break;
+										case 2:
+											setLocation(n, x + d * Constants.NODE_SPACING, e.getYInLayout() - Constants.NODE_SPACING/2);
+											break;
+										default:
+											int dist = (d+1) * Constants.NODE_SPACING;
+											if(o instanceof NullModel)
+												dist -= Constants.NODE_SPACING / 2;
+											setLocation(n, x + dist, e.getYInLayout());
+										}
+									}
+									else
+										System.err.println("not " + o);
+								}
+
+							}
+							setLocation(targetE, e.getXInLayout() + Constants.NODE_SPACING, e.getYInLayout());
+							Visitor v = new Visitor();
+							obj.traverseSiblings(v, true);
+						}
+					}
+					else {
+						int dist = target instanceof NullModel ? Constants.NODE_SPACING / 2 : Constants.NODE_SPACING;
+						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + dist, e.getYInLayout());
+					}
 				}
-				//				}
-			}
-			else if(element instanceof ValueModel){
-				e.setLocationInLayout(x, refY);
-				refY += e.getHeightInLayout() + Constants.MARGIN;
 			}
 		}
-	
 	}
 
 	@Override
 	public boolean isRunning() {
-		return false;
+		return true;
 	}
 
 	@Override
 	public void setComparator(Comparator comparator) {
-		// TODO Auto-generated method stub
 
 	}
 
@@ -124,7 +185,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
 	@Override
 	public void addEntity(LayoutEntity entity) {
-
+		System.out.println("ADD " + entity);
 	}
 
 	@Override

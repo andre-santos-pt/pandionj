@@ -14,6 +14,7 @@ import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
 import static pt.iscte.pandionj.Constants.SET_FONT;
 import static pt.iscte.pandionj.Constants.VALUE_FONT_SIZE;
 import static pt.iscte.pandionj.Constants.VAR_FONT_SIZE;
+import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
 import static pt.iscte.pandionj.Constants.getOneColGridLayout;
 import static pt.iscte.pandionj.Constants.getVarColor;
 
@@ -67,7 +68,7 @@ public class ArrayValueFigure extends Figure {
 
 		setOpaque(false);
 		setLayoutManager(getOneColGridLayout());
-		setBorder(new MarginBorder(MARGIN));
+		setBorder(new MarginBorder(OBJECT_PADDING));
 		setSize(-1,-1);
 
 		RoundedRectangle fig = new RoundedRectangle();
@@ -79,8 +80,9 @@ public class ArrayValueFigure extends Figure {
 		fig.setLayoutManager(layout);
 
 		Label lengthLabel = new Label("length = " + N);
-		fig.add(lengthLabel);
-		layout.setConstraint(lengthLabel, new GridData(SWT.CENTER, SWT.CENTER, true, false));
+		setToolTip(lengthLabel);
+//		fig.add(lengthLabel);
+//		layout.setConstraint(lengthLabel, new GridData(SWT.CENTER, SWT.CENTER, true, false));
 
 		positionsFig = createPositionsFig(model);
 		fig.add(positionsFig);
@@ -223,7 +225,7 @@ public class ArrayValueFigure extends Figure {
 
 		Dimension dim = N == 0 ? new Dimension(5, 5) : positions.get(0).getSize();
 		int pWidth = dim.width / 2;
-		int y = MARGIN + dim.height;
+		int y = OBJECT_PADDING + dim.height;
 		graphics.setLineWidth(ARROW_LINE_WIDTH);
 		graphics.setFont(VAR_FONT);
 		for(Var v : vars.values()) {
@@ -232,7 +234,7 @@ public class ArrayValueFigure extends Figure {
 			boolean forward = v.getDirection().equals(Direction.FORWARD);
 
 			if(v.isBar()) {
-				Point from = positions.get(i).getLocation().getTranslated(POSITION_WIDTH/2-ARROW_LINE_WIDTH*3, -MARGIN);
+				Point from = positions.get(i).getLocation().getTranslated(POSITION_WIDTH/2-ARROW_LINE_WIDTH*3, -OBJECT_PADDING);
 				Point to = from.getTranslated(0, y + vars.size()*(ARROW_EDGE*2));
 				graphics.drawLine(from, to);
 				graphics.drawText(v.id, to);

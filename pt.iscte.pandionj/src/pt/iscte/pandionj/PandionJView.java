@@ -1,8 +1,10 @@
 package pt.iscte.pandionj;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 
 import org.eclipse.debug.core.DebugEvent;
@@ -34,7 +36,9 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.ControlAdapter;
@@ -44,6 +48,7 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -53,10 +58,12 @@ import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
+import pt.iscte.pandionj.model.ValueModel;
 import pt.iscte.pandionj.parser.data.NullableOptional;
 
 public class PandionJView extends ViewPart { 
@@ -76,6 +83,7 @@ public class PandionJView extends ViewPart {
 	private Image image;
 	private Image imageRun;
 
+	private double zoom;
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -83,7 +91,8 @@ public class PandionJView extends ViewPart {
 		addToolBarItems();
 		image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame.gif")); 
 		imageRun = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame_run.gif"));
-
+		zoom = 1.0;
+		
 		model = new CallStackModel();
 		debugEventListener = (new DebugListener());
 		debugUiListener = new DebugUIListener();
@@ -126,10 +135,9 @@ public class PandionJView extends ViewPart {
 		area.setLayout(layout);
 
 		label = new Label(area, SWT.NONE);
-		label.setFont(new Font(null, Constants.FONT_FACE, Constants.INDEX_FONT_SIZE, SWT.NONE));
+		label.setFont(new Font(null, Constants.FONT_FACE, Constants.MESSAGE_FONT_SIZE, SWT.NONE));
 		label.setText(Constants.START_MESSAGE);
 		label.addMouseListener(new MouseAdapter() {
-			@Override
 			public void mouseDoubleClick(MouseEvent e) {
 				System.out.println("OPEN FILE"); // TODO
 			}
@@ -260,6 +268,11 @@ public class PandionJView extends ViewPart {
 
 			@Override
 			public void run() {
+				Set<StackFrameModel> expanded = new HashSet<>();
+				for(ExpandItem item : callStack.getItems())
+					if(item.getExpanded())
+						expanded.add(((StackView) item.getControl()).model);
+				
 				int diff = stackPath.size() - callStack.getItemCount();
 				while(diff > 0) {
 					diff--;
@@ -284,7 +297,7 @@ public class PandionJView extends ViewPart {
 					StackView view = (StackView) items[i].getControl();
 					view.setInput(model);
 					items[i].setText(model.toString());
-					items[i].setExpanded(i == items.length-1);
+					items[i].setExpanded(i == items.length-1 || expanded.contains(model));
 					items[i].setImage(i == items.length-1 ? imageRun : image);
 				}
 			}
@@ -311,19 +324,20 @@ public class PandionJView extends ViewPart {
 		});
 
 		toolBar.add(new Action("Zoom in", ImageDescriptor.createFromFile( PandionJView.class, "zoom.gif")) {
-			@Override
 			public void run() {
+				zoom *= 1.05;
 				for (ExpandItem expandItem : callStack.getItems()) {
-					((StackView) expandItem.getControl()).increaseZoom();
+					((StackView) expandItem.getControl()).setZoom(zoom);
 				}
 			}
 		});
 
 		toolBar.add(new Action("-") {
-			@Override
+			
 			public void run() {
+				zoom *= 0.95;
 				for (ExpandItem expandItem : callStack.getItems()) {
-					((StackView) expandItem.getControl()).decreaseZoom();
+					((StackView) expandItem.getControl()).setZoom(zoom);
 				}
 			}
 		});
@@ -339,7 +353,7 @@ public class PandionJView extends ViewPart {
 		Image image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("highlight.gif"));
 		hightlightAction.setImageDescriptor(ImageDescriptor.createFromImage(image));
 		toolBar.add(hightlightAction);
-		
+
 		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
 		menuManager.add(new Action("highlight color") {
 		});
@@ -348,15 +362,14 @@ public class PandionJView extends ViewPart {
 	private class StackView extends Composite {
 		GraphViewerZoomable viewer;
 		StackFrameModel model;
-		ExpandItem barItem;
+
 		public StackView(Composite parent, ExpandItem barItem) {
 			super(parent, SWT.BORDER);
-			this.barItem = barItem;
 			setLayout(new FillLayout());
 			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			viewer = new GraphViewerZoomable(this, SWT.BORDER);
-			PandionJLayoutAlgorithm2 layout = new PandionJLayoutAlgorithm2();
-			viewer.setLayoutAlgorithm(layout); // SpringLayoutAlgorithm(ZestStyles.NODES_NO_LAYOUT_RESIZE));
+			PandionJLayoutAlgorithm layout = new PandionJLayoutAlgorithm();
+			viewer.setLayoutAlgorithm(layout);
 			viewer.setContentProvider(new NodeProvider());
 			viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 			viewer.setLabelProvider(new FigureProvider());
@@ -366,24 +379,30 @@ public class PandionJView extends ViewPart {
 				}
 			});
 			viewer.addDoubleClickListener(new IDoubleClickListener() {
-				
+
 				@Override
 				public void doubleClick(DoubleClickEvent event) {
 					System.out.println(event.getSelection());
 					if(!event.getSelection().isEmpty()) {
 						IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 						Object obj = selection.getFirstElement();
+						GraphItem item = viewer.findGraphItem(obj);
+						Object data = item.getData();
 					}
 				}
 			});
+			viewer.addSelectionChangedListener(new ISelectionChangedListener() {
+				
+				@Override
+				public void selectionChanged(SelectionChangedEvent event) {
+					System.out.println(event.getSelection());
+				}
+			});
+			setZoom(zoom);
 		}
 
-		public void decreaseZoom() {
-			viewer.decreaseZoom();
-		}
-
-		public void increaseZoom() {
-			viewer.increaseZoom();
+		public void setZoom(double zoom) {
+			viewer.setZoom(zoom);
 		}
 
 		void setInput(StackFrameModel frameModel) {
@@ -403,14 +422,13 @@ public class PandionJView extends ViewPart {
 						}
 					});
 			}
-			//			adaptBarHeight(barItem);
 		}
 	}
 
 
 
 	private void adaptBarHeight(ExpandItem barItem) {
-		Point size = barItem.getControl().computeSize(area.getBounds().width, SWT.DEFAULT);
+		Point size = barItem.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 		barItem.setHeight(Math.max(100, size.y + Constants.MARGIN));
 	}
 
