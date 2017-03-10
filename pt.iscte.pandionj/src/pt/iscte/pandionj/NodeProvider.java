@@ -1,18 +1,18 @@
 package pt.iscte.pandionj;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.jdt.debug.core.IJavaType;
+import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.zest.core.viewers.IGraphEntityContentProvider;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
 
+import pt.iscte.pandionj.model.ArrayModel;
+import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
@@ -51,6 +51,12 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 						elements.add(o);
 					}, true);
 				}
+				else if(t instanceof ArrayReferenceModel) {
+					elements.add(t);
+					List<ReferenceModel> arrayElements = ((ArrayReferenceModel) t).getModelElements();
+					for(ReferenceModel r : arrayElements)
+						elements.add(r.getTarget());
+				}
 				else 
 					elements.add(t);
 			}
@@ -70,6 +76,14 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			for(Entry<String, ModelElement> field : pointers.entrySet()) 
 				if(dest.equals(field.getValue()))
 					ret.add(new Pointer(field.getKey(), (ObjectModel) source, (ModelElement) dest));
+			return ret.toArray();
+		}
+		else if(source instanceof ArrayReferenceModel) {
+			List<Pointer> ret = new ArrayList<>();
+			List<ReferenceModel> elements = ((ArrayReferenceModel) source).getModelElements();
+			for(int i = 0; i < elements.size(); i++)
+				if(dest.equals(elements.get(i).getTarget()))
+					ret.add(new Pointer(Integer.toString(i), (ModelElement) source, (ModelElement) dest));
 			return ret.toArray();
 		}
 		else

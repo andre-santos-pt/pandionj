@@ -1,47 +1,45 @@
 package pt.iscte.pandionj.figures;
 
+import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
+import static pt.iscte.pandionj.Constants.OBJECT_COLOR;
+import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
+import static pt.iscte.pandionj.Constants.SET_FONT;
+import static pt.iscte.pandionj.Constants.getOneColGridLayout;
+
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
-import java.util.Random;
-import java.util.concurrent.ThreadLocalRandom;
 
-import org.eclipse.draw2d.ActionEvent;
-import org.eclipse.draw2d.ActionListener;
-import org.eclipse.draw2d.Button;
+import org.eclipse.draw2d.AbstractConnectionAnchor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureUtilities;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MarginBorder;
-import org.eclipse.draw2d.ToolbarLayout;
+import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Shell;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.model.ArrayModel;
+import pt.iscte.pandionj.model.ArrayReferenceModel;
+import pt.iscte.pandionj.model.ReferenceModel;
 import pt.iscte.pandionj.model.ValueModel;
 
 public class ArrayReferenceFigure extends Figure implements Observer {
 //	static final int POSITION_WIDTH_EMPTY = Constants.POSITION_WIDTH/2;
 
-	private static final int INDEX_FONT_SIZE = 14;
 	private static final int POSITION_LINE_WIDTH = 1;
 	private static final int POSITION_SPACING = 1;
 	private static final int VAR_FONT_SIZE = 20;
@@ -107,9 +105,12 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 	private Map<String, Var> vars;
 
 	private GridLayout layout;
-	private ArrayModel model;
+	private ArrayReferenceModel model;
 
-	public ArrayReferenceFigure(ArrayModel model) {
+	private Figure positionsFig;
+
+	
+	public ArrayReferenceFigure(ArrayReferenceModel model) {
 		this.model = model;
 		N = model.getLength();
 		lowerOffSet = 0;
@@ -122,32 +123,40 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 	
 		GridLayout layout2 = new GridLayout(1, true);
 		layout2.horizontalSpacing = POSITION_SPACING;
+		layout2.marginWidth = 0;
+		
+		RoundedRectangle fig = new RoundedRectangle();
+		fig.setCornerDimensions(OBJECT_CORNER);
+		fig.setBackgroundColor(OBJECT_COLOR);
+		fig.setOpaque(false);
+		add(fig);
+	
+		layout = getOneColGridLayout();
+		fig.setLayoutManager(layout);
 		
 		positionsFig = new Figure();
 		positionsFig.setLayoutManager(layout2);
-		add(positionsFig);
+		positionsFig.setOpaque(false);
+		fig.add(positionsFig);
 			
+		setOpaque(false);
+		
 		if(N == 0) {
 			positionsFig.add(new Position(null, true));
 		}
 		else {
-			
 			for(int i = 0; i < N; i++) {
 				Position p = new Position(i, false);
-				p.setValue(model.get(i));
 				positionsFig.add(p);
 				positions.add(p);
 			}
 		}
 		
+		
 		Label lengthLabel = new Label("length = " + N);
-		layout.setConstraint(lengthLabel, new GridData(SWT.RIGHT, SWT.CENTER, true, false));
-		add(lengthLabel);
-
+		setToolTip(lengthLabel);
 		
 		
-		//		setOpaque(true);
-		setBackgroundColor(ColorConstants.white);
 		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		setSize(-1,-1);
 
@@ -156,7 +165,15 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 		for(ValueModel v : model.getVars())
 			addVariable(v);
 		
-		
+//		for(ReferenceModel r : model.getModelElements())
+//			r.addObserver(new Observer() {
+//				
+//				@Override
+//				public void update(Observable o, Object arg) {
+//					// TODO Auto-generated method stub
+//					
+//				}
+//			});
 	}
 	
 	@Override
@@ -183,17 +200,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 
 	@Override
 	public void update(Observable o, Object index) {
-		if(index instanceof Integer) {
-			Integer i = (Integer) index;
-			for(int j = 0; j < N; j++) {
-				if(j == i)
-					getPosition(i).highlight();
-				else
-					getPosition(i).unhighlight();
-			}
-			getPosition(i).setValue(model.get(i));
-		}
-		else if(index instanceof ValueModel) {
+		if(index instanceof ValueModel) {
 			addVariable((ValueModel) index);
 		}
 	}
@@ -306,25 +313,29 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 //		return change;
 //	}
 
+	public AbstractConnectionAnchor getAnchor(int positionIndex) {
+		return positions.get(positionIndex).anchor;
+	}
+	
 	private class Position extends Figure {
 		private final Label valueLabel;
 		private boolean outOfBounds;
-		private int width;
-
+		private Anchor anchor;
+		
 		public Position(Integer index, boolean outOfBounds) {
 			this.outOfBounds = outOfBounds;
-
-			width = index != null ? Constants.POSITION_WIDTH : Constants.POSITION_WIDTH;
+			anchor = new Anchor(ArrayReferenceFigure.this);
+			
 			GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
-			GridData layoutData = new GridData(width, Constants.POSITION_WIDTH);
-			GridLayout layout = new GridLayout(2, false);
-			layout.verticalSpacing = 0;
-			layout.horizontalSpacing = 0;
-			layout.marginWidth = 0;
-			layout.marginHeight = 0;
+			GridData layoutData = new GridData(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH*2);
+			GridLayout layout = new GridLayout(1, false);
+			layout.verticalSpacing = 10;
+			layout.horizontalSpacing = 5;
+			layout.marginWidth = 10;
+			layout.marginHeight = 10;
 
 			Label indexLabel = new Label(indexText(index));
-			indexLabel.setFont(new Font(null, "Arial", INDEX_FONT_SIZE, SWT.NONE));
+			SET_FONT(indexLabel, Constants.INDEX_FONT_SIZE);
 			indexLabel.setLabelAlignment(SWT.CENTER);
 			indexLabel.setForegroundColor(ColorConstants.gray);
 			layout.setConstraint(indexLabel, layoutCenter);
@@ -332,20 +343,16 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 			
 			setLayoutManager(layout);
 			valueLabel = new Label("");
-			valueLabel.setFont(new Font(null, "Arial", Constants.VALUE_FONT_SIZE, SWT.NONE));
-			valueLabel.setOpaque(!outOfBounds);
+			valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR);
+			valueLabel.setOpaque(true);
 			if(!outOfBounds) {
 				LineBorder lineBorder = new LineBorder(ColorConstants.black, POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
 				valueLabel.setBorder(lineBorder);
 			}
 			layout.setConstraint(valueLabel, layoutData);
-			add(valueLabel);
+//			add(valueLabel);
 
 
-		}
-
-		public String getValue() {
-			return valueLabel.getText();
 		}
 
 		private String indexText(Integer index) {
@@ -361,33 +368,26 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 				graphics.setForegroundColor(ColorConstants.gray);
 				graphics.setLineDashOffset(2.5f);
 				graphics.setLineStyle(Graphics.LINE_DASH);
-				graphics.drawRectangle(getLocation().x, getLocation().y, width-1, Constants.POSITION_WIDTH-1);
+				graphics.drawRectangle(getLocation().x, getLocation().y, Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH-1);
 			}
 		}
+		
+		private class Anchor extends AbstractConnectionAnchor {
+			public Anchor(IFigure fig) {
+				super(fig);
+			}
 
-		public void setValue(String value) {
-			valueLabel.setText(value);
-		}
-
-		public void highlight() {
-//			valueLabel.setBackgroundColor(ColorConstants.cyan);
-		}
-
-		public void unhighlight() {
-//			valueLabel.setBackgroundColor(ColorConstants.white);
+			@Override
+			public Point getLocation(Point reference) {
+				org.eclipse.draw2d.geometry.Rectangle r =  org.eclipse.draw2d.geometry.Rectangle.SINGLETON;
+				r.setBounds(getOwner().getBounds());
+				r.translate(0, 0);
+				r.resize(1, 1);
+				getOwner().translateToAbsolute(r);
+				Dimension size = Position.this.getSize();
+				return Position.this.getLocation().translate(size.width, size.height/2);
+			}
 		}
 	}
-
-	private Figure positionsFig;
 	
-
-	public void highlight(int i) {
-		getPosition(i).highlight();
-	}
-
-	public void unhighlight(int i) {
-		getPosition(i).unhighlight();
-	}
-
-
 }

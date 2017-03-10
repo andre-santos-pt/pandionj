@@ -133,12 +133,34 @@ public class StackFrameModel extends Observable {
 	}
 
 
+	private void handleVar(IJavaVariable jv) throws DebugException {
+		String varName = jv.getName();
+		IJavaType type = jv.getJavaType();
+
+		if(vars.containsKey(varName)) {
+			vars.get(varName).update();
+		}
+		else {
+			ModelElement newElement = type instanceof IJavaReferenceType ? new ReferenceModel(jv, this) : new ValueModel(jv, this);
+			vars.put(varName, newElement);
+			if(newElement instanceof ReferenceModel)
+				((ReferenceModel) newElement).registerObserver(new Observer() {
+					public void update(Observable o, Object arg) {
+						setChanged();
+						notifyObservers(newElement);
+					}
+				});
+
+			setChanged();
+			notifyObservers(newElement);
+		}
+	}
 
 	private void handleArrayIterators() {
 		for (Entry<String, ModelElement> e : vars.entrySet()) {
 			if(e.getValue().isReference()) {
 				ReferenceModel refModel = e.getValue().asReference();
-				if(refModel.isArray() && !refModel.isNull()) {
+				if(refModel.isArrayValue() && !refModel.isNull()) {
 					ArrayModel array = (ArrayModel) refModel.getTarget();
 					for(String itVar : findArrayIterators(e.getKey())) {
 						if(vars.containsKey(itVar))
@@ -165,28 +187,7 @@ public class StackFrameModel extends Observable {
 		return iterators;
 	}
 
-	private void handleVar(IJavaVariable jv) throws DebugException {
-		String varName = jv.getName();
-		IJavaType type = jv.getJavaType();
 
-		if(vars.containsKey(varName)) {
-			vars.get(varName).update();
-		}
-		else {
-			ModelElement newElement = type instanceof IJavaReferenceType ? new ReferenceModel(jv, this) : new ValueModel(jv, this);
-			vars.put(varName, newElement);
-			if(newElement instanceof ReferenceModel)
-				((ReferenceModel) newElement).registerObserver(new Observer() {
-					public void update(Observable o, Object arg) {
-						setChanged();
-						notifyObservers(newElement);
-					}
-				});
-
-			setChanged();
-			notifyObservers(newElement);
-		}
-	}
 
 	public Collection<ModelElement> getVariables() {
 		return Collections.unmodifiableCollection(vars.values());
@@ -259,13 +260,20 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	ModelElement getObject(IJavaObject obj, boolean addToModel) {
+	public ModelElement getObject(IJavaObject obj, boolean addToModel) {
 		assert !obj.isNull() || !addToModel;
 		try {
 			ModelElement e = objects.get(obj.getUniqueId());
 			if(e == null) {
-				if(obj.getJavaType() instanceof IJavaArrayType)
-					e = new ArrayModel((IJavaArray) obj);
+				if(obj.getJavaType() instanceof IJavaArrayType) {
+					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
+					if(componentType instanceof IJavaReferenceType)
+						e = new ArrayReferenceModel((IJavaArray) obj, this);
+					
+					else
+						e = new ArrayModel((IJavaArray) obj);
+					
+				}
 				else {
 					e = new ObjectModel(obj, this);
 					e.registerObserver(new Observer() {

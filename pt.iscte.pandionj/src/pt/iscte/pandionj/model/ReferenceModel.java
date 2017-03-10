@@ -10,6 +10,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
+import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.figures.ReferenceFigure;
@@ -94,9 +95,10 @@ public class ReferenceModel extends Observable implements ModelElement {
 		}
 	}
 
-	public boolean isArray() {
+	public boolean isArrayValue() {
 		try {
-			return var.getJavaType() instanceof IJavaArrayType;
+			return var.getJavaType() instanceof IJavaArrayType &&
+					!(((IJavaArrayType) var.getJavaType()).getComponentType() instanceof IJavaReferenceType); 
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return false;

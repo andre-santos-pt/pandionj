@@ -9,6 +9,9 @@ import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.function.Consumer;
 
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.jdt.debug.core.IJavaObject;
+import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.swt.SWT;
 import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.layouts.Filter;
@@ -22,7 +25,9 @@ import org.eclipse.zest.layouts.progress.ProgressListener;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.model.ArrayModel;
+import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
@@ -122,6 +127,23 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 							setLocation(targetE, e.getXInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 							Visitor v = new Visitor();
 							obj.traverseSiblings(v, true);
+						}
+					}
+					else if(target instanceof ArrayReferenceModel) {
+						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
+						
+						List<ReferenceModel> elements = ((ArrayReferenceModel) target).getModelElements();
+						double yy = targetE.getYInLayout();
+//						double yy = refY;
+						int i = 0;
+						for(ReferenceModel r : elements) {
+							LayoutEntity ent = map.get(r.getTarget());
+//							ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, yy);
+//							setLocation(ent, targetE.getXInLayout() + Constants.NODE_SPACING, refY);
+							yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING;
+							GraphNode n = (GraphNode) targetE.getGraphData();
+							Point location = ((ArrayReferenceFigure) n.getNodeFigure()).getAnchor(i++).getLocation(null);
+							ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, targetE.getYInLayout()+ location.y);
 						}
 					}
 					else {

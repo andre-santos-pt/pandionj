@@ -25,6 +25,9 @@ import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.NodeProvider.Pointer;
+import pt.iscte.pandionj.figures.ArrayReferenceFigure;
+import pt.iscte.pandionj.model.ArrayModel;
+import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
 
@@ -112,6 +115,15 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 //			fig.setSourceAnchor(new PositionAnchor(connection.getSource().getNodeFigure(), Position.RIGHT));
 //			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		}
+		
+		if(((Pointer) element).source instanceof ArrayReferenceModel) {
+			ArrayReferenceFigure afig = (ArrayReferenceFigure) connection.getSource().getNodeFigure();
+			fig.setSourceAnchor(afig.getAnchor(Integer.parseInt(((Pointer) element).refName)));
+		}
+		
+		if(((Pointer) element).target instanceof ArrayModel) {
+			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
+		}
 	}
 
 	enum Position {
@@ -161,6 +173,5 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			getOwner().translateToAbsolute(r);
 			return position.getPoint(r);
 		}
-
 	}
 }

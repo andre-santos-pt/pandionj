@@ -90,12 +90,12 @@ public class ObjectFigure extends Figure {
 		setPreferredSize(getPreferredSize().expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
 	}
 	
-	private void updateSize() {
-		Dimension textExtents = TextUtilities.INSTANCE.getTextExtents(label.getText(), label.getFont());
-		System.out.println(getPreferredSize());
-		setPreferredSize(textExtents.expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
-		layout();
-	}
+//	private void updateSize() {
+//		Dimension textExtents = TextUtilities.INSTANCE.getTextExtents(label.getText(), label.getFont());
+//		System.out.println(getPreferredSize());
+//		setPreferredSize(textExtents.expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
+//		layout();
+//	}
 	
 	
 }

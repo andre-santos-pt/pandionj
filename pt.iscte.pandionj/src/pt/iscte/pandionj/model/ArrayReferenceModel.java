@@ -1,8 +1,11 @@
 package pt.iscte.pandionj.model;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
@@ -10,27 +13,36 @@ import java.util.Observer;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
+import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.ArrayValueFigure;
 
-public class ArrayModel extends Observable implements ModelElement {
+public class ArrayReferenceModel extends Observable implements ModelElement {
 
+	private StackFrameModel model;
 	
 	private IJavaArray array;
-	private IJavaValue[] elements;
+	private List<ReferenceModel> elements;
 
 	private Map<String, ValueModel> vars;
+	private ArrayValueFigure fig;
+	
 	private String varError;
 	
-	public ArrayModel(IJavaArray array) {
+	public ArrayReferenceModel(IJavaArray array, StackFrameModel model) {
 		assert array != null;
+		assert model != null;
+		this.model = model;
 		
 		try {
 			this.array = array;
-			elements = new IJavaValue[array.getLength()];
-			for(int i = 0; i < elements.length; i++)
-				elements[i] = array.getValue(i);
+			elements = new ArrayList<>();
+			IJavaValue[] values = array.getValues();
+			for(int i = 0; i < values.length; i++)
+				elements.add(new ReferenceModel((IJavaVariable) array.getVariable(i), model));
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -39,28 +51,17 @@ public class ArrayModel extends Observable implements ModelElement {
 	}
 
 	public void update() {
-		try {
-			for(int i = 0; i < elements.length; i++) {
-				IJavaValue val = array.getValue(i);
-				boolean equals = val.equals(elements[i]);
-				elements[i] = val;
-				if(!equals) {
-					setChanged();
-					notifyObservers(i);
-				}
-			}
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-		}
+		for(ReferenceModel r : elements)
+			r.update();
 	}
 
 	public int getLength() {
-		return elements.length;
+		return elements.size();
 	}
 
 	public String get(int i) {
-		return elements[i].toString();
+		assert i >= 0 && i < elements.size();
+		return elements.get(i).toString();
 	}
 
 	@Override
@@ -68,6 +69,11 @@ public class ArrayModel extends Observable implements ModelElement {
 		return array;
 	}
 	
+	
+	
+	public List<ReferenceModel> getModelElements() {
+		return Collections.unmodifiableList(elements);
+	}
 	
 	
 	public void addVar(ValueModel v) {
@@ -87,24 +93,28 @@ public class ArrayModel extends Observable implements ModelElement {
 	public Collection<ValueModel> getVars() {
 		return Collections.unmodifiableCollection(vars.values());
 	}
+	
 
 	
 	@Override
 	public IFigure createFigure() {
-		return new ArrayValueFigure(this);
+		return new ArrayReferenceFigure(this);
 	}
-
+	
+	public ArrayValueFigure getFigure() {
+		return fig;
+	}
 	
 	@Override
 	public String toString() {
 		String els = "{";
-		for(int i = 0; i < elements.length; i++) {
+		for(int i = 0; i < elements.size(); i++) {
 			if(i != 0)
 				els += ", ";
 			els += get(i);
 		}
 		els += "}";
-		return ArrayModel.class.getSimpleName() + " " + els;
+		return ArrayReferenceModel.class.getSimpleName() + " " + els;
 	}
 
 	@Override
