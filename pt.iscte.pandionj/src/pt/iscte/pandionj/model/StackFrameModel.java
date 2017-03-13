@@ -28,6 +28,7 @@ import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaType;
+import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import com.google.common.collect.Multimap;
@@ -100,8 +101,14 @@ public class StackFrameModel extends Observable {
 				String var = iterator.next().getKey();
 				boolean contains = false;
 				for(IVariable v : stackFrame.getVariables()) {
-					if(v.getName().equals(var))
+					String varName = v.getName();
+					if(varName.equals(var))
 						contains = true;
+					else if(varName.equals("this")) {
+						for (IVariable iv : v.getValue().getVariables())
+							if(iv.getName().equals(var))
+								contains = true;
+					}
 				}
 				if(!contains) {
 					iterator.remove();
@@ -110,20 +117,18 @@ public class StackFrameModel extends Observable {
 				}
 			}
 
-			IJavaVariable thisVar = null;
 			for(IVariable v : stackFrame.getVariables()) {
 				IJavaVariable jv = (IJavaVariable) v;
 				String varName = v.getName();
-
-				if(varName.equals("this"))
-					thisVar = jv;
+				
+				if(varName.equals("this")) {
+					for (IVariable iv : jv.getValue().getVariables())
+						 if(!((IJavaVariable) iv).isSynthetic())
+							 handleVar((IJavaVariable) iv, true);
+				}
 				else if(!jv.isSynthetic())
-					handleVar(jv);
+					handleVar(jv, false);
 			}
-
-			if(thisVar != null)
-				for (IVariable v : thisVar.getValue().getVariables())
-					handleVar((IJavaVariable) v);
 
 			handleArrayIterators();
 		}
@@ -133,15 +138,17 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	private void handleVar(IJavaVariable jv) throws DebugException {
+	private void handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
 		String varName = jv.getName();
-		IJavaType type = jv.getJavaType();
-
+		
+		IJavaValue value = (IJavaValue) jv.getValue();
+//		IJavaType type = jv.getJavaType();
+		
 		if(vars.containsKey(varName)) {
 			vars.get(varName).update();
 		}
 		else {
-			ModelElement newElement = type instanceof IJavaReferenceType ? new ReferenceModel(jv, this) : new ValueModel(jv, this);
+			ModelElement newElement = value instanceof IJavaObject ? new ReferenceModel(jv, isInstance, this) : new ValueModel(jv, this);
 			vars.put(varName, newElement);
 			if(newElement instanceof ReferenceModel)
 				((ReferenceModel) newElement).registerObserver(new Observer() {
@@ -175,6 +182,7 @@ public class StackFrameModel extends Observable {
 	private Collection<String> findArrayIterators(String pointerVar) {
 		List<String> iterators = new ArrayList<>(2);
 		for (Variable var : codeAnalysis.variableRoles.values()) {
+			
 			if(var instanceof ArrayIterator) {
 				ArrayIterator it = (ArrayIterator) var;
 				Multimap<Integer, Variable> arrayDimensions = it.getArrayDimensions();

@@ -42,7 +42,7 @@ public class ArrayReferenceModel extends Observable implements ModelElement {
 			elements = new ArrayList<>();
 			IJavaValue[] values = array.getValues();
 			for(int i = 0; i < values.length; i++)
-				elements.add(new ReferenceModel((IJavaVariable) array.getVariable(i), model));
+				elements.add(new ReferenceModel((IJavaVariable) array.getVariable(i), true, model));
 		}
 		catch(DebugException e) {
 			e.printStackTrace();

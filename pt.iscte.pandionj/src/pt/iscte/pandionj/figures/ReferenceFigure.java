@@ -16,7 +16,7 @@ public class ReferenceFigure extends Label {
 
 	public ReferenceFigure(ReferenceModel model) {
 		super(model.getName());
-		setFont(new Font(null, Constants.FONT_FACE, Constants.VAR_FONT_SIZE, SWT.NONE));
+		setFont(new Font(null, Constants.FONT_FACE, Constants.VAR_FONT_SIZE, model.isInstance() ? SWT.BOLD : SWT.NONE));
 		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		model.registerObserver(new Observer() {
 			public void update(Observable o, Object target) {

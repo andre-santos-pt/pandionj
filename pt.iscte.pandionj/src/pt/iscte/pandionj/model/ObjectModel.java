@@ -51,14 +51,19 @@ public class ObjectModel extends Observable  implements ModelElement {
 		try {
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
-//				IValue value = var.getValue(); // to load
-				if(var.getJavaType().equals(object.getJavaType()))
+				IJavaValue value = (IJavaValue) var.getValue(); // to load
+			
+				System.out.println(var.getReferenceTypeName());
+				
+//				if(!value.isNull() && var.getJavaType().equals(object.getJavaType()))
+//					varsOfSameType.add(var.getName());
+				if(var.getReferenceTypeName().equals(object.getReferenceTypeName()))
 					varsOfSameType.add(var.getName());
-
+				
 				if(!var.isStatic()) {
 					String name = var.getName();
-					if(var.getJavaType() instanceof IJavaReferenceType && !valueHandler.qualifies((IJavaValue) v.getValue())) {
-						ReferenceModel refModel = new ReferenceModel(var, model);
+					if(var.getValue() instanceof IJavaObject && !valueHandler.qualifies((IJavaValue) v.getValue())) {
+						ReferenceModel refModel = new ReferenceModel(var, true, model);
 						refModel.registerObserver(new Observer() {
 							public void update(Observable o, Object arg) {
 								setChanged();

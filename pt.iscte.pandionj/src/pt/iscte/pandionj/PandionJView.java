@@ -57,6 +57,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.ZestStyles;
@@ -382,7 +383,7 @@ public class PandionJView extends ViewPart {
 
 				@Override
 				public void doubleClick(DoubleClickEvent event) {
-					System.out.println(event.getSelection());
+					System.out.println("?? " + event.getSelection());
 					if(!event.getSelection().isEmpty()) {
 						IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 						Object obj = selection.getFirstElement();

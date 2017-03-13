@@ -1,42 +1,32 @@
 package pt.iscte.pandionj;
 
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
-import java.util.function.Consumer;
 
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.swt.SWT;
 import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.layouts.Filter;
 import org.eclipse.zest.layouts.InvalidLayoutConfiguration;
 import org.eclipse.zest.layouts.LayoutAlgorithm;
 import org.eclipse.zest.layouts.LayoutEntity;
-import org.eclipse.zest.layouts.LayoutGraph;
 import org.eclipse.zest.layouts.LayoutRelationship;
 import org.eclipse.zest.layouts.progress.ProgressListener;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.Multiset;
-
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
-import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
-import pt.iscte.pandionj.model.ValueModel;
 import pt.iscte.pandionj.model.ReferenceModel;
+import pt.iscte.pandionj.model.ValueModel;
 
 public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
-
 
 	// index model -> layout
 	private Map<ModelElement, LayoutEntity> map = new WeakHashMap<>();
@@ -75,8 +65,6 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			if(element instanceof ValueModel || element instanceof ReferenceModel){
 				setLocation(e, Constants.MARGIN + x, refY);
 
-//				refY = Math.max(refY, e.getYInLayout() + e.getHeightInLayout());
-
 				if(element instanceof ReferenceModel) {
 					ModelElement target = ((ReferenceModel) element).getTarget();
 					LayoutEntity targetE = map.get(target);
@@ -85,8 +73,6 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 						continue;
 					}
 
-//					refY = Math.max(refY, targetE.getYInLayout() + targetE.getHeightInLayout());
-					
 					if(target instanceof ObjectModel) {
 						ObjectModel obj = (ObjectModel) target;
 						if(obj.isBinaryTree()) {
@@ -122,7 +108,6 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 									else
 										System.err.println("not " + o);
 								}
-
 							}
 							setLocation(targetE, e.getXInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 							Visitor v = new Visitor();
@@ -134,12 +119,9 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 						
 						List<ReferenceModel> elements = ((ArrayReferenceModel) target).getModelElements();
 						double yy = targetE.getYInLayout();
-//						double yy = refY;
 						int i = 0;
 						for(ReferenceModel r : elements) {
 							LayoutEntity ent = map.get(r.getTarget());
-//							ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, yy);
-//							setLocation(ent, targetE.getXInLayout() + Constants.NODE_SPACING, refY);
 							yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING;
 							GraphNode n = (GraphNode) targetE.getGraphData();
 							Point location = ((ArrayReferenceFigure) n.getNodeFigure()).getAnchor(i++).getLocation(null);

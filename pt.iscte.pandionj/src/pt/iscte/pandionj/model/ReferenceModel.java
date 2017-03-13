@@ -7,6 +7,7 @@ import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
@@ -20,13 +21,16 @@ public class ReferenceModel extends Observable implements ModelElement {
 	private IJavaVariable var;
 	private List<IJavaObject> history;
 	private StackFrameModel model;
-
+	private final boolean isInstance;
+	
 	private NullModel nullModel;
 	
-	ReferenceModel(IJavaVariable var, StackFrameModel model) {
+	ReferenceModel(IJavaVariable var, boolean isInstance, StackFrameModel model) {
 		this.model = model;
+		this.isInstance = isInstance;
+		
 		try {
-			assert var.getJavaType() instanceof IJavaReferenceType;
+			assert var.getValue() instanceof IJavaObject;
 			this.var = var;
 			history = new ArrayList<>();
 			history.add((IJavaObject) var.getValue());
@@ -97,7 +101,7 @@ public class ReferenceModel extends Observable implements ModelElement {
 
 	public boolean isArrayValue() {
 		try {
-			return var.getJavaType() instanceof IJavaArrayType &&
+			return var.getValue() instanceof IJavaArray &&
 					!(((IJavaArrayType) var.getJavaType()).getComponentType() instanceof IJavaReferenceType); 
 		} catch (DebugException e) {
 			e.printStackTrace();
@@ -105,6 +109,10 @@ public class ReferenceModel extends Observable implements ModelElement {
 		}
 	}
 
+	public boolean isInstance() {
+		return isInstance;
+	}
+	
 	@Override
 	public IFigure createFigure() {
 		return new ReferenceFigure(this);
