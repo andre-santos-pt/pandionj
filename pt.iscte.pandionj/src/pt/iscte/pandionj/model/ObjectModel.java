@@ -42,7 +42,6 @@ public class ObjectModel extends Observable  implements ModelElement {
 
 	public ObjectModel(IJavaObject object, StackFrameModel model) {
 		assert object != null;
-
 		this.object = object;
 		this.model = model;
 		values = new LinkedHashMap<String, ValueModel>();
@@ -51,9 +50,6 @@ public class ObjectModel extends Observable  implements ModelElement {
 		try {
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
-				IJavaValue value = (IJavaValue) var.getValue(); // to load
-			
-				System.out.println(var.getReferenceTypeName());
 				
 //				if(!value.isNull() && var.getJavaType().equals(object.getJavaType()))
 //					varsOfSameType.add(var.getName());
@@ -147,7 +143,13 @@ public class ObjectModel extends Observable  implements ModelElement {
 	//	}
 
 	public String toStringValue() {
-		return model.evalMethod(this, "toString()");
+		try {
+			IValue val = model.evalMethod(this, "toString()", false);
+			return val != null ? val.getValueString() : "NULL";
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return "NULL";
+		}
 	}
 
 	@Override
@@ -364,6 +366,10 @@ public class ObjectModel extends Observable  implements ModelElement {
 	@Override
 	public void registerObserver(Observer o) {
 		addObserver(o);
+	}
+	
+	public StackFrameModel getStackFrame() {
+		return model;
 	}
 	
 }

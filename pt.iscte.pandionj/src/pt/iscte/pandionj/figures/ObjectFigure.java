@@ -6,6 +6,9 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.draw2d.ActionEvent;
+import org.eclipse.draw2d.ActionListener;
+import org.eclipse.draw2d.Button;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
@@ -13,6 +16,8 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.TextUtilities;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.jdt.debug.core.IJavaClassType;
+import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
@@ -76,7 +81,6 @@ public class ObjectFigure extends Figure {
 			public void update(Observable o, Object arg) {
 				Display.getDefault().syncExec(() -> {
 					label.setText(model.toStringValue());
-//					updateSize();
 				});
 			}
 		});
@@ -87,7 +91,22 @@ public class ObjectFigure extends Figure {
 			e.printStackTrace();
 		}
 		label.setText(model.toStringValue());
+		
+		
+		Button but = new Button("area");
+		but.addActionListener(new ActionListener() {
+			
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				System.out.println("!!!");
+				model.getStackFrame().evalMethod(model, "scale(2)", true);
+			}
+		});
+		fig.add(but);
+		
 		setPreferredSize(getPreferredSize().expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
+		
+	
 	}
 	
 //	private void updateSize() {

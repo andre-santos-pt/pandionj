@@ -1,16 +1,13 @@
 package pt.iscte.pandionj.model;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Observable;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.model.IStackFrame;
-
-import pt.iscte.pandionj.parser.ParserAPI;
+import org.eclipse.jdt.debug.core.IJavaStackFrame;
 
 
 
@@ -21,11 +18,11 @@ public class CallStackModel extends Observable {
 		final StackFrameModel frame;
 		List<Node> children;
 
-		Node(IStackFrame frame) {
+		Node(IJavaStackFrame frame) {
 			this(null, frame);
 		}
 
-		Node(Node parent, IStackFrame frame) {
+		Node(Node parent, IJavaStackFrame frame) {
 			assert frame != null;
 			this.parent = parent;
 			this.frame = new StackFrameModel(frame);
@@ -36,7 +33,7 @@ public class CallStackModel extends Observable {
 			return parent == null;
 		}
 
-		Node addChild(IStackFrame child) {
+		Node addChild(IJavaStackFrame child) {
 			if(children.isEmpty())
 				children = new ArrayList<>();
 			else {
@@ -100,13 +97,13 @@ public class CallStackModel extends Observable {
 		}
 		else {
 			if(root == null || root.frame.getStackFrame() != stack[stack.length-1]) {
-				root = new Node(stack[stack.length-1]);
+				root = new Node((IJavaStackFrame) stack[stack.length-1]);
 				current = root;
 				notify = true;
 			}
 			Node n = root;
 			for(int i = stack.length-2; i >= 0; i--) {
-				n = n.addChild(stack[i]);	
+				n = n.addChild((IJavaStackFrame) stack[i]);	
 			}
 			if(current != n)
 				notify = true;
