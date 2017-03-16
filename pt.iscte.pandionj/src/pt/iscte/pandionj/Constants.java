@@ -26,6 +26,9 @@ public interface Constants {
 	Dimension OBJECT_CORNER = new Dimension(10, 10);
 	int OBJECT_PADDING = 5;
 	
+	int BUTTON_FONT_SIZE = 12;
+
+	
 	int VALUE_FONT_SIZE = 20;
 	String FONT_FACE = "Arial";
 
@@ -50,6 +53,7 @@ public interface Constants {
 	Color ERROR_COLOR = ColorConstants.red;
 
 	String START_MESSAGE = "This view will be populated once the execution of the Java debugger hits a breakpoint.";
+
 	
 	static Color getVarColor(int i) {
 		assert i >= 0;

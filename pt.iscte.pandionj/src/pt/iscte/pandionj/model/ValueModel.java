@@ -11,6 +11,7 @@ import org.eclipse.debug.core.model.IValue;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.ValueFigure;
 import pt.iscte.pandionj.parser.variable.FixedValue;
@@ -94,7 +95,7 @@ public class ValueModel extends Observable implements ModelElement {
 	}
 
 	@Override
-	public IFigure createFigure() {
+	public IFigure createFigure(Graph graph) {
 		return new ValueFigure(this, role);
 	}
 	

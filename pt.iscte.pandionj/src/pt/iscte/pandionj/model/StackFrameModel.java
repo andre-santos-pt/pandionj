@@ -24,6 +24,7 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpression;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
+import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
@@ -39,8 +40,11 @@ import org.eclipse.swt.widgets.Display;
 import com.google.common.collect.Multimap;
 
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
+import pt.iscte.pandionj.parser.ClassInfo;
+import pt.iscte.pandionj.parser.JavaSourceParser;
 import pt.iscte.pandionj.parser.ParserAPI;
 import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
+import pt.iscte.pandionj.parser.Visitor;
 import pt.iscte.pandionj.parser.exception.JavaException;
 import pt.iscte.pandionj.parser.exception.JavaException.ArrayOutOfBounds;
 import pt.iscte.pandionj.parser.variable.Stepper.ArrayIterator;
@@ -53,7 +57,7 @@ public class StackFrameModel extends Observable {
 	private Map<String, ModelElement> vars;
 	private Map<Long, ModelElement> objects;
 	private ParserResult codeAnalysis;
-
+	private ClassInfo classInfo;
 
 	public StackFrameModel(IJavaStackFrame frame) {
 		this.frame = frame;
@@ -61,12 +65,16 @@ public class StackFrameModel extends Observable {
 		objects = new HashMap<>();
 		IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		try {
-			System.out.println("SRC :" + frame.getSourcePath());
-		} catch (DebugException e) {
+			System.out.println("SRC :" + frame.getSourcePath() + " " + frame.isPublic());
+
+			codeAnalysis = ParserAPI.parseFile(srcFile.getRawLocation().toString());
+			Visitor visitor = new Visitor();
+			JavaSourceParser.createFromFile(srcFile.getRawLocation().toString()).parse(visitor);
+			classInfo = visitor.info;
+		} 
+		catch (DebugException e) {
 			e.printStackTrace();
 		}
-		
-		codeAnalysis = ParserAPI.parseFile(srcFile.getRawLocation().toString());
 	}
 
 
@@ -297,7 +305,7 @@ public class StackFrameModel extends Observable {
 
 				}
 				else {
-					e = new ObjectModel(obj, this);
+					e = new ObjectModel(obj, this, classInfo);
 					e.registerObserver(new Observer() {
 						public void update(Observable o, Object arg) {
 							setChanged();
@@ -340,7 +348,7 @@ public class StackFrameModel extends Observable {
 	@Override
 	public String toString() {
 		try {
-//			String name = stackFrame.getName();
+			//			String name = stackFrame.getName();
 			return (frame.isConstructor() ? "new " + frame.getReferenceType().getName() : frame.getMethodName())  + "(" + frame.getArgumentTypeNames() + ")";
 		} catch (DebugException e) {
 			e.printStackTrace();

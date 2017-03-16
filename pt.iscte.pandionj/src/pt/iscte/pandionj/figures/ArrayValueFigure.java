@@ -156,11 +156,11 @@ public class ArrayValueFigure extends Figure {
 
 	private void addVariable(ValueModel varModel) {
 
-		Display.getDefault().syncExec(() -> setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false));
+		Display.getDefault().asyncExec(() -> setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false));
 		varModel.registerObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				Display.getDefault().syncExec(() -> {
+				Display.getDefault().asyncExec(() -> {
 					setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false);
 					repaint();}
 						);
@@ -344,20 +344,20 @@ public class ArrayValueFigure extends Figure {
 		}
 
 		public void setValue(String value) {
-			Display.getDefault().syncExec(() -> valueLabel.setText(value));
+			Display.getDefault().asyncExec(() -> valueLabel.setText(value));
 		}
 
 		public void highlight() {
-			Display.getDefault().syncExec(() -> valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR));
+			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR));
 		}
 
 		public void unhighlight() {
-			Display.getDefault().syncExec(() -> valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR));
+			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR));
 		}
 
 		public void markError() {
 			error = true;
-			Display.getDefault().syncExec(() -> {
+			Display.getDefault().asyncExec(() -> {
 				indexLabel.setForegroundColor(Constants.ERROR_COLOR);
 				setToolTip(new Label("Illegal access to position " + indexLabel.getText()));
 				repaint();

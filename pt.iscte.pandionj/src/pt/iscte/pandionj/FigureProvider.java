@@ -20,6 +20,7 @@ import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IConnectionStyleProvider;
 import org.eclipse.zest.core.viewers.IFigureProvider;
 import org.eclipse.zest.core.viewers.ISelfStyleProvider;
+import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.GraphConnection;
 import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
@@ -33,9 +34,15 @@ import pt.iscte.pandionj.model.NullModel;
 
 class FigureProvider extends LabelProvider implements IFigureProvider, IConnectionStyleProvider, ISelfStyleProvider {
 
+	Graph graph;
+	
+	public FigureProvider(Graph graph) {
+		this.graph = graph;
+	}
+	
 	@Override
 	public IFigure getFigure(Object element) {
-		return ((ModelElement) element).createFigure();
+		return ((ModelElement) element).createFigure(graph);
 	}
 
 	

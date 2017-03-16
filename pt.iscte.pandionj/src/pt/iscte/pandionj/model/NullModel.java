@@ -5,6 +5,7 @@ import java.util.Observer;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.NullFigure;
 
@@ -27,7 +28,7 @@ public class NullModel implements ModelElement {
 	}
 
 	@Override
-	public IFigure createFigure() {
+	public IFigure createFigure(Graph graph) {
 		return new NullFigure();
 	}
 

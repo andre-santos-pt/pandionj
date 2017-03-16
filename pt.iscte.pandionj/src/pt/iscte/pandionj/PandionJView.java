@@ -12,6 +12,8 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.IExpressionManager;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IValue;
@@ -53,6 +55,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
@@ -73,7 +76,7 @@ public class PandionJView extends ViewPart {
 	private IStackFrame exceptionFrame;
 	private String exception;
 
-	private IDebugContextListener debugUiListener;
+	//	private IDebugContextListener debugUiListener;
 	private IDebugEventSetListener debugEventListener;
 	private IJavaBreakpointListener exceptionListener;
 
@@ -93,23 +96,25 @@ public class PandionJView extends ViewPart {
 		image = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame.gif")); 
 		imageRun = new Image(Display.getDefault(), PandionJView.class.getResourceAsStream("frame_run.gif"));
 		zoom = 1.0;
-		
+
 		model = new CallStackModel();
 		debugEventListener = (new DebugListener());
-		debugUiListener = new DebugUIListener();
+		//		debugUiListener = new DebugUIListener();
 		exceptionListener = new ExceptionListener();
 
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
-		//		DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
 		JDIDebugModel.addJavaBreakpointListener(exceptionListener);
+		//		DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
+		
+		
 	}
 
 	@Override
 	public void dispose() {
 		super.dispose();
 		DebugPlugin.getDefault().removeDebugEventListener(debugEventListener);
-		DebugUITools.getDebugContextManager().removeDebugContextListener(debugUiListener);
 		JDIDebugModel.removeJavaBreakpointListener(exceptionListener);
+		//		DebugUITools.getDebugContextManager().removeDebugContextListener(debugUiListener);
 		image.dispose();
 		imageRun.dispose();
 	}
@@ -168,11 +173,23 @@ public class PandionJView extends ViewPart {
 					}
 				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
-					clearView(true);
+					terminate();
 				}
 			}
 		}
+
+		private void terminate() {
+			//clearView(true);
+
+			Display.getDefault().asyncExec(() -> {
+				//				label.setText("Execution terminated");
+				for (Control view : callStack.getChildren()) {
+					view.setEnabled(false);
+				}
+			});
+		}
 	}
+
 
 
 
@@ -212,21 +229,31 @@ public class PandionJView extends ViewPart {
 				} catch (DebugException e) {
 					e.printStackTrace();
 				}
-
 			}
 			else if (breakpoint instanceof IJavaExceptionBreakpoint) {
 				IJavaExceptionBreakpoint exc = (IJavaExceptionBreakpoint) breakpoint;
 				try {
+					thread.terminateEvaluation();
 					exception = exc.getExceptionTypeName();
 					exceptionFrame = thread.getTopStackFrame();
 					IStackFrame[] frames = thread.getStackFrames(); 
+
 					handleFrames(frames);
 					int line = exceptionFrame.getLineNumber();
-					Display.getDefault().syncExec(() -> {
-						area.setBackground(Constants.ERROR_COLOR);
-						label.setText("Error: " + exception + " on line " + line);
-					});
+//					Display.getDefault().asyncExec(() -> {
+//						area.setBackground(Constants.ERROR_COLOR);
+//						label.setText("Exception: " + exception + " on line " + line);
+//					});
 					model.getTopFrame().processException();
+					//					thread.terminate();
+
+					Display.getDefault().asyncExec(() -> {
+						ExpandItem item = callStack.getItem(callStack.getItemCount()-1);
+						item.setText(item.getText() + " " + exception + " on line " + line);
+						StackView view = (StackView) item.getControl();
+						view.setError("Exception: " + exception + " on line " + line);
+					});
+
 				} catch (DebugException e) {
 					e.printStackTrace();
 				}
@@ -252,7 +279,7 @@ public class PandionJView extends ViewPart {
 		exceptionFrame = null;
 		model = new CallStackModel();
 		handleFrames(new IStackFrame[0]);
-		Display.getDefault().syncExec(() -> {
+		Display.getDefault().asyncExec(() -> {
 			label.setText(startMsg ? Constants.START_MESSAGE : "");
 			area.setBackground(null);
 		});
@@ -265,7 +292,7 @@ public class PandionJView extends ViewPart {
 		model.handle(frames);
 		model.update();
 		List<StackFrameModel> stackPath = model.getStackPath();
-		Display.getDefault().syncExec(new Runnable() {
+		Display.getDefault().asyncExec(new Runnable() {
 
 			@Override
 			public void run() {
@@ -273,7 +300,7 @@ public class PandionJView extends ViewPart {
 				for(ExpandItem item : callStack.getItems())
 					if(item.getExpanded())
 						expanded.add(((StackView) item.getControl()).model);
-				
+
 				int diff = stackPath.size() - callStack.getItemCount();
 				while(diff > 0) {
 					diff--;
@@ -314,6 +341,7 @@ public class PandionJView extends ViewPart {
 			@Override
 			public void run() {
 				System.out.println("GC!");
+				model.simulateGC();
 			}
 		});
 
@@ -334,7 +362,7 @@ public class PandionJView extends ViewPart {
 		});
 
 		toolBar.add(new Action("-") {
-			
+
 			public void run() {
 				zoom *= 0.95;
 				for (ExpandItem expandItem : callStack.getItems()) {
@@ -366,14 +394,18 @@ public class PandionJView extends ViewPart {
 
 		public StackView(Composite parent, ExpandItem barItem) {
 			super(parent, SWT.BORDER);
-			setLayout(new FillLayout());
+			FillLayout fillLayout = new FillLayout();
+			fillLayout.marginHeight = 5;
+			fillLayout.marginWidth = 5;
+
+			setLayout(fillLayout);
 			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			viewer = new GraphViewerZoomable(this, SWT.BORDER);
 			PandionJLayoutAlgorithm layout = new PandionJLayoutAlgorithm();
 			viewer.setLayoutAlgorithm(layout);
 			viewer.setContentProvider(new NodeProvider());
 			viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
-			viewer.setLabelProvider(new FigureProvider());
+			viewer.setLabelProvider(new FigureProvider(viewer.getGraphControl()));
 			viewer.getGraphControl().addControlListener(new ControlAdapter() {
 				public void controlResized(ControlEvent e) {
 					adaptBarHeight(barItem);
@@ -393,7 +425,7 @@ public class PandionJView extends ViewPart {
 				}
 			});
 			viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-				
+
 				@Override
 				public void selectionChanged(SelectionChangedEvent event) {
 					System.out.println(event.getSelection());
@@ -406,6 +438,11 @@ public class PandionJView extends ViewPart {
 			viewer.setZoom(zoom);
 		}
 
+		public void setError(String message) {
+			setBackground(Constants.ERROR_COLOR);
+			setToolTipText(message);
+		}
+
 		void setInput(StackFrameModel frameModel) {
 			if(this.model == frameModel) {
 				this.model.update();
@@ -416,7 +453,7 @@ public class PandionJView extends ViewPart {
 				if (frameModel != null)
 					frameModel.registerObserver(new Observer() {
 						public void update(Observable o, Object e) {
-							Display.getDefault().asyncExec(() -> {
+							Display.getDefault().syncExec(() -> {
 								viewer.refresh();
 								viewer.applyLayout();
 							});
@@ -426,84 +463,10 @@ public class PandionJView extends ViewPart {
 		}
 	}
 
-
-
 	private void adaptBarHeight(ExpandItem barItem) {
 		Point size = barItem.getControl().computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
 		barItem.setHeight(Math.max(100, size.y + Constants.MARGIN));
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	private static NullableOptional<String> valueOfExpression(IStackFrame stackFrame, String expression) {
-		// TODO fix code. This is a work-around making asynchronous
-		// WatchExpressionDelegate synced because WatchExpression wouldn't work
-		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-		IWatchExpressionDelegate delegate = expressionManager
-				.newWatchExpressionDelegate(stackFrame.getModelIdentifier());
-		class Wrapper<T> {
-			T value = null;
-		}
-		;
-		Wrapper<IValue> res = new Wrapper<>();
-		Semaphore sem = new Semaphore(0);
-
-		IWatchExpressionListener valueListener = result -> {
-			try {
-				res.value = result.getValue();
-			} finally {
-				sem.release();
-			}
-		};
-		delegate.evaluateExpression(expression, stackFrame, valueListener);
-
-		try {
-			sem.acquire();
-		} catch (InterruptedException e) {
-		}
-
-		IValue value = res.value;
-		NullableOptional<String> result = null;
-		try {
-			if (value == null) {
-				System.out.println("EVAL <" + expression + ">" + " yields empty");
-				result = NullableOptional.ofEmpty();
-			} else if ("null".equals(value.getValueString())) {
-				System.out.println("EVAL <" + expression + ">" + " yields null");
-				result = NullableOptional.ofNull();
-			} else {
-				System.out.println("EVAL <" + expression + ">" + " yields " + value.getValueString());
-				result = NullableOptional.ofNonNull(value.getValueString());
-			}
-		} catch (DebugException e) {
-		} finally {
-			if (result == null)
-				result = NullableOptional.ofEmpty();
-		}
-		return result;
-	}
-
-	private static boolean isException(String referenceTypeName) {
-		try {
-			Class<?> referenceClass = Class.forName(referenceTypeName);
-			return Exception.class.isAssignableFrom(referenceClass);
-		} catch (ClassNotFoundException e) {
-
-			return false;
-		}
-	}
 
 }

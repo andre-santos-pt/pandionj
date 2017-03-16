@@ -4,58 +4,77 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.swing.Renderer;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IValue;
+import org.eclipse.debug.core.model.ITerminate;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.jdt.debug.core.IEvaluationRunnable;
 import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaReferenceType;
+import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
+import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.zest.core.widgets.Graph;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.sun.jdi.InvocationException;
+import com.sun.jdi.ObjectReference;
 
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.StringFigure;
+import pt.iscte.pandionj.parser.ClassInfo;
+import pt.iscte.pandionj.parser.MethodInfo;
+import pt.iscte.pandionj.parser.VisibilityInfo;
 
 public class ObjectModel extends Observable  implements ModelElement {
 
 	private IJavaObject object;
-	private StackFrameModel model;
+	private StackFrameModel frame;
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
 	private List<String> varsOfSameType;
 
 	private TypeHandler valueHandler = new PrimitiveWrapperHandler();
 
-	public ObjectModel(IJavaObject object, StackFrameModel model) {
+	private ClassInfo info;
+
+	public ObjectModel(IJavaObject object, StackFrameModel model, ClassInfo info) {
 		assert object != null;
 		this.object = object;
-		this.model = model;
+		this.frame = model;
+		this.info = info;
+
 		values = new LinkedHashMap<String, ValueModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
 		varsOfSameType = new ArrayList<>();
 		try {
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
-				
-//				if(!value.isNull() && var.getJavaType().equals(object.getJavaType()))
-//					varsOfSameType.add(var.getName());
-				if(var.getReferenceTypeName().equals(object.getReferenceTypeName()))
+
+				//				if(!value.isNull() && var.getJavaType().equals(object.getJavaType()))
+				//					varsOfSameType.add(var.getName());
+				if(!var.isStatic() && var.getReferenceTypeName().equals(object.getReferenceTypeName()))
 					varsOfSameType.add(var.getName());
-				
+
 				if(!var.isStatic()) {
 					String name = var.getName();
 					if(var.getValue() instanceof IJavaObject && !valueHandler.qualifies((IJavaValue) v.getValue())) {
@@ -98,7 +117,7 @@ public class ObjectModel extends Observable  implements ModelElement {
 	}
 
 	@Override
-	public IFigure createFigure() {
+	public IFigure createFigure(Graph graph) {
 		try {
 			if(object.getJavaType().getName().equals(String.class.getName()))
 				return new StringFigure(object.getValueString());
@@ -106,7 +125,7 @@ public class ObjectModel extends Observable  implements ModelElement {
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
-		return new ObjectFigure(this);
+		return new ObjectFigure(this, graph);
 	}
 
 	public Set<String> getFields() {
@@ -135,7 +154,7 @@ public class ObjectModel extends Observable  implements ModelElement {
 	}
 
 	public Collection<ReferenceModel> getReferencePointers() {
-		return model.getReferencesTo(this);
+		return frame.getReferencesTo(this);
 	}
 
 	//	public String eval(String expression) {
@@ -143,13 +162,24 @@ public class ObjectModel extends Observable  implements ModelElement {
 	//	}
 
 	public String toStringValue() {
+		MethodInfo m = info.getMethod("toString");
+		if(m == null)
+			return "";
+		
+		IJavaValue val = invoke(m);
 		try {
-			IValue val = model.evalMethod(this, "toString()", false);
-			return val != null ? val.getValueString() : "NULL";
+			return val == null ? "" : val.getValueString();
 		} catch (DebugException e) {
 			e.printStackTrace();
-			return "NULL";
-		}
+			return "";
+		} 
+		//		try {
+		//			IValue val = model.evalMethod(this, "toString()", false);
+		//			return val != null ? val.getValueString() : "NULL";
+		//		} catch (DebugException e) {
+		//			e.printStackTrace();
+		//			return "NULL";
+		//		}
 	}
 
 	@Override
@@ -306,56 +336,56 @@ public class ObjectModel extends Observable  implements ModelElement {
 			if(!visited.contains(e)) {
 				visited.add(e);
 				v.accept(e, parent, index, depth, field);
-				
+
 				if(e instanceof ObjectModel)
 					for(String siblingRef : ((ObjectModel) e).varsOfSameType) {
 						ReferenceModel refModel = ((ObjectModel) e).references.get(siblingRef);
 						ModelElement o = refModel.getTarget();
-//						if(!(o instanceof NullModel && !visitNulls))
-							stack.push(o);
+						//						if(!(o instanceof NullModel && !visitNulls))
+						stack.push(o);
 					}
-				
+
 			}
 		}
 	}
 
-	
+
 	public boolean isBinaryTree() {
 		if(varsOfSameType.size() != 2)
 			return false;
-		
+
 		return isBinaryTree(this, varsOfSameType.get(0), varsOfSameType.get(1), new HashSet<>());
 	}
-	
-	
+
+
 	private static boolean isBinaryTree(ObjectModel obj, String left, String right, Set<ObjectModel> visited) {	
 		if(visited.contains(obj))
 			return false;
 		else
 			visited.add(obj);
-		
+
 		ModelElement leftTarget = obj.references.get(left).getTarget();
 		ModelElement rightTarget = obj.references.get(right).getTarget();
-		
+
 		return (leftTarget instanceof NullModel || isBinaryTree((ObjectModel) leftTarget, left, right, visited)) &&
-			(rightTarget instanceof NullModel || isBinaryTree((ObjectModel) rightTarget, left, right, visited));
+				(rightTarget instanceof NullModel || isBinaryTree((ObjectModel) rightTarget, left, right, visited));
 	}
-	
+
 	public void infixTraverse(SiblingVisitor v) {
 		assert isBinaryTree();
-		
+
 		infixTraverse(this, varsOfSameType.get(0), varsOfSameType.get(1), 0,  v);
 	}
-	
+
 	private static void infixTraverse(ObjectModel obj, String left, String right, int depth, SiblingVisitor v) {
 		ModelElement leftTarget = obj.references.get(left).getTarget();
 		if(leftTarget instanceof ObjectModel)
 			infixTraverse((ObjectModel) leftTarget, left, right, depth+1, v);
 		else
 			v.accept(leftTarget, null, -1, depth+1, null);
-		
+
 		v.accept(obj, null, -1, depth, null);
-		
+
 		ModelElement rightTarget = obj.references.get(right).getTarget();
 		if(rightTarget instanceof ObjectModel)
 			infixTraverse((ObjectModel) rightTarget, left, right, depth+1, v);
@@ -367,9 +397,81 @@ public class ObjectModel extends Observable  implements ModelElement {
 	public void registerObserver(Observer o) {
 		addObserver(o);
 	}
-	
+
 	public StackFrameModel getStackFrame() {
-		return model;
+		return frame;
 	}
-	
+
+	public Iterator<MethodInfo> getMethods() {
+		return info.getMethods(EnumSet.of(VisibilityInfo.PUBLIC));
+	}
+
+	public IJavaValue invoke(MethodInfo m, IJavaValue ... args) {
+		System.out.println("inv");
+		try {
+			IJavaThread t = (IJavaThread) frame.getStackFrame().getThread();
+			
+			class MethodCall implements IEvaluationRunnable, ITerminate {
+				IJavaValue ret;
+				
+				Thread job;
+				
+				@Override
+				public boolean canTerminate() {
+					return true;
+				}
+
+				@Override
+				public boolean isTerminated() {
+					return !job.isAlive();
+				}
+
+				@Override
+				public void terminate() throws DebugException {
+					job.stop();
+				}
+
+				@Override
+				public void run(IJavaThread thread, IProgressMonitor monitor) throws DebugException {
+					job = new Thread() {
+						public void run() {
+							try {
+								ret = object.sendMessage(m.getName(), m.getJNISignature(), args, t, false);
+							} catch (DebugException e) {
+								e.printStackTrace();
+							}
+						};
+					};
+					job.start();
+					try {
+						job.join();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+				}
+				
+			}
+		
+			MethodCall call = new MethodCall();
+			t.runEvaluation(call, null, DebugEvent.EVALUATION, true);
+			
+			return call.ret;
+		} catch (DebugException e) {
+//			ObjectReference exception = ((InvocationException) e.getCause()).exception();
+//			((InvocationException) e.getCause()).printStackTrace();
+//			System.out.println(exception);
+			return null;
+		}
+	}
+
+//	public IJavaValue invoke(String methodName, String returnType, IJavaValue ... args) {
+//		String signature = JNIUtil.genJNISignature(returnType, args);
+//
+//		try {
+//			return object.sendMessage(methodName, signature, args, (IJavaThread) model.getStackFrame().getThread(), null);
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
 }

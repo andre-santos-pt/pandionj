@@ -16,6 +16,7 @@ import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.ArrayValueFigure;
@@ -97,7 +98,7 @@ public class ArrayReferenceModel extends Observable implements ModelElement {
 
 	
 	@Override
-	public IFigure createFigure() {
+	public IFigure createFigure(Graph graph) {
 		return new ArrayReferenceFigure(this);
 	}
 	

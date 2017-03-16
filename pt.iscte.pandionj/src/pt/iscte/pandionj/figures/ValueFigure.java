@@ -44,7 +44,7 @@ public class ValueFigure extends Figure {
 		model.registerObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				Display.getDefault().syncExec(() -> {
+				Display.getDefault().asyncExec(() -> {
 						valueLabel.setText(model.getCurrentValue());
 						valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR);
 				});

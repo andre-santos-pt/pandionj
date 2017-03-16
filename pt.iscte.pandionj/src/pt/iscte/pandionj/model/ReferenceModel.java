@@ -11,14 +11,15 @@ import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
-import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.ReferenceFigure;
 
 public class ReferenceModel extends Observable implements ModelElement {
 
 	private IJavaVariable var;
+	private IJavaObject target;
 	private List<IJavaObject> history;
 	private StackFrameModel model;
 	private final boolean isInstance;
@@ -33,7 +34,8 @@ public class ReferenceModel extends Observable implements ModelElement {
 			assert var.getValue() instanceof IJavaObject;
 			this.var = var;
 			history = new ArrayList<>();
-			history.add((IJavaObject) var.getValue());
+			target = (IJavaObject) var.getValue();
+			history.add(target);
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -55,11 +57,11 @@ public class ReferenceModel extends Observable implements ModelElement {
 		try {
 			boolean equals = ((IJavaObject) var.getValue()).getUniqueId() == history.get(history.size()-1).getUniqueId();
 			if(!equals) {
-				history.add((IJavaObject) var.getValue());
+				target = (IJavaObject) var.getValue();
+				history.add(target);
 				setChanged();
 				notifyObservers(getTarget());
 			}
-//			getTarget().update();
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -68,17 +70,11 @@ public class ReferenceModel extends Observable implements ModelElement {
 
 	@Override
 	public IJavaObject getContent() {
-		try {
-			return (IJavaObject) var.getValue();
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return null;
-		}
+		return target;
 	}
 
 	public ModelElement getTarget() {
-		IJavaObject obj = getContent();
-		return obj.isNull() ? getNullInstance(obj) : model.getObject(getContent(), true);
+		return target.isNull() ? getNullInstance(target) : model.getObject(target, true);
 	}
 
 	
@@ -114,7 +110,7 @@ public class ReferenceModel extends Observable implements ModelElement {
 	}
 	
 	@Override
-	public IFigure createFigure() {
+	public IFigure createFigure(Graph graph) {
 		return new ReferenceFigure(this);
 	}
 	

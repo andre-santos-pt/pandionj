@@ -4,11 +4,12 @@ import java.util.Observer;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.zest.core.widgets.Graph;
 
 public interface ModelElement {
 	void update();
 	IJavaValue getContent();
-	IFigure createFigure();
+	IFigure createFigure(Graph graph);
 	void registerObserver(Observer o);
 	
 	
