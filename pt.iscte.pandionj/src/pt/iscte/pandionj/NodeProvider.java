@@ -1,17 +1,13 @@
 package pt.iscte.pandionj;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
 
-import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
@@ -83,7 +79,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			List<ReferenceModel> elements = ((ArrayReferenceModel) source).getModelElements();
 			for(int i = 0; i < elements.size(); i++)
 				if(dest.equals(elements.get(i).getTarget()))
-					ret.add(new Pointer(Integer.toString(i), (ModelElement) source, (ModelElement) dest));
+					ret.add(new Pointer("[" + Integer.toString(i) + "]", (ModelElement) source, (ModelElement) dest));
 			return ret.toArray();
 		}
 		else

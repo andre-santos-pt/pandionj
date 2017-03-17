@@ -11,10 +11,10 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.model.ValueModel;
 import pt.iscte.pandionj.model.ValueModel.Role;
 
@@ -25,12 +25,12 @@ public class ValueFigure extends Figure {
 		setLayoutManager(layout);
 		
 		Label nameLabel = new Label(model.getName());
-		nameLabel.setFont(new Font(null, Constants.FONT_FACE, Constants.VAR_FONT_SIZE, SWT.NONE));
+		FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
 		add(nameLabel);
 		
 		Label valueLabel = new Label(model.getCurrentValue());
 		valueLabel.setOpaque(true);
-		valueLabel.setFont(new Font(null, Constants.FONT_FACE, Constants.VALUE_FONT_SIZE, SWT.NONE));
+		FontManager.setFont(valueLabel, Constants.VAR_FONT_SIZE);
 		int lineWidth = Role.FIXED_VALUE.equals(role) ? Constants.ARRAY_LINE_WIDTH * 2: Constants.ARRAY_LINE_WIDTH;
 		valueLabel.setBorder(new LineBorder(ColorConstants.black, lineWidth, SWT.LINE_SOLID));
 		layout.setConstraint(valueLabel, new GridData(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH));
@@ -39,7 +39,7 @@ public class ValueFigure extends Figure {
 		if(Role.FIXED_VALUE.equals(role))
 			setBackgroundColor(ColorConstants.lightGray);
 		
-		setSize(-1, -1);
+		setOpaque(false);
 		
 		model.registerObserver(new Observer() {
 			@Override

@@ -18,6 +18,7 @@ import org.eclipse.zest.layouts.LayoutRelationship;
 import org.eclipse.zest.layouts.progress.ProgressListener;
 
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
+import pt.iscte.pandionj.figures.BaseFigure;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
@@ -52,7 +53,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			if(!map.containsKey(element)) {
 				map.put(element, e);
 				if(element instanceof ReferenceModel)
-					element.asReference().registerObserver((o,a) -> dirty.add(e));
+					element.registerObserver((o,a) -> dirty.add(e));
 
 				dirty.add(e);
 			}
@@ -124,7 +125,9 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 							LayoutEntity ent = map.get(r.getTarget());
 							yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING;
 							GraphNode n = (GraphNode) targetE.getGraphData();
-							Point location = ((ArrayReferenceFigure) n.getNodeFigure()).getAnchor(i++).getLocation(null);
+							BaseFigure bFig = (BaseFigure) n.getNodeFigure();
+							// TODO revise cast
+							Point location = ((ArrayReferenceFigure) bFig.innerFig).getAnchor(i++).getLocation(null);
 							ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, targetE.getYInLayout()+ location.y);
 						}
 					}

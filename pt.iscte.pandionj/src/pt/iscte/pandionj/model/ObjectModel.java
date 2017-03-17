@@ -16,8 +16,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.swing.Renderer;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
@@ -26,18 +24,13 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IEvaluationRunnable;
 import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.zest.core.widgets.Graph;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.sun.jdi.InvocationException;
-import com.sun.jdi.ObjectReference;
 
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.StringFigure;
@@ -53,7 +46,7 @@ public class ObjectModel extends Observable  implements ModelElement {
 	private Map<String, ReferenceModel> references;
 	private List<String> varsOfSameType;
 
-	private TypeHandler valueHandler = new PrimitiveWrapperHandler();
+//	private TypeHandler valueHandler = new PrimitiveWrapperHandler();
 
 	private ClassInfo info;
 
@@ -70,14 +63,12 @@ public class ObjectModel extends Observable  implements ModelElement {
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
 
-				//				if(!value.isNull() && var.getJavaType().equals(object.getJavaType()))
-				//					varsOfSameType.add(var.getName());
 				if(!var.isStatic() && var.getReferenceTypeName().equals(object.getReferenceTypeName()))
 					varsOfSameType.add(var.getName());
 
 				if(!var.isStatic()) {
 					String name = var.getName();
-					if(var.getValue() instanceof IJavaObject && !valueHandler.qualifies((IJavaValue) v.getValue())) {
+					if(var.getValue() instanceof IJavaObject) {
 						ReferenceModel refModel = new ReferenceModel(var, true, model);
 						refModel.registerObserver(new Observer() {
 							public void update(Observable o, Object arg) {
@@ -136,10 +127,7 @@ public class ObjectModel extends Observable  implements ModelElement {
 		assert values.containsKey(field);
 		try {
 			IJavaValue val = values.get(field).getContent();
-			if(valueHandler.qualifies(val))
-				return valueHandler.getTextualValue(val);
-			else
-				return val.getValueString();
+			return val.getValueString();
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
@@ -157,22 +145,25 @@ public class ObjectModel extends Observable  implements ModelElement {
 		return frame.getReferencesTo(this);
 	}
 
-	//	public String eval(String expression) {
-	//		return model.eval(thisexpression);
-	//	}
 
 	public String toStringValue() {
-		MethodInfo m = info.getMethod("toString");
-		if(m == null)
-			return "";
-		
-		IJavaValue val = invoke(m);
 		try {
-			return val == null ? "" : val.getValueString();
+			return ":" + simpleName(object.getReferenceTypeName());
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return "";
-		} 
+		}
+//		MethodInfo m = info.getMethod("toString");
+//		if(m == null)
+//			return "";
+//		
+//		IJavaValue val = invoke(m);
+//		try {
+//			return val == null ? "" : val.getValueString();
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return "";
+//		} 
 		//		try {
 		//			IValue val = model.evalMethod(this, "toString()", false);
 		//			return val != null ? val.getValueString() : "NULL";
@@ -182,6 +173,9 @@ public class ObjectModel extends Observable  implements ModelElement {
 		//		}
 	}
 
+	private String simpleName(String s) {
+		return s.indexOf('.') != -1 ? s.substring(s.lastIndexOf('.')+1) : s;
+	}
 	@Override
 	public String toString() {
 		try {

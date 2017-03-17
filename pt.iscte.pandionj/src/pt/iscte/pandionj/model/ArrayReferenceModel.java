@@ -1,7 +1,6 @@
 package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,13 +12,12 @@ import java.util.Observer;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
-import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.zest.core.widgets.Graph;
 
+import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
-import pt.iscte.pandionj.figures.ArrayValueFigure;
 
 public class ArrayReferenceModel extends Observable implements ModelElement {
 
@@ -29,7 +27,7 @@ public class ArrayReferenceModel extends Observable implements ModelElement {
 	private List<ReferenceModel> elements;
 
 	private Map<String, ValueModel> vars;
-	private ArrayValueFigure fig;
+	private ArrayPrimitiveFigure fig;
 	
 	private String varError;
 	
@@ -102,7 +100,7 @@ public class ArrayReferenceModel extends Observable implements ModelElement {
 		return new ArrayReferenceFigure(this);
 	}
 	
-	public ArrayValueFigure getFigure() {
+	public ArrayPrimitiveFigure getFigure() {
 		return fig;
 	}
 	

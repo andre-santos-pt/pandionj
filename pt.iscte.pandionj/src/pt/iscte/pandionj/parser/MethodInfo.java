@@ -38,6 +38,12 @@ public class MethodInfo {
 		return params.size();
 	}
 	
+
+	public String getParameterType(int i) {
+		assert i >= 0 && i < getNumberOfParameters();
+		return params.get(i);
+	}
+	
 	public String getJNISignature() {
 		return genJNISignature(returnType, params);
 	}
@@ -75,6 +81,7 @@ public class MethodInfo {
 		// TODO arrays
 		else return "L" + typeName.replace('.', '/') + ";";
 	}
+
 
 	
 }

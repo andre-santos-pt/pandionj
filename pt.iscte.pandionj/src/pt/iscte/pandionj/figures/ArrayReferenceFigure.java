@@ -1,9 +1,7 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
 import static pt.iscte.pandionj.Constants.OBJECT_COLOR;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
-import static pt.iscte.pandionj.Constants.SET_FONT;
 import static pt.iscte.pandionj.Constants.getOneColGridLayout;
 
 import java.util.ArrayList;
@@ -23,7 +21,6 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -32,22 +29,12 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 
 import pt.iscte.pandionj.Constants;
-import pt.iscte.pandionj.model.ArrayModel;
+import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
-import pt.iscte.pandionj.model.ReferenceModel;
 import pt.iscte.pandionj.model.ValueModel;
 
-public class ArrayReferenceFigure extends Figure implements Observer {
-//	static final int POSITION_WIDTH_EMPTY = Constants.POSITION_WIDTH/2;
-
-	private static final int POSITION_LINE_WIDTH = 1;
-	private static final int POSITION_SPACING = 1;
-	private static final int VAR_FONT_SIZE = 20;
-	private static final Font VAR_FONT = new Font(null, "Arial", VAR_FONT_SIZE, SWT.NONE);
-
-	private static Color[] VARCOLORS = {
-			ColorConstants.red, ColorConstants.blue, ColorConstants.green
-	};
+//TODO limit size
+public class ArrayReferenceFigure extends RoundedRectangle implements Observer {
 
 	enum Direction {
 		NONE, FORWARD, BACKWARD;
@@ -122,22 +109,21 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 		setLayoutManager(layout);
 	
 		GridLayout layout2 = new GridLayout(1, true);
-		layout2.horizontalSpacing = POSITION_SPACING;
+		layout2.horizontalSpacing = Constants.ARRAY_POSITION_SPACING;
 		layout2.marginWidth = 0;
 		
-		RoundedRectangle fig = new RoundedRectangle();
-		fig.setCornerDimensions(OBJECT_CORNER);
-		fig.setBackgroundColor(OBJECT_COLOR);
-		fig.setOpaque(false);
-		add(fig);
+		setCornerDimensions(OBJECT_CORNER);
+		setBackgroundColor(OBJECT_COLOR);
+		setOpaque(false);
+		
 	
 		layout = getOneColGridLayout();
-		fig.setLayoutManager(layout);
+		setLayoutManager(layout);
 		
 		positionsFig = new Figure();
 		positionsFig.setLayoutManager(layout2);
 		positionsFig.setOpaque(false);
-		fig.add(positionsFig);
+		add(positionsFig);
 			
 		setOpaque(false);
 		
@@ -155,10 +141,6 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 		
 		Label lengthLabel = new Label("length = " + N);
 		setToolTip(lengthLabel);
-		
-		
-		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
-		setSize(-1,-1);
 
 		model.registerObserver(this);
 
@@ -176,14 +158,6 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 //			});
 	}
 	
-	@Override
-	public Dimension getPreferredSize(int wHint, int hHint) {
-		return super.getPreferredSize(wHint, hHint);
-//		return new Dimension(
-//				Constants.MARGIN * 2 + (int) (Constants.POSITION_WIDTH*(N==0 ? 1.5 : 2.0)) + vars.size() * Constants.ARROW_EDGE * 2,
-//				Constants.MARGIN * 3 + (positions.size() == 0 ?  Constants.POSITION_WIDTH : POSITION_SPACING + (Constants.POSITION_WIDTH + POSITION_SPACING*2)*positions.size())
-//		);
-	}
 
 	private void addVariable(ValueModel varModel) {
 
@@ -234,26 +208,27 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 	}
 	private void changeLayout() {
 		layout = new GridLayout(positions.size(), true);
-		layout.horizontalSpacing = POSITION_SPACING;
+		layout.horizontalSpacing = Constants.ARRAY_POSITION_SPACING;
 		positionsFig.setLayoutManager(layout);
 		repaint();
 	}
 
 	@Override
-	protected void paintFigure(final Graphics graphics) {
+	public void paintFigure(final Graphics graphics) {
 		super.paintFigure(graphics);
 		Dimension dim = N == 0 ? new Dimension(5, 5) : getPosition(0).getSize();
 		int pWidth = dim.width / 2;
 		int y = Constants.OBJECT_PADDING + dim.height;
 		graphics.setLineWidth(Constants.ARROW_LINE_WIDTH);
-		graphics.setFont(VAR_FONT);
+		Font font = FontManager.getFont(Constants.VAR_FONT_SIZE);
+		graphics.setFont(font);
 		for(Var v : vars.values()) {
 			graphics.setForegroundColor(v.color);
 			int i = v.getCurrentIndex();
 			boolean forward = v.getDirection().equals(Direction.FORWARD);
 
 
-			Point from = getPosition(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.id, VAR_FONT)/2, y);
+			Point from = getPosition(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.id, font)/2, y);
 			graphics.drawText(v.id, from);
 
 			List<Integer> indexes = v.getIndexes();
@@ -291,7 +266,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 
 		Var v = vars.get(id);
 		if(v == null) {
-			v = new Var(id, index, bound, VARCOLORS[vars.size()]);
+			v = new Var(id, index, bound, Constants.getVarColor(vars.size()));
 			vars.put(id, v);
 		}
 		else {
@@ -302,7 +277,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 	}
 
 	public void addVarBound(int index, String id) {
-		vars.put(id, new Var(id, index, -1, VARCOLORS[vars.size()]));
+		vars.put(id, new Var(id, index, -1, Constants.getVarColor(vars.size())));
 		repaint();
 	}
 
@@ -329,13 +304,13 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 			GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
 			GridData layoutData = new GridData(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH*2);
 			GridLayout layout = new GridLayout(1, false);
-			layout.verticalSpacing = 10;
+			layout.verticalSpacing = 5;
 			layout.horizontalSpacing = 5;
-			layout.marginWidth = 10;
-			layout.marginHeight = 10;
+			layout.marginWidth = 5;
+			layout.marginHeight = 5;
 
 			Label indexLabel = new Label(indexText(index));
-			SET_FONT(indexLabel, Constants.INDEX_FONT_SIZE);
+			FontManager.setFont(indexLabel, Constants.INDEX_FONT_SIZE);
 			indexLabel.setLabelAlignment(SWT.CENTER);
 			indexLabel.setForegroundColor(ColorConstants.gray);
 			layout.setConstraint(indexLabel, layoutCenter);
@@ -346,7 +321,7 @@ public class ArrayReferenceFigure extends Figure implements Observer {
 			valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR);
 			valueLabel.setOpaque(true);
 			if(!outOfBounds) {
-				LineBorder lineBorder = new LineBorder(ColorConstants.black, POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
+				LineBorder lineBorder = new LineBorder(ColorConstants.black, Constants.POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
 				valueLabel.setBorder(lineBorder);
 			}
 			layout.setConstraint(valueLabel, layoutData);

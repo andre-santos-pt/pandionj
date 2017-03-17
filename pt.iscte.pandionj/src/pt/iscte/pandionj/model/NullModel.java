@@ -34,7 +34,7 @@ public class NullModel implements ModelElement {
 
 	@Override
 	public String toString() {
-		return "NULL";
+		return "null";
 	}
 	
 	@Override

@@ -5,21 +5,13 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
 
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
-import org.eclipse.debug.core.IExpressionManager;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
-import org.eclipse.debug.core.model.IValue;
-import org.eclipse.debug.core.model.IWatchExpressionDelegate;
-import org.eclipse.debug.core.model.IWatchExpressionListener;
-import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.contexts.DebugContextEvent;
 import org.eclipse.debug.ui.contexts.IDebugContextListener;
 import org.eclipse.jdt.core.dom.Message;
@@ -43,14 +35,16 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.ImageTransfer;
+import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -60,15 +54,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ExpandBar;
 import org.eclipse.swt.widgets.ExpandItem;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
-import pt.iscte.pandionj.model.ValueModel;
-import pt.iscte.pandionj.parser.data.NullableOptional;
 
 public class PandionJView extends ViewPart { 
 
@@ -105,8 +96,8 @@ public class PandionJView extends ViewPart {
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
 		JDIDebugModel.addJavaBreakpointListener(exceptionListener);
 		//		DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
-		
-		
+
+
 	}
 
 	@Override
@@ -141,7 +132,7 @@ public class PandionJView extends ViewPart {
 		area.setLayout(layout);
 
 		label = new Label(area, SWT.NONE);
-		label.setFont(new Font(null, Constants.FONT_FACE, Constants.MESSAGE_FONT_SIZE, SWT.NONE));
+		FontManager.setFont(label, Constants.MESSAGE_FONT_SIZE);
 		label.setText(Constants.START_MESSAGE);
 		label.addMouseListener(new MouseAdapter() {
 			public void mouseDoubleClick(MouseEvent e) {
@@ -220,14 +211,17 @@ public class PandionJView extends ViewPart {
 	private class ExceptionListener implements IJavaBreakpointListener {
 		public int breakpointHit(IJavaThread thread, IJavaBreakpoint breakpoint) {
 			if(breakpoint instanceof IJavaLineBreakpoint) {
-				try {
-					exception = null;
-					exceptionFrame = null;
-					Display.getDefault().syncExec(() -> { clearView(false); });
-					IStackFrame[] frames = thread.getStackFrames(); 
-					handleFrames(frames);
-				} catch (DebugException e) {
-					e.printStackTrace();
+				if(!thread.isPerformingEvaluation()) { // TODO nao funciona
+					try {
+						exception = null;
+						exceptionFrame = null;
+						Display.getDefault().syncExec(() -> { clearView(false); });
+						IStackFrame[] frames = thread.getStackFrames(); 
+						handleFrames(frames);
+					} catch (DebugException e) {
+						e.printStackTrace();
+					}
+					return IJavaBreakpointListener.SUSPEND;
 				}
 			}
 			else if (breakpoint instanceof IJavaExceptionBreakpoint) {
@@ -240,25 +234,23 @@ public class PandionJView extends ViewPart {
 
 					handleFrames(frames);
 					int line = exceptionFrame.getLineNumber();
-//					Display.getDefault().asyncExec(() -> {
-//						area.setBackground(Constants.ERROR_COLOR);
-//						label.setText("Exception: " + exception + " on line " + line);
-//					});
 					model.getTopFrame().processException();
 					//					thread.terminate();
 
 					Display.getDefault().asyncExec(() -> {
+						String msg = exception + " on line " + line;
 						ExpandItem item = callStack.getItem(callStack.getItemCount()-1);
-						item.setText(item.getText() + " " + exception + " on line " + line);
+						item.setText(item.getText() + " " + msg);
 						StackView view = (StackView) item.getControl();
-						view.setError("Exception: " + exception + " on line " + line);
+						view.setError("Exception: " + msg);
 					});
 
 				} catch (DebugException e) {
 					e.printStackTrace();
 				}
+				return IJavaBreakpointListener.SUSPEND;
 			}
-			return IJavaBreakpointListener.DONT_CARE;
+			return IJavaBreakpointListener.DONT_SUSPEND;
 		}
 
 		public int installingBreakpoint(IJavaDebugTarget target, IJavaBreakpoint breakpoint, IJavaType type) {
@@ -385,6 +377,25 @@ public class PandionJView extends ViewPart {
 
 		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
 		menuManager.add(new Action("highlight color") {
+		});
+		menuManager.add(new Action("Copy canvas to clipboard") {
+			@Override
+			public void run() {
+				if(callStack.getItemCount() > 0) {
+					ExpandItem item = callStack.getItem(callStack.getItemCount()-1);
+					Control control = item.getControl();
+					Point size = control.getSize();
+			        GC gc = new GC(control);
+			        Image img = new Image(Display.getDefault(), size.x, size.y);
+			        gc.copyArea(img, 0, 0);
+			       
+					Clipboard clipboard = new Clipboard(Display.getDefault());
+					clipboard.setContents(new Object[]{img.getImageData()}, new Transfer[]{ ImageTransfer.getInstance()}); 
+//					img.dispose();
+					 gc.dispose();
+				}
+
+			}
 		});
 	}
 

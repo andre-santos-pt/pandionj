@@ -1,13 +1,9 @@
 package pt.iscte.pandionj;
 
 import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
-import org.eclipse.draw2d.LayoutManager;
 import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 
 public interface Constants {
@@ -20,13 +16,16 @@ public interface Constants {
 	int POSITION_WIDTH = 32;
 	
 	int MARGIN = 20;
-	int NODE_SPACING = 128;
+	int NODE_SPACING = 100;
 	
 	Color OBJECT_COLOR = new Color(Display.getDefault(), 240, 240, 240);
+	Color OBJECT_HEADER_FONT_COLOR = new Color(Display.getDefault(), 128, 128, 128);
 	Dimension OBJECT_CORNER = new Dimension(10, 10);
 	int OBJECT_PADDING = 5;
 	
 	int BUTTON_FONT_SIZE = 12;
+
+	int OBJECT_HEADER_FONT_SIZE = 14;
 
 	
 	int VALUE_FONT_SIZE = 20;
@@ -37,6 +36,9 @@ public interface Constants {
 
 	int ARRAY_POSITION_SPACING = 1;
 	int ARRAY_LINE_WIDTH = 1;
+
+	int ARRAY_LENGTH_LIMIT = 20;
+
 	
 	int VAR_FONT_SIZE = 18;
 	
@@ -60,9 +62,10 @@ public interface Constants {
 		return i >= VARCOLORS.length ? ColorConstants.black : VARCOLORS[i];
 	}
 	
-	static void SET_FONT(Figure fig, int size) {
-		fig.setFont(new Font(Display.getDefault(), FONT_FACE, size, SWT.NONE));
-	}
+	// TODO FONT FLYWEIGHT
+//	static void SET_FONT(Figure fig, int size) {
+//		fig.setFont(new Font(Display.getDefault(), FONT_FACE, size, SWT.NONE));
+//	}
 	
 	static GridLayout getOneColGridLayout() {
 		GridLayout layout = new GridLayout(1, false);

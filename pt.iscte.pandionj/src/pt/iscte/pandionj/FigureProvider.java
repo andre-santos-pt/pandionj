@@ -1,22 +1,20 @@
 package pt.iscte.pandionj;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.draw2d.AbstractConnectionAnchor;
-import org.eclipse.draw2d.AnchorListener;
 import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.ConnectionAnchor;
-import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
-import org.eclipse.draw2d.RotatableDecoration;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.zest.core.viewers.EntityConnectionData;
 import org.eclipse.zest.core.viewers.IConnectionStyleProvider;
 import org.eclipse.zest.core.viewers.IFigureProvider;
 import org.eclipse.zest.core.viewers.ISelfStyleProvider;
@@ -26,23 +24,43 @@ import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.NodeProvider.Pointer;
+import pt.iscte.pandionj.extensibility.ArrayPrimitiveWidgetExtension;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
-import pt.iscte.pandionj.model.ArrayModel;
+import pt.iscte.pandionj.figures.BaseFigure;
+import pt.iscte.pandionj.model.ArrayPrimitiveModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
-import pt.iscte.pandionj.model.NullModel;
 
 class FigureProvider extends LabelProvider implements IFigureProvider, IConnectionStyleProvider, ISelfStyleProvider {
 
-	Graph graph;
+	private Graph graph;
+	
+	private List<ArrayPrimitiveWidgetExtension> arrayPrimitiveExtensions;
 	
 	public FigureProvider(Graph graph) {
 		this.graph = graph;
+		
+		arrayPrimitiveExtensions = new ArrayList<>();
+//		arrayPrimitiveExtensions.add(new Histogram());
 	}
 	
 	@Override
 	public IFigure getFigure(Object element) {
-		return ((ModelElement) element).createFigure(graph);
+		ModelElement model = (ModelElement) element;
+		
+		BaseFigure baseFig = null;
+		
+		if(element instanceof ArrayPrimitiveModel)
+			for(ArrayPrimitiveWidgetExtension e : arrayPrimitiveExtensions)
+				if(e.qualifies(((ArrayPrimitiveModel) element))) {
+					IFigure inner = e.createFigure((ArrayPrimitiveModel) element);
+					baseFig = new BaseFigure(model, inner); 
+				}
+
+		if(baseFig == null)
+			baseFig = new BaseFigure(model, model.createFigure(graph));
+		
+		return baseFig;
 	}
 
 	
@@ -124,11 +142,17 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		}
 		
 		if(((Pointer) element).source instanceof ArrayReferenceModel) {
-			ArrayReferenceFigure afig = (ArrayReferenceFigure) connection.getSource().getNodeFigure();
-			fig.setSourceAnchor(afig.getAnchor(Integer.parseInt(((Pointer) element).refName)));
+//			ArrayReferenceFigure afig = (ArrayReferenceFigure) connection.getSource().getNodeFigure();
+			BaseFigure bFig = (BaseFigure) connection.getSource().getNodeFigure();
+			
+			// TODO: revise cast
+			ArrayReferenceFigure afig = (ArrayReferenceFigure) bFig.innerFig;
+			String refName = ((Pointer) element).refName;
+			refName = refName.substring(1, refName.length()-1);
+			fig.setSourceAnchor(afig.getAnchor(Integer.parseInt(refName)));
 		}
 		
-		if(((Pointer) element).target instanceof ArrayModel) {
+		if(((Pointer) element).target instanceof ArrayPrimitiveModel) {
 			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		}
 	}

@@ -13,20 +13,20 @@ import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.zest.core.widgets.Graph;
 
-import pt.iscte.pandionj.figures.ArrayValueFigure;
+import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 
-public class ArrayModel extends Observable implements ModelElement {
+public class ArrayPrimitiveModel extends Observable implements ModelElement {
 
-	
+
 	private IJavaArray array;
 	private IJavaValue[] elements;
 
 	private Map<String, ValueModel> vars;
 	private String varError;
-	
-	public ArrayModel(IJavaArray array) {
+
+	public ArrayPrimitiveModel(IJavaArray array) {
 		assert array != null;
-		
+
 		try {
 			this.array = array;
 			elements = new IJavaValue[array.getLength()];
@@ -64,13 +64,31 @@ public class ArrayModel extends Observable implements ModelElement {
 		return elements[i].toString();
 	}
 
+
+	public int getInt(int i) {
+		if(i < 0 || i >= getLength())
+			throw new IndexOutOfBoundsException(Integer.toString(i));
+
+		try {
+			return Integer.parseInt(elements[i].getValueString());
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return 0;
+		}
+		catch (NumberFormatException e) {
+			throw new RuntimeException("invalid operation");
+		}
+	}
+
 	@Override
 	public IJavaValue getContent() {
 		return array;
 	}
-	
-	
-	
+
+	//	public String getPrimitiveComponentType() {
+	//		return null;
+	//	}
+
 	public void addVar(ValueModel v) {
 		if(!vars.containsKey(v.getName())) {
 			vars.put(v.getName(), v);
@@ -78,7 +96,7 @@ public class ArrayModel extends Observable implements ModelElement {
 			notifyObservers(v);
 		}
 	}
-	
+
 	public void setVarError(String var) {
 		varError = var;
 		setChanged();
@@ -89,13 +107,13 @@ public class ArrayModel extends Observable implements ModelElement {
 		return Collections.unmodifiableCollection(vars.values());
 	}
 
-	
+
 	@Override
 	public IFigure createFigure(Graph graph) {
-		return new ArrayValueFigure(this);
+		return new ArrayPrimitiveFigure(this);
 	}
 
-	
+
 	@Override
 	public String toString() {
 		String els = "{";
@@ -105,7 +123,7 @@ public class ArrayModel extends Observable implements ModelElement {
 			els += get(i);
 		}
 		els += "}";
-		return ArrayModel.class.getSimpleName() + " " + els;
+		return ArrayPrimitiveModel.class.getSimpleName() + " " + els;
 	}
 
 	@Override

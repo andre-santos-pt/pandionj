@@ -4,17 +4,13 @@ import static pt.iscte.pandionj.Constants.ARRAY_POSITION_COLOR;
 import static pt.iscte.pandionj.Constants.ARRAY_POSITION_SPACING;
 import static pt.iscte.pandionj.Constants.ARROW_EDGE;
 import static pt.iscte.pandionj.Constants.ARROW_LINE_WIDTH;
-import static pt.iscte.pandionj.Constants.FONT_FACE;
 import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
-import static pt.iscte.pandionj.Constants.MARGIN;
 import static pt.iscte.pandionj.Constants.OBJECT_COLOR;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
+import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
 import static pt.iscte.pandionj.Constants.POSITION_LINE_WIDTH;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
-import static pt.iscte.pandionj.Constants.SET_FONT;
 import static pt.iscte.pandionj.Constants.VALUE_FONT_SIZE;
-import static pt.iscte.pandionj.Constants.VAR_FONT_SIZE;
-import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
 import static pt.iscte.pandionj.Constants.getOneColGridLayout;
 import static pt.iscte.pandionj.Constants.getVarColor;
 
@@ -33,9 +29,6 @@ import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.MarginBorder;
-import org.eclipse.draw2d.MouseEvent;
-import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -45,11 +38,14 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.Constants;
-import pt.iscte.pandionj.model.ArrayModel;
+import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.model.ArrayPrimitiveModel;
 import pt.iscte.pandionj.model.ValueModel;
 
-public class ArrayValueFigure extends Figure {
-	private final ArrayModel model;
+
+// TODO limit size
+public class ArrayPrimitiveFigure extends RoundedRectangle {
+	private final ArrayPrimitiveModel model;
 	private final int N; // array length
 	private List<Position> positions; // existing array positions
 	private Map<String, Var> vars; // variables associated with the array
@@ -58,7 +54,7 @@ public class ArrayValueFigure extends Figure {
 	private GridLayout layout;
 	private Figure positionsFig;
 
-	public ArrayValueFigure(ArrayModel model) {
+	public ArrayPrimitiveFigure(ArrayPrimitiveModel model) {
 		this.model = model;
 		model.registerObserver((o, index) -> observerAction(o, index));
 		N = model.getLength();
@@ -66,26 +62,17 @@ public class ArrayValueFigure extends Figure {
 		positions = new ArrayList<>(N+2);
 		lowerOffSet = 0;
 
-		setOpaque(false);
-		setLayoutManager(getOneColGridLayout());
-		setBorder(new MarginBorder(OBJECT_PADDING));
-		setSize(-1,-1);
-
-		RoundedRectangle fig = new RoundedRectangle();
-		fig.setCornerDimensions(OBJECT_CORNER);
-		fig.setBackgroundColor(OBJECT_COLOR);
-		add(fig);
-
+		setCornerDimensions(OBJECT_CORNER);
+		setBackgroundColor(OBJECT_COLOR);
+		
 		layout = getOneColGridLayout();
-		fig.setLayoutManager(layout);
+		setLayoutManager(layout);
 
 		Label lengthLabel = new Label("length = " + N);
 		setToolTip(lengthLabel);
-//		fig.add(lengthLabel);
-//		layout.setConstraint(lengthLabel, new GridData(SWT.CENTER, SWT.CENTER, true, false));
 
 		positionsFig = createPositionsFig(model);
-		fig.add(positionsFig);
+		add(positionsFig);
 
 		vars = new HashMap<>();
 		for(ValueModel v : model.getVars())
@@ -99,7 +86,7 @@ public class ArrayValueFigure extends Figure {
 	}
 
 
-	private Figure createPositionsFig(ArrayModel model) {
+	private Figure createPositionsFig(ArrayPrimitiveModel model) {
 		Figure fig = new Figure();
 		GridLayout layout = new GridLayout(Math.max(1, N), true);
 		layout.horizontalSpacing = ARRAY_POSITION_SPACING;
@@ -217,17 +204,18 @@ public class ArrayValueFigure extends Figure {
 
 
 
-	private static final Font VAR_FONT = new Font(null, FONT_FACE, VAR_FONT_SIZE, SWT.NONE);
 
 	@Override
-	protected void paintFigure(final Graphics graphics) {
+	public void paintFigure(final Graphics graphics) {
 		super.paintFigure(graphics);
 
 		Dimension dim = N == 0 ? new Dimension(5, 5) : positions.get(0).getSize();
 		int pWidth = dim.width / 2;
 		int y = OBJECT_PADDING + dim.height;
 		graphics.setLineWidth(ARROW_LINE_WIDTH);
-		graphics.setFont(VAR_FONT);
+		Font font = FontManager.getFont(Constants.VAR_FONT_SIZE);
+
+		graphics.setFont(font);
 		for(Var v : vars.values()) {
 			graphics.setForegroundColor(v.color);
 			int i = v.getCurrentIndex();
@@ -241,7 +229,7 @@ public class ArrayValueFigure extends Figure {
 			}
 
 
-			Point from = positions.get(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.id, VAR_FONT)/2, y);
+			Point from = positions.get(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.id, font)/2, y);
 			if(!v.isBar()) {
 				graphics.drawText(v.id, from);
 				//				Dimension box = TextUtilities.INSTANCE.getTextExtents(v.id, graphics.getFont()).expand(10, 10);
@@ -301,7 +289,7 @@ public class ArrayValueFigure extends Figure {
 			setLayoutManager(layout);
 
 			valueLabel = new Label("");
-			SET_FONT(valueLabel, VALUE_FONT_SIZE);
+			FontManager.setFont(valueLabel, VALUE_FONT_SIZE);
 
 			if(!outOfBounds) {
 				LineBorder lineBorder = new LineBorder(ColorConstants.black, POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
@@ -313,7 +301,7 @@ public class ArrayValueFigure extends Figure {
 			add(valueLabel);
 
 			indexLabel = new Label(index == null ? "" : Integer.toString(index));
-			SET_FONT(indexLabel, INDEX_FONT_SIZE);
+			FontManager.setFont(indexLabel, INDEX_FONT_SIZE);
 			indexLabel.setLabelAlignment(SWT.CENTER);
 			indexLabel.setForegroundColor(ColorConstants.gray);
 			layout.setConstraint(indexLabel, layoutCenter);

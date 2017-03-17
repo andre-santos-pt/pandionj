@@ -2,7 +2,6 @@ package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -24,7 +23,6 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpression;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
@@ -100,7 +98,7 @@ public class StackFrameModel extends Observable {
 			e.update();
 
 		for(ModelElement o : objects.values().toArray(new ModelElement[objects.size()])) {
-			if(o instanceof ArrayModel)
+			if(o instanceof ArrayPrimitiveModel)
 				o.update();
 			else if(o instanceof ObjectModel)
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
@@ -184,13 +182,13 @@ public class StackFrameModel extends Observable {
 
 	private void handleArrayIterators() {
 		for (Entry<String, ModelElement> e : vars.entrySet()) {
-			if(e.getValue().isReference()) {
-				ReferenceModel refModel = e.getValue().asReference();
+			if(e.getValue() instanceof ReferenceModel) {
+				ReferenceModel refModel = (ReferenceModel) e.getValue();
 				if(refModel.isArrayValue() && !refModel.isNull()) {
-					ArrayModel array = (ArrayModel) refModel.getTarget();
+					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getTarget();
 					for(String itVar : findArrayIterators(e.getKey())) {
 						if(vars.containsKey(itVar))
-							array.addVar(vars.get(itVar).asValue());
+							array.addVar((ValueModel) vars.get(itVar));
 					}
 				}
 			}
@@ -301,8 +299,7 @@ public class StackFrameModel extends Observable {
 						e = new ArrayReferenceModel((IJavaArray) obj, this);
 
 					else
-						e = new ArrayModel((IJavaArray) obj);
-
+						e = new ArrayPrimitiveModel((IJavaArray) obj);
 				}
 				else {
 					e = new ObjectModel(obj, this, classInfo);
@@ -370,7 +367,7 @@ public class StackFrameModel extends Observable {
 				if(e instanceof ArrayOutOfBounds) {
 					ArrayOutOfBounds ae = (ArrayOutOfBounds) e;
 					System.out.println(ae.arrayName + " " + ae.arrayAccess);
-					ArrayModel arrayModel = (ArrayModel) ((ReferenceModel) vars.get(ae.arrayName)).getTarget();
+					ArrayPrimitiveModel arrayModel = (ArrayPrimitiveModel) ((ReferenceModel) vars.get(ae.arrayName)).getTarget();
 					arrayModel.setVarError(ae.arrayAccess);
 				}
 		} catch (DebugException e1) {
