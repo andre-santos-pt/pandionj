@@ -98,7 +98,7 @@ public class StackFrameModel extends Observable {
 			e.update();
 
 		for(ModelElement o : objects.values().toArray(new ModelElement[objects.size()])) {
-			if(o instanceof ArrayPrimitiveModel)
+			if(o instanceof ArrayModel)
 				o.update();
 			else if(o instanceof ObjectModel)
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {

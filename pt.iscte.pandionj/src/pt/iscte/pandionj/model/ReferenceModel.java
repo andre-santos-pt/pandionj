@@ -16,7 +16,7 @@ import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.ReferenceFigure;
 
-public class ReferenceModel extends Observable implements ModelElement {
+public class ReferenceModel extends ModelElement {
 
 	private IJavaVariable var;
 	private IJavaObject target;

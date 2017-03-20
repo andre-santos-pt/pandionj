@@ -38,15 +38,13 @@ import pt.iscte.pandionj.parser.ClassInfo;
 import pt.iscte.pandionj.parser.MethodInfo;
 import pt.iscte.pandionj.parser.VisibilityInfo;
 
-public class ObjectModel extends Observable  implements ModelElement {
+public class ObjectModel extends ModelElement {
 
 	private IJavaObject object;
 	private StackFrameModel frame;
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
 	private List<String> varsOfSameType;
-
-//	private TypeHandler valueHandler = new PrimitiveWrapperHandler();
 
 	private ClassInfo info;
 

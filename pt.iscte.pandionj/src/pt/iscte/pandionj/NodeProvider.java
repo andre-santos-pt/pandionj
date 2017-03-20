@@ -8,6 +8,8 @@ import java.util.Map.Entry;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
 
+import pt.iscte.pandionj.extensibility.WidgetExtension;
+import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
@@ -37,17 +39,29 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			return EMPTY;
 
 		List<ModelElement> elements = new ArrayList<>(model.getVariables());
-		
+
 		for(ModelElement e : elements.toArray(new ModelElement[elements.size()])) {
 			if(e instanceof ReferenceModel) {
 				ModelElement t = ((ReferenceModel) e).getTarget();
-					
-				if(t instanceof ObjectModel) {
+
+				if(t instanceof ArrayModel) {
+					ArrayModel arrayModel = (ArrayModel) t;
+					for(WidgetExtension ext : Extensions.arrayPrimitiveExtensions) {
+						Object[] values = arrayModel.getValues();
+						String arrayType = arrayModel.getComponentType();
+						int dims = arrayModel.getDimensions();
+						if(ext.accept(arrayModel)) {
+							arrayModel.setWidgetExtension(ext);
+						}
+					}
+				}
+
+				if(t instanceof ObjectModel && !t.hasWidgetExtension()) {
 					((ObjectModel) t).traverseSiblings((o,p,i,d,f) -> {
 						elements.add(o);
 					}, true);
 				}
-				else if(t instanceof ArrayReferenceModel) {
+				else if(t instanceof ArrayReferenceModel && !t.hasWidgetExtension()) {
 					elements.add(t);
 					List<ReferenceModel> arrayElements = ((ArrayReferenceModel) t).getModelElements();
 					for(ReferenceModel r : arrayElements)
@@ -110,7 +124,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		public boolean isNull() {
 			return target instanceof NullModel;
 		}
-		
+
 		public boolean isTopLevel() {
 			return refName == null;
 		}

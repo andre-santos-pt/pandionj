@@ -456,7 +456,7 @@ public class PandionJView extends ViewPart {
 
 		void setInput(StackFrameModel frameModel) {
 			if(this.model == frameModel) {
-				this.model.update();
+//				this.model.update();
 			}
 			else {
 				this.model = frameModel;

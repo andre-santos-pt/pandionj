@@ -18,7 +18,7 @@ import pt.iscte.pandionj.parser.variable.FixedValue;
 import pt.iscte.pandionj.parser.variable.Gatherer;
 import pt.iscte.pandionj.parser.variable.Variable;
 
-public class ValueModel extends Observable implements ModelElement {
+public class ValueModel extends ModelElement {
 	public enum Role {
 		FIXED_VALUE,
 		STEPPER,

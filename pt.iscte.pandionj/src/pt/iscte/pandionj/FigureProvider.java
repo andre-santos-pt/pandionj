@@ -24,9 +24,11 @@ import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.NodeProvider.Pointer;
-import pt.iscte.pandionj.extensibility.ArrayPrimitiveWidgetExtension;
+import pt.iscte.pandionj.extensibility.ArrayWidgetExtension;
+import pt.iscte.pandionj.extensibility.ImageWidget;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.BaseFigure;
+import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ArrayPrimitiveModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
@@ -35,32 +37,30 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 
 	private Graph graph;
 	
-	private List<ArrayPrimitiveWidgetExtension> arrayPrimitiveExtensions;
-	
 	public FigureProvider(Graph graph) {
 		this.graph = graph;
-		
-		arrayPrimitiveExtensions = new ArrayList<>();
-//		arrayPrimitiveExtensions.add(new Histogram());
 	}
 	
 	@Override
 	public IFigure getFigure(Object element) {
 		ModelElement model = (ModelElement) element;
 		
-		BaseFigure baseFig = null;
 		
-		if(element instanceof ArrayPrimitiveModel)
-			for(ArrayPrimitiveWidgetExtension e : arrayPrimitiveExtensions)
-				if(e.qualifies(((ArrayPrimitiveModel) element))) {
-					IFigure inner = e.createFigure((ArrayPrimitiveModel) element);
-					baseFig = new BaseFigure(model, inner); 
-				}
-
-		if(baseFig == null)
-			baseFig = new BaseFigure(model, model.createFigure(graph));
+//		if(element instanceof ArrayModel) {
+//			ArrayModel arrayModel = (ArrayModel) element;
+//			for(ArrayWidgetExtension e : arrayPrimitiveExtensions) {
+//				Object[] values = arrayModel.getValues();
+//				String arrayType = arrayModel.getComponentType();
+//				int dims = arrayModel.getDimensions();
+//				if(e.accept(values, arrayType, dims)) {
+//					arrayModel.setHasWidgetExtension(true);
+//					IFigure inner = e.createFigure(values, arrayType, dims);
+//					baseFig = new BaseFigure(model, inner); 
+//				}
+//			}
+//		}
+			return new BaseFigure(model, model.createFigure(graph));
 		
-		return baseFig;
 	}
 
 	
@@ -146,10 +146,10 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			BaseFigure bFig = (BaseFigure) connection.getSource().getNodeFigure();
 			
 			// TODO: revise cast
-			ArrayReferenceFigure afig = (ArrayReferenceFigure) bFig.innerFig;
-			String refName = ((Pointer) element).refName;
-			refName = refName.substring(1, refName.length()-1);
-			fig.setSourceAnchor(afig.getAnchor(Integer.parseInt(refName)));
+//			ArrayReferenceFigure afig = (ArrayReferenceFigure) bFig.innerFig;
+//			String refName = ((Pointer) element).refName;
+//			refName = refName.substring(1, refName.length()-1);
+//			fig.setSourceAnchor(afig.getAnchor(Integer.parseInt(refName)));
 		}
 		
 		if(((Pointer) element).target instanceof ArrayPrimitiveModel) {

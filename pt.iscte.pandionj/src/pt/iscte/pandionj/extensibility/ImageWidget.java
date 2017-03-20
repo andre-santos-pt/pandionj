@@ -1,15 +1,22 @@
 package pt.iscte.pandionj.extensibility;
 
+
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.geometry.Dimension;
 
-import pt.iscte.pandionj.model.ArrayPrimitiveModel;
-
-public class ImageWidget implements ArrayPrimitiveWidgetExtension {
+public class ImageWidget implements ArrayWidgetExtension {
 
 	@Override
-	public boolean accept(Object[] array, int dimensions) {
+	public boolean accept(Object[] array, String type, int dimensions) {
+		if(!type.equals("int[][]"))
+			return false;
+		
 		if(dimensions != 2 || array.length < 1)
 			return false;
 		
@@ -22,36 +29,44 @@ public class ImageWidget implements ArrayPrimitiveWidgetExtension {
 		return true;
 	}
 
+	
 	@Override
-	public boolean qualifies(ArrayPrimitiveModel arrayModel) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public Figure createFigure(ArrayPrimitiveModel arrayModel) {
-		return null;
-	}
-
-	@Override
-	public void positionChanged(Object oldValue, Object newValue, int i, int indexes) {
-		// TODO Auto-generated method stub
-		
+	public IFigure createFigure(Object[] array, String type, int dimensions) {
+		return new ImageFig((Object[][]) array);
 	}
 	
-	private class ImageFig extends Figure {
-		
-		ImageFig(int w, int h) {
+	
+	private class ImageFig extends ExtensionFigure {
+		Object[][] array;
+		ImageFig(Object[][] array) {
+			this.array = array;
 			setLayoutManager(new FlowLayout());
-			setSize(w, h);
+			setSize(array.length, array[0].length);
+			setBackgroundColor(ColorConstants.white);
+			setBorder(new LineBorder(ColorConstants.black));
+			setOpaque(true);
 		}
 		
 		@Override
-		protected void paintFigure(Graphics graphics) {
-			super.paintFigure(graphics);
-			
+		protected void paintFigure(Graphics g) {
+			super.paintFigure(g);
+			g.setForegroundColor(ColorConstants.red);
+			for(int y = 0; y < array.length; y++)
+				for(int x = 0; x < array[y].length; x++)
+					if((int) array[x][y] != 0)
+						g.drawPoint(x, y);
 		}
 		
+		@Override
+		public Dimension getPreferredSize(int wHint, int hHint) {
+			return new Dimension(array[0].length, array.length);
+		}
+		
+		public void positionChanged(Object oldValue, Object newValue, int i, int indexes) {
+			
+		}
 	}
+
+	
 
 }

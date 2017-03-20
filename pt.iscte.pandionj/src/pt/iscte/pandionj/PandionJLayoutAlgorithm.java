@@ -59,7 +59,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			}
 		}
 
-		
+
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement element = (ModelElement) node.getData();
@@ -117,18 +117,20 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 					}
 					else if(target instanceof ArrayReferenceModel) {
 						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
-						
+
 						List<ReferenceModel> elements = ((ArrayReferenceModel) target).getModelElements();
 						double yy = targetE.getYInLayout();
 						int i = 0;
 						for(ReferenceModel r : elements) {
 							LayoutEntity ent = map.get(r.getTarget());
-							yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING;
-							GraphNode n = (GraphNode) targetE.getGraphData();
-							BaseFigure bFig = (BaseFigure) n.getNodeFigure();
-							// TODO revise cast
-							Point location = ((ArrayReferenceFigure) bFig.innerFig).getAnchor(i++).getLocation(null);
-							ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, targetE.getYInLayout()+ location.y);
+							if(ent != null) {
+								yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING;
+								GraphNode n = (GraphNode) targetE.getGraphData();
+								BaseFigure bFig = (BaseFigure) n.getNodeFigure();
+								// TODO revise cast
+								//							Point location = ((ArrayReferenceFigure) bFig.innerFig).getAnchor(i++).getLocation(null);
+								//							ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, targetE.getYInLayout()+ location.y);
+							}
 						}
 					}
 					else {

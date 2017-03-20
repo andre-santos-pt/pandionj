@@ -4,18 +4,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
+import org.eclipse.jdt.debug.core.IJavaArrayType;
+import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
+import org.eclipse.jdt.debug.core.IJavaReferenceType;
+import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 
-public class ArrayPrimitiveModel extends Observable implements ModelElement {
+public class ArrayPrimitiveModel extends ArrayModel {
 
 
 	private IJavaArray array;
@@ -24,14 +27,21 @@ public class ArrayPrimitiveModel extends Observable implements ModelElement {
 	private Map<String, ValueModel> vars;
 	private String varError;
 
+	private Class<?> type;
+
 	public ArrayPrimitiveModel(IJavaArray array) {
 		assert array != null;
+		try {
+			IJavaType componentType = ((IJavaArrayType) array.getJavaType()).getComponentType();
+			assert !(componentType instanceof IJavaReferenceType);
+			type = matchType(componentType);
 
+		} catch (DebugException e1) {
+			e1.printStackTrace();
+		}
 		try {
 			this.array = array;
-			elements = new IJavaValue[array.getLength()];
-			for(int i = 0; i < elements.length; i++)
-				elements[i] = array.getValue(i);
+			elements = array.getValues();
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -39,12 +49,32 @@ public class ArrayPrimitiveModel extends Observable implements ModelElement {
 		vars = new HashMap<>();
 	}
 
+	private Class<?> matchType(IJavaType componentType) {
+		try {
+			switch(componentType.getName())  {
+			case "byte": return Byte.class;
+			case "short": return Short.class;
+			case "int": return Integer.class;
+			case "long": return Long.class;
+			case "float": return Float.class;
+			case "double": return Double.class;
+			case "boolean": return Boolean.class;
+			case "char": return Character.class;
+			default: throw new AssertionError();
+			}
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+	}
+
 	public void update() {
 		try {
+			IJavaValue[] values = array.getValues();
 			for(int i = 0; i < elements.length; i++) {
-				IJavaValue val = array.getValue(i);
-				boolean equals = val.equals(elements[i]);
-				elements[i] = val;
+				boolean equals = values[i].equals(elements[i]);
+				elements[i] = values[i];
 				if(!equals) {
 					setChanged();
 					notifyObservers(i);
@@ -60,11 +90,28 @@ public class ArrayPrimitiveModel extends Observable implements ModelElement {
 		return elements.length;
 	}
 
+	@Override
+	public int getDimensions() {
+		return 1;
+	}
+	
 	public String get(int i) {
 		return elements[i].toString();
 	}
 
-
+	public Object[] getValues() {
+		Object[] array = new Object[elements.length];
+		for(int i = 0; i < elements.length; i++)
+			array[i] = ((IJavaPrimitiveValue) elements[i]).getIntValue(); // TODO all types
+		return array;
+	}
+	
+	
+	@Override
+	public boolean isPrimitiveType() {
+		return true;
+	}
+	
 	public int getInt(int i) {
 		if(i < 0 || i >= getLength())
 			throw new IndexOutOfBoundsException(Integer.toString(i));
@@ -85,9 +132,17 @@ public class ArrayPrimitiveModel extends Observable implements ModelElement {
 		return array;
 	}
 
-	//	public String getPrimitiveComponentType() {
-	//		return null;
-	//	}
+	public String getComponentType() { // TODO to upper
+		IJavaType componentType;
+		try {
+			componentType = ((IJavaArrayType) array.getJavaType()).getComponentType();
+			return componentType.getName();
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return null;
+		}
+		
+	}
 
 	public void addVar(ValueModel v) {
 		if(!vars.containsKey(v.getName())) {
@@ -114,20 +169,23 @@ public class ArrayPrimitiveModel extends Observable implements ModelElement {
 	}
 
 
-	@Override
-	public String toString() {
-		String els = "{";
-		for(int i = 0; i < elements.length; i++) {
-			if(i != 0)
-				els += ", ";
-			els += get(i);
-		}
-		els += "}";
-		return ArrayPrimitiveModel.class.getSimpleName() + " " + els;
-	}
+//	@Override
+//	public String toString() {
+//		String els = "{";
+//		for(int i = 0; i < elements.length; i++) {
+//			if(i != 0)
+//				els += ", ";
+//			els += get(i);
+//		}
+//		els += "}";
+//		return ArrayPrimitiveModel.class.getSimpleName() + " " + els;
+//	}
 
 	@Override
 	public void registerObserver(Observer o) {
 		addObserver(o);
 	}
+
+	
+	
 }

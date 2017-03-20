@@ -9,7 +9,7 @@ import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.NullFigure;
 
-public class NullModel implements ModelElement {
+public class NullModel extends ModelElement {
 
 	private final IJavaObject nullObject;
 
@@ -36,10 +36,4 @@ public class NullModel implements ModelElement {
 	public String toString() {
 		return "null";
 	}
-	
-	@Override
-	public void registerObserver(Observer o) {
-
-	}
-
 }

@@ -57,8 +57,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 	public ArrayPrimitiveFigure(ArrayPrimitiveModel model) {
 		this.model = model;
 		model.registerObserver((o, index) -> observerAction(o, index));
-		N = model.getLength();
-
+		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
 		positions = new ArrayList<>(N+2);
 		lowerOffSet = 0;
 
@@ -105,6 +104,8 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 				fig.add(p);
 				positions.add(p);
 			}
+			if(N > Constants.ARRAY_LENGTH_LIMIT)
+				fig.add(new Label("..."));
 		}
 		return fig;
 	}
@@ -136,7 +137,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		repaint();
 	}
 
-	private Position getExistingPosition(int arrayIndex) {
+	private Position getValidPosition(int arrayIndex) {
 		assert arrayIndex >= 0 && arrayIndex < N;
 		return positions.get(lowerOffSet + arrayIndex);
 	}
@@ -179,13 +180,17 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 	private void observerAction(Observable o, Object index) {
 		if(index instanceof Integer) {
 			Integer i = (Integer) index;
+			if(i >= Constants.ARRAY_LENGTH_LIMIT)
+				return;
+			
 			for(int j = 0; j < N; j++) {
+				Position p = getValidPosition(j);
 				if(j == i)
-					getExistingPosition(i).highlight();
+					p.highlight();
 				else
-					getExistingPosition(i).unhighlight();
+					p.unhighlight();
 			}
-			getExistingPosition(i).setValue(model.get(i));
+			getValidPosition(i).setValue(model.get(i));
 		}
 		else if(index instanceof ValueModel) {
 			addVariable((ValueModel) index);
@@ -263,14 +268,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 
 	}
 
-
-
-	public boolean setValue(int index, Object value) {
-		Position p = getExistingPosition(index);
-		boolean change = !p.getValue().equals(value.toString());
-		p.setValue(value.toString());
-		return change;
-	}
 
 	private static class Position extends Figure {
 		private final Label valueLabel;
@@ -355,11 +352,15 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 
 
 	public void highlight(int i) {
-		getExistingPosition(i).highlight();
+		Position p = getValidPosition(i);
+		if(p != null)
+			p.highlight();
 	}
 
 	public void unhighlight(int i) {
-		getExistingPosition(i).unhighlight();
+		Position p = getValidPosition(i);
+		if(p != null)
+			p.unhighlight();
 	}
 
 
