@@ -9,7 +9,7 @@ import org.eclipse.swt.widgets.Display;
 public interface Constants {
 	String PLUGIN_ID = Constants.class.getPackage().getName();
 
-	int MESSAGE_FONT_SIZE = 12;
+	int MESSAGE_FONT_SIZE = 16;
 	
 	int ARROW_EDGE = 4;
 	int ARROW_LINE_WIDTH = 1;

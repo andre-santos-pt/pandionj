@@ -20,8 +20,8 @@ public class ReferenceFigure extends Label {
 			FontManager.setFont(this, Constants.VAR_FONT_SIZE);
 		
 		model.registerObserver(new Observer() {
-			public void update(Observable o, Object target) {
-				if(target instanceof NullModel)
+			public void update(Observable o, Object arg) {
+				if(model.getModelTarget() instanceof NullModel)
 					setToolTip(new Label("null reference"));
 				else
 					setToolTip(null);

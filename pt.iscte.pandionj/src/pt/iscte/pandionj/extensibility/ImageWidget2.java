@@ -62,16 +62,17 @@ public class ImageWidget2 implements WidgetExtension {
 			setOpaque(true);
 
 			model.registerDisplayObserver(new Observer() {
-
+				int x = 0;
 				@Override
 				public void update(Observable o, Object arg) {
+					System.out.println(x++);
 					array = (Object[][]) model.getValues();
 					//					for(int y = 0; y < array.length; y++)
 					//						for(int x = 0; x < array[y].length; x++)
 					//							data.setPixel(x, y, (int) array[y][x] == 0 ? 5 : 200);
-
+//					int line = (int) arg;
+//					repaint(0, line, width, 1); // only line?
 					repaint();
-					System.out.println("repaint");
 				}
 			});
 

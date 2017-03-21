@@ -44,23 +44,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	@Override
 	public IFigure getFigure(Object element) {
 		ModelElement model = (ModelElement) element;
-		
-		
-//		if(element instanceof ArrayModel) {
-//			ArrayModel arrayModel = (ArrayModel) element;
-//			for(ArrayWidgetExtension e : arrayPrimitiveExtensions) {
-//				Object[] values = arrayModel.getValues();
-//				String arrayType = arrayModel.getComponentType();
-//				int dims = arrayModel.getDimensions();
-//				if(e.accept(values, arrayType, dims)) {
-//					arrayModel.setHasWidgetExtension(true);
-//					IFigure inner = e.createFigure(values, arrayType, dims);
-//					baseFig = new BaseFigure(model, inner); 
-//				}
-//			}
-//		}
-			return new BaseFigure(model, model.createFigure(graph));
-		
+		return model.createFigure(graph);		
 	}
 
 	

@@ -1,7 +1,5 @@
 package pt.iscte.pandionj.model;
 
-import java.util.Observer;
-
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaValue;
@@ -13,7 +11,8 @@ public class NullModel extends ModelElement {
 
 	private final IJavaObject nullObject;
 
-	NullModel(IJavaObject nullObject) {
+	NullModel(IJavaObject nullObject, StackFrameModel model) {
+		super(model);
 		this.nullObject = nullObject;
 	}
 
@@ -28,7 +27,7 @@ public class NullModel extends ModelElement {
 	}
 
 	@Override
-	public IFigure createFigure(Graph graph) {
+	public IFigure createInnerFigure(Graph graph) {
 		return new NullFigure();
 	}
 

@@ -42,7 +42,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 
 		for(ModelElement e : elements.toArray(new ModelElement[elements.size()])) {
 			if(e instanceof ReferenceModel) {
-				ModelElement t = ((ReferenceModel) e).getTarget();
+				ModelElement t = ((ReferenceModel) e).getModelTarget();
 
 				if(t instanceof ArrayModel) {
 					ArrayModel arrayModel = (ArrayModel) t;
@@ -65,7 +65,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 					elements.add(t);
 					List<ReferenceModel> arrayElements = ((ArrayReferenceModel) t).getModelElements();
 					for(ReferenceModel r : arrayElements)
-						elements.add(r.getTarget());
+						elements.add(r.getModelTarget());
 				}
 				else 
 					elements.add(t);
@@ -77,7 +77,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 
 	@Override
 	public Object[] getRelationships(Object source, Object dest) {
-		if(source instanceof ReferenceModel && ((ReferenceModel) source).getTarget().equals(dest)) {
+		if(source instanceof ReferenceModel && ((ReferenceModel) source).getModelTarget().equals(dest)) {
 			return new Object[] { new Pointer((ModelElement) source, (ModelElement) dest) };
 		}
 		else if(source instanceof ObjectModel) {
@@ -88,11 +88,11 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 					ret.add(new Pointer(field.getKey(), (ObjectModel) source, (ModelElement) dest));
 			return ret.toArray();
 		}
-		else if(source instanceof ArrayReferenceModel) {
+		else if(source instanceof ArrayReferenceModel && !((ArrayReferenceModel) source).hasWidgetExtension()) {
 			List<Pointer> ret = new ArrayList<>();
 			List<ReferenceModel> elements = ((ArrayReferenceModel) source).getModelElements();
 			for(int i = 0; i < elements.size(); i++)
-				if(dest.equals(elements.get(i).getTarget()))
+				if(dest.equals(elements.get(i).getModelTarget()))
 					ret.add(new Pointer("[" + Integer.toString(i) + "]", (ModelElement) source, (ModelElement) dest));
 			return ret.toArray();
 		}

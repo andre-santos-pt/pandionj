@@ -67,7 +67,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 				setLocation(e, Constants.MARGIN + x, refY);
 
 				if(element instanceof ReferenceModel) {
-					ModelElement target = ((ReferenceModel) element).getTarget();
+					ModelElement target = ((ReferenceModel) element).getModelTarget();
 					LayoutEntity targetE = map.get(target);
 					if(targetE == null) {
 						System.err.println("!! " + target);
@@ -115,14 +115,14 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 							obj.traverseSiblings(v, true);
 						}
 					}
-					else if(target instanceof ArrayReferenceModel) {
+					else if(target instanceof ArrayReferenceModel && !target.hasWidgetExtension()) {
 						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 
 						List<ReferenceModel> elements = ((ArrayReferenceModel) target).getModelElements();
 						double yy = targetE.getYInLayout();
 						int i = 0;
 						for(ReferenceModel r : elements) {
-							LayoutEntity ent = map.get(r.getTarget());
+							LayoutEntity ent = map.get(r.getModelTarget());
 							if(ent != null) {
 								yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING;
 								GraphNode n = (GraphNode) targetE.getGraphData();
@@ -194,7 +194,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
 	@Override
 	public void addEntity(LayoutEntity entity) {
-		System.out.println("ADD " + entity);
+
 	}
 
 	@Override

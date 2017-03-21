@@ -1,9 +1,12 @@
 package pt.iscte.pandionj.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
@@ -16,31 +19,24 @@ import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.zest.core.widgets.Graph;
 
+import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 
 public class ArrayPrimitiveModel extends ArrayModel {
 
-
-	private IJavaArray array;
-	private IJavaValue[] elements;
-
 	private Map<String, ValueModel> vars;
 	private String varError;
 
-	private Class<?> type;
-
-	public ArrayPrimitiveModel(IJavaArray array) {
+	public ArrayPrimitiveModel(IJavaArray array, StackFrameModel model) {
+		super(array, model);
 		assert array != null;
 		try {
 			IJavaType componentType = ((IJavaArrayType) array.getJavaType()).getComponentType();
 			assert !(componentType instanceof IJavaReferenceType);
-			type = matchType(componentType);
-
 		} catch (DebugException e1) {
 			e1.printStackTrace();
 		}
 		try {
-			this.array = array;
 			elements = array.getValues();
 		}
 		catch(DebugException e) {
@@ -72,13 +68,17 @@ public class ArrayPrimitiveModel extends ArrayModel {
 	public void update() {
 		try {
 			IJavaValue[] values = array.getValues();
+			List<Integer> changes = new ArrayList<Integer>();
 			for(int i = 0; i < elements.length; i++) {
-				boolean equals = values[i].equals(elements[i]);
-				elements[i] = values[i];
+				boolean equals = values[i].getValueString().equals(elements[i].getValueString());
 				if(!equals) {
-					setChanged();
-					notifyObservers(i);
+					elements[i] = values[i];
+					changes.add(i);
 				}
+			}
+			if(!changes.isEmpty()) {
+				setChanged();
+				notifyObservers(changes);
 			}
 		}
 		catch(DebugException e) {
@@ -88,11 +88,6 @@ public class ArrayPrimitiveModel extends ArrayModel {
 
 	public int getLength() {
 		return elements.length;
-	}
-
-	@Override
-	public int getDimensions() {
-		return 1;
 	}
 	
 	public String get(int i) {
@@ -127,23 +122,6 @@ public class ArrayPrimitiveModel extends ArrayModel {
 		}
 	}
 
-	@Override
-	public IJavaValue getContent() {
-		return array;
-	}
-
-	public String getComponentType() { // TODO to upper
-		IJavaType componentType;
-		try {
-			componentType = ((IJavaArrayType) array.getJavaType()).getComponentType();
-			return componentType.getName();
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return null;
-		}
-		
-	}
-
 	public void addVar(ValueModel v) {
 		if(!vars.containsKey(v.getName())) {
 			vars.put(v.getName(), v);
@@ -164,28 +142,25 @@ public class ArrayPrimitiveModel extends ArrayModel {
 
 
 	@Override
-	public IFigure createFigure(Graph graph) {
+	public IFigure createInnerFigure(Graph graph) {
 		return new ArrayPrimitiveFigure(this);
 	}
 
 
-//	@Override
-//	public String toString() {
-//		String els = "{";
-//		for(int i = 0; i < elements.length; i++) {
-//			if(i != 0)
-//				els += ", ";
-//			els += get(i);
-//		}
-//		els += "}";
-//		return ArrayPrimitiveModel.class.getSimpleName() + " " + els;
-//	}
-
 	@Override
-	public void registerObserver(Observer o) {
-		addObserver(o);
+	public String toString() {
+		int lim = Math.min(Constants.ARRAY_LENGTH_LIMIT, elements.length);
+		String els = "{";
+		for(int i = 0; i < lim; i++) {
+			if(i != 0)
+				els += ", ";
+			els += get(i);
+		}
+		if(lim < elements.length)
+			els += ", ...";
+		
+		els += "}";
+		return ArrayPrimitiveModel.class.getSimpleName() + " " + els;
 	}
-
-	
 	
 }

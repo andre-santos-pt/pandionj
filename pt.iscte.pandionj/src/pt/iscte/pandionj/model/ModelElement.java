@@ -9,10 +9,17 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.extensibility.WidgetExtension;
+import pt.iscte.pandionj.figures.BaseFigure;
 
-public abstract class ModelElement extends Observable {
+public abstract class ModelElement<T extends IJavaValue> extends Observable {
 	
+	protected StackFrameModel model;
 	protected WidgetExtension extension;
+	private IFigure figure;
+
+	public ModelElement(StackFrameModel model) {
+		this.model = model;
+	}
 	
 	public void setWidgetExtension(WidgetExtension extension) {
 		this.extension = extension;
@@ -22,9 +29,18 @@ public abstract class ModelElement extends Observable {
 		return extension != null;
 	}
 	
-	public abstract IJavaValue getContent();
+	public abstract T getContent();
+	
 	public abstract void update();
-	public abstract IFigure createFigure(Graph graph);
+	public IFigure createFigure(Graph graph) {
+		if(figure == null)
+			figure = new BaseFigure(createInnerFigure(graph));
+		
+		return figure;
+	}
+	
+	protected abstract IFigure createInnerFigure(Graph graph);
+	
 	
 	public void registerObserver(Observer o) {
 		addObserver(o);

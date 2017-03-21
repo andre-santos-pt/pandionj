@@ -49,6 +49,7 @@ public class ObjectModel extends ModelElement {
 	private ClassInfo info;
 
 	public ObjectModel(IJavaObject object, StackFrameModel model, ClassInfo info) {
+		super(model);
 		assert object != null;
 		this.object = object;
 		this.frame = model;
@@ -106,7 +107,7 @@ public class ObjectModel extends ModelElement {
 	}
 
 	@Override
-	public IFigure createFigure(Graph graph) {
+	public IFigure createInnerFigure(Graph graph) {
 		try {
 			if(object.getJavaType().getName().equals(String.class.getName()))
 				return new StringFigure(object.getValueString());
@@ -135,7 +136,7 @@ public class ObjectModel extends ModelElement {
 	public Map<String, ModelElement> getReferences() {
 		return references.entrySet().stream()
 				.filter(e -> !values.containsKey(e.getKey()))
-				.collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue().getTarget()));
+				.collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue().getModelTarget()));
 
 	}
 
@@ -261,7 +262,7 @@ public class ObjectModel extends ModelElement {
 			int i = 0;
 			for(String siblingRef : varsOfSameType) {
 				ReferenceModel refModel = obj.references.get(siblingRef);
-				ModelElement o = refModel.getTarget();
+				ModelElement o = refModel.getModelTarget();
 				if(o instanceof ObjectModel)
 					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
 				else if(o instanceof NullModel && visitNulls)
@@ -273,7 +274,7 @@ public class ObjectModel extends ModelElement {
 	private boolean noSiblings() {
 		for(String siblingRef : varsOfSameType) {
 			ReferenceModel refModel = references.get(siblingRef);
-			ModelElement o = refModel.getTarget();
+			ModelElement o = refModel.getModelTarget();
 			if(!(o instanceof NullModel))
 				return false;
 		}
@@ -299,7 +300,7 @@ public class ObjectModel extends ModelElement {
 				int i = 0;
 				for(String siblingRef : varsOfSameType) {
 					ReferenceModel refModel = obj.references.get(siblingRef);
-					ModelElement o = refModel.getTarget();
+					ModelElement o = refModel.getModelTarget();
 					v.accept(o, this, i++, depth+1, siblingRef);
 				}
 			}
@@ -308,7 +309,7 @@ public class ObjectModel extends ModelElement {
 			int i = 0;
 			for(String siblingRef : varsOfSameType) {
 				ReferenceModel refModel = obj.references.get(siblingRef);
-				ModelElement o = refModel.getTarget();
+				ModelElement o = refModel.getModelTarget();
 				if(o instanceof ObjectModel)
 					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
 				else if(o instanceof NullModel && visitNulls)
@@ -332,7 +333,7 @@ public class ObjectModel extends ModelElement {
 				if(e instanceof ObjectModel)
 					for(String siblingRef : ((ObjectModel) e).varsOfSameType) {
 						ReferenceModel refModel = ((ObjectModel) e).references.get(siblingRef);
-						ModelElement o = refModel.getTarget();
+						ModelElement o = refModel.getModelTarget();
 						//						if(!(o instanceof NullModel && !visitNulls))
 						stack.push(o);
 					}
@@ -356,8 +357,8 @@ public class ObjectModel extends ModelElement {
 		else
 			visited.add(obj);
 
-		ModelElement leftTarget = obj.references.get(left).getTarget();
-		ModelElement rightTarget = obj.references.get(right).getTarget();
+		ModelElement leftTarget = obj.references.get(left).getModelTarget();
+		ModelElement rightTarget = obj.references.get(right).getModelTarget();
 
 		return (leftTarget instanceof NullModel || isBinaryTree((ObjectModel) leftTarget, left, right, visited)) &&
 				(rightTarget instanceof NullModel || isBinaryTree((ObjectModel) rightTarget, left, right, visited));
@@ -370,7 +371,7 @@ public class ObjectModel extends ModelElement {
 	}
 
 	private static void infixTraverse(ObjectModel obj, String left, String right, int depth, SiblingVisitor v) {
-		ModelElement leftTarget = obj.references.get(left).getTarget();
+		ModelElement leftTarget = obj.references.get(left).getModelTarget();
 		if(leftTarget instanceof ObjectModel)
 			infixTraverse((ObjectModel) leftTarget, left, right, depth+1, v);
 		else
@@ -378,7 +379,7 @@ public class ObjectModel extends ModelElement {
 
 		v.accept(obj, null, -1, depth, null);
 
-		ModelElement rightTarget = obj.references.get(right).getTarget();
+		ModelElement rightTarget = obj.references.get(right).getModelTarget();
 		if(rightTarget instanceof ObjectModel)
 			infixTraverse((ObjectModel) rightTarget, left, right, depth+1, v);
 		else

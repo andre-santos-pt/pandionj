@@ -33,6 +33,9 @@ import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
@@ -52,7 +55,7 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 public class StackFrameModel extends Observable {
 	private IJavaStackFrame frame;
-	private Map<String, ModelElement> vars;
+	private Map<String, VariableModel<?>> vars;
 	private Map<Long, ModelElement> objects;
 	private ParserResult codeAnalysis;
 	private ClassInfo classInfo;
@@ -75,6 +78,9 @@ public class StackFrameModel extends Observable {
 		}
 	}
 
+	public IStackFrame getStackFrame() {
+		return frame;
+	}
 
 	public Variable getLocalVariable(String name) {
 		try {
@@ -93,6 +99,7 @@ public class StackFrameModel extends Observable {
 	}
 
 	public void update() {
+		long time = System.nanoTime();
 		handleVariables();
 		for(ModelElement e : vars.values())
 			e.update();
@@ -109,11 +116,13 @@ public class StackFrameModel extends Observable {
 					}
 				});
 		}
+		System.out.println(System.nanoTime() - time);
 	}
 
 	private void handleVariables() {
 		try {
-			Iterator<Entry<String, ModelElement>> iterator = vars.entrySet().iterator();
+			// TODO getThis
+			Iterator<Entry<String, VariableModel<?>>> iterator = vars.entrySet().iterator();
 			while(iterator.hasNext()) {
 				String var = iterator.next().getKey();
 				boolean contains = false;
@@ -165,7 +174,7 @@ public class StackFrameModel extends Observable {
 			vars.get(varName).update();
 		}
 		else {
-			ModelElement newElement = value instanceof IJavaObject ? new ReferenceModel(jv, isInstance, this) : new ValueModel(jv, this);
+			VariableModel<?> newElement = value instanceof IJavaObject ? new ReferenceModel(jv, isInstance, this) : new ValueModel(jv, this);
 			vars.put(varName, newElement);
 			if(newElement instanceof ReferenceModel)
 				((ReferenceModel) newElement).registerObserver(new Observer() {
@@ -181,11 +190,11 @@ public class StackFrameModel extends Observable {
 	}
 
 	private void handleArrayIterators() {
-		for (Entry<String, ModelElement> e : vars.entrySet()) {
+		for (Entry<String, VariableModel<?>> e : vars.entrySet()) {
 			if(e.getValue() instanceof ReferenceModel) {
 				ReferenceModel refModel = (ReferenceModel) e.getValue();
 				if(refModel.isArrayValue() && !refModel.isNull()) {
-					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getTarget();
+					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getModelTarget();
 					for(String itVar : findArrayIterators(e.getKey())) {
 						if(vars.containsKey(itVar))
 							array.addVar((ValueModel) vars.get(itVar));
@@ -226,8 +235,8 @@ public class StackFrameModel extends Observable {
 	//	}
 
 	public String getReferenceNameTo(ModelElement object) {
-		for(Entry<String, ModelElement> e : vars.entrySet())
-			if(e.getValue() instanceof ReferenceModel && ((ReferenceModel) e.getValue()).getTarget().equals(object))
+		for(Entry<String, VariableModel<?>> e : vars.entrySet())
+			if(e.getValue() instanceof ReferenceModel && ((ReferenceModel) e.getValue()).getModelTarget().equals(object))
 				return e.getKey();
 
 		return null;
@@ -259,9 +268,9 @@ public class StackFrameModel extends Observable {
 	}
 
 	public String getReferenceNameTo2(ModelElement object) {
-		for(Entry<String, ModelElement> e : vars.entrySet()) {
+		for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
 			if(e.getValue() instanceof ReferenceModel) {
-				ModelElement el = ((ReferenceModel) e.getValue()).getTarget();
+				ModelElement el = ((ReferenceModel) e.getValue()).getModelTarget();
 				if(el instanceof ObjectModel) {
 					PathVisitor v = new PathVisitor(object);
 					((ObjectModel) el).traverseSiblings(v, false);
@@ -276,16 +285,14 @@ public class StackFrameModel extends Observable {
 	public Collection<ReferenceModel> getReferencesTo(ModelElement object) {
 		List<ReferenceModel> refs = new ArrayList<>(3);
 		for (ModelElement e : vars.values()) {
-			if(e instanceof ReferenceModel && ((ReferenceModel) e).getTarget().equals(object))
+			if(e instanceof ReferenceModel && ((ReferenceModel) e).getModelTarget().equals(object))
 				refs.add((ReferenceModel) e);
 		}
 		return refs;
 	}
 
 
-	public IStackFrame getStackFrame() {
-		return frame;
-	}
+
 
 
 	public ModelElement getObject(IJavaObject obj, boolean addToModel) {
@@ -299,7 +306,7 @@ public class StackFrameModel extends Observable {
 						e = new ArrayReferenceModel((IJavaArray) obj, this);
 
 					else
-						e = new ArrayPrimitiveModel((IJavaArray) obj);
+						e = new ArrayPrimitiveModel((IJavaArray) obj, this);
 				}
 				else {
 					e = new ObjectModel(obj, this, classInfo);
@@ -346,7 +353,7 @@ public class StackFrameModel extends Observable {
 	public String toString() {
 		try {
 			//			String name = stackFrame.getName();
-			return (frame.isConstructor() ? "new " + frame.getReferenceType().getName() : frame.getMethodName())  + "(" + frame.getArgumentTypeNames() + ")";
+			return (frame.isConstructor() ? "new " + frame.getReferenceType().getName() : frame.getMethodName())  + "(" + String.join(", ", frame.getArgumentTypeNames()) + ")";
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.toString();
@@ -357,6 +364,24 @@ public class StackFrameModel extends Observable {
 		addObserver(o);
 	}
 
+	public void registerDisplayObserver(Observer obs, Control control) {
+		addObserver(new Observer() {
+			@Override
+			public void update(Observable o, Object arg) {
+				Display.getDefault().asyncExec(() -> {
+					obs.update(o, arg);
+				});
+			}
+		});
+		
+		control.addDisposeListener(new DisposeListener() {
+			
+			@Override
+			public void widgetDisposed(DisposeEvent e) {
+				deleteObserver(obs);
+			}
+		});
+	}
 
 
 	public void processException() {
@@ -367,7 +392,7 @@ public class StackFrameModel extends Observable {
 				if(e instanceof ArrayOutOfBounds) {
 					ArrayOutOfBounds ae = (ArrayOutOfBounds) e;
 					System.out.println(ae.arrayName + " " + ae.arrayAccess);
-					ArrayPrimitiveModel arrayModel = (ArrayPrimitiveModel) ((ReferenceModel) vars.get(ae.arrayName)).getTarget();
+					ArrayPrimitiveModel arrayModel = (ArrayPrimitiveModel) ((ReferenceModel) vars.get(ae.arrayName)).getModelTarget();
 					arrayModel.setVarError(ae.arrayAccess);
 				}
 		} catch (DebugException e1) {

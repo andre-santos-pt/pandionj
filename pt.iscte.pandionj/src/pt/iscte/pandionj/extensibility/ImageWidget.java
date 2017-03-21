@@ -36,7 +36,7 @@ public class ImageWidget implements ArrayWidgetExtension {
 	}
 	
 	
-	private class ImageFig extends ExtensionFigure {
+	private class ImageFig extends Figure {
 		Object[][] array;
 		ImageFig(Object[][] array) {
 			this.array = array;

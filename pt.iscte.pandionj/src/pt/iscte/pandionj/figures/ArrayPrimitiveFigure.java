@@ -56,14 +56,14 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 
 	public ArrayPrimitiveFigure(ArrayPrimitiveModel model) {
 		this.model = model;
-		model.registerObserver((o, index) -> observerAction(o, index));
+		model.registerObserver((o, indexes) -> observerAction(o, indexes));
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
 		positions = new ArrayList<>(N+2);
 		lowerOffSet = 0;
 
 		setCornerDimensions(OBJECT_CORNER);
 		setBackgroundColor(OBJECT_COLOR);
-		
+
 		layout = getOneColGridLayout();
 		setLayoutManager(layout);
 
@@ -104,7 +104,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 				fig.add(p);
 				positions.add(p);
 			}
-			if(N > Constants.ARRAY_LENGTH_LIMIT)
+			if(N > Constants.ARRAY_LENGTH_LIMIT) // TODO review
 				fig.add(new Label("..."));
 		}
 		return fig;
@@ -150,8 +150,8 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			public void update(Observable o, Object arg) {
 				Display.getDefault().asyncExec(() -> {
 					setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false);
-					repaint();}
-						);
+					repaint();
+				});
 			}
 		});
 	}
@@ -177,26 +177,28 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		repaint();
 	}
 
-	private void observerAction(Observable o, Object index) {
-		if(index instanceof Integer) {
-			Integer i = (Integer) index;
-			if(i >= Constants.ARRAY_LENGTH_LIMIT)
-				return;
-			
-			for(int j = 0; j < N; j++) {
-				Position p = getValidPosition(j);
-				if(j == i)
-					p.highlight();
-				else
-					p.unhighlight();
+	private void observerAction(Observable o, Object arg) {
+		if(arg instanceof List) {
+			List<Integer> indexes = (List<Integer>) arg;
+			for(int i : indexes) {
+				if(i >= Constants.ARRAY_LENGTH_LIMIT)
+					return;
+
+				for(int j = 0; j < N; j++) {
+					Position p = getValidPosition(j);
+					if(j == i)
+						p.highlight();
+					else
+						p.unhighlight();
+				}
+				getValidPosition(i).setValue(model.get(i));
 			}
-			getValidPosition(i).setValue(model.get(i));
 		}
-		else if(index instanceof ValueModel) {
-			addVariable((ValueModel) index);
+		else if(arg instanceof ValueModel) {
+			addVariable((ValueModel) arg);
 		}
-		else if(index instanceof RuntimeException) {
-			String v = ((RuntimeException) index).getMessage();
+		else if(arg instanceof RuntimeException) {
+			String v = ((RuntimeException) arg).getMessage();
 			if(vars.containsKey(v)) {
 				int currentIndex = vars.get(v).getCurrentIndex();
 				positions.get(lowerOffSet + currentIndex).markError(); // TODO check if out of bounds
