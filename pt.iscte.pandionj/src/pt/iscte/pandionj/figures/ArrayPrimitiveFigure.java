@@ -29,6 +29,8 @@ import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.MouseEvent;
+import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -306,6 +308,28 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			layout.setConstraint(indexLabel, layoutCenter);
 			add(indexLabel);
 			error = false;
+			
+			valueLabel.addMouseListener(new MouseListener() {
+
+				@Override
+				public void mouseDoubleClicked(MouseEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void mousePressed(MouseEvent arg0) {
+
+					valueLabel.setBackgroundColor(Constants.SELECT_COLOR);
+				}
+
+				@Override
+				public void mouseReleased(MouseEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+				
+			});
 		}
 
 		public String getValue() {

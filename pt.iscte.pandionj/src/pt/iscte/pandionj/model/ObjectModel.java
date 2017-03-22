@@ -1,6 +1,5 @@
 package pt.iscte.pandionj.model;
 
-import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -23,7 +22,9 @@ import org.eclipse.debug.core.model.ITerminate;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IEvaluationRunnable;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
+import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
@@ -32,33 +33,36 @@ import org.eclipse.zest.core.widgets.Graph;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.figures.ObjectFigure;
-import pt.iscte.pandionj.figures.StringFigure;
 import pt.iscte.pandionj.parser.ClassInfo;
 import pt.iscte.pandionj.parser.MethodInfo;
 import pt.iscte.pandionj.parser.VisibilityInfo;
 
-public class ObjectModel extends ModelElement {
+public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 
 	private IJavaObject object;
-	private StackFrameModel frame;
+	private StackFrameModel model;
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
 	private List<String> varsOfSameType;
 
 	private ClassInfo info;
-
+	private String type;
+	
 	public ObjectModel(IJavaObject object, StackFrameModel model, ClassInfo info) {
 		super(model);
 		assert object != null;
 		this.object = object;
-		this.frame = model;
+		this.model = model;
 		this.info = info;
-
+		
 		values = new LinkedHashMap<String, ValueModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
 		varsOfSameType = new ArrayList<>();
 		try {
+			this.type = object.getReferenceTypeName();
+			
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
 
@@ -95,6 +99,10 @@ public class ObjectModel extends ModelElement {
 		}
 	}
 
+	public String getType() {
+		return type;
+	}
+	
 	@Override
 	public void update() {
 		values.values().forEach(val -> val.update());
@@ -102,23 +110,19 @@ public class ObjectModel extends ModelElement {
 	}
 
 	@Override
-	public IJavaValue getContent() {
+	public IJavaObject getContent() {
 		return object;
 	}
 
 	@Override
 	public IFigure createInnerFigure(Graph graph) {
-		try {
-			if(object.getJavaType().getName().equals(String.class.getName()))
-				return new StringFigure(object.getValueString());
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-		}
-		return new ObjectFigure(this, graph);
+		if(hasWidgetExtension())
+			return createExtensionFigure();
+		else
+			return new ObjectFigure(this, graph);
 	}
 
-	public Set<String> getFields() {
+	public Set<String> getFieldNames() {
 		return Collections.unmodifiableSet(values.keySet());
 	}
 
@@ -133,7 +137,9 @@ public class ObjectModel extends ModelElement {
 		return null;
 	}
 
-	public Map<String, ModelElement> getReferences() {
+
+
+	public Map<String, ModelElement<?>> getReferences() {
 		return references.entrySet().stream()
 				.filter(e -> !values.containsKey(e.getKey()))
 				.collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue().getModelTarget()));
@@ -141,7 +147,7 @@ public class ObjectModel extends ModelElement {
 	}
 
 	public Collection<ReferenceModel> getReferencePointers() {
-		return frame.getReferencesTo(this);
+		return model.getReferencesTo(this);
 	}
 
 
@@ -152,17 +158,17 @@ public class ObjectModel extends ModelElement {
 			e.printStackTrace();
 			return "";
 		}
-//		MethodInfo m = info.getMethod("toString");
-//		if(m == null)
-//			return "";
-//		
-//		IJavaValue val = invoke(m);
-//		try {
-//			return val == null ? "" : val.getValueString();
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return "";
-//		} 
+		//		MethodInfo m = info.getMethod("toString");
+		//		if(m == null)
+		//			return "";
+		//		
+		//		IJavaValue val = invoke(m);
+		//		try {
+		//			return val == null ? "" : val.getValueString();
+		//		} catch (DebugException e) {
+		//			e.printStackTrace();
+		//			return "";
+		//		} 
 		//		try {
 		//			IValue val = model.evalMethod(this, "toString()", false);
 		//			return val != null ? val.getValueString() : "NULL";
@@ -206,7 +212,7 @@ public class ObjectModel extends ModelElement {
 
 
 	public interface SiblingVisitor {
-		void accept(ModelElement object, ModelElement parent, int index, int depth, String field);
+		void accept(ObjectModel object, ObjectModel parent, int index, int depth, String field);
 	}
 
 
@@ -214,7 +220,7 @@ public class ObjectModel extends ModelElement {
 		class SiblingVisitorDepth implements SiblingVisitor {
 			int max;
 			@Override
-			public void accept(ModelElement o, ModelElement parent, int index, int d, String f) {
+			public void accept(ObjectModel o, ObjectModel parent, int index, int d, String f) {
 				max = Math.max(max, d);
 			}
 		};
@@ -226,7 +232,7 @@ public class ObjectModel extends ModelElement {
 	public int siblingsBreath() {
 		class SiblingVisitorBreath implements SiblingVisitor {
 			Multiset<Integer> count = HashMultiset.create();
-			public void accept(ModelElement o, ModelElement parent, int index, int d, String f) {
+			public void accept(ObjectModel o, ObjectModel parent, int index, int d, String f) {
 				count.add(d);
 			}
 			public int max() {
@@ -262,11 +268,11 @@ public class ObjectModel extends ModelElement {
 			int i = 0;
 			for(String siblingRef : varsOfSameType) {
 				ReferenceModel refModel = obj.references.get(siblingRef);
-				ModelElement o = refModel.getModelTarget();
+				EntityModel<?> o = refModel.getModelTarget();
 				if(o instanceof ObjectModel)
 					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
 				else if(o instanceof NullModel && visitNulls)
-					v.accept(o, parent, i++, depth+1, siblingRef);
+					v.accept(null, parent, i++, depth+1, siblingRef);
 			}
 		}
 	}
@@ -274,7 +280,7 @@ public class ObjectModel extends ModelElement {
 	private boolean noSiblings() {
 		for(String siblingRef : varsOfSameType) {
 			ReferenceModel refModel = references.get(siblingRef);
-			ModelElement o = refModel.getModelTarget();
+			EntityModel<?> o = refModel.getModelTarget();
 			if(!(o instanceof NullModel))
 				return false;
 		}
@@ -300,8 +306,8 @@ public class ObjectModel extends ModelElement {
 				int i = 0;
 				for(String siblingRef : varsOfSameType) {
 					ReferenceModel refModel = obj.references.get(siblingRef);
-					ModelElement o = refModel.getModelTarget();
-					v.accept(o, this, i++, depth+1, siblingRef);
+					EntityModel<?>  o = refModel.getModelTarget();
+					v.accept(null, this, i++, depth+1, siblingRef);
 				}
 			}
 		}
@@ -309,38 +315,38 @@ public class ObjectModel extends ModelElement {
 			int i = 0;
 			for(String siblingRef : varsOfSameType) {
 				ReferenceModel refModel = obj.references.get(siblingRef);
-				ModelElement o = refModel.getModelTarget();
+				EntityModel<?>  o = refModel.getModelTarget();
 				if(o instanceof ObjectModel)
 					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
 				else if(o instanceof NullModel && visitNulls)
-					v.accept(o, this, i++, depth+1, siblingRef);
+					v.accept(null, this, i++, depth+1, siblingRef);
 			}
 			v.accept(obj, parent, index, depth, field);
 		}
 	}
 
-	private void traverseSiblingsDepth(ObjectModel obj, ObjectModel parent, int index, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
-		Set<ModelElement> visited = new HashSet<>();
-		ArrayDeque<ModelElement> stack = new ArrayDeque<>();
-		stack.push(obj);
-
-		while(!stack.isEmpty()) {
-			ModelElement e = stack.pop();
-			if(!visited.contains(e)) {
-				visited.add(e);
-				v.accept(e, parent, index, depth, field);
-
-				if(e instanceof ObjectModel)
-					for(String siblingRef : ((ObjectModel) e).varsOfSameType) {
-						ReferenceModel refModel = ((ObjectModel) e).references.get(siblingRef);
-						ModelElement o = refModel.getModelTarget();
-						//						if(!(o instanceof NullModel && !visitNulls))
-						stack.push(o);
-					}
-
-			}
-		}
-	}
+//	private void traverseSiblingsDepth(ObjectModel obj, ObjectModel parent, int index, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
+//		Set<ObjectModel> visited = new HashSet<>();
+//		ArrayDeque<ObjectModel> stack = new ArrayDeque<>();
+//		stack.push(obj);
+//
+//		while(!stack.isEmpty()) {
+//			ObjectModel e = stack.pop();
+//			if(!visited.contains(e)) {
+//				visited.add(e);
+//				v.accept(e, parent, index, depth, field);
+//
+//				if(e instanceof ObjectModel)
+//					for(String siblingRef : ((ObjectModel) e).varsOfSameType) {
+//						ReferenceModel refModel = ((ObjectModel) e).references.get(siblingRef);
+//						EntityModel<?> o = refModel.getModelTarget();
+//						//						if(!(o instanceof NullModel && !visitNulls))
+//						stack.push(o);
+//					}
+//
+//			}
+//		}
+//	}
 
 
 	public boolean isBinaryTree() {
@@ -371,29 +377,21 @@ public class ObjectModel extends ModelElement {
 	}
 
 	private static void infixTraverse(ObjectModel obj, String left, String right, int depth, SiblingVisitor v) {
-		ModelElement leftTarget = obj.references.get(left).getModelTarget();
+		EntityModel<?> leftTarget = obj.references.get(left).getModelTarget();
 		if(leftTarget instanceof ObjectModel)
 			infixTraverse((ObjectModel) leftTarget, left, right, depth+1, v);
 		else
-			v.accept(leftTarget, null, -1, depth+1, null);
+			v.accept(null, null, -1, depth+1, null);
 
 		v.accept(obj, null, -1, depth, null);
 
-		ModelElement rightTarget = obj.references.get(right).getModelTarget();
+		EntityModel<?> rightTarget = obj.references.get(right).getModelTarget();
 		if(rightTarget instanceof ObjectModel)
 			infixTraverse((ObjectModel) rightTarget, left, right, depth+1, v);
 		else
-			v.accept(rightTarget, null, -1, depth+1, null);
+			v.accept(null, null, -1, depth+1, null);
 	}
 
-	@Override
-	public void registerObserver(Observer o) {
-		addObserver(o);
-	}
-
-	public StackFrameModel getStackFrame() {
-		return frame;
-	}
 
 	public Iterator<MethodInfo> getMethods() {
 		return info.getMethods(EnumSet.of(VisibilityInfo.PUBLIC));
@@ -402,13 +400,13 @@ public class ObjectModel extends ModelElement {
 	public IJavaValue invoke(MethodInfo m, IJavaValue ... args) {
 		System.out.println("inv");
 		try {
-			IJavaThread t = (IJavaThread) frame.getStackFrame().getThread();
-			
+			IJavaThread t = (IJavaThread) model.getStackFrame().getThread();
+
 			class MethodCall implements IEvaluationRunnable, ITerminate {
 				IJavaValue ret;
-				
+
 				Thread job;
-				
+
 				@Override
 				public boolean canTerminate() {
 					return true;
@@ -442,29 +440,60 @@ public class ObjectModel extends ModelElement {
 						e.printStackTrace();
 					}
 				}
-				
+
 			}
-		
+
 			MethodCall call = new MethodCall();
 			t.runEvaluation(call, null, DebugEvent.EVALUATION, true);
-			
+
 			return call.ret;
 		} catch (DebugException e) {
-//			ObjectReference exception = ((InvocationException) e.getCause()).exception();
-//			((InvocationException) e.getCause()).printStackTrace();
-//			System.out.println(exception);
+			//			ObjectReference exception = ((InvocationException) e.getCause()).exception();
+			//			((InvocationException) e.getCause()).printStackTrace();
+			//			System.out.println(exception);
 			return null;
 		}
 	}
 
-//	public IJavaValue invoke(String methodName, String returnType, IJavaValue ... args) {
-//		String signature = JNIUtil.genJNISignature(returnType, args);
-//
-//		try {
-//			return object.sendMessage(methodName, signature, args, (IJavaThread) model.getStackFrame().getThread(), null);
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
+	//	public IJavaValue invoke(String methodName, String returnType, IJavaValue ... args) {
+	//		String signature = JNIUtil.genJNISignature(returnType, args);
+	//
+	//		try {
+	//			return object.sendMessage(methodName, signature, args, (IJavaThread) model.getStackFrame().getThread(), null);
+	//		} catch (DebugException e) {
+	//			e.printStackTrace();
+	//			return null;
+	//		}
+	//	}
+
+	
+	@Override
+	public String getStringValue() {
+		try {
+			return object.getValueString();
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return "";
+		}
+	}
+	
+	public int getInt(String fieldName) {
+		try {
+			IJavaFieldVariable field = object.getField(fieldName, false);
+			if(field == null)
+				throw new IllegalArgumentException(fieldName + " is not a field");
+
+			if(!field.getJavaType().getName().equals("int"))
+				throw new IllegalAccessError(fieldName + " is not of type int");
+
+			IJavaPrimitiveValue value = (IJavaPrimitiveValue) field.getValue();
+			return value.getIntValue();
+
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return 0;
+		}
+	}
+
+	
 }

@@ -27,9 +27,9 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 		return isInstance;
 	}
 	
-	public ModelElement getModelTarget() {
+	public EntityModel<?> getModelTarget() {
 		IJavaObject target = getContent();
-		return target.isNull() ? getNullInstance(target) : model.getObject(target, true);
+		return target.isNull() ? getNullInstance(target) : getStackFrame().getObject(target, true);
 	}
 
 	public boolean isNull() {
@@ -39,7 +39,7 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 	private NullModel getNullInstance(IJavaObject nullObj) {
 		assert nullObj.isNull();
 		if(nullModel == null)
-			nullModel = new NullModel(nullObj, model);
+			nullModel = new NullModel(nullObj, getStackFrame());
 		return nullModel;
 	}
 

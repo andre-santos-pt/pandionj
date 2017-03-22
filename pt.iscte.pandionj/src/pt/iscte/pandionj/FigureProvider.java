@@ -1,7 +1,5 @@
 package pt.iscte.pandionj;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import org.eclipse.draw2d.AbstractConnectionAnchor;
 import org.eclipse.draw2d.ColorConstants;
@@ -24,11 +22,7 @@ import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.NodeProvider.Pointer;
-import pt.iscte.pandionj.extensibility.ArrayWidgetExtension;
-import pt.iscte.pandionj.extensibility.ImageWidget;
-import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.BaseFigure;
-import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ArrayPrimitiveModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.ModelElement;
@@ -43,7 +37,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	
 	@Override
 	public IFigure getFigure(Object element) {
-		ModelElement model = (ModelElement) element;
+		ModelElement<?> model = (ModelElement<?>) element;
 		return model.createFigure(graph);		
 	}
 

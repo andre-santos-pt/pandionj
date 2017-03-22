@@ -3,6 +3,7 @@ package pt.iscte.pandionj;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
@@ -29,7 +30,7 @@ public interface Constants {
 
 	
 	int VALUE_FONT_SIZE = 20;
-	String FONT_FACE = "Arial";
+	String FONT_FACE = "Monospace";
 
 	int POSITION_LINE_WIDTH = 1;
 	int INDEX_FONT_SIZE = 10;
@@ -47,6 +48,8 @@ public interface Constants {
 	Color HIGHLIGHT_COLOR = new Color(Display.getDefault(), 223, 234, 255);
 
 	Color SELECT_COLOR = new Color(Display.getDefault(), 0, 0, 200);
+	
+	Color WHITE_COLOR = Display.getDefault().getSystemColor(SWT.COLOR_WHITE);
 	
 	Color[] VARCOLORS = {
 			ColorConstants.darkBlue, ColorConstants.darkGreen, ColorConstants.orange

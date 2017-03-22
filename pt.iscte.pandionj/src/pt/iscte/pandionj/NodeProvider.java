@@ -5,17 +5,21 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
 
-import pt.iscte.pandionj.extensibility.WidgetExtension;
+import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
+import pt.iscte.pandionj.model.EntityModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.model.ReferenceModel;
 import pt.iscte.pandionj.model.StackFrameModel;
+import pt.iscte.pandionj.model.VariableModel;
 
 class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGraphEntityContentProvider
 	private static final Object[] EMPTY = new Object[0];
@@ -38,27 +42,27 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		if(model == null)
 			return EMPTY;
 
-		List<ModelElement> elements = new ArrayList<>(model.getVariables());
+		List<ModelElement<?>> elements = new ArrayList<>(model.getVariables());
 
-		for(ModelElement e : elements.toArray(new ModelElement[elements.size()])) {
+		for(ModelElement<?> e : elements.toArray(new ModelElement[elements.size()])) {
 			if(e instanceof ReferenceModel) {
-				ModelElement t = ((ReferenceModel) e).getModelTarget();
+				EntityModel<?> t = ((ReferenceModel) e).getModelTarget();
 
 				if(t instanceof ArrayModel) {
 					ArrayModel arrayModel = (ArrayModel) t;
-					for(WidgetExtension ext : Extensions.arrayPrimitiveExtensions) {
-						Object[] values = arrayModel.getValues();
-						String arrayType = arrayModel.getComponentType();
-						int dims = arrayModel.getDimensions();
-						if(ext.accept(arrayModel)) {
-							arrayModel.setWidgetExtension(ext);
-						}
-					}
+					t.setWidgetExtension(ExtensionManager.getCompatibleExtension(arrayModel));
+				}
+				else if(t instanceof ObjectModel) {
+					String objectType = ((ObjectModel) t).getType();
+					for(IObjectWidgetExtension ext : ExtensionManager.objectExtensions)
+						if(ext.accept(objectType))
+							t.setWidgetExtension(ext);
 				}
 
 				if(t instanceof ObjectModel && !t.hasWidgetExtension()) {
 					((ObjectModel) t).traverseSiblings((o,p,i,d,f) -> {
-						elements.add(o);
+						if(o != null)
+							elements.add(o);
 					}, true);
 				}
 				else if(t instanceof ArrayReferenceModel && !t.hasWidgetExtension()) {
@@ -78,14 +82,14 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 	@Override
 	public Object[] getRelationships(Object source, Object dest) {
 		if(source instanceof ReferenceModel && ((ReferenceModel) source).getModelTarget().equals(dest)) {
-			return new Object[] { new Pointer((ModelElement) source, (ModelElement) dest) };
+			return new Object[] { new Pointer((ModelElement<?>) source, (ModelElement<?>) dest) };
 		}
 		else if(source instanceof ObjectModel) {
-			Map<String, ModelElement> pointers = ((ObjectModel) source).getReferences();
+			Map<String, ModelElement<?>> pointers = ((ObjectModel) source).getReferences();
 			List<Pointer> ret = new ArrayList<>();
-			for(Entry<String, ModelElement> field : pointers.entrySet()) 
+			for(Entry<String, ModelElement<?>> field : pointers.entrySet()) 
 				if(dest.equals(field.getValue()))
-					ret.add(new Pointer(field.getKey(), (ObjectModel) source, (ModelElement) dest));
+					ret.add(new Pointer(field.getKey(), (ObjectModel) source, (ModelElement<?>) dest));
 			return ret.toArray();
 		}
 		else if(source instanceof ArrayReferenceModel && !((ArrayReferenceModel) source).hasWidgetExtension()) {
@@ -93,7 +97,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			List<ReferenceModel> elements = ((ArrayReferenceModel) source).getModelElements();
 			for(int i = 0; i < elements.size(); i++)
 				if(dest.equals(elements.get(i).getModelTarget()))
-					ret.add(new Pointer("[" + Integer.toString(i) + "]", (ModelElement) source, (ModelElement) dest));
+					ret.add(new Pointer("[" + Integer.toString(i) + "]", (ModelElement<?>) source, (ModelElement<?>) dest));
 			return ret.toArray();
 		}
 		else
@@ -103,14 +107,14 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 
 	static class Pointer {
 		final String refName;
-		final ModelElement source;
-		final ModelElement target;
+		final ModelElement<?> source;
+		final ModelElement<?> target;
 
-		public Pointer(ModelElement source, ModelElement target) {
+		public Pointer(ModelElement<?> source, ModelElement<?> target) {
 			this("", source, target);
 		}
 
-		public Pointer(String refName, ModelElement source, ModelElement target) {
+		public Pointer(String refName, ModelElement<?> source, ModelElement<?> target) {
 			this.refName = refName;
 			this.source = source;
 			this.target = target;

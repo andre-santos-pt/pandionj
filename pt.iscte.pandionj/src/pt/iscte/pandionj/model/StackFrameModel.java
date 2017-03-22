@@ -2,6 +2,7 @@ package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -40,6 +41,7 @@ import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
 
+import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.parser.ClassInfo;
 import pt.iscte.pandionj.parser.JavaSourceParser;
@@ -56,7 +58,7 @@ import pt.iscte.pandionj.parser.variable.Variable;
 public class StackFrameModel extends Observable {
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
-	private Map<Long, ModelElement> objects;
+	private Map<Long, EntityModel<?>> objects;
 	private ParserResult codeAnalysis;
 	private ClassInfo classInfo;
 
@@ -101,17 +103,17 @@ public class StackFrameModel extends Observable {
 	public void update() {
 		long time = System.nanoTime();
 		handleVariables();
-		for(ModelElement e : vars.values())
+		for(VariableModel<?> e : vars.values())
 			e.update();
 
-		for(ModelElement o : objects.values().toArray(new ModelElement[objects.size()])) {
+		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel)
 				o.update();
 			else if(o instanceof ObjectModel)
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
 
 					@Override
-					public void accept(ModelElement object, ModelElement parent, int index, int depth, String field) {
+					public void accept(ObjectModel object, ObjectModel parent, int index, int depth, String field) {
 						((ObjectModel) object).update();
 					}
 				});
@@ -149,10 +151,10 @@ public class StackFrameModel extends Observable {
 
 				if(varName.equals("this")) {
 					for (IVariable iv : jv.getValue().getVariables())
-						if(!((IJavaVariable) iv).isSynthetic())
+						if(!((IJavaVariable) iv).isSynthetic() && !((IJavaVariable) iv).isStatic())
 							handleVar((IJavaVariable) iv, true);
 				}
-				else if(!jv.isSynthetic())
+				else if(!jv.isSynthetic() && !jv.isStatic())
 					handleVar(jv, false);
 			}
 
@@ -223,37 +225,25 @@ public class StackFrameModel extends Observable {
 
 
 
-	public Collection<ModelElement> getVariables() {
-		HashSet<ModelElement> set = new HashSet<>(vars.values());
-		set.addAll(objects.values());
-		return set;
-		//return Collections.unmodifiableCollection(vars.values());
+	public Collection<VariableModel<?>> getVariables() {
+		return Collections.unmodifiableCollection(vars.values());
 	}
 
-	//	public Collection<ModelElement> getObjects() {
-	//		return Collections.unmodifiableCollection(objects.values());
-	//	}
 
-	public String getReferenceNameTo(ModelElement object) {
-		for(Entry<String, VariableModel<?>> e : vars.entrySet())
-			if(e.getValue() instanceof ReferenceModel && ((ReferenceModel) e.getValue()).getModelTarget().equals(object))
-				return e.getKey();
 
-		return null;
-	}
 
 	private static class PathVisitor implements SiblingVisitor {
 		ArrayList<String> path;
 		boolean found;
-		ModelElement target;
+		EntityModel<?> target;
 
-		public PathVisitor(ModelElement target) {
+		public PathVisitor(EntityModel<?> target) {
 			path = new ArrayList<>();
 			this.target = target;
 			found = false;
 		}
 
-		public void accept(ModelElement o, ModelElement parent, int index, int depth, String field) {
+		public void accept(ObjectModel o, ObjectModel parent, int index, int depth, String field) {
 			if(!found) {
 				while(path.size() > 0 && path.size() >= depth)
 					path.remove(path.size()-1);
@@ -267,10 +257,10 @@ public class StackFrameModel extends Observable {
 		}
 	}
 
-	public String getReferenceNameTo2(ModelElement object) {
+	public String getReferenceNameTo2(EntityModel<?> object) {
 		for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
 			if(e.getValue() instanceof ReferenceModel) {
-				ModelElement el = ((ReferenceModel) e.getValue()).getModelTarget();
+				EntityModel<?> el = ((ReferenceModel) e.getValue()).getModelTarget();
 				if(el instanceof ObjectModel) {
 					PathVisitor v = new PathVisitor(object);
 					((ObjectModel) el).traverseSiblings(v, false);
@@ -282,9 +272,9 @@ public class StackFrameModel extends Observable {
 		return null;
 	}
 
-	public Collection<ReferenceModel> getReferencesTo(ModelElement object) {
+	public Collection<ReferenceModel> getReferencesTo(ModelElement<?> object) {
 		List<ReferenceModel> refs = new ArrayList<>(3);
-		for (ModelElement e : vars.values()) {
+		for (ModelElement<?> e : vars.values()) {
 			if(e instanceof ReferenceModel && ((ReferenceModel) e).getModelTarget().equals(object))
 				refs.add((ReferenceModel) e);
 		}
@@ -295,27 +285,26 @@ public class StackFrameModel extends Observable {
 
 
 
-	public ModelElement getObject(IJavaObject obj, boolean addToModel) {
+	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean addToModel) {
 		assert !obj.isNull() || !addToModel;
 		try {
-			ModelElement e = objects.get(obj.getUniqueId());
+			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType) {
 					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
 					if(componentType instanceof IJavaReferenceType)
 						e = new ArrayReferenceModel((IJavaArray) obj, this);
-
 					else
 						e = new ArrayPrimitiveModel((IJavaArray) obj, this);
 				}
 				else {
 					e = new ObjectModel(obj, this, classInfo);
-					e.registerObserver(new Observer() {
-						public void update(Observable o, Object arg) {
-							setChanged();
-							notifyObservers();
-						}
-					});
+//					e.registerObserver(new Observer() {
+//						public void update(Observable o, Object arg) {
+//							setChanged();
+//							notifyObservers();
+//						}
+//					});
 				}
 				if(addToModel)
 					objects.put(obj.getUniqueId(), e);
@@ -333,9 +322,9 @@ public class StackFrameModel extends Observable {
 
 	public void simulateGC() {
 		boolean removals = false;
-		Iterator<Entry<Long, ModelElement>> iterator = objects.entrySet().iterator();
+		Iterator<Entry<Long, EntityModel<?>>> iterator = objects.entrySet().iterator();
 		while(iterator.hasNext()) {
-			Entry<Long, ModelElement> e = iterator.next();
+			Entry<Long, EntityModel<?>> e = iterator.next();
 			if(!vars.containsValue(e.getValue())) {
 				iterator.remove();
 				removals = true;
@@ -352,21 +341,24 @@ public class StackFrameModel extends Observable {
 	@Override
 	public String toString() {
 		try {
-			//			String name = stackFrame.getName();
-			return (frame.isConstructor() ? "new " + frame.getReferenceType().getName() : frame.getMethodName())  + "(" + String.join(", ", frame.getArgumentTypeNames()) + ")";
+			List<String> argumentTypeNames = frame.getArgumentTypeNames();
+			Utils.stripQualifiedNames(argumentTypeNames);
+			return (frame.isConstructor() ? "new " + frame.getReferenceType().getName() : frame.getMethodName())  + 
+					"(" + String.join(", ", argumentTypeNames) + ")";
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.toString();
 		}
 	}
 
+	
+	
 	public void registerObserver(Observer o) {
 		addObserver(o);
 	}
 
 	public void registerDisplayObserver(Observer obs, Control control) {
 		addObserver(new Observer() {
-			@Override
 			public void update(Observable o, Object arg) {
 				Display.getDefault().asyncExec(() -> {
 					obs.update(o, arg);
@@ -375,8 +367,6 @@ public class StackFrameModel extends Observable {
 		});
 		
 		control.addDisposeListener(new DisposeListener() {
-			
-			@Override
 			public void widgetDisposed(DisposeEvent e) {
 				deleteObserver(obs);
 			}
@@ -402,77 +392,96 @@ public class StackFrameModel extends Observable {
 
 
 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 
-	public IValue evalMethod(ObjectModel obj, String expression, boolean addToModel) {
-		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-		IWatchExpression newWatchExpression = expressionManager.newWatchExpression(expression);
-		newWatchExpression.evaluate();
+//	public IValue evalMethod(ObjectModel obj, String expression, boolean addToModel) {
+//		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+//		IWatchExpression newWatchExpression = expressionManager.newWatchExpression(expression);
+//		newWatchExpression.evaluate();
+//
+//		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(frame.getModelIdentifier());
+//		class Wrapper<T> {
+//			T value = null;
+//		};
+//		Wrapper<IValue> res = new Wrapper<>();
+//		Semaphore sem = new Semaphore(0);
+//
+//		IWatchExpressionListener valueListener = result -> {
+//			try {
+//				res.value = result.getValue();
+//			} finally {
+//				sem.release();
+//			}
+//		};
+//		String refName = getReferenceNameTo2(obj);
+//		//		System.out.println(refName);
+//		if(refName == null)
+//			return null;
+//
+//		String exp = refName + "." + expression;
+//		delegate.evaluateExpression(exp, frame, valueListener);
+//		try {
+//			sem.acquire();
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+//		//		try {
+//		if(res.value != null) {
+//			try {
+//				if(res.value instanceof IJavaPrimitiveValue)
+//					MessageDialog.openInformation(Display.getDefault().getActiveShell(), exp, res.value.getValueString());
+//				else if(res.value instanceof IJavaObject) {
+//					IJavaObject o = (IJavaObject) res.value;
+//					if(!o.isNull() && addToModel) {
+//						getObject(o, addToModel);
+//						setChanged();
+//						notifyObservers();
+//					}
+//				}
+//			}
+//			catch (DebugException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//
+//		return res.value;
+//		//		} catch (DebugException e) {
+//		//			e.printStackTrace();
+//		//		}
+//		//		return null;
+//	}
 
-		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(frame.getModelIdentifier());
-		class Wrapper<T> {
-			T value = null;
-		};
-		Wrapper<IValue> res = new Wrapper<>();
-		Semaphore sem = new Semaphore(0);
-
-		IWatchExpressionListener valueListener = result -> {
-			try {
-				res.value = result.getValue();
-			} finally {
-				sem.release();
-			}
-		};
-		String refName = getReferenceNameTo2(obj);
-		//		System.out.println(refName);
-		if(refName == null)
-			return null;
-
-		String exp = refName + "." + expression;
-		delegate.evaluateExpression(exp, frame, valueListener);
-		try {
-			sem.acquire();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		//		try {
-		if(res.value != null) {
-			try {
-				if(res.value instanceof IJavaPrimitiveValue)
-					MessageDialog.openInformation(Display.getDefault().getActiveShell(), exp, res.value.getValueString());
-				else if(res.value instanceof IJavaObject) {
-					IJavaObject o = (IJavaObject) res.value;
-					if(!o.isNull() && addToModel) {
-						getObject(o, addToModel);
-						setChanged();
-						notifyObservers();
-					}
-				}
-			}
-			catch (DebugException e) {
-				e.printStackTrace();
-			}
-		}
-
-		return res.value;
-		//		} catch (DebugException e) {
-		//			e.printStackTrace();
-		//		}
-		//		return null;
-	}
 
 
-
-	public void evalMethod2(ObjectModel obj, String expression, IWatchExpressionListener listener) {
-		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-
-		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(frame.getModelIdentifier());
-
-		String refName = getReferenceNameTo(obj);
-		if(refName == null)
-			return;
-
-		delegate.evaluateExpression(refName + "." + expression, frame, listener);
-	}
+//	public void evalMethod2(ObjectModel obj, String expression, IWatchExpressionListener listener) {
+//		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+//
+//		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(frame.getModelIdentifier());
+//
+//		String refName = getReferenceNameTo(obj);
+//		if(refName == null)
+//			return;
+//
+//		delegate.evaluateExpression(refName + "." + expression, frame, listener);
+//	}
+//	
+//	
+//	public String getReferenceNameTo(ModelElement<?> object) {
+//		for(Entry<String, VariableModel<?>> e : vars.entrySet())
+//			if(e.getValue() instanceof ReferenceModel && ((ReferenceModel) e.getValue()).getModelTarget().equals(object))
+//				return e.getKey();
+//
+//		return null;
+//	}
 
 
 

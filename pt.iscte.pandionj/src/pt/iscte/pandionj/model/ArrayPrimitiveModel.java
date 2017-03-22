@@ -142,12 +142,6 @@ public class ArrayPrimitiveModel extends ArrayModel {
 
 
 	@Override
-	public IFigure createInnerFigure(Graph graph) {
-		return new ArrayPrimitiveFigure(this);
-	}
-
-
-	@Override
 	public String toString() {
 		int lim = Math.min(Constants.ARRAY_LENGTH_LIMIT, elements.length);
 		String els = "{";
@@ -163,4 +157,8 @@ public class ArrayPrimitiveModel extends ArrayModel {
 		return ArrayPrimitiveModel.class.getSimpleName() + " " + els;
 	}
 	
+	@Override
+	protected IFigure createArrayFigure() {
+		return new ArrayPrimitiveFigure(this);
+	}
 }

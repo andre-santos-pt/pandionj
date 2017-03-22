@@ -46,7 +46,6 @@ public class CallStackModel2 {
 		
 		while(stack.size() > revStackFrames.length)
 			stack.remove(revStackFrames.length);
-		System.out.println(base + "   " + stack);
 		return base;
 	}
 

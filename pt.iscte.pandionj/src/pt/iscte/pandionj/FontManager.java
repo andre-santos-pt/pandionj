@@ -38,4 +38,9 @@ public class FontManager {
 	public static void setFont(Figure figure, int size, Style ... styles) {
 		figure.setFont(getFont(size));
 	}
+
+	public static void dispose() {
+		for(Font f : instances.values())
+			f.dispose();
+	}
 }

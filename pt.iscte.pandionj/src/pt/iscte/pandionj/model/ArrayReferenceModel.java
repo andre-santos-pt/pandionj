@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.model;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -68,7 +69,7 @@ public class ArrayReferenceModel extends ArrayModel {
 		for(ReferenceModel r : elements) {
 			r.update();
 		}
-//		Object[][] values = (Object[][]) getValues();
+		//		Object[][] values = (Object[][]) getValues();
 		setChanged();
 		notifyObservers();
 	}
@@ -79,19 +80,20 @@ public class ArrayReferenceModel extends ArrayModel {
 
 
 
-	@Override
+	@Override // TODO refazer
 	public Object[] getValues() {
 		try {
 			IJavaValue[] values = array.getValues();
+			Object[] array = (Object[]) Array.newInstance(Object.class, getDimensions());
 			Object[][] v = new Object[values.length][];
-			for(int i = 0; i < v.length; i++) {
-				IJavaValue[] line = ((IJavaArray) values[i]).getValues();
-				v[i] = new Object[line.length];
-				for(int j = 0; j < line.length; j++)
-					v[i][j] = ((IJavaPrimitiveValue) line[j]).getIntValue(); // TODO other types
-//				ModelElement target = elements.get(i).getTarget();
-//				if(target instanceof ArrayPrimitiveModel)
-//					v[i] = ((ArrayPrimitiveModel) target).getValues();
+			for(int i = 0; i < array.length; i++) {
+				//				array[i] = 
+				if(getDimensions() > 1) {
+					IJavaValue[] line = ((IJavaArray) values[i]).getValues();
+					v[i] = new Object[line.length];
+					for(int j = 0; j < line.length; j++)
+						v[i][j] = ((IJavaPrimitiveValue) line[j]).getIntValue(); // TODO other types
+				}
 			}
 			return v;
 		} catch (DebugException e) {
@@ -135,16 +137,6 @@ public class ArrayReferenceModel extends ArrayModel {
 		return Collections.unmodifiableCollection(vars.values());
 	}
 
-
-
-	@Override
-	public IFigure createInnerFigure(Graph graph) {
-		if(hasWidgetExtension())
-			return extension.createFigure(this);
-		else
-			return new ArrayReferenceFigure(this);
-	}
-
 	@Override
 	public String toString() {
 		String els = "{";
@@ -158,10 +150,9 @@ public class ArrayReferenceModel extends ArrayModel {
 	}
 
 	@Override
-	public void registerObserver(Observer o) {
-		addObserver(o);
+	protected IFigure createArrayFigure() {
+		return new ArrayReferenceFigure(this);
 	}
-
 
 
 

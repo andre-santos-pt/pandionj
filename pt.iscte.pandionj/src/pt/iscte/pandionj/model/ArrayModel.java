@@ -3,12 +3,17 @@ package pt.iscte.pandionj.model;
 import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.zest.core.widgets.Graph;
 
-public abstract class ArrayModel extends ModelElement {
+import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
+
+public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArrayModel {
 
 	protected IJavaArray array;
 	protected IJavaValue[] elements;
@@ -78,7 +83,13 @@ public abstract class ArrayModel extends ModelElement {
 		return array;
 	}
 	
-	public void registerObserver(Observer o) {
-		addObserver(o);
+	protected IFigure createInnerFigure(Graph graph) {
+		if(hasWidgetExtension())
+			return createExtensionFigure();
+		else
+			return createArrayFigure();
 	}
+
+	protected abstract IFigure createArrayFigure();
+
 }

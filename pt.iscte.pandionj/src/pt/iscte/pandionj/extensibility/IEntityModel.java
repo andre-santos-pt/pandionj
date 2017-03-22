@@ -1,5 +1,5 @@
 package pt.iscte.pandionj.extensibility;
 
-public class XYPlot {
+public interface IEntityModel {
 
 }

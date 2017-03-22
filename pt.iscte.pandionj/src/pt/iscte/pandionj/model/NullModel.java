@@ -2,12 +2,11 @@ package pt.iscte.pandionj.model;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.NullFigure;
 
-public class NullModel extends ModelElement {
+public class NullModel extends EntityModel<IJavaObject> {
 
 	private final IJavaObject nullObject;
 
@@ -22,7 +21,7 @@ public class NullModel extends ModelElement {
 	}
 
 	@Override
-	public IJavaValue getContent() {
+	public IJavaObject getContent() {
 		return nullObject;
 	}
 

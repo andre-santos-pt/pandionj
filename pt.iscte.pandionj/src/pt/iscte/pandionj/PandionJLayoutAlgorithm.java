@@ -81,7 +81,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 							obj.infixTraverse(new SiblingVisitor() {
 								int x = Constants.NODE_SPACING/4;
 								@Override
-								public void accept(ModelElement object, ModelElement parent, int index, int depth, String field) {
+								public void accept(ObjectModel object, ObjectModel parent, int index, int depth, String field) {
 									setLocation(map.get(object), Constants.NODE_SPACING + x, yy + depth*Constants.NODE_SPACING/2);
 									x += Constants.NODE_SPACING/4;
 								}
@@ -89,7 +89,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 						}
 						else {
 							class Visitor implements SiblingVisitor {
-								public void accept(ModelElement o, ModelElement parent, int index, int d, String field) {
+								public void accept(ObjectModel o, ObjectModel parent, int index, int d, String field) {
 									if(map.containsKey(o)) {
 										LayoutEntity n = map.get(o);
 										switch(index) {
@@ -101,7 +101,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 											break;
 										default:
 											int dist = (d+1) * Constants.NODE_SPACING;
-											if(o instanceof NullModel)
+											if(o == null)
 												dist -= Constants.NODE_SPACING / 2;
 											setLocation(n, x + dist, e.getYInLayout());
 										}
@@ -115,7 +115,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 							obj.traverseSiblings(v, true);
 						}
 					}
-					else if(target instanceof ArrayReferenceModel && !target.hasWidgetExtension()) {
+					else if(target instanceof ArrayReferenceModel && !((ArrayReferenceModel) target).hasWidgetExtension()) {
 						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 
 						List<ReferenceModel> elements = ((ArrayReferenceModel) target).getModelElements();

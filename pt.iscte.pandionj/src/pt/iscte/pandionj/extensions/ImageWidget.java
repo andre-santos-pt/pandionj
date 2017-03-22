@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.extensibility;
+package pt.iscte.pandionj.extensions;
 
 
 import java.util.Observable;
@@ -20,12 +20,14 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
 
+import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.model.ArrayModel;
 
-public class ImageWidget2 implements WidgetExtension {
+public class ImageWidget implements IArrayWidgetExtension {
 
 	@Override
-	public boolean accept(ArrayModel model) {
+	public boolean accept(IArrayModel model) {
 		if(!model.getComponentType().equals("int[][]") || model.getDimensions() != 2 || model.getLength() < 1)
 			return false;
 
@@ -41,7 +43,7 @@ public class ImageWidget2 implements WidgetExtension {
 
 
 	@Override
-	public IFigure createFigure(ArrayModel model) {
+	public IFigure createFigure(IArrayModel model) {
 		return new ImageFig(model);
 	}
 
@@ -51,7 +53,7 @@ public class ImageWidget2 implements WidgetExtension {
 		int width;
 		int height;
 		
-		ImageFig(ArrayModel model) {
+		ImageFig(IArrayModel model) {
 			this.array = (Object[][]) model.getValues();
 			setLayoutManager(new FlowLayout());
 			width = array[0].length;
