@@ -29,7 +29,10 @@ public class ArrayPrimitiveModel extends ArrayModel {
 
 	public ArrayPrimitiveModel(IJavaArray array, StackFrameModel model) {
 		super(array, model);
-		assert array != null;
+	}
+
+	@Override
+	protected void initArray(IJavaArray array) {
 		try {
 			IJavaType componentType = ((IJavaArrayType) array.getJavaType()).getComponentType();
 			assert !(componentType instanceof IJavaReferenceType);
@@ -44,7 +47,8 @@ public class ArrayPrimitiveModel extends ArrayModel {
 		}
 		vars = new HashMap<>();
 	}
-
+	
+	
 	private Class<?> matchType(IJavaType componentType) {
 		try {
 			switch(componentType.getName())  {
@@ -67,7 +71,7 @@ public class ArrayPrimitiveModel extends ArrayModel {
 
 	public void update() {
 		try {
-			IJavaValue[] values = array.getValues();
+			IJavaValue[] values = entity.getValues();
 			List<Integer> changes = new ArrayList<Integer>();
 			for(int i = 0; i < elements.length; i++) {
 				boolean equals = values[i].getValueString().equals(elements[i].getValueString());

@@ -75,6 +75,7 @@ import org.osgi.framework.Bundle;
 import pt.iscte.pandionj.model.CallStackModel2;
 import pt.iscte.pandionj.model.StackFrameModel;
 
+// TODO reload everything on view init
 public class PandionJView extends ViewPart { 
 
 	private CallStackModel2 model;
@@ -162,8 +163,8 @@ public class PandionJView extends ViewPart {
 		scroll.setContent(area);
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
-		scroll.setMinHeight(400);
-		scroll.setMinWidth(600);
+		scroll.setMinHeight(200);
+		scroll.setMinWidth(400);
 
 		GridLayout layout = new GridLayout(1, true);
 		layout.marginLeft = 0;
@@ -176,7 +177,7 @@ public class PandionJView extends ViewPart {
 
 		Composite labelComposite = new Composite(parent, SWT.NONE);
 		labelComposite.setLayout(new GridLayout());
-		labelInit = new Label(labelComposite, SWT.NONE);
+		labelInit = new Label(labelComposite, SWT.WRAP);
 		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE);
 		labelInit.setText(Constants.START_MESSAGE);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
@@ -197,7 +198,6 @@ public class PandionJView extends ViewPart {
 				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 					IThread thread = (IThread) e.getSource();
 					try {
-						System.out.println(Arrays.toString(thread.getStackFrames()));
 						handleFrames(thread.getStackFrames());
 					} catch (DebugException ex) {
 						ex.printStackTrace();
@@ -500,7 +500,7 @@ public class PandionJView extends ViewPart {
 				viewer.getGraphControl().setEnabled(true);
 				frameModel.registerDisplayObserver(new Observer() {
 					public void update(Observable o, Object e) {
-						viewer.refresh();
+						viewer.refresh(); // TODO dupla chamada?
 						viewer.applyLayout();
 					}
 				}, viewer.getControl());

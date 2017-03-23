@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
 import org.eclipse.zest.core.widgets.GraphNode;
@@ -20,17 +21,19 @@ import org.eclipse.zest.layouts.progress.ProgressListener;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.BaseFigure;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
+import pt.iscte.pandionj.model.EntityModel;
 import pt.iscte.pandionj.model.ModelElement;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.model.ReferenceModel;
 import pt.iscte.pandionj.model.ValueModel;
+import pt.iscte.pandionj.model.VariableModel;
 
 public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
 	// index model -> layout
-	private Map<ModelElement, LayoutEntity> map = new WeakHashMap<>();
+	private Map<ModelElement<?>, LayoutEntity> map = new WeakHashMap<>();
 	private Set<LayoutEntity> dirty = new HashSet<>();
 	private double refY = Constants.MARGIN;
 
@@ -40,6 +43,8 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			dirty.remove(e);
 		}
 		refY = Math.max(refY, e.getYInLayout() + e.getHeightInLayout() + Constants.MARGIN);
+//		System.out.println(((GraphNode)e.getGraphData()).getData());
+//		System.out.println(e);
 	}
 
 	@Override
@@ -49,7 +54,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
-			ModelElement element = (ModelElement) node.getData();
+			ModelElement<?> element = (ModelElement<?>) node.getData();
 			if(!map.containsKey(element)) {
 				map.put(element, e);
 				if(element instanceof ReferenceModel)
@@ -62,15 +67,16 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
-			ModelElement element = (ModelElement) node.getData();
-			if(element instanceof ValueModel || element instanceof ReferenceModel){
+			ModelElement<?> element = (ModelElement<?>) node.getData();
+			// TODO values on top
+			
+			if(element instanceof VariableModel<?>){
 				setLocation(e, Constants.MARGIN + x, refY);
 
 				if(element instanceof ReferenceModel) {
-					ModelElement target = ((ReferenceModel) element).getModelTarget();
+					EntityModel<?> target = ((ReferenceModel) element).getModelTarget();
 					LayoutEntity targetE = map.get(target);
 					if(targetE == null) {
-						System.err.println("!! " + target);
 						continue;
 					}
 
@@ -126,10 +132,11 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 							if(ent != null) {
 								yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING;
 								GraphNode n = (GraphNode) targetE.getGraphData();
-								BaseFigure bFig = (BaseFigure) n.getNodeFigure();
-								// TODO revise cast
-								//							Point location = ((ArrayReferenceFigure) bFig.innerFig).getAnchor(i++).getLocation(null);
-								//							ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, targetE.getYInLayout()+ location.y);
+								IFigure iFig = ((BaseFigure) n.getNodeFigure()).innerFig;
+								if(iFig instanceof ArrayReferenceFigure) {
+									Point location = ((ArrayReferenceFigure) iFig).getAnchor(i++).getLocation(null);								
+									ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, targetE.getYInLayout()+ location.y);
+								}
 							}
 						}
 					}
@@ -138,6 +145,17 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 					}
 				}
+			}
+		}
+		
+		// loose entities
+		for(LayoutEntity e : entitiesToLayout) {
+			GraphNode node = (GraphNode) e.getGraphData();
+			ModelElement<?> element = (ModelElement<?>) node.getData();
+
+			if(element instanceof EntityModel<?>){
+				System.out.println(element);
+				setLocation(e, Constants.MARGIN + x + Constants.OBJECT_PADDING, refY);
 			}
 		}
 	}

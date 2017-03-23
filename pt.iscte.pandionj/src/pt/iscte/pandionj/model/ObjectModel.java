@@ -41,8 +41,7 @@ import pt.iscte.pandionj.parser.VisibilityInfo;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 
-	private IJavaObject object;
-	private StackFrameModel model;
+//	private IJavaObject object;
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
 	private List<String> varsOfSameType;
@@ -51,10 +50,9 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private String type;
 	
 	public ObjectModel(IJavaObject object, StackFrameModel model, ClassInfo info) {
-		super(model);
+		super(object, model);
 		assert object != null;
-		this.object = object;
-		this.model = model;
+//		this.object = object;
 		this.info = info;
 		
 		values = new LinkedHashMap<String, ValueModel>();
@@ -99,6 +97,50 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
+	@Override
+	protected void init(IJavaObject object) {
+		values = new LinkedHashMap<String, ValueModel>();
+		references = new LinkedHashMap<String, ReferenceModel>();
+		varsOfSameType = new ArrayList<>();
+		try {
+			this.type = object.getReferenceTypeName();
+			
+			for(IVariable v : object.getVariables()) {
+				IJavaVariable var = (IJavaVariable) v;
+
+				if(!var.isStatic() && var.getReferenceTypeName().equals(object.getReferenceTypeName()))
+					varsOfSameType.add(var.getName());
+
+				if(!var.isStatic()) {
+					String name = var.getName();
+					if(var.getValue() instanceof IJavaObject) {
+						ReferenceModel refModel = new ReferenceModel(var, true, getStackFrame());
+						refModel.registerObserver(new Observer() {
+							public void update(Observable o, Object arg) {
+								setChanged();
+								notifyObservers(name);
+							}
+						});
+						references.put(name, refModel);
+					}
+					else {
+						ValueModel val = new ValueModel(var, getStackFrame());
+						val.registerObserver(new Observer() {
+							public void update(Observable o, Object arg) {
+								setChanged();
+								notifyObservers(name);
+							}
+						});
+						values.put(name, val);
+					}
+				}
+			}
+		}
+		catch(DebugException e) {
+			e.printStackTrace();
+		}
+	}
+	
 	public String getType() {
 		return type;
 	}
@@ -110,16 +152,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	@Override
-	public IJavaObject getContent() {
-		return object;
-	}
-
-	@Override
 	public IFigure createInnerFigure(Graph graph) {
-		if(hasWidgetExtension())
-			return createExtensionFigure();
-		else
-			return new ObjectFigure(this, graph);
+		IFigure fig = createExtensionFigure();
+		if(fig == null)
+			fig = new ObjectFigure(this, graph);
+		return fig;
 	}
 
 	public Set<String> getFieldNames() {
@@ -147,13 +184,13 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	public Collection<ReferenceModel> getReferencePointers() {
-		return model.getReferencesTo(this);
+		return getStackFrame().getReferencesTo(this);
 	}
 
 
 	public String toStringValue() {
 		try {
-			return ":" + simpleName(object.getReferenceTypeName());
+			return ":" + simpleName(getContent().getReferenceTypeName());
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return "";
@@ -184,7 +221,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	@Override
 	public String toString() {
 		try {
-			return "(" + object.getJavaType().getName() + ")";
+			return "(" + getContent().getJavaType().getName() + ")";
 			//			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
 			//			for(Entry<String, ReferenceModel> e : references.entrySet())
 			//				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
@@ -198,7 +235,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	@Override
 	public int hashCode() {
 		try {
-			return (int) object.getUniqueId();
+			return (int) getContent().getUniqueId();
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.hashCode();
@@ -398,9 +435,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	public IJavaValue invoke(MethodInfo m, IJavaValue ... args) {
-		System.out.println("inv");
 		try {
-			IJavaThread t = (IJavaThread) model.getStackFrame().getThread();
+			IJavaThread t = (IJavaThread) getStackFrame().getStackFrame().getThread();
 
 			class MethodCall implements IEvaluationRunnable, ITerminate {
 				IJavaValue ret;
@@ -427,7 +463,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 					job = new Thread() {
 						public void run() {
 							try {
-								ret = object.sendMessage(m.getName(), m.getJNISignature(), args, t, false);
+								ret = getContent().sendMessage(m.getName(), m.getJNISignature(), args, t, false);
 							} catch (DebugException e) {
 								e.printStackTrace();
 							}
@@ -470,7 +506,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	@Override
 	public String getStringValue() {
 		try {
-			return object.getValueString();
+			return getContent().getValueString();
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return "";
@@ -479,7 +515,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	
 	public int getInt(String fieldName) {
 		try {
-			IJavaFieldVariable field = object.getField(fieldName, false);
+			IJavaFieldVariable field = getContent().getField(fieldName, false);
 			if(field == null)
 				throw new IllegalArgumentException(fieldName + " is not a field");
 

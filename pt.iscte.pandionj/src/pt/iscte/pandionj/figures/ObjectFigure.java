@@ -42,6 +42,7 @@ import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.model.EntityModel;
 import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.parser.MethodInfo;
 
@@ -163,8 +164,10 @@ public class ObjectFigure extends RoundedRectangle {
 							args = String.join(", ", prompt.values);
 						}
 					}
-					if(ret instanceof IJavaObject)
-						model.getStackFrame().getObject((IJavaObject) ret, true);
+					if(ret instanceof IJavaObject) {
+						EntityModel<? extends IJavaObject> object = model.getStackFrame().getObject((IJavaObject) ret, true);
+						System.out.println(ret + " == " + object);
+					}
 					else if(ret instanceof IJavaPrimitiveValue)
 						try {
 							new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getName() + "(" + args + ") = " + ret.getValueString()).open();

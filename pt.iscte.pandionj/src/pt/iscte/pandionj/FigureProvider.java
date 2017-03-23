@@ -22,6 +22,8 @@ import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.NodeProvider.Pointer;
+import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
+import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.BaseFigure;
 import pt.iscte.pandionj.model.ArrayPrimitiveModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
@@ -30,28 +32,28 @@ import pt.iscte.pandionj.model.ModelElement;
 class FigureProvider extends LabelProvider implements IFigureProvider, IConnectionStyleProvider, ISelfStyleProvider {
 
 	private Graph graph;
-	
+
 	public FigureProvider(Graph graph) {
 		this.graph = graph;
 	}
-	
+
 	@Override
 	public IFigure getFigure(Object element) {
 		ModelElement<?> model = (ModelElement<?>) element;
 		return model.createFigure(graph);		
 	}
 
-	
-	
+
+
 	@Override
 	public String getText(Object e) {
-//		if(element instanceof EntityConnectionData)
-//			return "";
-//		else if(element instanceof Pointer)
-//			return ((Pointer) element).refName;
-//		else
-//			return element.toString();
-//		if(e instanceof Pointer && !((Pointer) e).isTopLevel())
+		//		if(element instanceof EntityConnectionData)
+		//			return "";
+		//		else if(element instanceof Pointer)
+		//			return ((Pointer) element).refName;
+		//		else
+		//			return element.toString();
+		//		if(e instanceof Pointer && !((Pointer) e).isTopLevel())
 		return null;
 	}
 
@@ -87,11 +89,11 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	public void selfStyleNode(Object element, GraphNode node) {
 		node.getNodeFigure().setSize(-1, -1);
 	}
-	
+
 	@Override
 	public void selfStyleConnection(Object element, GraphConnection connection) {
 		PolylineConnection fig = (PolylineConnection) connection.getConnectionFigure();
-		
+
 		if(((Pointer) element).isNull()) {
 			PolygonDecoration decoration = new PolygonDecoration();
 			PointList points = new PointList();
@@ -114,23 +116,18 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
 			decoration.setOpaque(true);
 			fig.setTargetDecoration(decoration);
-	
-//			fig.setSourceAnchor(new PositionAnchor(connection.getSource().getNodeFigure(), Position.RIGHT));
-//			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
+
+			//			fig.setSourceAnchor(new PositionAnchor(connection.getSource().getNodeFigure(), Position.RIGHT));
+			//			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		}
-		
-		if(((Pointer) element).source instanceof ArrayReferenceModel) {
-//			ArrayReferenceFigure afig = (ArrayReferenceFigure) connection.getSource().getNodeFigure();
-			BaseFigure bFig = (BaseFigure) connection.getSource().getNodeFigure();
-			
-			// TODO: revise cast
-//			ArrayReferenceFigure afig = (ArrayReferenceFigure) bFig.innerFig;
-//			String refName = ((Pointer) element).refName;
-//			refName = refName.substring(1, refName.length()-1);
-//			fig.setSourceAnchor(afig.getAnchor(Integer.parseInt(refName)));
+
+		IFigure sFig = ((BaseFigure) connection.getSource().getNodeFigure()).innerFig;
+		if(sFig instanceof ArrayReferenceFigure) {
+			String refName = ((Pointer) element).refName;
+			refName = refName.substring(1, refName.length()-1);
+			fig.setSourceAnchor(((ArrayReferenceFigure) sFig).getAnchor(Integer.parseInt(refName)));
 		}
-		
-		if(((Pointer) element).target instanceof ArrayPrimitiveModel) {
+		else if(sFig instanceof ArrayPrimitiveFigure) {
 			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		}
 	}
@@ -163,7 +160,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 
 		abstract Point getPoint(org.eclipse.draw2d.geometry.Rectangle r);
 	}
-	
+
 	private class PositionAnchor extends AbstractConnectionAnchor {
 
 		private Position position;

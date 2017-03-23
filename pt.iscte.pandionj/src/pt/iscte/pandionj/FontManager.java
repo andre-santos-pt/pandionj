@@ -24,7 +24,7 @@ public class FontManager {
 		int sizeZoom = (int) Math.round(size*zoom);
 		String key = sizeZoom + Arrays.toString(styles);
 		Font f = instances.get(key);
-		if(f == null) {
+		if(f == null || f.isDisposed()) {
 			f = new Font(Display.getDefault(), Constants.FONT_FACE, sizeZoom, SWT.NONE);
 			instances.put(key, f);
 		}

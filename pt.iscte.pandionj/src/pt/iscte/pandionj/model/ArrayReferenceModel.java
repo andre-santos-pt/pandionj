@@ -26,19 +26,20 @@ public class ArrayReferenceModel extends ArrayModel {
 	private List<ReferenceModel> elements;
 	private Map<String, ValueModel> vars;
 
-	private String varError;
+	private String varError; // TODO to upper
 
 
 	public ArrayReferenceModel(IJavaArray array, StackFrameModel model) {
 		super(array, model);
-		assert array != null;
-		assert model != null;
+	}
 
+	@Override
+	protected void initArray(IJavaArray array) {
 		try {
 			elements = new ArrayList<>();
 			IVariable[] variables = array.getVariables();
 			for(int i = 0; i < variables.length; i++) {
-				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, model);
+				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, getStackFrame());
 				elements.add(referenceModel);
 				int ii = i;
 				referenceModel.registerObserver(new Observer() {
@@ -47,16 +48,6 @@ public class ArrayReferenceModel extends ArrayModel {
 						notifyObservers(ii);
 					}
 				});
-				//				ModelElement target = referenceModel.getTarget();
-				//				if(target instanceof ArrayModel)
-				//					target.registerObserver(new Observer() {
-				//						int x = 0;
-				//						public void update(Observable o, Object arg) {
-				////							System.out.println(x++);
-				//							setChanged();
-				////							notifyObservers(ii);
-				//						}
-				//					});
 			}
 		}
 		catch(DebugException e) {
@@ -64,7 +55,7 @@ public class ArrayReferenceModel extends ArrayModel {
 		}
 		vars = new HashMap<>();
 	}
-
+	
 	public void update() {
 		for(ReferenceModel r : elements) {
 			r.update();
@@ -83,7 +74,7 @@ public class ArrayReferenceModel extends ArrayModel {
 	@Override // TODO refazer
 	public Object[] getValues() {
 		try {
-			IJavaValue[] values = array.getValues();
+			IJavaValue[] values = entity.getValues();
 			Object[] array = (Object[]) Array.newInstance(Object.class, getDimensions());
 			Object[][] v = new Object[values.length][];
 			for(int i = 0; i < array.length; i++) {
@@ -133,7 +124,7 @@ public class ArrayReferenceModel extends ArrayModel {
 		notifyObservers(new RuntimeException(var));
 	}
 
-	public Collection<ValueModel> getVars() {
+	public Collection<ValueModel> getVars() { // TODO to upper
 		return Collections.unmodifiableCollection(vars.values());
 	}
 
@@ -153,7 +144,5 @@ public class ArrayReferenceModel extends ArrayModel {
 	protected IFigure createArrayFigure() {
 		return new ArrayReferenceFigure(this);
 	}
-
-
 
 }

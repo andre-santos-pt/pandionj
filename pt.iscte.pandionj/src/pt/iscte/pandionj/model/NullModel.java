@@ -8,21 +8,18 @@ import pt.iscte.pandionj.figures.NullFigure;
 
 public class NullModel extends EntityModel<IJavaObject> {
 
-	private final IJavaObject nullObject;
-
 	NullModel(IJavaObject nullObject, StackFrameModel model) {
-		super(model);
-		this.nullObject = nullObject;
+		super(nullObject, model);
 	}
-
+	
+	@Override
+	protected void init(IJavaObject entity) {
+		
+	}
+	
 	@Override
 	public void update() {
 
-	}
-
-	@Override
-	public IJavaObject getContent() {
-		return nullObject;
 	}
 
 	@Override
@@ -34,4 +31,6 @@ public class NullModel extends EntityModel<IJavaObject> {
 	public String toString() {
 		return "null";
 	}
+
+	
 }

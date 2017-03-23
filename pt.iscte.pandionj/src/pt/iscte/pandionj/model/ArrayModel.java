@@ -1,7 +1,5 @@
 package pt.iscte.pandionj.model;
 
-import java.util.Observer;
-
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
@@ -11,21 +9,21 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
-import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 
 public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArrayModel {
 
-	protected IJavaArray array;
 	protected IJavaValue[] elements;
 	private int length;
 	private int dimensions;
 	private String componentType;
 	
 	ArrayModel(IJavaArray array, StackFrameModel model) {
-		super(model);
-		assert array != null;
-		assert model != null;
-		this.array = array;
+		super(array, model);
+	}
+	
+	@Override
+	protected void init(IJavaArray array) {
+		this.entity = array;
 		try {
 			length = array.getLength();
 		} catch (DebugException e) {
@@ -33,7 +31,10 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		}
 		dimensions = getDimensions(array);
 		componentType = getComponentType(array);
+		initArray(array);
 	}
+	
+	protected abstract void initArray(IJavaArray array);
 	
 	public abstract boolean isPrimitiveType();
 	public abstract Object[] getValues();
@@ -76,18 +77,15 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
+		assert !type.isEmpty();
 		return type;
 	}
 	
-	public IJavaArray getContent() {
-		return array;
-	}
-	
 	protected IFigure createInnerFigure(Graph graph) {
-		if(hasWidgetExtension())
-			return createExtensionFigure();
-		else
-			return createArrayFigure();
+		IFigure fig = createExtensionFigure();
+		if(fig == null)
+			fig = createArrayFigure();
+		return fig;
 	}
 
 	protected abstract IFigure createArrayFigure();
