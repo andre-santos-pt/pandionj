@@ -191,7 +191,7 @@ public class ObjectFigure extends RoundedRectangle {
 	}
 	
 	
-	// TODO: move to model
+	// TODO: move to Primitive type
 	private IJavaValue[] createValues(MethodInfo m, String[] values, IJavaDebugTarget debugger) throws DebugException {
 		assert values.length == m.getNumberOfParameters();
 

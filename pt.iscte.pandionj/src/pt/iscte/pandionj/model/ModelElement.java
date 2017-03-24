@@ -21,7 +21,7 @@ public abstract class ModelElement<T extends IJavaValue> extends Observable {
 
 	public abstract T getContent();
 
-	public abstract void update();
+	public abstract void update(int step);
 
 
 	public StackFrameModel getStackFrame() {
@@ -55,4 +55,5 @@ public abstract class ModelElement<T extends IJavaValue> extends Observable {
 			}
 		});
 	}
+
 }

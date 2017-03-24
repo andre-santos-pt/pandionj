@@ -46,6 +46,8 @@ import pt.iscte.pandionj.model.ValueModel;
 
 
 // TODO limit size
+//TODO tool tip type
+
 public class ArrayPrimitiveFigure extends RoundedRectangle {
 	private final ArrayPrimitiveModel model;
 	private final int N; // array length
@@ -102,7 +104,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		else {
 			for(int i = 0; i < N; i++) {
 				Position p = new Position(i, false);
-				p.setValue(model.get(i));
+				p.setValue(model.getElementString(i));
 				fig.add(p);
 				positions.add(p);
 			}
@@ -193,7 +195,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 					else
 						p.unhighlight();
 				}
-				getValidPosition(i).setValue(model.get(i));
+				getValidPosition(i).setValue(model.getElementString(i));
 			}
 		}
 		else if(arg instanceof ValueModel) {

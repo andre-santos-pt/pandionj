@@ -19,6 +19,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.ITerminate;
+import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IEvaluationRunnable;
@@ -33,6 +34,7 @@ import org.eclipse.zest.core.widgets.Graph;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
 
+import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.parser.ClassInfo;
@@ -41,34 +43,41 @@ import pt.iscte.pandionj.parser.VisibilityInfo;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 
-//	private IJavaObject object;
+	public interface ObserverTemp {
+		void fieldChanged(String name, Object oldValue, Object newValue);
+	}
+	
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
-	private List<String> varsOfSameType;
+	private List<String> refsOfSameType; // TODO from source
 
 	private ClassInfo info;
-	private String type;
-	
+	private String type; // TODO to upper ?
+
+	private String leftField;
+	private String rightField;
+
 	public ObjectModel(IJavaObject object, StackFrameModel model, ClassInfo info) {
 		super(object, model);
 		assert object != null;
-//		this.object = object;
 		this.info = info;
-		
+
 		values = new LinkedHashMap<String, ValueModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
-		varsOfSameType = new ArrayList<>();
+		refsOfSameType = new ArrayList<>();
 		try {
 			this.type = object.getReferenceTypeName();
-			
+
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
-
+				IJavaValue value = (IJavaValue) var.getValue();
+				
 				if(!var.isStatic() && var.getReferenceTypeName().equals(object.getReferenceTypeName()))
-					varsOfSameType.add(var.getName());
+					refsOfSameType.add(var.getName());
 
 				if(!var.isStatic()) {
 					String name = var.getName();
+
 					if(var.getValue() instanceof IJavaObject) {
 						ReferenceModel refModel = new ReferenceModel(var, true, model);
 						refModel.registerObserver(new Observer() {
@@ -101,15 +110,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	protected void init(IJavaObject object) {
 		values = new LinkedHashMap<String, ValueModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
-		varsOfSameType = new ArrayList<>();
+		refsOfSameType = new ArrayList<>();
 		try {
 			this.type = object.getReferenceTypeName();
-			
+
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
 
 				if(!var.isStatic() && var.getReferenceTypeName().equals(object.getReferenceTypeName()))
-					varsOfSameType.add(var.getName());
+					refsOfSameType.add(var.getName());
 
 				if(!var.isStatic()) {
 					String name = var.getName();
@@ -139,16 +148,20 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
+		if(refsOfSameType.size() == 2) {
+			leftField = refsOfSameType.get(0);
+			rightField = refsOfSameType.get(1);
+		}
 	}
-	
+
 	public String getType() {
 		return type;
 	}
-	
+
 	@Override
-	public void update() {
-		values.values().forEach(val -> val.update());
-		references.values().forEach(ref -> ref.update());
+	public void update(int step) {
+		values.values().forEach(val -> val.update(0));
+		references.values().forEach(ref -> ref.update(0));
 	}
 
 	@Override
@@ -176,11 +189,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 
 
-	public Map<String, ModelElement<?>> getReferences() {
-		return references.entrySet().stream()
-				.filter(e -> !values.containsKey(e.getKey()))
-				.collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue().getModelTarget()));
+	//	public Map<String, ModelElement<?>> getReferences() {
+	//		return references.entrySet().stream()
+	////				.filter(e -> !values.containsKey(e.getKey()))
+	//				.collect(Collectors.toMap(e -> e.getKey(), v -> v.getValue().getModelTarget()));
+	//
+	//	}
 
+	public Map<String, ReferenceModel> getReferences() {
+		return Collections.unmodifiableMap(references);
 	}
 
 	public Collection<ReferenceModel> getReferencePointers() {
@@ -190,7 +207,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	public String toStringValue() {
 		try {
-			return ":" + simpleName(getContent().getReferenceTypeName());
+			return ":" + Utils.toSimpleName(getContent().getReferenceTypeName());
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return "";
@@ -215,9 +232,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		//		}
 	}
 
-	private String simpleName(String s) {
-		return s.indexOf('.') != -1 ? s.substring(s.lastIndexOf('.')+1) : s;
-	}
 	@Override
 	public String toString() {
 		try {
@@ -249,7 +263,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 
 	public interface SiblingVisitor {
-		void accept(ObjectModel object, ObjectModel parent, int index, int depth, String field);
+		void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field);
 	}
 
 
@@ -257,7 +271,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		class SiblingVisitorDepth implements SiblingVisitor {
 			int max;
 			@Override
-			public void accept(ObjectModel o, ObjectModel parent, int index, int d, String f) {
+			public void visit(EntityModel<?> o, ObjectModel parent, int index, int d, String f) {
 				max = Math.max(max, d);
 			}
 		};
@@ -269,7 +283,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public int siblingsBreath() {
 		class SiblingVisitorBreath implements SiblingVisitor {
 			Multiset<Integer> count = HashMultiset.create();
-			public void accept(ObjectModel o, ObjectModel parent, int index, int d, String f) {
+			public void visit(EntityModel<?> o, ObjectModel parent, int index, int d, String f) {
 				count.add(d);
 			}
 			public int max() {
@@ -283,11 +297,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	public int numberOfSiblings() {
-		return varsOfSameType.size();
+		return refsOfSameType.size();
 	}
 
 	public void traverseSiblings(SiblingVisitor v) {
-		traverseSiblings(v, false);
+		traverseSiblings(v, true);
 	}
 
 	public void traverseSiblings(SiblingVisitor v, boolean visitNulls) {
@@ -298,24 +312,28 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-	private void traverseSiblings(ObjectModel obj, ObjectModel parent, int index, Set<ObjectModel> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
-		if(!set.contains(obj)) {
-			set.add(obj);
-			v.accept(obj, parent, index, depth, field);
-			int i = 0;
-			for(String siblingRef : varsOfSameType) {
-				ReferenceModel refModel = obj.references.get(siblingRef);
-				EntityModel<?> o = refModel.getModelTarget();
-				if(o instanceof ObjectModel)
-					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
-				else if(o instanceof NullModel && visitNulls)
-					v.accept(null, parent, i++, depth+1, siblingRef);
+	private void traverseSiblings(EntityModel<?> e, ObjectModel parent, int index, Set<EntityModel<?>> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
+		assert e != null;
+		if(!set.contains(e)) {
+			set.add(e);
+			if(!(e instanceof NullModel) || visitNulls) {
+				v.visit(e, parent, index, depth, field);
+			}
+
+			if(e instanceof ObjectModel) {
+				ObjectModel obj = (ObjectModel) e;
+				int i = 0;
+				for(String siblingRef : refsOfSameType) {
+					ReferenceModel refModel = obj.references.get(siblingRef);
+					EntityModel<?> o = refModel.getModelTarget();
+					traverseSiblings(o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
+				}
 			}
 		}
 	}
 
 	private boolean noSiblings() {
-		for(String siblingRef : varsOfSameType) {
+		for(String siblingRef : refsOfSameType) {
 			ReferenceModel refModel = references.get(siblingRef);
 			EntityModel<?> o = refModel.getModelTarget();
 			if(!(o instanceof NullModel))
@@ -325,108 +343,114 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 
-	public void traverseSiblingsDepth(SiblingVisitor v, boolean visitNulls) {
-		try {
-			traverseSiblingsInfix(this, null, -1, new HashSet<>(), v, 0, null, visitNulls);
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
-	}
+	//	public void traverseSiblingsDepth(SiblingVisitor v, boolean visitNulls) {
+	//		try {
+	//			traverseSiblingsInfix(this, null, -1, new HashSet<>(), v, 0, null, visitNulls);
+	//		} catch (DebugException e) {
+	//			e.printStackTrace();
+	//		}
+	//	}
+	//
+	//	private void traverseSiblingsInfix(ObjectModel obj, ObjectModel parent, int index, Set<ObjectModel> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
+	//		if(set.contains(obj))
+	//			return;
+	//
+	//		if(noSiblings()) {
+	//			set.add(obj);
+	//			if(visitNulls) {
+	//				int i = 0;
+	//				for(String siblingRef : refsOfSameType) {
+	//					ReferenceModel refModel = obj.references.get(siblingRef);
+	//					EntityModel<?>  o = refModel.getModelTarget();
+	//					v.visit(null, this, i++, depth+1, siblingRef);
+	//				}
+	//			}
+	//		}
+	//		else {
+	//			int i = 0;
+	//			for(String siblingRef : refsOfSameType) {
+	//				ReferenceModel refModel = obj.references.get(siblingRef);
+	//				EntityModel<?>  o = refModel.getModelTarget();
+	//				if(o instanceof ObjectModel)
+	//					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
+	//				else if(o instanceof NullModel && visitNulls)
+	//					v.visit(null, this, i++, depth+1, siblingRef);
+	//			}
+	//			v.visit(obj, parent, index, depth, field);
+	//		}
+	//	}
 
-	private void traverseSiblingsInfix(ObjectModel obj, ObjectModel parent, int index, Set<ObjectModel> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
-		if(set.contains(obj))
-			return;
-
-		if(noSiblings()) {
-			set.add(obj);
-			if(visitNulls) {
-				int i = 0;
-				for(String siblingRef : varsOfSameType) {
-					ReferenceModel refModel = obj.references.get(siblingRef);
-					EntityModel<?>  o = refModel.getModelTarget();
-					v.accept(null, this, i++, depth+1, siblingRef);
-				}
-			}
-		}
-		else {
-			int i = 0;
-			for(String siblingRef : varsOfSameType) {
-				ReferenceModel refModel = obj.references.get(siblingRef);
-				EntityModel<?>  o = refModel.getModelTarget();
-				if(o instanceof ObjectModel)
-					traverseSiblings((ObjectModel) o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
-				else if(o instanceof NullModel && visitNulls)
-					v.accept(null, this, i++, depth+1, siblingRef);
-			}
-			v.accept(obj, parent, index, depth, field);
-		}
-	}
-
-//	private void traverseSiblingsDepth(ObjectModel obj, ObjectModel parent, int index, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
-//		Set<ObjectModel> visited = new HashSet<>();
-//		ArrayDeque<ObjectModel> stack = new ArrayDeque<>();
-//		stack.push(obj);
-//
-//		while(!stack.isEmpty()) {
-//			ObjectModel e = stack.pop();
-//			if(!visited.contains(e)) {
-//				visited.add(e);
-//				v.accept(e, parent, index, depth, field);
-//
-//				if(e instanceof ObjectModel)
-//					for(String siblingRef : ((ObjectModel) e).varsOfSameType) {
-//						ReferenceModel refModel = ((ObjectModel) e).references.get(siblingRef);
-//						EntityModel<?> o = refModel.getModelTarget();
-//						//						if(!(o instanceof NullModel && !visitNulls))
-//						stack.push(o);
-//					}
-//
-//			}
-//		}
-//	}
+	//	private void traverseSiblingsDepth(ObjectModel obj, ObjectModel parent, int index, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
+	//		Set<ObjectModel> visited = new HashSet<>();
+	//		ArrayDeque<ObjectModel> stack = new ArrayDeque<>();
+	//		stack.push(obj);
+	//
+	//		while(!stack.isEmpty()) {
+	//			ObjectModel e = stack.pop();
+	//			if(!visited.contains(e)) {
+	//				visited.add(e);
+	//				v.accept(e, parent, index, depth, field);
+	//
+	//				if(e instanceof ObjectModel)
+	//					for(String siblingRef : ((ObjectModel) e).varsOfSameType) {
+	//						ReferenceModel refModel = ((ObjectModel) e).references.get(siblingRef);
+	//						EntityModel<?> o = refModel.getModelTarget();
+	//						//						if(!(o instanceof NullModel && !visitNulls))
+	//						stack.push(o);
+	//					}
+	//
+	//			}
+	//		}
+	//	}
 
 
 	public boolean isBinaryTree() {
-		if(varsOfSameType.size() != 2)
+		if(refsOfSameType.size() != 2)
 			return false;
 
-		return isBinaryTree(this, varsOfSameType.get(0), varsOfSameType.get(1), new HashSet<>());
+		return isBinaryTree(this, refsOfSameType.get(0), refsOfSameType.get(1), new HashSet<>());
 	}
 
 
 	private static boolean isBinaryTree(ObjectModel obj, String left, String right, Set<ObjectModel> visited) {	
 		if(visited.contains(obj))
 			return false;
-		else
-			visited.add(obj);
 
-		ModelElement leftTarget = obj.references.get(left).getModelTarget();
-		ModelElement rightTarget = obj.references.get(right).getModelTarget();
+		visited.add(obj);
+
+		EntityModel<?> leftTarget = obj.references.get(left).getModelTarget();
+		EntityModel<?> rightTarget = obj.references.get(right).getModelTarget();
 
 		return (leftTarget instanceof NullModel || isBinaryTree((ObjectModel) leftTarget, left, right, visited)) &&
 				(rightTarget instanceof NullModel || isBinaryTree((ObjectModel) rightTarget, left, right, visited));
 	}
 
-	public void infixTraverse(SiblingVisitor v) {
+	public void infixTraverse(SiblingVisitor visitor, boolean visitNulls) {
 		assert isBinaryTree();
 
-		infixTraverse(this, varsOfSameType.get(0), varsOfSameType.get(1), 0,  v);
+		infixTraverse(this, null, null, 0, visitor, visitNulls);
 	}
 
-	private static void infixTraverse(ObjectModel obj, String left, String right, int depth, SiblingVisitor v) {
-		EntityModel<?> leftTarget = obj.references.get(left).getModelTarget();
-		if(leftTarget instanceof ObjectModel)
-			infixTraverse((ObjectModel) leftTarget, left, right, depth+1, v);
-		else
-			v.accept(null, null, -1, depth+1, null);
+	private void infixTraverse(EntityModel<?> e, ObjectModel parent, String field, int depth, SiblingVisitor visitor, boolean visitNulls) {
+		int index = field == null ? -1 : field.equals(leftField) ? 0 : 1;
+		if(e instanceof ObjectModel) {
+			ObjectModel obj = (ObjectModel) e;
 
-		v.accept(obj, null, -1, depth, null);
+			EntityModel<?> leftTarget = obj.references.get(leftField).getModelTarget();
+			if(leftTarget instanceof NullModel && visitNulls)
+				visitor.visit(leftTarget, obj, index, depth+1, field);
+			else
+				infixTraverse(leftTarget, obj, leftField, depth+1, visitor, visitNulls);
 
-		EntityModel<?> rightTarget = obj.references.get(right).getModelTarget();
-		if(rightTarget instanceof ObjectModel)
-			infixTraverse((ObjectModel) rightTarget, left, right, depth+1, v);
-		else
-			v.accept(null, null, -1, depth+1, null);
+			visitor.visit(e, parent, index, depth, field);
+			
+
+			EntityModel<?> rightTarget = obj.references.get(rightField).getModelTarget();
+			if(rightTarget instanceof NullModel && visitNulls)
+				visitor.visit(rightTarget, obj, index, depth+1, field);
+			else
+				infixTraverse(rightTarget, obj, rightField, depth+1, visitor, visitNulls);
+		}
 	}
 
 
@@ -502,7 +526,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	//		}
 	//	}
 
-	
+
 	@Override
 	public String getStringValue() {
 		try {
@@ -512,7 +536,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			return "";
 		}
 	}
-	
+
 	public int getInt(String fieldName) {
 		try {
 			IJavaFieldVariable field = getContent().getField(fieldName, false);
@@ -531,5 +555,5 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-	
+
 }

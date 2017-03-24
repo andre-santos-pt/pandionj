@@ -24,6 +24,7 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -31,10 +32,12 @@ import org.eclipse.swt.graphics.Font;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
-import pt.iscte.pandionj.model.ValueModel;
+import pt.iscte.pandionj.model.ReferenceModel;
 
 //TODO limit size
-public class ArrayReferenceFigure extends RoundedRectangle implements Observer {
+//TODO tool tip type
+
+public class ArrayReferenceFigure extends RoundedRectangle {
 
 	enum Direction {
 		NONE, FORWARD, BACKWARD;
@@ -142,42 +145,17 @@ public class ArrayReferenceFigure extends RoundedRectangle implements Observer {
 		Label lengthLabel = new Label("length = " + N);
 		setToolTip(lengthLabel);
 
-		model.registerObserver(this);
-
-		for(ValueModel v : model.getVars())
-			addVariable(v);
 		
 //		for(ReferenceModel r : model.getModelElements())
-//			r.addObserver(new Observer() {
-//				
+//			r.registerDisplayObserver(new Observer() {
 //				@Override
 //				public void update(Observable o, Object arg) {
 //					// TODO Auto-generated method stub
-//					
+//					System.out.println("update");
 //				}
 //			});
 	}
 	
-
-	private void addVariable(ValueModel varModel) {
-
-		setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), 3, false);
-		varModel.registerObserver(new Observer() {
-
-			@Override
-			public void update(Observable o, Object arg) {
-				setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), 3, false);
-				repaint();
-			}
-		});
-	}
-
-	@Override
-	public void update(Observable o, Object index) {
-		if(index instanceof ValueModel) {
-			addVariable((ValueModel) index);
-		}
-	}
 
 	private Position getPosition(int arrayIndex) {
 		assert arrayIndex >= 0 && arrayIndex < N;
@@ -354,13 +332,14 @@ public class ArrayReferenceFigure extends RoundedRectangle implements Observer {
 
 			@Override
 			public Point getLocation(Point reference) {
-				org.eclipse.draw2d.geometry.Rectangle r =  org.eclipse.draw2d.geometry.Rectangle.SINGLETON;
-				r.setBounds(getOwner().getBounds());
-				r.translate(0, 0);
-				r.resize(1, 1);
+//				org.eclipse.draw2d.geometry.Rectangle r =  org.eclipse.draw2d.geometry.Rectangle.SINGLETON;
+//				r.setBounds(getOwner().getBounds());
+//				r.translate(0, 0);
+//				r.resize(1, 1);
+//				getOwner().translateToAbsolute(r);
+				Rectangle r = Position.this.getBounds();
 				getOwner().translateToAbsolute(r);
-				Dimension size = Position.this.getSize();
-				return Position.this.getLocation().translate(size.width, size.height/2);
+				return Position.this.getLocation().translate(r.width, r.height/2);
 			}
 		}
 	}

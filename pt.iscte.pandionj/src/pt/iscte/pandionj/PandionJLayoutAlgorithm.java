@@ -57,6 +57,8 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			ModelElement<?> element = (ModelElement<?>) node.getData();
 			if(!map.containsKey(element)) {
 				map.put(element, e);
+				
+				// TODO atualizar
 				if(element instanceof ReferenceModel)
 					element.registerObserver((o,a) -> dirty.add(e));
 
@@ -87,15 +89,15 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 							obj.infixTraverse(new SiblingVisitor() {
 								int x = Constants.NODE_SPACING/4;
 								@Override
-								public void accept(ObjectModel object, ObjectModel parent, int index, int depth, String field) {
+								public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
 									setLocation(map.get(object), Constants.NODE_SPACING + x, yy + depth*Constants.NODE_SPACING/2);
 									x += Constants.NODE_SPACING/4;
 								}
-							});
+							}, true);
 						}
 						else {
 							class Visitor implements SiblingVisitor {
-								public void accept(ObjectModel o, ObjectModel parent, int index, int d, String field) {
+								public void visit(EntityModel<?> o, ObjectModel parent, int index, int d, String field) {
 									if(map.containsKey(o)) {
 										LayoutEntity n = map.get(o);
 										switch(index) {
@@ -149,15 +151,15 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 		}
 		
 		// loose entities
-		for(LayoutEntity e : entitiesToLayout) {
-			GraphNode node = (GraphNode) e.getGraphData();
-			ModelElement<?> element = (ModelElement<?>) node.getData();
-
-			if(element instanceof EntityModel<?>){
-				System.out.println(element);
-				setLocation(e, Constants.MARGIN + x + Constants.OBJECT_PADDING, refY);
-			}
-		}
+//		for(LayoutEntity e : entitiesToLayout) {
+//			GraphNode node = (GraphNode) e.getGraphData();
+//			ModelElement<?> element = (ModelElement<?>) node.getData();
+//
+//			if(element instanceof EntityModel<?>){
+//				System.out.println(element);
+//				setLocation(e, Constants.MARGIN + x + Constants.OBJECT_PADDING, refY);
+//			}
+//		}
 	}
 
 	@Override

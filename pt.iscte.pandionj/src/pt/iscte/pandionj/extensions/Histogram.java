@@ -5,17 +5,17 @@ import org.eclipse.draw2d.IFigure;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 
-public class XYPlot implements IArrayWidgetExtension {
+public class Histogram implements IArrayWidgetExtension {
+
 	@Override
 	public boolean accept(IArrayModel e) {
-		if(e.getDimensions() != 2 || !e.getComponentType().matches("double|float"))
-			return false;
-		
-		return true;
+		return e.getDimensions() == 1 && e.getComponentType().equals("double");
 	}
+
 	@Override
 	public IFigure createFigure(IArrayModel e) {
 		// TODO Auto-generated method stub
 		return null;
 	}
+
 }

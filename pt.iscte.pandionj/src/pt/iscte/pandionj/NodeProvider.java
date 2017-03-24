@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
@@ -47,13 +48,12 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			if(e instanceof ReferenceModel) {
 				EntityModel<?> t = ((ReferenceModel) e).getModelTarget();
 				if(t instanceof ObjectModel && !t.hasWidgetExtension()) {
-					((ObjectModel) t).traverseSiblings((o,p,i,d,f) -> {
-						if(o != null)
-							elements.add(o); // TODO ADD NULL MODEL?
-					}, true);
+					((ObjectModel) t).traverseSiblings((o,p,i,d,f) -> elements.add(o), true);
 				}
+				
+				// TODO more than 2 dims?
 				else if(t instanceof ArrayReferenceModel && !t.hasWidgetExtension()) {
-					elements.add(t);
+					elements.add(t); 
 					List<ReferenceModel> arrayElements = ((ArrayReferenceModel) t).getModelElements();
 					for(ReferenceModel r : arrayElements)
 						elements.add(r.getModelTarget());
@@ -71,10 +71,10 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			return new Object[] { new Pointer((ModelElement<?>) source, (EntityModel<?>) dest) };
 		}
 		else if(source instanceof ObjectModel) {
-			Map<String, ModelElement<?>> pointers = ((ObjectModel) source).getReferences();
+			Map<String, ReferenceModel> pointers = ((ObjectModel) source).getReferences();
 			List<Pointer> ret = new ArrayList<>();
-			for(Entry<String, ModelElement<?>> field : pointers.entrySet()) 
-				if(dest.equals(field.getValue()))
+			for(Entry<String, ReferenceModel> field : pointers.entrySet()) 
+				if(dest.equals(field.getValue().getModelTarget()))
 					ret.add(new Pointer(field.getKey(), (ObjectModel) source, (EntityModel<?>) dest));
 			return ret.toArray();
 		}

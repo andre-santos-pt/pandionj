@@ -12,7 +12,19 @@ import org.eclipse.swt.widgets.Display;
 
 public class FontManager {
 	public enum Style {
-		BOLD, ITALIC;
+		BOLD(SWT.BOLD), ITALIC(SWT.ITALIC);
+		
+		private final int swtBit;
+		
+		private Style(int swtBit) {
+			this.swtBit = swtBit;
+		}
+		static int toSwtStyle(Style[] styles) {
+			int code = SWT.NONE;
+			for(Style s : styles)
+				code |= s.swtBit;
+			return code;
+		}
 	}
 	
 	private static Map<String, Font> instances = new HashMap<>();
@@ -25,18 +37,18 @@ public class FontManager {
 		String key = sizeZoom + Arrays.toString(styles);
 		Font f = instances.get(key);
 		if(f == null || f.isDisposed()) {
-			f = new Font(Display.getDefault(), Constants.FONT_FACE, sizeZoom, SWT.NONE);
+			f = new Font(Display.getDefault(), Constants.FONT_FACE, sizeZoom, Style.toSwtStyle(styles));
 			instances.put(key, f);
 		}
 		return f;
 	}
 	
 	public static void setFont(Control control, int size, Style ... styles) {
-		control.setFont(getFont(size));
+		control.setFont(getFont(size, styles));
 	}
 	
 	public static void setFont(Figure figure, int size, Style ... styles) {
-		figure.setFont(getFont(size));
+		figure.setFont(getFont(size, styles));
 	}
 
 	public static void dispose() {

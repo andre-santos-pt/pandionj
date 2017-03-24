@@ -28,7 +28,7 @@ public class ImageWidget implements IArrayWidgetExtension {
 
 	@Override
 	public boolean accept(IArrayModel model) {
-		if(!model.getComponentType().equals("int[][]") || model.getDimensions() != 2 || model.getLength() < 1)
+		if(!model.getComponentType().equals("int") || model.getDimensions() != 2 || model.getLength() < 1)
 			return false;
 
 		Object[] values = model.getValues();
@@ -49,14 +49,14 @@ public class ImageWidget implements IArrayWidgetExtension {
 
 
 	private class ImageFig extends Figure {
-		Object[][] array;
+		Object[] array;
 		int width;
 		int height;
 		
 		ImageFig(IArrayModel model) {
-			this.array = (Object[][]) model.getValues();
+			this.array = model.getValues();
 			setLayoutManager(new FlowLayout());
-			width = array[0].length;
+			width = ((Object[]) array[0]).length;
 			height = array.length;
 			setSize(width, height);
 			setBackgroundColor(ColorConstants.white);
@@ -64,11 +64,9 @@ public class ImageWidget implements IArrayWidgetExtension {
 			setOpaque(true);
 
 			model.registerDisplayObserver(new Observer() {
-				int x = 0;
 				@Override
 				public void update(Observable o, Object arg) {
-					System.out.println(x++);
-					array = (Object[][]) model.getValues();
+					array = model.getValues();
 					//					for(int y = 0; y < array.length; y++)
 					//						for(int x = 0; x < array[y].length; x++)
 					//							data.setPixel(x, y, (int) array[y][x] == 0 ? 5 : 200);
@@ -102,9 +100,11 @@ public class ImageWidget implements IArrayWidgetExtension {
 //			PaletteData palette = new PaletteData(new RGB[] { white.getRGB(), black.getRGB()});
 //			ImageData data = new ImageData(array[0].length, array.length, 1, palette);
 			
-			for(int y = 0; y < height; y++)
-				for(int x = 0; x < array[y].length && x < width; x++)
-					data.setPixel(x, y, (int) array[y][x]);
+			for(int y = 0; y < height; y++) {
+				Object[] line = (Object[]) array[y];
+				for(int x = 0; x < line.length && x < width; x++)
+					data.setPixel(x, y, (int) line[x]);
+			}
 
 			Image img = new Image(Display.getDefault(), data);
 			

@@ -1,6 +1,7 @@
 package pt.iscte.pandionj.model;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.zest.core.widgets.Graph;
 
@@ -8,8 +9,8 @@ import pt.iscte.pandionj.figures.NullFigure;
 
 public class NullModel extends EntityModel<IJavaObject> {
 
-	NullModel(IJavaObject nullObject, StackFrameModel model) {
-		super(nullObject, model);
+	public NullModel(StackFrameModel model) {
+		super((IJavaObject) ((IJavaDebugTarget) model.getStackFrame().getDebugTarget()).nullValue(), model);
 	}
 	
 	@Override
@@ -18,7 +19,7 @@ public class NullModel extends EntityModel<IJavaObject> {
 	}
 	
 	@Override
-	public void update() {
+	public void update(int step) {
 
 	}
 
@@ -29,7 +30,7 @@ public class NullModel extends EntityModel<IJavaObject> {
 
 	@Override
 	public String toString() {
-		return "null";
+		return "NULL";
 	}
 
 	

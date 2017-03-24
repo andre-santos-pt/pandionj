@@ -31,9 +31,7 @@ import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
 
-import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.Utils;
-import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.parser.JavaSourceParser;
 import pt.iscte.pandionj.parser.ParserAPI;
@@ -47,6 +45,12 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 
 public class StackFrameModel extends Observable {
+	
+	interface ObserverTemp {
+		void updateEvent();
+		void newElement(ModelElement<?> e);
+	}
+	
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
 	private Map<Long, EntityModel<?>> objects;
@@ -89,17 +93,16 @@ public class StackFrameModel extends Observable {
 	public void update() {
 		handleVariables();
 		for(VariableModel<?> e : vars.values())
-			e.update();
+			e.update(0);
 
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel)
-				o.update();
+				o.update(0);
 			else if(o instanceof ObjectModel)
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
-
-					@Override
-					public void accept(ObjectModel object, ObjectModel parent, int index, int depth, String field) {
-						((ObjectModel) object).update();
+					public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
+						if(object != null)
+							object.update(0);
 					}
 				});
 		}
@@ -157,7 +160,7 @@ public class StackFrameModel extends Observable {
 		//		IJavaType type = jv.getJavaType();
 
 		if(vars.containsKey(varName)) {
-			vars.get(varName).update();
+			vars.get(varName).update(0);
 		}
 		else {
 			VariableModel<?> newElement = value instanceof IJavaObject ? new ReferenceModel(jv, isInstance, this) : new ValueModel(jv, this);
@@ -227,7 +230,7 @@ public class StackFrameModel extends Observable {
 			found = false;
 		}
 
-		public void accept(ObjectModel o, ObjectModel parent, int index, int depth, String field) {
+		public void visit(EntityModel<?> o, ObjectModel parent, int index, int depth, String field) {
 			if(!found) {
 				while(path.size() > 0 && path.size() >= depth)
 					path.remove(path.size()-1);
@@ -382,6 +385,10 @@ public class StackFrameModel extends Observable {
 
 
 
+	public void objectReferenceChanged() {
+		setChanged();
+		notifyObservers();
+	}
 
 
 

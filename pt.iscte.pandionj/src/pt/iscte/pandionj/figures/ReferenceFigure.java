@@ -10,6 +10,7 @@ import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ReferenceModel;
 
+// TODO click to variable
 public class ReferenceFigure extends Label {
 
 	public ReferenceFigure(ReferenceModel model) {
@@ -27,5 +28,7 @@ public class ReferenceFigure extends Label {
 					setToolTip(null);
 			}
 		});
+		
+		setToolTip(new Label(model.getType()));
 	}
 }

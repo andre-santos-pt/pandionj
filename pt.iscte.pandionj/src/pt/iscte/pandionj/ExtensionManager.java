@@ -9,6 +9,7 @@ import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensibility.IWidgetExtension;
+import pt.iscte.pandionj.extensions.ColorWidget;
 import pt.iscte.pandionj.extensions.ImageWidget;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.model.ArrayModel;
@@ -32,12 +33,12 @@ public class ExtensionManager {
 	
 	static {
 		arrayExtensions = new ArrayList<>();
-//		arrayPrimitiveExtensions.add(new Histogram());
-		arrayExtensions.add(new ImageWidget());
+//		arrayExtensions.add(new ImageWidget());
 		
 		
 		objectExtensions = new ArrayList<>();
 		objectExtensions.add(new StringWidget());
+		objectExtensions.add(new ColorWidget());
 	}
 	
 	
@@ -51,6 +52,7 @@ public class ExtensionManager {
 	}
 	
 	private static IWidgetExtension<?> getCompatibleExtension(ArrayModel m) {
+		
 		for(IArrayWidgetExtension ext : ExtensionManager.arrayExtensions)
 			if(ext.accept(m))
 				return ext;

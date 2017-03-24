@@ -72,16 +72,18 @@ import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.ZestStyles;
 import org.osgi.framework.Bundle;
 
-import pt.iscte.pandionj.model.CallStackModel2;
+import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
 // TODO reload everything on view init
 public class PandionJView extends ViewPart { 
 
-	private CallStackModel2 model;
+	private CallStackModel model;
 	private IStackFrame exceptionFrame;
 	private String exception;
-
+	private int debugStep;
+	
 	private IDebugEventSetListener debugEventListener;
 	private IJavaBreakpointListener exceptionListener;
 	//	private IDebugContextListener debugUiListener;
@@ -107,7 +109,7 @@ public class PandionJView extends ViewPart {
 		createWidgets(parent);
 //		addToolBarItems();
 
-		model = new CallStackModel2();
+		model = new CallStackModel();
 		debugEventListener = new DebugListener();
 		exceptionListener = new ExceptionListener();
 		//		debugUiListener = new DebugUIListener();
@@ -178,7 +180,7 @@ public class PandionJView extends ViewPart {
 		Composite labelComposite = new Composite(parent, SWT.NONE);
 		labelComposite.setLayout(new GridLayout());
 		labelInit = new Label(labelComposite, SWT.WRAP);
-		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE);
+		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);
 		labelInit.setText(Constants.START_MESSAGE);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		stackLayout.topControl = labelComposite;
@@ -250,7 +252,7 @@ public class PandionJView extends ViewPart {
 	private class ExceptionListener implements IJavaBreakpointListener {
 		public int breakpointHit(IJavaThread thread, IJavaBreakpoint breakpoint) {
 			if(breakpoint instanceof IJavaLineBreakpoint) {
-				if(!thread.isPerformingEvaluation()) { // TODO nao funciona
+				if(!thread.isPerformingEvaluation()) {
 					try {
 						exception = null;
 						exceptionFrame = null;
@@ -268,6 +270,7 @@ public class PandionJView extends ViewPart {
 					thread.terminateEvaluation();
 					exception = exc.getExceptionTypeName();
 					exceptionFrame = thread.getTopStackFrame();
+					debugStep = 0;
 					IStackFrame[] frames = thread.getStackFrames(); 
 
 					handleFrames(frames);
@@ -332,7 +335,8 @@ public class PandionJView extends ViewPart {
 
 		//Display.getDefault().syncExec(() -> clearView(false));
 
-		model.update();
+		model.update(debugStep++);
+		
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				stackView.updateFrames(model.getStackPath());

@@ -7,6 +7,9 @@ public interface IArrayModel extends IEntityModel {
 	int getDimensions();
 	String getComponentType();
 	Object[] getValues();
+	boolean isMatrix();
 	void registerObserver(Observer o);
 	void registerDisplayObserver(Observer o);
+	
+	// TODO observer event
 }
