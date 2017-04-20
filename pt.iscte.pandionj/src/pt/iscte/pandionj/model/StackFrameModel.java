@@ -55,25 +55,39 @@ public class StackFrameModel extends Observable {
 	private Map<String, VariableModel<?>> vars;
 	private Map<Long, EntityModel<?>> objects;
 	private ParserResult codeAnalysis;
+	private IFile srcFile;
 
 	public StackFrameModel(IJavaStackFrame frame) {
 		this.frame = frame;
 		vars = new LinkedHashMap<>();
 		objects = new HashMap<>();
-		IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
-		try {
-			System.out.println("SRC :" + frame.getSourcePath() + " " + frame.isPublic());
+		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
+//		try {
+//			System.out.println("SRC :" + frame.getSourcePath() + " " + frame.isPublic());
 			codeAnalysis = ParserAPI.parseFile(srcFile.getRawLocation().toString());
-		} 
-		catch (DebugException e) {
-			e.printStackTrace();
-		}
+//		} 
+//		catch (DebugException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	public IStackFrame getStackFrame() {
 		return frame;
 	}
 
+	public IFile getSourceFile() {
+		return srcFile;
+	}
+	
+	public int getLineNumber() {
+		try {
+			return frame.getLineNumber();
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return -1;
+		}
+	}
+	
 	public Variable getLocalVariable(String name) {
 		try {
 			int line = frame.getLineNumber();
@@ -106,6 +120,8 @@ public class StackFrameModel extends Observable {
 					}
 				});
 		}
+		setChanged();
+		notifyObservers();
 	}
 
 	private void handleVariables() {
@@ -163,7 +179,7 @@ public class StackFrameModel extends Observable {
 			vars.get(varName).update(0);
 		}
 		else {
-			VariableModel<?> newElement = value instanceof IJavaObject ? new ReferenceModel(jv, isInstance, this) : new ValueModel(jv, this);
+			VariableModel<?> newElement = value instanceof IJavaObject ? new ReferenceModel(jv, isInstance, this) : new ValueModel(jv, isInstance, this);
 			vars.put(varName, newElement);
 			if(newElement instanceof ReferenceModel)
 				((ReferenceModel) newElement).registerObserver(new Observer() {
@@ -289,6 +305,7 @@ public class StackFrameModel extends Observable {
 					Visitor visitor = new Visitor();
 					IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 					JavaSourceParser.createFromFile(srcFile.getRawLocation().toString()).parse(visitor);
+				
 					e = new ObjectModel(obj, this, visitor.info);
 					//					e.registerObserver(new Observer() {
 					//						public void update(Observable o, Object arg) {
@@ -389,6 +406,7 @@ public class StackFrameModel extends Observable {
 		setChanged();
 		notifyObservers();
 	}
+
 
 
 

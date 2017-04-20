@@ -13,19 +13,16 @@ import pt.iscte.pandionj.figures.ReferenceFigure;
 
 public class ReferenceModel extends VariableModel<IJavaObject> {
 
-	private final boolean isInstance;
+
 	
 	private NullModel nullModel;
 	
 	ReferenceModel(IJavaVariable var, boolean isInstance, StackFrameModel model) throws DebugException {
-		super(var, model);
+		super(var, isInstance, model);
 		assert var.getValue() instanceof IJavaObject;
-		this.isInstance = isInstance;
 	}
 
-	public boolean isInstance() {
-		return isInstance;
-	}
+	
 	
 	public EntityModel<?> getModelTarget() {
 		IJavaObject target = getContent();

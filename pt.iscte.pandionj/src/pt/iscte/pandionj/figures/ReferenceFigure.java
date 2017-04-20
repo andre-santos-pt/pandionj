@@ -29,6 +29,6 @@ public class ReferenceFigure extends Label {
 			}
 		});
 		
-		setToolTip(new Label(model.getType()));
+//		setToolTip(new Label(model.getType()));
 	}
 }

@@ -2,13 +2,15 @@ package pt.iscte.pandionj;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -62,10 +64,12 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.GraphItem;
@@ -83,7 +87,7 @@ public class PandionJView extends ViewPart {
 	private IStackFrame exceptionFrame;
 	private String exception;
 	private int debugStep;
-	
+
 	private IDebugEventSetListener debugEventListener;
 	private IJavaBreakpointListener exceptionListener;
 	//	private IDebugContextListener debugUiListener;
@@ -98,17 +102,15 @@ public class PandionJView extends ViewPart {
 
 	private Map<String, Image> images;
 	private IToolBarManager toolBar;
-	
-	
+
+
 	public PandionJView() {
 		images = new HashMap<>();
 	}
-	
+
 	@Override
 	public void createPartControl(Composite parent) {
 		createWidgets(parent);
-//		addToolBarItems();
-
 		model = new CallStackModel();
 		debugEventListener = new DebugListener();
 		exceptionListener = new ExceptionListener();
@@ -118,12 +120,12 @@ public class PandionJView extends ViewPart {
 		JDIDebugModel.addJavaBreakpointListener(exceptionListener);
 		//		DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
 		toolBar = getViewSite().getActionBars().getToolBarManager();
-		
-		addToolbarAction("Run garbage collector", false, "trash.gif", "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.", () -> model.simulateGC());
-		addToolbarAction("Zoom in", false, "zoom.gif", null, () -> stackView.zoomIn());
-		addToolbarAction("Zoom out", false, "zoom.gif", null, () -> stackView.zoomOut());
-		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
-		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
+
+		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
+		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
+		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
+//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
+//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
 	}
 
 	@Override
@@ -132,27 +134,27 @@ public class PandionJView extends ViewPart {
 		DebugPlugin.getDefault().removeDebugEventListener(debugEventListener);
 		JDIDebugModel.removeJavaBreakpointListener(exceptionListener);
 		//		DebugUITools.getDebugContextManager().removeDebugContextListener(debugUiListener);
-		
+
 		for(Image img : images.values())
 			img.dispose();
-		
+
 		FontManager.dispose();
 	}
 
-	
+
 	private Image image(String name) {
 		Image img = images.get(name);
 		if(img == null) {
 			Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-			URL imagePath = FileLocator.find(bundle, new Path("images/" + name), null);
+			URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
 			ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
 			img = imageDesc.createImage();
 			images.put(name, img);
 		}
 		return img;
 	}
-	
-	
+
+
 	private void createWidgets(Composite parent) {
 		stackLayout = new StackLayout();
 		parent.setLayout(stackLayout);
@@ -327,16 +329,16 @@ public class PandionJView extends ViewPart {
 			});
 		}
 		int unchanged = model.handle(frames);
-//		Display.getDefault().syncExec(() -> {
-//			Control[] items = frameComposite.getChildren();
-//			for(int i = unchanged+1; i < items.length; i++)
-//				items[i].dispose();
-//		});
+		//		Display.getDefault().syncExec(() -> {
+		//			Control[] items = frameComposite.getChildren();
+		//			for(int i = unchanged+1; i < items.length; i++)
+		//				items[i].dispose();
+		//		});
 
 		//Display.getDefault().syncExec(() -> clearView(false));
 
 		model.update(debugStep++);
-		
+
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
 				stackView.updateFrames(model.getStackPath());
@@ -366,7 +368,7 @@ public class PandionJView extends ViewPart {
 
 		public void updateFrames(List<StackFrameModel> stackPath) {
 			int diff = stackPath.size() - frames.size();
-			
+
 			while(diff > 0) {
 				frames.add(new FrameView(this));
 				diff--;
@@ -424,17 +426,16 @@ public class PandionJView extends ViewPart {
 			compositeHeader = new Composite(this, SWT.NONE);
 			compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 			compositeHeader.setLayout(new RowLayout());
-			
+
 			new Label(compositeHeader,SWT.NONE).setImage(image("frame.gif"));
 			header = new Label(compositeHeader, SWT.BORDER);
 			FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
-			
-			
+
 			gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			compositeViewer = new Composite(this, SWT.NONE);
 			compositeViewer.setLayout(new FillLayout());
 			compositeViewer.setLayoutData(gridData);
-			
+
 			viewer = new GraphViewerZoomable(compositeViewer, SWT.BORDER);
 			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
 			viewer.setContentProvider(new NodeProvider());
@@ -450,6 +451,7 @@ public class PandionJView extends ViewPart {
 				@Override
 				public void mouseDown(MouseEvent e) {
 					setExpanded(!isExpanded());
+
 				}
 			});
 
@@ -457,6 +459,7 @@ public class PandionJView extends ViewPart {
 
 				@Override
 				public void doubleClick(DoubleClickEvent event) {
+//					navigateToLine(model.getSourceFile(), model.getLineNumber());
 					if(!event.getSelection().isEmpty()) {
 						IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 						Object obj = selection.getFirstElement();
@@ -475,13 +478,17 @@ public class PandionJView extends ViewPart {
 
 		}
 
+
+
 		public void setExpanded(boolean expanded) {
 			setLayoutData(new GridData(SWT.FILL, expanded ? SWT.FILL : SWT.DEFAULT, true, expanded));
 			gridData.exclude = !expanded;
 			compositeViewer.setVisible(expanded);
 			getParent().layout();
+			if(expanded)
+				navigateToLine(model.getSourceFile(), model.getLineNumber());
 		}
-		
+
 		public boolean isExpanded() {
 			return !gridData.exclude;
 		}
@@ -492,12 +499,17 @@ public class PandionJView extends ViewPart {
 
 		public void setError(String message) {
 			setBackground(Constants.ERROR_COLOR);
-			setToolTipText(message);
+			header.setToolTipText(message);
 		}
 
 		void setInput(StackFrameModel frameModel) {
+			setBackground(null);
+			header.setToolTipText("");
+			viewer.getGraphControl().setToolTipText(frameModel.getSourceFile().getName() + " on line " + frameModel.getLineNumber());
 			if(this.model != frameModel) {
-				header.setText(frameModel.toString());
+				String headerText = frameModel.toString();
+				header.setText(headerText);
+				compositeHeader.pack();
 				this.model = frameModel;
 				viewer.setInput(frameModel);
 				viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
@@ -514,42 +526,70 @@ public class PandionJView extends ViewPart {
 
 		void copyToClipBoard() {
 			Graph item = viewer.getGraphControl();
-			Rectangle size = compositeViewer.getClientArea();
-			compositeViewer.setBackground(Constants.HIGHLIGHT_COLOR);
-			GC gc = new GC(compositeViewer);
-			Rectangle clipping2 = gc.getClipping();
-			Image img = new Image(Display.getDefault(), size.width, size.height);
-			gc.copyArea(img, 0, 0);
-			ImageData imageData = img.getImageData();
+			Point p = item.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+			
+			Rectangle size = item.getClientArea();
+			
+			System.out.println(p +  "    " + size);
+//			compositeViewer.setBackground(Constants.HIGHLIGHT_COLOR);
+			GC gc = new GC(item);
+//			Rectangle clipping2 = gc.getClipping();
+//			Image img = new Image(Display.getDefault(), size.width, size.height);
+//			gc.copyArea(img, 0, 0);
+//			ImageData imageData = img.getImageData();
+			
 			RGB[] rgb = new RGB[256];
-
 			// build grey scale palette: 256 different grey values are generated. 
 			for (int i = 0; i < 256; i++) {
-			    rgb[i] = new RGB(i, i, i);
+				rgb[i] = new RGB(i, i, i);
 			}
 
 			// Construct a new indexed palette given an array of RGB values.
 			PaletteData palette = new PaletteData(rgb);
 			Image img2 = new Image(Display.getDefault(), new ImageData(size.width, size.height, 8, palette));
-			
-		    Shell popup = new Shell(Display.getDefault());
-	        popup.setText("Image");
-	        popup.setBounds(50, 50, 200, 200);
-			 Canvas canvas = new Canvas(popup, SWT.NONE);
-		        canvas.setBounds(img.getBounds());
-		        canvas.addPaintListener(new PaintListener() {
-		          public void paintControl(PaintEvent e) {
-		            e.gc.drawImage(img2, 0, 0);
-		          }
-		        });
-		        popup.open();
+//			gc.setClipping(0, 0, p.x, p.y);
+			gc.copyArea(img2, 0, 0);
+			Shell popup = new Shell(Display.getDefault());
+			popup.setText("Image");
+			popup.setBounds(50, 50, 200, 200);
+			Canvas canvas = new Canvas(popup, SWT.NONE);
+			canvas.setBounds(img2.getBounds());
+			canvas.addPaintListener(new PaintListener() {
+				public void paintControl(PaintEvent e) {
+					e.gc.drawImage(img2, 0, 0);
+				}
+			});
+			popup.open();
 			Clipboard clipboard = new Clipboard(Display.getDefault());
 			clipboard.setContents(new Object[]{img2.getImageData()}, new Transfer[]{ ImageTransfer.getInstance()}); 
-			img.dispose();
+			img2.dispose();
 			gc.dispose();
 		}
 	}
 
+	private static void navigateToLine(IFile file, Integer line) {
+		HashMap<String, Object> map = new HashMap<String, Object>();
+		map.put(IMarker.LINE_NUMBER, line);
+		IMarker marker = null;
+		try {
+			marker = file.createMarker(IMarker.TEXT);
+			marker.setAttributes(map);
+			try {
+				IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), marker);
+			} catch ( PartInitException e ) {
+				//complain
+			}
+		} catch ( CoreException e1 ) {
+			//complain
+		} finally {
+			try {
+				if (marker != null)
+					marker.delete();
+			} catch ( CoreException e ) {
+				//whatever
+			}
+		}
+	}
 
 	private void addMenuBarItems() {
 		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
@@ -566,8 +606,8 @@ public class PandionJView extends ViewPart {
 				return !stackView.isEmpty();
 			}
 		});
-		
-		
+
+
 	}
 
 	private void addToolbarAction(String name, boolean toggle, String imageName, String description, Runnable runnable) {

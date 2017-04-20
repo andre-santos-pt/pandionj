@@ -9,32 +9,42 @@ import org.eclipse.zest.core.widgets.Graph;
 import pt.iscte.pandionj.figures.ValueFigure;
 import pt.iscte.pandionj.parser.variable.FixedValue;
 import pt.iscte.pandionj.parser.variable.Gatherer;
+import pt.iscte.pandionj.parser.variable.MostWantedHolder;
 import pt.iscte.pandionj.parser.variable.Variable;
 
 public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	public enum Role {
-		FIXED_VALUE,
-		STEPPER,
-		GATHERER,
-		MOST_WANTED_HOLDER;
-		
+		FIXED_VALUE {
+			public String toString() { return "Fixed Value";}
+		},
+		STEPPER {
+			public String toString() { return "Stepper";}
+		},
+		GATHERER {
+			public String toString() { return "Gatherer";}
+		},
+		MOST_WANTED_HOLDER {
+			public String toString() { return "Most-Wanted Holder";}
+		},
+		NONE {
+			public String toString() { return "";}
+		};
 		
 		static Role matchRole(Variable v) {
-			if(v instanceof FixedValue)
-				return FIXED_VALUE;
-			else if(v instanceof Gatherer)
-				return GATHERER;
-			else
-				return null;
+			if(v instanceof FixedValue) 			return FIXED_VALUE;
+			else if(v instanceof Gatherer)			return GATHERER;
+			else if(v instanceof MostWantedHolder)	return MOST_WANTED_HOLDER;
+			else									return NONE;
 		}
 	}
 	
 	private Role role;
+	private Variable var;
 	
-	public ValueModel(IJavaVariable variable, StackFrameModel model) throws DebugException {
-		super(variable, model);
+	public ValueModel(IJavaVariable variable, boolean isInstance, StackFrameModel model) throws DebugException {
+		super(variable, isInstance, model);
 		assert variable.getValue() instanceof IJavaPrimitiveValue;
-		Variable var = model.getLocalVariable(variable.getName());
+		var = model.getLocalVariable(variable.getName());
 		role = Role.matchRole(var);
 	}
 
@@ -43,13 +53,26 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 		return new ValueFigure(this, role);
 	}
 	
+	public Variable getVariable() {
+		return var;
+	}
+	
 	@Override
 	public String toString() {
 		try {
-			return getName() + " = " + getContent().getValueString();
+			return getName() + " = " + getContent().getValueString() + " (" + role + ")";
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return getClass().getSimpleName();
+		}
+	}
+
+	public boolean isDecimal() {
+		try {
+			return getVariableType().getName().matches("float|double");
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return false;
 		}
 	}
 	

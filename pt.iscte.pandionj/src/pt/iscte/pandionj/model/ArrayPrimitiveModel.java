@@ -149,4 +149,8 @@ public class ArrayPrimitiveModel extends ArrayModel {
 
 		return null;
 	}
+	
+	public boolean isDecimal() {
+		return getComponentType().matches("float|double");
+	}
 }

@@ -1,10 +1,12 @@
 package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
@@ -39,12 +41,15 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 	
 	protected IJavaVariable variable;
 	private String name;
+	private final boolean isInstance;
+	
 	private List<T> history;
 	
-	public VariableModel(IJavaVariable variable, StackFrameModel model) {
+	public VariableModel(IJavaVariable variable, boolean isInstance, StackFrameModel model) {
 		super(model);
 		assert variable != null;
 		this.variable = variable;
+		this.isInstance = isInstance;
 		try {
 			this.name = variable.getName();
 		} catch (DebugException e) {
@@ -58,6 +63,10 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 	
 	public String getName() {		
 		return name;
+	}
+	
+	public boolean isInstance() {
+		return isInstance;
 	}
 	
 	public String getType() {
@@ -80,6 +89,15 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 		}
 	}
 	
+	public IJavaType getVariableType() {
+		try {
+			return variable.getJavaType();
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public void update(int step) {
@@ -97,9 +115,12 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 		}
 	}
 	
-	// TODO: remove?
 	public String getCurrentValue() {
 		return history.get(history.size()-1).toString();
+	}
+	
+	public List<T> getHistory() {
+		return Collections.unmodifiableList(history);
 	}
 
 }

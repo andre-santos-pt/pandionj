@@ -61,49 +61,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		super(object, model);
 		assert object != null;
 		this.info = info;
-
-		values = new LinkedHashMap<String, ValueModel>();
-		references = new LinkedHashMap<String, ReferenceModel>();
-		refsOfSameType = new ArrayList<>();
-		try {
-			this.type = object.getReferenceTypeName();
-
-			for(IVariable v : object.getVariables()) {
-				IJavaVariable var = (IJavaVariable) v;
-				IJavaValue value = (IJavaValue) var.getValue();
-				
-				if(!var.isStatic() && var.getReferenceTypeName().equals(object.getReferenceTypeName()))
-					refsOfSameType.add(var.getName());
-
-				if(!var.isStatic()) {
-					String name = var.getName();
-
-					if(var.getValue() instanceof IJavaObject) {
-						ReferenceModel refModel = new ReferenceModel(var, true, model);
-						refModel.registerObserver(new Observer() {
-							public void update(Observable o, Object arg) {
-								setChanged();
-								notifyObservers(name);
-							}
-						});
-						references.put(name, refModel);
-					}
-					else {
-						ValueModel val = new ValueModel(var, model);
-						val.registerObserver(new Observer() {
-							public void update(Observable o, Object arg) {
-								setChanged();
-								notifyObservers(name);
-							}
-						});
-						values.put(name, val);
-					}
-				}
-			}
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -116,9 +73,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
-
-				if(!var.isStatic() && var.getReferenceTypeName().equals(object.getReferenceTypeName()))
-					refsOfSameType.add(var.getName());
 
 				if(!var.isStatic()) {
 					String name = var.getName();
@@ -133,7 +87,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 						references.put(name, refModel);
 					}
 					else {
-						ValueModel val = new ValueModel(var, getStackFrame());
+						ValueModel val = new ValueModel(var, true, getStackFrame());
 						val.registerObserver(new Observer() {
 							public void update(Observable o, Object arg) {
 								setChanged();
@@ -142,6 +96,9 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 						});
 						values.put(name, val);
 					}
+					
+					if(var.getReferenceTypeName().equals(object.getReferenceTypeName()))
+						refsOfSameType.add(var.getName());
 				}
 			}
 		}

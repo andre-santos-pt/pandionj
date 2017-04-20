@@ -59,6 +59,8 @@ public interface Constants {
 
 	String START_MESSAGE = "This view will be populated once the execution of the Java debugger hits a breakpoint.";
 
+	String IMAGE_FOLDER = "images";
+
 	
 	static Color getVarColor(int i) {
 		assert i >= 0;
@@ -79,4 +81,9 @@ public interface Constants {
 		return layout;
 	}
 
+	
+	static final String TRASH_ICON = "trash.gif";
+	static final String TRASH_MESSAGE = "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.";
+	
+	
 }

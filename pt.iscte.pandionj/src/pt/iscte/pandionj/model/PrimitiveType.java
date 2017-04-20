@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.model;
 
+import java.util.List;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaType;
@@ -12,12 +14,22 @@ public enum PrimitiveType {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getByteValue();
 		}
+		
+		@Override
+		public Object getValue(IJavaValue val) {
+			return new Byte(((IJavaPrimitiveValue) val).getByteValue());
+		}
 	},
 	SHORT {
 		@Override
 		public void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array) {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getShortValue();
+		}
+		
+		@Override
+		public Object getValue(IJavaValue val) {
+			return new Short(((IJavaPrimitiveValue) val).getShortValue());
 		}
 	},
 	INT {
@@ -26,12 +38,22 @@ public enum PrimitiveType {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getIntValue();
 		}
+
+		@Override
+		public Object getValue(IJavaValue val) {
+			return new Integer(((IJavaPrimitiveValue) val).getIntValue());
+		}
 	},
 	LONG {
 		@Override
 		public void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array) {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getLongValue();
+		}
+		
+		@Override
+		public Object getValue(IJavaValue val) {
+			return new Long(((IJavaPrimitiveValue) val).getLongValue());
 		}
 	},
 	FLOAT {
@@ -40,12 +62,21 @@ public enum PrimitiveType {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getFloatValue();
 		}
+		@Override
+		public Object getValue(IJavaValue val) {
+			return new Float(((IJavaPrimitiveValue) val).getFloatValue());
+		}
 	},
 	DOUBLE {
 		@Override
 		public void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array) {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getDoubleValue();
+		}
+		
+		@Override
+		public Object getValue(IJavaValue val) {
+			return new Double(((IJavaPrimitiveValue) val).getDoubleValue());
 		}
 	},
 	CHAR {
@@ -54,12 +85,21 @@ public enum PrimitiveType {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getCharValue();
 		}
+		
+		@Override
+		public Object getValue(IJavaValue val) {
+			return new Character(((IJavaPrimitiveValue) val).getCharValue());
+		}
 	},
 	BOOLEAN {
 		@Override
 		public void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array) {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getBooleanValue();
+		}
+		@Override
+		public Object getValue(IJavaValue val) {
+			return new Boolean(((IJavaPrimitiveValue) val).getBooleanValue());
 		}
 	};
  	
@@ -70,6 +110,9 @@ public enum PrimitiveType {
 	}
 	
 	public abstract void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array);
+	
+	
+	public abstract Object getValue(IJavaValue val);
 	
 	public static PrimitiveType match(IJavaType type) {
 		try {
@@ -95,4 +138,5 @@ public enum PrimitiveType {
 		
 		return false;
 	}
+	
 }

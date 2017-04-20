@@ -275,19 +275,18 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 	}
 
 
-	private static class Position extends Figure {
+	private class Position extends Figure {
 		private final Label valueLabel;
 		private boolean outOfBounds;
-		private int width;
+//		private int width;
 		private boolean error;
 		private Label indexLabel;
 
 		public Position(Integer index, boolean outOfBounds) {
 			this.outOfBounds = outOfBounds;
 
-			width = index != null ? POSITION_WIDTH : POSITION_WIDTH;
 			GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
-			GridData layoutData = new GridData(width, POSITION_WIDTH);
+			GridData layoutData = new GridData(model.isDecimal() ? POSITION_WIDTH*2 : POSITION_WIDTH, POSITION_WIDTH);
 			GridLayout layout = Constants.getOneColGridLayout();
 			setLayoutManager(layout);
 
@@ -311,38 +310,28 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			add(indexLabel);
 			error = false;
 			
-			valueLabel.addMouseListener(new MouseListener() {
-
-				@Override
-				public void mouseDoubleClicked(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void mousePressed(MouseEvent arg0) {
-
-					valueLabel.setBackgroundColor(Constants.SELECT_COLOR);
-				}
-
-				@Override
-				public void mouseReleased(MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-			});
+//			valueLabel.addMouseListener(new MouseListener() {
+//
+//				@Override
+//				public void mouseDoubleClicked(MouseEvent arg0) {
+//					// TODO Auto-generated method stub
+//					
+//				}
+//
+//				@Override
+//				public void mousePressed(MouseEvent arg0) {
+//
+//					valueLabel.setBackgroundColor(Constants.SELECT_COLOR);
+//				}
+//
+//				@Override
+//				public void mouseReleased(MouseEvent arg0) {
+//					// TODO Auto-generated method stub
+//					
+//				}
+//				
+//			});
 		}
-
-		public String getValue() {
-			return valueLabel.getText();
-		}
-
-		//		private String indexText(Integer index) {
-		//			if(index == null) return "";
-		//			else if(index == ArrayValueFigure.this.N) return index + " (length)";
-		//			else return Integer.toString(index);
-		//		}
 
 		@Override
 		protected void paintFigure(Graphics graphics) {
@@ -352,12 +341,15 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 				graphics.setLineWidth(error ? Constants.ARRAY_LINE_WIDTH*2 : Constants.ARRAY_LINE_WIDTH);
 				graphics.setLineDashOffset(2.5f);
 				graphics.setLineStyle(Graphics.LINE_DASH);
-				graphics.drawRectangle(getLocation().x, getLocation().y, width-1, POSITION_WIDTH-1);
+				graphics.drawRectangle(getLocation().x, getLocation().y, POSITION_WIDTH-1, POSITION_WIDTH-1);
 			}
 		}
 
 		public void setValue(String value) {
-			Display.getDefault().asyncExec(() -> valueLabel.setText(value));
+			Display.getDefault().asyncExec(() -> {
+				valueLabel.setText(value);
+				valueLabel.setToolTip(new Label(value));
+			});
 		}
 
 		public void highlight() {

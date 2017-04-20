@@ -28,30 +28,29 @@ import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.model.ReferenceModel;
 import pt.iscte.pandionj.model.ValueModel;
-import pt.iscte.pandionj.model.VariableModel;
 
 public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
 	// index model -> layout
 	private Map<ModelElement<?>, LayoutEntity> map = new WeakHashMap<>();
 	private Set<LayoutEntity> dirty = new HashSet<>();
-	private double refY = Constants.MARGIN;
-
+	private double refY = Constants.MARGIN*4;
+	private LayoutEntity lastValue;
+	
 	private void setLocation(LayoutEntity e, double x, double y) {
 		if(dirty.contains(e)) {
 			e.setLocationInLayout(x, y);
 			dirty.remove(e);
 		}
 		refY = Math.max(refY, e.getYInLayout() + e.getHeightInLayout() + Constants.MARGIN);
-//		System.out.println(((GraphNode)e.getGraphData()).getData());
-//		System.out.println(e);
 	}
 
 	@Override
 	public void applyLayout(LayoutEntity[] entitiesToLayout, LayoutRelationship[] relationshipsToConsider, double x,
 			double y, double width, double height, boolean asynchronous, boolean continuous)
 					throws InvalidLayoutConfiguration {
-
+		
+		
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement<?> element = (ModelElement<?>) node.getData();
@@ -65,17 +64,33 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 				dirty.add(e);
 			}
 		}
+		
+		lastValue = null;
+		for(LayoutEntity e : entitiesToLayout) {
+			GraphNode node = (GraphNode) e.getGraphData();
+			ModelElement<?> element = (ModelElement<?>) node.getData();
+			if(element instanceof ValueModel){
+				if(lastValue == null)
+					e.setLocationInLayout(Constants.MARGIN, Constants.MARGIN);
+				else
+					e.setLocationInLayout(lastValue.getXInLayout() + lastValue.getWidthInLayout() + Constants.OBJECT_PADDING, Constants.MARGIN);
+				lastValue = e;
+			}
+		}
 
-
+		//refY = lastValue == null ? Constants.MARGIN : lastValue.getYInLayout() + lastValue.getHeightInLayout() + Constants.OBJECT_PADDING;
+		refY = Constants.MARGIN*4;
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement<?> element = (ModelElement<?>) node.getData();
 			// TODO values on top
 			
-			if(element instanceof VariableModel<?>){
-				setLocation(e, Constants.MARGIN + x, refY);
+//			if(element instanceof VariableModel<?>){
+//				setLocation(e, Constants.MARGIN + x, refY);
 
 				if(element instanceof ReferenceModel) {
+					setLocation(e, Constants.MARGIN + x, refY);
+					
 					EntityModel<?> target = ((ReferenceModel) element).getModelTarget();
 					LayoutEntity targetE = map.get(target);
 					if(targetE == null) {
@@ -147,7 +162,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 					}
 				}
-			}
+//			}
 		}
 		
 		// loose entities

@@ -3,6 +3,7 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Observable;
 
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
@@ -15,8 +16,6 @@ public class CallStackModel {
 	public CallStackModel() {
 		stack = new ArrayList<>();
 	}
-
-
 	
 	public int handle(IStackFrame[] stackFrames) {
 		assert stackFrames != null;

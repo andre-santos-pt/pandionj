@@ -9,6 +9,7 @@ public class ClassInfo {
 	
 	private String name;
 	private VisibilityInfo visibility;
+	private List<FieldInfo> fields;
 	private List<MethodInfo> methods;
 	
 	public ClassInfo(String name, VisibilityInfo visibility) {
@@ -17,7 +18,12 @@ public class ClassInfo {
 		
 		this.name = name;
 		this.visibility = visibility;
+		fields = new ArrayList<>();
 		methods = new ArrayList<>();
+	}
+
+	public void addField(FieldInfo f) {
+		fields.add(f);
 	}
 	
 	public void addMethod(MethodInfo m) {

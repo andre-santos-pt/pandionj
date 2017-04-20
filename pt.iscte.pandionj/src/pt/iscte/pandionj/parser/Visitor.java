@@ -7,12 +7,14 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Assignment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.LineComment;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 
 public class Visitor extends ASTVisitor {
 
@@ -22,6 +24,17 @@ public class Visitor extends ASTVisitor {
 	public boolean visit(TypeDeclaration node) {
 		if(info == null)
 			info = new ClassInfo(node.resolveBinding().getQualifiedName(), VisibilityInfo.from(node));
+		
+		
+		for(FieldDeclaration f : node.getFields()) {
+			if(!Modifier.isStatic(f.getModifiers())) {
+				for(Object o : f.fragments()) {
+					VariableDeclarationFragment frag = (VariableDeclarationFragment) o;
+					info.addField(new FieldInfo(frag.getName().toString()));
+				}
+			}
+
+		}
 
 		return true;
 	}
@@ -49,7 +62,6 @@ public class Visitor extends ASTVisitor {
 
 	private class AssignmentVisitor extends ASTVisitor {
 
-
 		boolean containsFieldAssignments = false;
 		List<String> params = new ArrayList<>();
 
@@ -57,8 +69,6 @@ public class Visitor extends ASTVisitor {
 		public boolean visit(SingleVariableDeclaration node) {
 			if(node.getParent() instanceof MethodDeclaration)
 				params.add(node.resolveBinding().getType().getQualifiedName());
-
-
 			return true;
 		}
 
