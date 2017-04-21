@@ -39,7 +39,6 @@ public class ArrayReferenceModel extends ArrayModel {
 						getStackFrame().objectReferenceChanged();
 					}
 				});
-				
 			}
 		}
 		catch(DebugException e) {
@@ -72,69 +71,14 @@ public class ArrayReferenceModel extends ArrayModel {
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
-				for(ReferenceModel r : references)
-					r.update(step);
-		//		Object[][] values = (Object[][]) getValues();
-
+		for(ReferenceModel r : references)
+			r.update(step);
+		
 		// TODO review
 		setChanged();
 		notifyObservers();
 	}
 
-	public int getLength() {
-		return references.size();
-	}
-
-
-
-	//	@Override // TODO refazer
-	//	public Object[] getValues() {
-	//		try {
-	//			//			IJavaValue[] values = entity.getValues();
-	//			//			int[] dims = new int[getDimensions()];
-	//			//			for(int i = 0; i < dims.length; i++)
-	//			//				dims[i] = getLength();
-	//
-	//			//			Object array = Array.newInstance(Object.class, dims);
-	//			Object[] array = new Object[getLength()];
-	//
-	//			//			Object[][] v = new Object[values.length][];
-	//
-	//			IJavaType t = entity.getJavaType();
-	//			while(t instanceof IJavaArrayType) {
-	//				int len = entity.getLength();
-	//				for(int i = 0; i < len; i++) {
-	//					IJavaValue[] line = ((IJavaArray) entity.getValue(i)).getValues();
-	//					t = ((IJavaArrayType) t).getComponentType();
-	//					if(t instanceof IJavaArrayType) {
-	//						array[i] = new Object[line.length];
-	//					}
-	//					else {
-	//						if(PrimitiveType.isPrimitive(t.getName())) {
-	//							Object[] values = ArrayPrimitiveModel.getPrimitiveWrapperValues(line, getComponentType());
-	//							array[i] = values;
-	//						}
-	//						else {
-	//							Object[] values = new Object[line.length];
-	//							for(int j = 0; j < values.length; j++)
-	//								values[j] = line[j].isNull() ? null : line[j].getValueString();
-	//						}
-	//					}
-	//				}
-	//				t = ((IJavaArrayType) t).getComponentType();
-	//			}
-	//
-	//			for(int i = 0; i < getLength(); i++) {
-	//				IJavaValue[] line = ((IJavaArray) elements[i]).getValues();
-	//				Object[] values = ArrayPrimitiveModel.getPrimitiveWrapperValues(line, getComponentType());
-	//				Array.set(array, i, values);
-	//			}
-	//			return (Object[]) array;
-	//		} catch (DebugException e) {
-	//			e.printStackTrace();
-	//			return null;
-	//		}
-	//	}
 
 	public String getElementString(int i) {
 		assert i >= 0 && i < references.size();

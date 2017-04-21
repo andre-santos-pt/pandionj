@@ -27,14 +27,14 @@ import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.model.ReferenceModel;
-import pt.iscte.pandionj.model.ValueModel;
+import pt.iscte.pandionj.model.VariableModel;
 
 public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 
 	// index model -> layout
 	private Map<ModelElement<?>, LayoutEntity> map = new WeakHashMap<>();
 	private Set<LayoutEntity> dirty = new HashSet<>();
-	private double refY = Constants.MARGIN*4;
+	private double refY;
 	private LayoutEntity lastValue;
 	
 	private void setLocation(LayoutEntity e, double x, double y) {
@@ -65,28 +65,27 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 			}
 		}
 		
-		lastValue = null;
-		for(LayoutEntity e : entitiesToLayout) {
-			GraphNode node = (GraphNode) e.getGraphData();
-			ModelElement<?> element = (ModelElement<?>) node.getData();
-			if(element instanceof ValueModel){
-				if(lastValue == null)
-					e.setLocationInLayout(Constants.MARGIN, Constants.MARGIN);
-				else
-					e.setLocationInLayout(lastValue.getXInLayout() + lastValue.getWidthInLayout() + Constants.OBJECT_PADDING, Constants.MARGIN);
-				lastValue = e;
-			}
-		}
+//		lastValue = null;
+//		for(LayoutEntity e : entitiesToLayout) {
+//			GraphNode node = (GraphNode) e.getGraphData();
+//			ModelElement<?> element = (ModelElement<?>) node.getData();
+//			if(element instanceof ValueModel){
+//				if(lastValue == null)
+//					e.setLocationInLayout(Constants.MARGIN, Constants.MARGIN);
+//				else
+//					e.setLocationInLayout(lastValue.getXInLayout() + lastValue.getWidthInLayout() + Constants.OBJECT_PADDING, Constants.MARGIN);
+//				lastValue = e;
+//			}
+//		}
 
 		//refY = lastValue == null ? Constants.MARGIN : lastValue.getYInLayout() + lastValue.getHeightInLayout() + Constants.OBJECT_PADDING;
-		refY = Constants.MARGIN*4;
+		refY = Constants.MARGIN;
 		for(LayoutEntity e : entitiesToLayout) {
 			GraphNode node = (GraphNode) e.getGraphData();
 			ModelElement<?> element = (ModelElement<?>) node.getData();
-			// TODO values on top
 			
-//			if(element instanceof VariableModel<?>){
-//				setLocation(e, Constants.MARGIN + x, refY);
+			if(element instanceof VariableModel<?>){
+				setLocation(e, Constants.MARGIN + x, refY);
 
 				if(element instanceof ReferenceModel) {
 					setLocation(e, Constants.MARGIN + x, refY);
@@ -162,7 +161,7 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 					}
 				}
-//			}
+			}
 		}
 		
 		// loose entities

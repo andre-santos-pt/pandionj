@@ -10,6 +10,7 @@ import pt.iscte.pandionj.figures.ValueFigure;
 import pt.iscte.pandionj.parser.variable.FixedValue;
 import pt.iscte.pandionj.parser.variable.Gatherer;
 import pt.iscte.pandionj.parser.variable.MostWantedHolder;
+import pt.iscte.pandionj.parser.variable.Stepper.ArrayIterator;
 import pt.iscte.pandionj.parser.variable.Variable;
 
 public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
@@ -17,8 +18,8 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 		FIXED_VALUE {
 			public String toString() { return "Fixed Value";}
 		},
-		STEPPER {
-			public String toString() { return "Stepper";}
+		ARRAY_ITERATOR {
+			public String toString() { return "Array Index Iterator";}
 		},
 		GATHERER {
 			public String toString() { return "Gatherer";}
@@ -33,6 +34,7 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 		static Role matchRole(Variable v) {
 			if(v instanceof FixedValue) 			return FIXED_VALUE;
 			else if(v instanceof Gatherer)			return GATHERER;
+			else if(v instanceof ArrayIterator)		return ARRAY_ITERATOR;
 			else if(v instanceof MostWantedHolder)	return MOST_WANTED_HOLDER;
 			else									return NONE;
 		}
@@ -75,5 +77,11 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 			return false;
 		}
 	}
+
+	public Role getRole() {
+		return role;
+	}
+
+	
 	
 }

@@ -16,6 +16,7 @@ import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.model.ValueModel.Role;
 
 public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArrayModel {
 
@@ -28,9 +29,9 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 
 	private int dimensions;
 	private String componentType;
-	
-	// TODO array vars
 	private Map<String, ValueModel> vars;
+	
+	
 	private String varError;
 	
 	ArrayModel(IJavaArray array, StackFrameModel model) {
@@ -95,7 +96,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		return dimensions;
 	}
 	
-	static int getDimensions(IJavaArray array) {
+	private static int getDimensions(IJavaArray array) {
 		int d = 0;
 		try {
 			IJavaType t = array.getJavaType();
@@ -156,12 +157,17 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	
 	
 	
-	
-	
-	
 	public void addVar(ValueModel v) {
+		assert v.getRole().equals(Role.ARRAY_ITERATOR);
 		if(!vars.containsKey(v.getName())) {
 			vars.put(v.getName(), v);
+			v.addObserver((o,a) -> {
+				if(v.isOutOfScope()) {
+					vars.remove(v.getName()); 
+					setChanged();
+					notifyObservers(v);
+				}
+			});
 			setChanged();
 			notifyObservers(v);
 		}
@@ -191,14 +197,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		for(int i = 0; i < values.length-1; i++)
 			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
 				return false;
-//		Object[] values = getValues();
-//		for(Object o : values)
-//			if(o == null)
-//				return false;
-//		
-//		for(int i = 0; i < values.length-1; i++)
-//			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
-//				return false;
+		
 		return true;
 	}
 	

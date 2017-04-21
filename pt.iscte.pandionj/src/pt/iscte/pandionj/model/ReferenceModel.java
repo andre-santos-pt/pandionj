@@ -12,9 +12,6 @@ import org.eclipse.zest.core.widgets.Graph;
 import pt.iscte.pandionj.figures.ReferenceFigure;
 
 public class ReferenceModel extends VariableModel<IJavaObject> {
-
-
-	
 	private NullModel nullModel;
 	
 	ReferenceModel(IJavaVariable var, boolean isInstance, StackFrameModel model) throws DebugException {
@@ -22,8 +19,6 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 		assert var.getValue() instanceof IJavaObject;
 	}
 
-	
-	
 	public EntityModel<?> getModelTarget() {
 		IJavaObject target = getContent();
 		return target.isNull() ? getNullInstance() : getStackFrame().getObject(target, true);

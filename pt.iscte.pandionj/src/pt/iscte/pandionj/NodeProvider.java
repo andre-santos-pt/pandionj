@@ -1,6 +1,7 @@
 package pt.iscte.pandionj;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -20,6 +21,8 @@ import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.model.ReferenceModel;
 import pt.iscte.pandionj.model.StackFrameModel;
+import pt.iscte.pandionj.model.ValueModel;
+import pt.iscte.pandionj.model.ValueModel.Role;
 import pt.iscte.pandionj.model.VariableModel;
 
 class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGraphEntityContentProvider
@@ -43,7 +46,13 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			return EMPTY;
 
 		List<ModelElement<?>> elements = new ArrayList<>(model.getVariables());
-
+		Iterator<ModelElement<?>> it = elements.iterator();
+		while(it.hasNext()) {
+			VariableModel<?> v = (VariableModel<?>) it.next();
+			if((v instanceof ValueModel && ((ValueModel) v).getRole() == Role.ARRAY_ITERATOR))
+				it.remove();
+		}
+		
 		for(ModelElement<?> e : elements.toArray(new ModelElement[elements.size()])) {
 			if(e instanceof ReferenceModel) {
 				EntityModel<?> t = ((ReferenceModel) e).getModelTarget();
@@ -58,7 +67,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 					for(ReferenceModel r : arrayElements)
 						elements.add(r.getModelTarget());
 				}
-				else 
+				else
 					elements.add(t);
 			}
 		}

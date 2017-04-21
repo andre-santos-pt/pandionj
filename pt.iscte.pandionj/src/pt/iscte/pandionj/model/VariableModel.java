@@ -42,6 +42,7 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 	protected IJavaVariable variable;
 	private String name;
 	private final boolean isInstance;
+	private boolean outOfScope;
 	
 	private List<T> history;
 	
@@ -121,6 +122,16 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 	
 	public List<T> getHistory() {
 		return Collections.unmodifiableList(history);
+	}
+
+	public void setOutOfScope() {
+		outOfScope = true;
+		setChanged();
+		notifyObservers();
+	}
+
+	public boolean isOutOfScope() {
+		return outOfScope;
 	}
 
 }

@@ -7,7 +7,6 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
-import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
@@ -28,6 +27,10 @@ public class ArrayPrimitiveModel extends ArrayModel {
 		} catch (DebugException e1) {
 			e1.printStackTrace();
 		}
+	}
+	
+	public boolean isDecimal() {
+		return getComponentType().matches("float|double");
 	}
 	
 	@Override
@@ -60,97 +63,95 @@ public class ArrayPrimitiveModel extends ArrayModel {
 		return elements[i].toString();
 	}
 
-	static Object[] getPrimitiveWrapperValues(IJavaValue[] elements, String type) {
-		Object[] array = new Object[elements.length];
-		switch(type) {
-		case "byte":
-			for(int i = 0; i < elements.length; i++)
-				array[i] = ((IJavaPrimitiveValue) elements[i]).getByteValue();
-			break;
-		
-		case "short":
-			for(int i = 0; i < elements.length; i++)
-				array[i] = ((IJavaPrimitiveValue) elements[i]).getShortValue();
-			break;
-		
-		case "int":
-			for(int i = 0; i < elements.length; i++)
-				array[i] = ((IJavaPrimitiveValue) elements[i]).getIntValue();
-			break;
-		
-		case "long":
-			for(int i = 0; i < elements.length; i++)
-				array[i] = ((IJavaPrimitiveValue) elements[i]).getLongValue();
-			break;
-			
-		case "double":
-			for(int i = 0; i < elements.length; i++)
-				array[i] = ((IJavaPrimitiveValue) elements[i]).getDoubleValue();
-			break;
-		
-		case "float":
-			for(int i = 0; i < elements.length; i++)
-				array[i] = ((IJavaPrimitiveValue) elements[i]).getFloatValue();
-			break;
-		
-		case "char":
-			for(int i = 0; i < elements.length; i++)
-				array[i] = ((IJavaPrimitiveValue) elements[i]).getCharValue();
-			break;
-		
-		case "boolean":
-			for(int i = 0; i < elements.length; i++)
-				array[i] = ((IJavaPrimitiveValue) elements[i]).getBooleanValue();
-			break;	
-			
-		default: throw new AssertionError();
-		}
-		return array;
-	}
+//	static Object[] getPrimitiveWrapperValues(IJavaValue[] elements, String type) {
+//		Object[] array = new Object[elements.length];
+//		switch(type) {
+//		case "byte":
+//			for(int i = 0; i < elements.length; i++)
+//				array[i] = ((IJavaPrimitiveValue) elements[i]).getByteValue();
+//			break;
+//		
+//		case "short":
+//			for(int i = 0; i < elements.length; i++)
+//				array[i] = ((IJavaPrimitiveValue) elements[i]).getShortValue();
+//			break;
+//		
+//		case "int":
+//			for(int i = 0; i < elements.length; i++)
+//				array[i] = ((IJavaPrimitiveValue) elements[i]).getIntValue();
+//			break;
+//		
+//		case "long":
+//			for(int i = 0; i < elements.length; i++)
+//				array[i] = ((IJavaPrimitiveValue) elements[i]).getLongValue();
+//			break;
+//			
+//		case "double":
+//			for(int i = 0; i < elements.length; i++)
+//				array[i] = ((IJavaPrimitiveValue) elements[i]).getDoubleValue();
+//			break;
+//		
+//		case "float":
+//			for(int i = 0; i < elements.length; i++)
+//				array[i] = ((IJavaPrimitiveValue) elements[i]).getFloatValue();
+//			break;
+//		
+//		case "char":
+//			for(int i = 0; i < elements.length; i++)
+//				array[i] = ((IJavaPrimitiveValue) elements[i]).getCharValue();
+//			break;
+//		
+//		case "boolean":
+//			for(int i = 0; i < elements.length; i++)
+//				array[i] = ((IJavaPrimitiveValue) elements[i]).getBooleanValue();
+//			break;	
+//			
+//		default: throw new AssertionError();
+//		}
+//		return array;
+//	}
 	
 //	public Object[] getValues() {
 //		return getPrimitiveWrapperValues(elements, getComponentType());
 //	}
 
 
-	public int getInt(int i) {
-		if(i < 0 || i >= getLength())
-			throw new IndexOutOfBoundsException(Integer.toString(i));
-
-		try {
-			return Integer.parseInt(elements[i].getValueString());
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return 0;
-		}
-		catch (NumberFormatException e) {
-			throw new RuntimeException("invalid operation");
-		}
-	}
+//	public int getInt(int i) {
+//		if(i < 0 || i >= getLength())
+//			throw new IndexOutOfBoundsException(Integer.toString(i));
+//
+//		try {
+//			return Integer.parseInt(elements[i].getValueString());
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return 0;
+//		}
+//		catch (NumberFormatException e) {
+//			throw new RuntimeException("invalid operation");
+//		}
+//	}
 
 	
 	
-	private Class<?> matchType(IJavaType componentType) {
-		try {
-			switch(componentType.getName())  {
-			case "byte": return Byte.class;
-			case "short": return Short.class;
-			case "int": return Integer.class;
-			case "long": return Long.class;
-			case "float": return Float.class;
-			case "double": return Double.class;
-			case "boolean": return Boolean.class;
-			case "char": return Character.class;
-			default: throw new AssertionError();
-			}
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
-
-		return null;
-	}
+//	private Class<?> matchType(IJavaType componentType) {
+//		try {
+//			switch(componentType.getName())  {
+//			case "byte": return Byte.class;
+//			case "short": return Short.class;
+//			case "int": return Integer.class;
+//			case "long": return Long.class;
+//			case "float": return Float.class;
+//			case "double": return Double.class;
+//			case "boolean": return Boolean.class;
+//			case "char": return Character.class;
+//			default: throw new AssertionError();
+//			}
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//		}
+//
+//		return null;
+//	}
 	
-	public boolean isDecimal() {
-		return getComponentType().matches("float|double");
-	}
+
 }

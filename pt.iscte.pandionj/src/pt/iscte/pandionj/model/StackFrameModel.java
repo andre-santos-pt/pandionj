@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
 
+import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.parser.JavaSourceParser;
@@ -45,7 +46,6 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 
 public class StackFrameModel extends Observable {
-	
 	interface ObserverTemp {
 		void updateEvent();
 		void newElement(ModelElement<?> e);
@@ -62,13 +62,8 @@ public class StackFrameModel extends Observable {
 		vars = new LinkedHashMap<>();
 		objects = new HashMap<>();
 		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
-//		try {
 //			System.out.println("SRC :" + frame.getSourcePath() + " " + frame.isPublic());
-			codeAnalysis = ParserAPI.parseFile(srcFile.getRawLocation().toString());
-//		} 
-//		catch (DebugException e) {
-//			e.printStackTrace();
-//		}
+		codeAnalysis = ParserManager.getParserResult(srcFile);
 	}
 
 	public IStackFrame getStackFrame() {
@@ -91,12 +86,9 @@ public class StackFrameModel extends Observable {
 	public Variable getLocalVariable(String name) {
 		try {
 			int line = frame.getLineNumber();
-			Collection<Variable> collection = codeAnalysis.variableRoles.get(name);
-			for(Variable v : collection) {
-				if(v.name.equals(name) && line >= v.scopeLineStart && line <= v.scopeLineEnd) {
+			for(Variable v : codeAnalysis.variableRoles.get(name))
+				if(v.scopeIncludesLine(line))
 					return v;
-				}
-			}
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -129,19 +121,20 @@ public class StackFrameModel extends Observable {
 			// TODO getThis
 			Iterator<Entry<String, VariableModel<?>>> iterator = vars.entrySet().iterator();
 			while(iterator.hasNext()) {
-				String var = iterator.next().getKey();
+				Entry<String, VariableModel<?>> e = iterator.next();
+				String varName = e.getKey();
 				boolean contains = false;
 				for(IVariable v : frame.getVariables()) {
-					String varName = v.getName();
-					if(varName.equals(var))
+					if(v.getName().equals(varName))
 						contains = true;
-					else if(varName.equals("this")) {
+					else if(v.getName().equals("this")) {
 						for (IVariable iv : v.getValue().getVariables())
-							if(iv.getName().equals(var))
+							if(iv.getName().equals(varName))
 								contains = true;
 					}
 				}
 				if(!contains) {
+					e.getValue().setOutOfScope();
 					iterator.remove();
 					setChanged();
 					notifyObservers();
@@ -194,7 +187,7 @@ public class StackFrameModel extends Observable {
 		}
 	}
 
-	private void handleArrayIterators() {
+	private void handleArrayIterators() throws DebugException {
 		for (Entry<String, VariableModel<?>> e : vars.entrySet()) {
 			if(e.getValue() instanceof ReferenceModel) {
 				ReferenceModel refModel = (ReferenceModel) e.getValue();
@@ -210,11 +203,10 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	private Collection<String> findArrayIterators(String pointerVar) {
+	private Collection<String> findArrayIterators(String pointerVar) throws DebugException {
 		List<String> iterators = new ArrayList<>(2);
 		for (Variable var : codeAnalysis.variableRoles.values()) {
-
-			if(var instanceof ArrayIterator) {
+			if(var.scopeIncludesLine(frame.getLineNumber()) && var instanceof ArrayIterator) {
 				ArrayIterator it = (ArrayIterator) var;
 				Multimap<Integer, Variable> arrayDimensions = it.getArrayDimensions();
 				Collection<Variable> collection = arrayDimensions.get(1);
@@ -235,45 +227,45 @@ public class StackFrameModel extends Observable {
 
 
 
-	private static class PathVisitor implements SiblingVisitor {
-		ArrayList<String> path;
-		boolean found;
-		EntityModel<?> target;
+//	private static class PathVisitor implements SiblingVisitor {
+//		ArrayList<String> path;
+//		boolean found;
+//		EntityModel<?> target;
+//
+//		public PathVisitor(EntityModel<?> target) {
+//			path = new ArrayList<>();
+//			this.target = target;
+//			found = false;
+//		}
+//
+//		public void visit(EntityModel<?> o, ObjectModel parent, int index, int depth, String field) {
+//			if(!found) {
+//				while(path.size() > 0 && path.size() >= depth)
+//					path.remove(path.size()-1);
+//
+//				if(field != null)
+//					path.add(field);
+//
+//				if(o.equals(target))
+//					found = true;
+//			}
+//		}
+//	}
 
-		public PathVisitor(EntityModel<?> target) {
-			path = new ArrayList<>();
-			this.target = target;
-			found = false;
-		}
-
-		public void visit(EntityModel<?> o, ObjectModel parent, int index, int depth, String field) {
-			if(!found) {
-				while(path.size() > 0 && path.size() >= depth)
-					path.remove(path.size()-1);
-
-				if(field != null)
-					path.add(field);
-
-				if(o.equals(target))
-					found = true;
-			}
-		}
-	}
-
-	public String getReferenceNameTo2(EntityModel<?> object) {
-		for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
-			if(e.getValue() instanceof ReferenceModel) {
-				EntityModel<?> el = ((ReferenceModel) e.getValue()).getModelTarget();
-				if(el instanceof ObjectModel) {
-					PathVisitor v = new PathVisitor(object);
-					((ObjectModel) el).traverseSiblings(v, false);
-					if(v.found)
-						return  v.path.isEmpty() ? e.getKey() : e.getKey() + "." + String.join(".", v.path);
-				}
-			}
-		}
-		return null;
-	}
+//	public String getReferenceNameTo2(EntityModel<?> object) {
+//		for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
+//			if(e.getValue() instanceof ReferenceModel) {
+//				EntityModel<?> el = ((ReferenceModel) e.getValue()).getModelTarget();
+//				if(el instanceof ObjectModel) {
+//					PathVisitor v = new PathVisitor(object);
+//					((ObjectModel) el).traverseSiblings(v, false);
+//					if(v.found)
+//						return  v.path.isEmpty() ? e.getKey() : e.getKey() + "." + String.join(".", v.path);
+//				}
+//			}
+//		}
+//		return null;
+//	}
 
 	public Collection<ReferenceModel> getReferencesTo(ModelElement<?> object) {
 		List<ReferenceModel> refs = new ArrayList<>(3);

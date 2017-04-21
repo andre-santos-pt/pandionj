@@ -84,8 +84,8 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 
 	@Override
 	public Dimension getPreferredSize(int wHint, int hHint) { // (positions.get(0).getBounds().width + ARRAY_POSITION_SPACING*2)
-		int varSpace = vars.size() * 20 * ARROW_EDGE * 2;
-		return super.getPreferredSize(wHint, hHint).expand(0, + varSpace);
+		int varSpace = vars.size() * 40;
+		return super.getPreferredSize(wHint, hHint).expand(0, + 50);
 	}
 
 
@@ -147,7 +147,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 	}
 
 	private void addVariable(ValueModel varModel) {
-
 		Display.getDefault().asyncExec(() -> setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false));
 		varModel.registerObserver(new Observer() {
 			@Override
@@ -160,6 +159,12 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		});
 	}
 
+	private void removeVariable(ValueModel varModel) {
+		vars.remove(varModel.getName());
+		Display.getDefault().syncExec(() -> repaint());
+	}
+	
+	
 	private void setVar(String id, int index, Object bound, boolean isBar) {
 		ensureOutOfBounds(index);
 
@@ -199,7 +204,11 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			}
 		}
 		else if(arg instanceof ValueModel) {
-			addVariable((ValueModel) arg);
+			ValueModel v = (ValueModel) arg;
+			if(v.isOutOfScope())
+				removeVariable(v);
+			else
+				addVariable(v);
 		}
 		else if(arg instanceof RuntimeException) {
 			String v = ((RuntimeException) arg).getMessage();
@@ -209,10 +218,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			}
 		}
 	}
-
-
-
-
 
 
 
@@ -266,12 +271,9 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 					a = a.getTranslated(0, ARROW_EDGE*2);
 					graphics.drawLine(to, a);
 				}
-
-
 			}
 			y += ARROW_EDGE*2;
 		}
-
 	}
 
 
