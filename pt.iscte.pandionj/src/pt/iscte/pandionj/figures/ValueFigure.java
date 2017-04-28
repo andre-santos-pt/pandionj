@@ -54,7 +54,6 @@ public class ValueFigure extends Figure {
 	public ValueFigure(ValueModel model, Role role) {
 		this.model = model;
 
-
 		GridLayout layout = new GridLayout(3, false);
 		setLayoutManager(layout);
 

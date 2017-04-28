@@ -1,9 +1,9 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Pandionj2
+Bundle-Name: PandionJ
 Bundle-SymbolicName: pt.iscte.pandionj;singleton:=true
-Bundle-Version: 1.0.0.qualifier
-Require-Bundle: pt.iscte.pandionj.parser;bundle-version="1.0.0",
+Bundle-Version: 0.1
+Require-Bundle: pt.iscte.pandionj.parser,
  org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.zest.layouts;bundle-version="1.1.200",

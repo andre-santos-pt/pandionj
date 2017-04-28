@@ -45,7 +45,6 @@ public class Visitor extends ASTVisitor {
 		if(((TypeDeclaration) node.getParent()).isPackageMemberTypeDeclaration()) {
 			AssignmentVisitor v = new AssignmentVisitor();
 			node.accept(v);
-
 			if(instanceMember) {
 				MethodInfo m = new MethodInfo(
 						node.getName().getIdentifier(), 

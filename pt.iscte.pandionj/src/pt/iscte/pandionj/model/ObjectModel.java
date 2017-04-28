@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.model;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -33,6 +34,7 @@ import org.eclipse.zest.core.widgets.Graph;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
+import com.sun.jdi.ClassNotLoadedException;
 
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IObjectModel;
@@ -73,7 +75,13 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
-
+				try {
+					var.getJavaType();
+				}
+				catch(DebugException e) {
+					continue;
+				}
+				
 				if(!var.isStatic()) {
 					String name = var.getName();
 					if(var.getValue() instanceof IJavaObject) {
@@ -96,7 +104,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 						});
 						values.put(name, val);
 					}
-					
 					if(var.getReferenceTypeName().equals(object.getReferenceTypeName()))
 						refsOfSameType.add(var.getName());
 				}

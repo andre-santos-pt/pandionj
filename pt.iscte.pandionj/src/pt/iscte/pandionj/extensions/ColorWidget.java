@@ -12,13 +12,14 @@ public class ColorWidget implements IObjectWidgetExtension {
 
 	@Override
 	public boolean accept(String objectType) {
-		return objectType.equals(Color.class.toString());
+		return objectType.equals(Color.class.getName().toString());
 	}
 
 	@Override
 	public IFigure createFigure(IObjectModel e) {
-		int r = e.getInt("getRed");
+		int r = 255; //e.getInt("getRed");
 		Label label = new Label(r + ",");
+		label.setOpaque(true);
 		label.setBackgroundColor(new org.eclipse.swt.graphics.Color(null, r, r, r));
 		return label;
 	}

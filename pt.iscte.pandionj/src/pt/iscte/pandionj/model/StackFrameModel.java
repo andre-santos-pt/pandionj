@@ -13,6 +13,10 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Plugin;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IVariable;
@@ -31,6 +35,7 @@ import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
 
+import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
@@ -62,7 +67,6 @@ public class StackFrameModel extends Observable {
 		vars = new LinkedHashMap<>();
 		objects = new HashMap<>();
 		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
-//			System.out.println("SRC :" + frame.getSourcePath() + " " + frame.isPublic());
 		codeAnalysis = ParserManager.getParserResult(srcFile);
 	}
 
@@ -293,18 +297,19 @@ public class StackFrameModel extends Observable {
 						e = new ArrayPrimitiveModel((IJavaArray) obj, this);
 				}
 				else {
-					// TODO cache
+					// TODO cache, problem instance
 					Visitor visitor = new Visitor();
 					IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
+					
+					Class<?> c;
+					try {
+						c = Class.forName(obj.getJavaType().getName());
+						System.out.println(c);
+					} catch (ClassNotFoundException e1) {
+						e1.printStackTrace();
+					}
 					JavaSourceParser.createFromFile(srcFile.getRawLocation().toString()).parse(visitor);
-				
 					e = new ObjectModel(obj, this, visitor.info);
-					//					e.registerObserver(new Observer() {
-					//						public void update(Observable o, Object arg) {
-					//							setChanged();
-					//							notifyObservers();
-					//						}
-					//					});
 				}
 				if(addToModel) {
 					objects.put(obj.getUniqueId(), e);
