@@ -4,13 +4,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.jdt.core.IType;
 
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensibility.IWidgetExtension;
+import pt.iscte.pandionj.extensions.ColorAguia;
 import pt.iscte.pandionj.extensions.ColorWidget;
+import pt.iscte.pandionj.extensions.ImageAguia;
 import pt.iscte.pandionj.extensions.ImageWidget;
+import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ObjectModel;
@@ -23,13 +28,37 @@ public class ExtensionManager {
 	
 	public static final IWidgetExtension<IEntityModel> NO_EXTENSION = new NullExtension();
 	
+	public static final IObjectWidgetExtension NO_EXTENSION_OBJECT = new ObjectNullExtension();
+	
 	private static class NullExtension implements IWidgetExtension<IEntityModel> {
 		@Override
 		public IFigure createFigure(IEntityModel e) {
 			return null;
+		}		
+	}
+	
+	private static class ObjectNullExtension implements IObjectWidgetExtension {
+		
+
+		@Override
+		public boolean accept(IType objectType) {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public IFigure createFigure(IObjectModel e) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+		@Override
+		public boolean includeMethod(String methodName) {
+			return true;
 		}
 		
 	}
+	
 	
 	static {
 		arrayExtensions = new ArrayList<>();
@@ -39,6 +68,9 @@ public class ExtensionManager {
 		objectExtensions = new ArrayList<>();
 		objectExtensions.add(new StringWidget());
 		objectExtensions.add(new ColorWidget());
+		objectExtensions.add(new IterableWidget());
+		objectExtensions.add(new ColorAguia());
+		objectExtensions.add(new ImageAguia());
 	}
 	
 	
@@ -61,11 +93,11 @@ public class ExtensionManager {
 
 
 	private static IWidgetExtension<?> getCompatibleExtension(ObjectModel m) {
-		String type = m.getType();
+		IType type = m.getType();
 		for(IObjectWidgetExtension ext : ExtensionManager.objectExtensions)
 			if(ext.accept(type))
 				return ext;
-		return NO_EXTENSION;
+		return NO_EXTENSION_OBJECT;
 	}
 	
 }

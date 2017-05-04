@@ -21,7 +21,7 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 
 	public EntityModel<?> getModelTarget() {
 		IJavaObject target = getContent();
-		return target.isNull() ? getNullInstance() : getStackFrame().getObject(target, true);
+		return target.isNull() ? getNullInstance() : getStackFrame().getObject(target, false);
 	}
 
 	public boolean isNull() {

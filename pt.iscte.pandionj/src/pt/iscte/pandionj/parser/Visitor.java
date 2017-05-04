@@ -22,6 +22,7 @@ public class Visitor extends ASTVisitor {
 
 	@Override
 	public boolean visit(TypeDeclaration node) {
+		System.out.println(node.getParent().getClass());
 		if(info == null)
 			info = new ClassInfo(node.resolveBinding().getQualifiedName(), VisibilityInfo.from(node));
 		

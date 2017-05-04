@@ -1,25 +1,26 @@
 package pt.iscte.pandionj.figures;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.draw2d.ActionEvent;
-import org.eclipse.draw2d.ActionListener;
-import org.eclipse.draw2d.Button;
+import org.eclipse.debug.core.model.IWatchExpressionListener;
+import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.GridLayout;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
@@ -31,9 +32,7 @@ import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
@@ -44,7 +43,6 @@ import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.model.EntityModel;
 import pt.iscte.pandionj.model.ObjectModel;
-import pt.iscte.pandionj.parser.MethodInfo;
 
 public class ObjectFigure extends RoundedRectangle {
 	private Graph graph;
@@ -52,7 +50,7 @@ public class ObjectFigure extends RoundedRectangle {
 	private Map<String, Label> fieldLabels;
 	private Label headerLabel;
 
-	public ObjectFigure(ObjectModel model, Graph graph) {
+	public ObjectFigure(ObjectModel model, Graph graph, IFigure extensionFigure, boolean addMethods) {
 		this.model = model;
 		this.graph = graph;
 		GridLayout layout = new GridLayout(1, false);
@@ -67,137 +65,185 @@ public class ObjectFigure extends RoundedRectangle {
 		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		setBackgroundColor(Constants.OBJECT_COLOR);
 
-		
-		fieldLabels = new HashMap<String, Label>();
-		headerLabel = new Label();
-		headerLabel.setForegroundColor(Constants.OBJECT_HEADER_FONT_COLOR);
-		FontManager.setFont(headerLabel, Constants.OBJECT_HEADER_FONT_SIZE);
-		add(headerLabel);
 
-		model.registerObserver(new Observer() {
-			public void update(Observable o, Object arg) {
-				Display.getDefault().asyncExec(() -> {
-					headerLabel.setText(model.toStringValue());
-				});
-			}
-		});
+		fieldLabels = new HashMap<String, Label>();
+
+		if(extensionFigure == null) {
+			headerLabel = new Label();
+			headerLabel.setForegroundColor(Constants.OBJECT_HEADER_FONT_COLOR);
+			FontManager.setFont(headerLabel, Constants.OBJECT_HEADER_FONT_SIZE);
+			headerLabel.setText(model.toStringValue());
+			add(headerLabel);
+		}
+		else
+			add(extensionFigure);
+
+		//		model.registerObserver(new Observer() {
+		//			public void update(Observable o, Object arg) {
+		//				Display.getDefault().asyncExec(() -> {
+		//					headerLabel.setText(model.toStringValue());
+		//				});
+		//			}
+		//		});
 
 		try {
 			setToolTip(new Label(model.getContent().getJavaType().getName()));
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
-		headerLabel.setText(model.toStringValue());
 
-		Iterator<MethodInfo> methods = model.getMethods();
 
-		while(methods.hasNext()) {
-			Figure methodFig = new Figure();
-			methodFig.setLayoutManager(new FlowLayout());
-			MethodInfo m = methods.next();
-//			Button but = new Button(m.getName());
-//			FontManager.setFont(but, Constants.BUTTON_FONT_SIZE);
-//			but.addActionListener(new ActionListener() {
-//
-//				@Override
-//				public void actionPerformed(ActionEvent e) {
-//					Rectangle r = but.getBounds().getCopy();
-//					org.eclipse.swt.graphics.Point p = graph.toDisplay(r.x,r.y);
-//					IJavaValue ret = null;
-//					String args = "";
-//					if(m.getNumberOfParameters() == 0)
-//						ret = model.invoke(m);
-//					else {
-//						ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), p.x + r.width, p.y, m);
-//						if(prompt.open()) {
-//							IJavaDebugTarget debugTarget = (IJavaDebugTarget) model.getStackFrame().getStackFrame().getDebugTarget();
-//							IJavaValue[] values = null;
-//							try {
-//								values = createValues(m, prompt.values, debugTarget);
-//							} catch (DebugException e1) {
-//								e1.printStackTrace();
-//							}
-//							ret = model.invoke(m, values);
-//							args = String.join(", ", prompt.values);
-//						}
-//					}
-//					if(ret instanceof IJavaObject)
-//						model.getStackFrame().getObject((IJavaObject) ret, true);
-//					else if(ret instanceof IJavaPrimitiveValue)
-//						try {
-//							new ResultDialog(Display.getDefault().getActiveShell(), p.x + r.width, p.y, "(" + args + ") = " + ret.getValueString()).open();
-//						} catch (DebugException e1) {
-//							e1.printStackTrace();
-//						}
-//				}
-//			});
-			
-			Label but = new Label(m.getName() + (m.getNumberOfParameters() == 0 ? "()" : "(...)"));
-			FontManager.setFont(but, Constants.BUTTON_FONT_SIZE);
-			but.addMouseListener(new MouseListener() {
-
-				@Override
-				public void mouseDoubleClicked(org.eclipse.draw2d.MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-
-				@Override
-				public void mousePressed(org.eclipse.draw2d.MouseEvent arg0) {
-					Rectangle r = but.getBounds().getCopy();
-					org.eclipse.swt.graphics.Point p = graph.toDisplay(r.x,r.y);
-					IJavaValue ret = null;
-					String args = "";
-					if(m.getNumberOfParameters() == 0)
-						ret = model.invoke(m);
-					else {
-						ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), p.x, p.y, m);
-						if(prompt.open()) {
-							IJavaDebugTarget debugTarget = (IJavaDebugTarget) model.getStackFrame().getStackFrame().getDebugTarget();
-							IJavaValue[] values = null;
-							try {
-								values = createValues(m, prompt.values, debugTarget);
-							} catch (DebugException e1) {
-								e1.printStackTrace();
-							}
-							ret = model.invoke(m, values);
-							args = String.join(", ", prompt.values);
-						}
-					}
-					if(ret instanceof IJavaObject) {
-						EntityModel<? extends IJavaObject> object = model.getStackFrame().getObject((IJavaObject) ret, true);
-						System.out.println(ret + " == " + object);
-					}
-					else if(ret instanceof IJavaPrimitiveValue)
-						try {
-							new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getName() + "(" + args + ") = " + ret.getValueString()).open();
-						} catch (DebugException e1) {
-							e1.printStackTrace();
-						}
-				}
-
-				@Override
-				public void mouseReleased(org.eclipse.draw2d.MouseEvent arg0) {
-					// TODO Auto-generated method stub
-					
-				}
-				
-			});
-			methodFig.add(but);
-			add(methodFig);
-		}
+		if(addMethods)
+			addMethods(model, graph);
 
 		setPreferredSize(getPreferredSize().expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
 	}
-	
-	
+
+
+	private void addMethods(ObjectModel model, Graph graph) {
+		for(IMethod m : model.getInstanceMethods()) {
+			if(model.includeMethod(m)) {
+				Figure methodFig = new Figure();
+				methodFig.setLayoutManager(new FlowLayout());
+				//			MethodInfo m = methods.next();
+
+
+				Label but = new Label(m.getElementName() + (m.getNumberOfParameters() == 0 ? "()" : "(...)"));
+				FontManager.setFont(but, Constants.BUTTON_FONT_SIZE);
+				but.addMouseListener(new MouseListener() {
+
+					@Override
+					public void mouseDoubleClicked(org.eclipse.draw2d.MouseEvent arg0) {
+						// TODO Auto-generated method stub
+
+					}
+
+					@Override
+					public void mousePressed(org.eclipse.draw2d.MouseEvent arg0) {
+						Rectangle r = but.getBounds().getCopy();
+						org.eclipse.swt.graphics.Point p = graph.toDisplay(r.x,r.y);
+						IJavaValue ret = null;
+						String args = "";
+						if(m.getNumberOfParameters() == 0) {
+							//							ret = model.invoke(m);
+							model.invoke2(m, new IJavaValue[0], new IWatchExpressionListener() {
+
+								@Override
+								public void watchEvaluationFinished(IWatchExpressionResult result) {
+									try {
+										//										ret = (IJavaValue) result.getValue();
+										System.out.println("FINISH EVAL! " + result.getValue().getValueString()); // TODO null
+										
+										processInvocationResult((IJavaValue) result.getValue()); 
+									} catch (DebugException e) {
+										e.printStackTrace();
+									}
+								}
+							});	
+						}
+						else {
+							ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), p.x, p.y, m);
+							if(prompt.open()) {
+								IJavaDebugTarget debugTarget = (IJavaDebugTarget) model.getStackFrame().getStackFrame().getDebugTarget();
+								IJavaValue[] values = null;
+								try {
+									values = createValues(m, prompt.values, debugTarget);
+								} catch (DebugException e1) {
+									e1.printStackTrace();
+								}
+								ret = model.invoke(m, values);
+								args = String.join(", ", prompt.values);
+							}
+						}
+
+
+						if(ret instanceof IJavaObject) {
+							EntityModel<? extends IJavaObject> object = model.getStackFrame().getObject((IJavaObject) ret, true);
+							System.out.println(ret + " == " + object);
+						}
+						else if(ret instanceof IJavaPrimitiveValue) {
+							try {
+								new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
+							} catch (DebugException e1) {
+								e1.printStackTrace();
+							}
+						}
+						model.getStackFrame().update();
+					}
+
+					@Override
+					public void mouseReleased(org.eclipse.draw2d.MouseEvent arg0) {
+						// TODO Auto-generated method stub
+
+					}
+
+				});
+				methodFig.add(but);
+				add(methodFig);
+
+				//			Button but = new Button(m.getName());
+				//			FontManager.setFont(but, Constants.BUTTON_FONT_SIZE);
+				//			but.addActionListener(new ActionListener() {
+				//
+				//				@Override
+				//				public void actionPerformed(ActionEvent e) {
+				//					Rectangle r = but.getBounds().getCopy();
+				//					org.eclipse.swt.graphics.Point p = graph.toDisplay(r.x,r.y);
+				//					IJavaValue ret = null;
+				//					String args = "";
+				//					if(m.getNumberOfParameters() == 0)
+				//						ret = model.invoke(m);
+				//					else {
+				//						ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), p.x + r.width, p.y, m);
+				//						if(prompt.open()) {
+				//							IJavaDebugTarget debugTarget = (IJavaDebugTarget) model.getStackFrame().getStackFrame().getDebugTarget();
+				//							IJavaValue[] values = null;
+				//							try {
+				//								values = createValues(m, prompt.values, debugTarget);
+				//							} catch (DebugException e1) {
+				//								e1.printStackTrace();
+				//							}
+				//							ret = model.invoke(m, values);
+				//							args = String.join(", ", prompt.values);
+				//						}
+				//					}
+				//					if(ret instanceof IJavaObject)
+				//						model.getStackFrame().getObject((IJavaObject) ret, true);
+				//					else if(ret instanceof IJavaPrimitiveValue)
+				//						try {
+				//							new ResultDialog(Display.getDefault().getActiveShell(), p.x + r.width, p.y, "(" + args + ") = " + ret.getValueString()).open();
+				//						} catch (DebugException e1) {
+				//							e1.printStackTrace();
+				//						}
+				//				}
+				//			});
+			}
+		}
+	}
+
+	private void processInvocationResult(IJavaValue ret) {
+		if(ret instanceof IJavaObject) {
+			EntityModel<? extends IJavaObject> object = model.getStackFrame().getObject((IJavaObject) ret, true);
+			System.out.println(ret + " == " + object);
+		}
+//		else if(ret instanceof IJavaPrimitiveValue) {
+//			try {
+//				new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
+//			} catch (DebugException e1) {
+//				e1.printStackTrace();
+//			}
+//		}
+		model.getStackFrame().update();
+	}
+
+
 	// TODO: move to Primitive type
-	private IJavaValue[] createValues(MethodInfo m, String[] values, IJavaDebugTarget debugger) throws DebugException {
+	private IJavaValue[] createValues(IMethod m, String[] values, IJavaDebugTarget debugger) throws DebugException {
 		assert values.length == m.getNumberOfParameters();
 
 		IJavaValue[] v = new IJavaValue[values.length];
 		for(int i = 0; i < v.length; i++) {
-			String pType = m.getParameterType(i);
+			String pType = Signature.toString(m.getParameterTypes()[i]);
 			if(pType.equals(char.class.getName()))			v[i] = debugger.newValue(values[i].charAt(0));
 			else if(pType.equals(boolean.class.getName())) 	v[i] = debugger.newValue(Boolean.parseBoolean(values[i]));
 			else if(pType.equals(byte.class.getName())) 	v[i] = debugger.newValue(Byte.parseByte(values[i]));
@@ -209,11 +255,13 @@ public class ObjectFigure extends RoundedRectangle {
 
 			else if(pType.equals(String.class.getName()) && values[i].matches("\"(.)*\"")) 	
 				v[i] = debugger.newValue(values[i].substring(1, values[i].length()-1));
-			
+
 			else if(values[i].equals("null"))
 				v[i] = debugger.nullValue();
-			else
-				v[i] = (IJavaValue) debugger.findVariable(values[i]).getValue();
+			else {
+				IJavaValue val = (IJavaValue) debugger.findVariable(values[i]);
+				v[i] = val == null ? debugger.nullValue() : val;
+			}
 		}
 
 		return v;
@@ -224,18 +272,18 @@ public class ObjectFigure extends RoundedRectangle {
 		Shell shell;
 		Text[] textFields;
 		String[] values;
-		public ParamsDialog(Shell parent, int x, int y, MethodInfo m) {
+		public ParamsDialog(Shell parent, int x, int y, IMethod m) {
 			shell = new Shell(parent, SWT.PRIMARY_MODAL);
-			shell.setText(m.getName());
-//			org.eclipse.swt.layout.GridLayout layout = new org.eclipse.swt.layout.GridLayout(m.getNumberOfParameters(), true);
-//			layout.marginLeft = 0;
-//			layout.marginTop = 0;
-//			layout.horizontalSpacing = 0;
-//			layout.verticalSpacing = 0;
-			
+			shell.setText(m.getElementName());
+			//			org.eclipse.swt.layout.GridLayout layout = new org.eclipse.swt.layout.GridLayout(m.getNumberOfParameters(), true);
+			//			layout.marginLeft = 0;
+			//			layout.marginTop = 0;
+			//			layout.horizontalSpacing = 0;
+			//			layout.verticalSpacing = 0;
+
 			shell.setLayout(new RowLayout());
 			org.eclipse.swt.widgets.Label label = new org.eclipse.swt.widgets.Label(shell, SWT.NONE);
-			label.setText(m.getName() + " (");
+			label.setText(m.getElementName() + " (");
 			FontManager.setFont(label, Constants.BUTTON_FONT_SIZE);
 
 			textFields = new Text[m.getNumberOfParameters()];
@@ -245,10 +293,11 @@ public class ObjectFigure extends RoundedRectangle {
 					FontManager.setFont(comma, Constants.BUTTON_FONT_SIZE);
 					comma.setText(", ");
 				}
-				String pType = m.getParameterType(i);
+				;
+				String pType = Signature.toString(m.getParameterTypes()[i]);
 				Text text = new org.eclipse.swt.widgets.Text(shell, SWT.BORDER);
 				text.setToolTipText(pType);
-//				text.setLayoutData(new Row(40, 20));
+				//				text.setLayoutData(new Row(40, 20));
 				FontManager.setFont(text, Constants.BUTTON_FONT_SIZE);
 				textFields[i] = text;
 				int ii = i;
@@ -256,7 +305,7 @@ public class ObjectFigure extends RoundedRectangle {
 					public void focusLost(FocusEvent e) {
 						text.setForeground(valid() ? null : Constants.ERROR_COLOR);
 					}
-					
+
 					public void focusGained(FocusEvent e) {
 						text.selectAll();
 					}

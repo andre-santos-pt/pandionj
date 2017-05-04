@@ -13,13 +13,11 @@ import java.util.Observable;
 import java.util.Observer;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.ILog;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Plugin;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IVariable;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
@@ -35,14 +33,10 @@ import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
-import pt.iscte.pandionj.parser.JavaSourceParser;
-import pt.iscte.pandionj.parser.ParserAPI;
 import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
-import pt.iscte.pandionj.parser.Visitor;
 import pt.iscte.pandionj.parser.exception.JavaException;
 import pt.iscte.pandionj.parser.exception.JavaException.ArrayOutOfBounds;
 import pt.iscte.pandionj.parser.variable.Stepper.ArrayIterator;
@@ -59,15 +53,23 @@ public class StackFrameModel extends Observable {
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
 	private Map<Long, EntityModel<?>> objects;
+	private Map<Long, EntityModel<?>> looseObjects;
 	private ParserResult codeAnalysis;
 	private IFile srcFile;
-
+	private IJavaProject javaProject;
+	
 	public StackFrameModel(IJavaStackFrame frame) {
 		this.frame = frame;
 		vars = new LinkedHashMap<>();
 		objects = new HashMap<>();
+		looseObjects = new HashMap<>();
 		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		codeAnalysis = ParserManager.getParserResult(srcFile);
+		
+		IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
+		System.out.println(srcFile.getProject());
+		javaProject = JavaCore.create(srcFile.getProject());
+		  
 	}
 
 	public IStackFrame getStackFrame() {
@@ -284,8 +286,8 @@ public class StackFrameModel extends Observable {
 
 
 
-	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean addToModel) { // TODO remove param?
-		assert !obj.isNull() || !addToModel;
+	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) { // TODO remove param?
+		assert !obj.isNull();
 		try {
 			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
 			if(e == null) {
@@ -298,24 +300,21 @@ public class StackFrameModel extends Observable {
 				}
 				else {
 					// TODO cache, problem instance
-					Visitor visitor = new Visitor();
-					IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
-					
-					Class<?> c;
-					try {
-						c = Class.forName(obj.getJavaType().getName());
-						System.out.println(c);
-					} catch (ClassNotFoundException e1) {
-						e1.printStackTrace();
-					}
-					JavaSourceParser.createFromFile(srcFile.getRawLocation().toString()).parse(visitor);
-					e = new ObjectModel(obj, this, visitor.info);
+//					Visitor visitor = new Visitor();
+//					IJavaClassObject classObject = type.getClassObject();
+//					System.out.println(type.getName().replace('$', '.') + " " + Arrays.toString(type.getSourcePaths(null)));
+//					JavaSourceParser.createFromFile(srcFile.getRawLocation().toString()).parse(visitor);
+					e = new ObjectModel(obj, this, null);
 				}
-				if(addToModel) {
+				
+				if(loose) {
+					looseObjects.put(obj.getUniqueId(), e);
+				}
+				else {
 					objects.put(obj.getUniqueId(), e);
-					setChanged();
-					notifyObservers(e);
 				}
+				setChanged();
+				notifyObservers(e);
 			}
 			return e;
 		}
@@ -404,6 +403,29 @@ public class StackFrameModel extends Observable {
 		notifyObservers();
 	}
 
+	public IJavaProject getJavaProject() {
+		return javaProject;
+	}
+
+	public Collection<EntityModel<?>> getLooseObjects() {
+		return Collections.unmodifiableCollection(looseObjects.values());
+//		Collection<EntityModel<?>> referencedObjects = getReferencedObjects();
+//		List<EntityModel<?>> list = new ArrayList<>();
+//		
+//		for (EntityModel<?> m : objects.values())
+//			if(!referencedObjects.contains(m))
+//				list.add(m);
+//		return list;
+	}
+	
+	private Collection<EntityModel<?>> getReferencedObjects() {
+		List<EntityModel<?>> list = new ArrayList<>();
+		for (VariableModel<?> var : vars.values()) {
+			if(var instanceof ReferenceModel)
+				list.add(((ReferenceModel) var).getModelTarget());
+		}
+		return list;
+	}
 
 
 

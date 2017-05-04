@@ -71,6 +71,8 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 					elements.add(t);
 			}
 		}
+		
+		elements.addAll(model.getLooseObjects());
 		return elements.toArray();
 	}
 

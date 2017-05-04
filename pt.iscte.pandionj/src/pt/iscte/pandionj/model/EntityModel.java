@@ -1,6 +1,7 @@
 package pt.iscte.pandionj.model;
 
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.debug.core.IJavaObject;
 
 import pt.iscte.pandionj.ExtensionManager;
@@ -9,7 +10,7 @@ import pt.iscte.pandionj.extensibility.IWidgetExtension;
 
 public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T> implements IEntityModel {
 
-	private IWidgetExtension extension;
+	protected IWidgetExtension extension;
 	protected T entity;
 	
 	public EntityModel(T entity, StackFrameModel model) {
@@ -34,6 +35,8 @@ public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T>
 		
 		return extension.createFigure(this);
 	}
+	
+	
 	
 	@Override
 	public T getContent() {

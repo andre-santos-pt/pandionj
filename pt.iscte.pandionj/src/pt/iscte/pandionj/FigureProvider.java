@@ -123,9 +123,10 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 
 		IFigure sFig = ((BaseFigure) connection.getSource().getNodeFigure()).innerFig;
 		if(sFig instanceof ArrayReferenceFigure) {
-			String refName = ((Pointer) element).refName;
-			refName = refName.substring(1, refName.length()-1);
-			fig.setSourceAnchor(((ArrayReferenceFigure) sFig).getAnchor(Integer.parseInt(refName)));
+			// TODO anchor
+//			String refName = ((Pointer) element).refName;
+//			refName = refName.substring(1, refName.length()-1);
+//			fig.setSourceAnchor(((ArrayReferenceFigure) sFig).getAnchor(Integer.parseInt(refName)));
 		}
 		else if(sFig instanceof ArrayPrimitiveFigure) {
 			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));

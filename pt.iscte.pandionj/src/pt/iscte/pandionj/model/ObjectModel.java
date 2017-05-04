@@ -1,12 +1,9 @@
 package pt.iscte.pandionj.model;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,16 +11,23 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.ITerminate;
-import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
+import org.eclipse.debug.core.model.IWatchExpressionDelegate;
+import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.debug.core.IEvaluationRunnable;
+import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
@@ -34,45 +38,50 @@ import org.eclipse.zest.core.widgets.Graph;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
-import com.sun.jdi.ClassNotLoadedException;
 
 import pt.iscte.pandionj.Utils;
+import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
+import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.parser.ClassInfo;
-import pt.iscte.pandionj.parser.MethodInfo;
-import pt.iscte.pandionj.parser.VisibilityInfo;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 
 	public interface ObserverTemp {
 		void fieldChanged(String name, Object oldValue, Object newValue);
 	}
-	
+
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
 	private List<String> refsOfSameType; // TODO from source
 
 	private ClassInfo info;
-	private String type; // TODO to upper ?
+	private IType jType;
 
 	private String leftField;
 	private String rightField;
 
-	public ObjectModel(IJavaObject object, StackFrameModel model, ClassInfo info) {
+	public ObjectModel(IJavaObject object, StackFrameModel model, ClassInfo info) { // TODO remove info?
 		super(object, model);
 		assert object != null;
+		assert jType != null;
 		this.info = info;
 	}
 
 	@Override
 	protected void init(IJavaObject object) {
+		try {
+			jType = getStackFrame().getJavaProject().findType(object.getJavaType().getName());
+		} catch (JavaModelException e1) {
+			e1.printStackTrace();
+		} catch (DebugException e1) {
+			e1.printStackTrace();
+		}
 		values = new LinkedHashMap<String, ValueModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
 		refsOfSameType = new ArrayList<>();
 		try {
-			this.type = object.getReferenceTypeName();
-
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
 				try {
@@ -81,7 +90,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				catch(DebugException e) {
 					continue;
 				}
-				
+
 				if(!var.isStatic()) {
 					String name = var.getName();
 					if(var.getValue() instanceof IJavaObject) {
@@ -118,8 +127,13 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-	public String getType() {
-		return type;
+	public IType getType() {
+		return jType;
+	}
+
+	public boolean includeMethod(IMethod method) {
+		return extension instanceof IObjectWidgetExtension && ((IObjectWidgetExtension) extension).includeMethod(method.getElementName());
+
 	}
 
 	@Override
@@ -129,11 +143,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	@Override
-	public IFigure createInnerFigure(Graph graph) {
-		IFigure fig = createExtensionFigure();
-		if(fig == null)
-			fig = new ObjectFigure(this, graph);
-		return fig;
+	protected IFigure createInnerFigure(Graph graph) {
+		//		IFigure fig = createExtensionFigure();
+		//		if(fig == null)
+		//			fig = new ObjectFigure(this, graph);
+		return new ObjectFigure(this, graph, createExtensionFigure(), true);
 	}
 
 	public Set<String> getFieldNames() {
@@ -407,7 +421,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				infixTraverse(leftTarget, obj, leftField, depth+1, visitor, visitNulls);
 
 			visitor.visit(e, parent, index, depth, field);
-			
+
 
 			EntityModel<?> rightTarget = obj.references.get(rightField).getModelTarget();
 			if(rightTarget instanceof NullModel && visitNulls)
@@ -418,11 +432,51 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 
-	public Iterator<MethodInfo> getMethods() {
-		return info.getMethods(EnumSet.of(VisibilityInfo.PUBLIC));
+	//	public Iterator<MethodInfo> getMethods() {
+	//		return info.getMethods(EnumSet.of(VisibilityInfo.PUBLIC));
+	//	}
+
+	public List<IMethod> getInstanceMethods() {
+		try {
+			List<IMethod> list = new ArrayList<>();
+			IMethod[] methods = jType.getMethods();
+			for(IMethod m : methods)
+				if(!m.isConstructor() && !Flags.isStatic(m.getFlags()) && isMethodVisible(m))
+					list.add(m);
+			return list;
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+			return Collections.emptyList();
+		}
+		//		return info.getMethods(EnumSet.of(VisibilityInfo.PUBLIC));
 	}
 
-	public IJavaValue invoke(MethodInfo m, IJavaValue ... args) {
+	private boolean isMethodVisible(IMethod m) {
+		int f = 0;
+		try {
+			f = m.getFlags();
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+		}
+		return 
+				jType.getPackageFragment().isDefaultPackage() ? (Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
+						:
+							Flags.isPublic(f);
+	}
+
+	public void invoke2(IMethod m, IJavaValue[] args, IWatchExpressionListener listener) {
+		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+
+		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(getStackFrame().getStackFrame().getModelIdentifier());
+
+		String refName = getStackFrame().getReferencesTo(this).iterator().next().getName();
+		if(refName == null)
+			return;
+		delegate.evaluateExpression(refName + "." + m.getElementName() + "()", getStackFrame().getStackFrame(), listener);
+	}
+	
+
+	public IJavaValue invoke(IMethod m, IJavaValue ... args) {
 		try {
 			IJavaThread t = (IJavaThread) getStackFrame().getStackFrame().getThread();
 
@@ -451,7 +505,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 					job = new Thread() {
 						public void run() {
 							try {
-								ret = getContent().sendMessage(m.getName(), m.getJNISignature(), args, t, false);
+								try {
+									ret = getContent().sendMessage(m.getElementName(), m.getSignature(), args, t, false);
+								} catch (JavaModelException e) {
+									e.printStackTrace();
+								}
 							} catch (DebugException e) {
 								e.printStackTrace();
 							}
@@ -519,5 +577,20 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
+	public IArrayModel getArray(String fieldName) {
+		try {
+			IJavaFieldVariable field = getContent().getField(fieldName, false);
+			if(field == null)
+				throw new IllegalArgumentException(fieldName + " is not a field");
+
+			if(!(field.getJavaType() instanceof IJavaArrayType))
+				throw new IllegalArgumentException(fieldName + " is not an array field");
+
+			return (IArrayModel) references.get(fieldName).getModelTarget();
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
 
 }

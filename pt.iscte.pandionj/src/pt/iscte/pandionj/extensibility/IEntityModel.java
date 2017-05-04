@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.extensibility;
 
-public interface IEntityModel {
+import java.util.Observer;
 
+public interface IEntityModel {
+	void registerDisplayObserver(Observer o);
 }
