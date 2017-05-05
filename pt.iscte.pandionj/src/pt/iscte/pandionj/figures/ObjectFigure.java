@@ -35,9 +35,13 @@ import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.zest.core.widgets.Graph;
+
+import com.sun.jdi.InvocationException;
+import com.sun.jdi.ObjectReference;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
@@ -131,10 +135,21 @@ public class ObjectFigure extends RoundedRectangle {
 								@Override
 								public void watchEvaluationFinished(IWatchExpressionResult result) {
 									try {
-										//										ret = (IJavaValue) result.getValue();
-										System.out.println("FINISH EVAL! " + result.getValue().getValueString()); // TODO null
-										
-										processInvocationResult((IJavaValue) result.getValue()); 
+										IJavaValue ret = (IJavaValue) result.getValue();
+										if(ret != null) {
+											System.out.println("FINISH EVAL! " + result.getValue().getValueString()); // TODO null
+
+											processInvocationResult((IJavaValue) result.getValue()); 
+										}
+										else {
+											DebugException exception = result.getException();
+											if(exception.getCause() instanceof InvocationException) {
+												InvocationException e = (InvocationException) exception.getCause();
+												ObjectReference exception2 = e.exception();
+											}
+											
+											System.err.println("EXCEPTION in EVAL");
+										}
 									} catch (DebugException e) {
 										e.printStackTrace();
 									}
@@ -226,13 +241,13 @@ public class ObjectFigure extends RoundedRectangle {
 			EntityModel<? extends IJavaObject> object = model.getStackFrame().getObject((IJavaObject) ret, true);
 			System.out.println(ret + " == " + object);
 		}
-//		else if(ret instanceof IJavaPrimitiveValue) {
-//			try {
-//				new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
-//			} catch (DebugException e1) {
-//				e1.printStackTrace();
-//			}
-//		}
+		//		else if(ret instanceof IJavaPrimitiveValue) {
+		//			try {
+		//				new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
+		//			} catch (DebugException e1) {
+		//				e1.printStackTrace();
+		//			}
+		//		}
 		model.getStackFrame().update();
 	}
 

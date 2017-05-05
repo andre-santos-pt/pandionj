@@ -48,12 +48,21 @@ public class ImageWidget implements IArrayWidgetExtension {
 	}
 
 
-	private class ImageFig extends Figure {
+	public static class ImageFig extends Figure implements Observer {
+		IArrayModel model;
 		Object[] array;
 		int width;
 		int height;
 		
-		ImageFig(IArrayModel model) {
+		public ImageFig(IArrayModel model) {
+			init(model);
+		}
+
+		private void init(IArrayModel model) {
+			if(this.model != null)
+				this.model.unregisterObserver(this);
+			
+			this.model = model;
 			this.array = model.getValues();
 			setLayoutManager(new FlowLayout());
 			width = ((Object[]) array[0]).length;
@@ -63,31 +72,26 @@ public class ImageWidget implements IArrayWidgetExtension {
 			setBorder(new LineBorder(ColorConstants.gray));
 			setOpaque(true);
 
-			model.registerDisplayObserver(new Observer() {
-				@Override
-				public void update(Observable o, Object arg) {
-					array = model.getValues();
-					//					for(int y = 0; y < array.length; y++)
-					//						for(int x = 0; x < array[y].length; x++)
-					//							data.setPixel(x, y, (int) array[y][x] == 0 ? 5 : 200);
-//					int line = (int) arg;
-//					repaint(0, line, width, 1); // only line?
-					repaint();
-				}
-			});
-
+			this.model.registerDisplayObserver(this);
+		}
+		
+		public void update(Observable o, Object arg) {
+			array = model.getValues();
+			repaint();
+		}
+		
+		public void updateModel(IArrayModel model) {
+			init(model);
 		}
 
 		@Override
 		protected void paintFigure(Graphics g) {
 			Rectangle r = getBounds();
 			g.setLineWidth(1);
-			g.setForegroundColor(ColorConstants.red);
-
 			RGB[] rgb = new RGB[256];
 
 			// build grey scale palette: 256 different grey values are generated. 
-			for (int i = 0; i < 256; i++) {
+			for (int i = 0; i < rgb.length; i++) {
 			    rgb[i] = new RGB(i, i, i);
 			}
 
@@ -107,7 +111,6 @@ public class ImageWidget implements IArrayWidgetExtension {
 			}
 
 			Image img = new Image(Display.getDefault(), data);
-			
 			g.drawImage(img, r.x, r.y);
 			img.dispose();
 		}
@@ -116,9 +119,6 @@ public class ImageWidget implements IArrayWidgetExtension {
 		public Dimension getPreferredSize(int wHint, int hHint) {
 			return new Dimension(width, height);
 		}
-
 	}
-
-
 
 }

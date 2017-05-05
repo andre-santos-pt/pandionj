@@ -1,7 +1,6 @@
 package pt.iscte.pandionj.model;
 
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.debug.core.IJavaObject;
 
 import pt.iscte.pandionj.ExtensionManager;
@@ -27,7 +26,6 @@ public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T>
 		return extension != ExtensionManager.NO_EXTENSION;
 	}
 	
-	
 	// TODO problem of object state
 	protected IFigure createExtensionFigure() {
 		if(extension == null)
@@ -36,11 +34,8 @@ public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T>
 		return extension.createFigure(this);
 	}
 	
-	
-	
 	@Override
 	public T getContent() {
 		return entity;
 	}
-
 }

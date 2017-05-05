@@ -10,16 +10,29 @@ import java.util.Observer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.Message;
 import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaBreakpointListener;
@@ -29,6 +42,9 @@ import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
+import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
+import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
+import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -67,9 +83,15 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.GraphItem;
@@ -90,7 +112,6 @@ public class PandionJView extends ViewPart {
 
 	private IDebugEventSetListener debugEventListener;
 	private IJavaBreakpointListener exceptionListener;
-	//	private IDebugContextListener debugUiListener;
 
 	private ScrolledComposite scroll; 
 	private Composite area;
@@ -103,10 +124,12 @@ public class PandionJView extends ViewPart {
 	private Map<String, Image> images;
 	private IToolBarManager toolBar;
 
+	private ILaunch launch;
 
 	public PandionJView() {
 		images = new HashMap<>();
 	}
+
 
 	@Override
 	public void createPartControl(Composite parent) {
@@ -114,18 +137,81 @@ public class PandionJView extends ViewPart {
 		model = new CallStackModel();
 		debugEventListener = new DebugListener();
 		exceptionListener = new ExceptionListener();
-		//		debugUiListener = new DebugUIListener();
 
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
 		JDIDebugModel.addJavaBreakpointListener(exceptionListener);
-		//		DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
 		toolBar = getViewSite().getActionBars().getToolBarManager();
-
 		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
-//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
-//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
+		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
+		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
+		addToolbarAction("Run", true, "run.gif", null, () -> launchDebugger()); 
+		addToolbarAction("Step into", false, "stepinto.gif", null, new Action() {
+			public void run() {
+				try {
+					model.getTopFrame().getStackFrame().getThread().stepInto();
+				} catch (DebugException e) {
+					e.printStackTrace();
+				}
+			}
+
+			public boolean isEnabled() {
+				return true;
+				//return !model.isEmpty() && model.getTopFrame().getStackFrame().getThread().canStepInto();
+			}
+		});
+
+
+		addToolbarAction("Step over", false, "stepover.gif", null, () -> {
+			try {
+				model.getTopFrame().getStackFrame().getThread().stepOver();
+			} catch (DebugException e) {
+				e.printStackTrace();
+			}
+		}); 
+
+
+	}
+
+
+	private void launchDebugger() {
+		try {
+			if(launch != null && !launch.isTerminated())
+				launch.terminate();
+
+			IWorkbench wb = PlatformUI.getWorkbench();
+			IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+			IWorkbenchPage page = window.getActivePage();
+			IEditorPart editor = page.getActiveEditor();
+			IEditorInput input = editor.getEditorInput();
+			IPath path = ((FileEditorInput)input).getPath();
+			IResource sampleFile =  ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+			IJavaProject javaProj = JavaCore.create(sampleFile.getProject());
+			IPath p = sampleFile.getProjectRelativePath(); 
+			IJavaElement e = javaProj.findElement(new Path(sampleFile.getName()));
+			// TODO package in name
+			if(e != null) {
+				IType firstType = ((ICompilationUnit) e).getTypes()[0];
+				ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+				ILaunchConfigurationType type = manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
+				ILaunchConfigurationWorkingCopy wc = type.newInstance(null, "PandionJ - " + sampleFile.getName());
+				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, sampleFile.getProject().getName());
+				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, firstType.getElementName());
+				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
+				// TODO classpath
+				List<String> classpath = new ArrayList<String>();
+			    classpath.add("lib/javassist.jar");
+			    classpath.add("lib/agent.jar");
+			    
+				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, classpath);
+//				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, "-javaagent:agent.jar");
+				ILaunchConfiguration config = wc.doSave();
+				launch = config.launch(ILaunchManager.DEBUG_MODE, null, true);
+			}
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -133,7 +219,6 @@ public class PandionJView extends ViewPart {
 		super.dispose();
 		DebugPlugin.getDefault().removeDebugEventListener(debugEventListener);
 		JDIDebugModel.removeJavaBreakpointListener(exceptionListener);
-		//		DebugUITools.getDebugContextManager().removeDebugContextListener(debugUiListener);
 
 		for(Image img : images.values())
 			img.dispose();
@@ -210,6 +295,9 @@ public class PandionJView extends ViewPart {
 				else if(e.getKind() == DebugEvent.TERMINATE) {
 					terminate();
 				}
+				else if(e.getKind() == DebugEvent.CHANGE) {
+					System.out.println(e);
+				}
 			}
 		}
 
@@ -226,29 +314,6 @@ public class PandionJView extends ViewPart {
 
 
 
-
-	//	private class DebugUIListener implements IDebugContextListener {
-	//		public void debugContextChanged(DebugContextEvent event) {
-	//			IStackFrame f = getSelectedFrame(event.getContext());
-	//			if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
-	//				openExpandItem(f);
-	//			}
-	//		}
-	//
-	//		private void openExpandItem(IStackFrame f) {
-	//			for(ExpandItem e : callStack.getItems())
-	//				e.setExpanded(((StackView) e.getControl()).model.getStackFrame() == f);
-	//		}
-	//
-	//		private IStackFrame getSelectedFrame(ISelection context) {
-	//			if (context instanceof IStructuredSelection) {
-	//				Object data = ((IStructuredSelection) context).getFirstElement();
-	//				if (data instanceof IStackFrame)
-	//					return (IStackFrame) data;
-	//			}
-	//			return null;
-	//		}
-	//	}
 
 
 	private class ExceptionListener implements IJavaBreakpointListener {
@@ -459,7 +524,7 @@ public class PandionJView extends ViewPart {
 
 				@Override
 				public void doubleClick(DoubleClickEvent event) {
-//					navigateToLine(model.getSourceFile(), model.getLineNumber());
+					//					navigateToLine(model.getSourceFile(), model.getLineNumber());
 					if(!event.getSelection().isEmpty()) {
 						IStructuredSelection selection = (IStructuredSelection) event.getSelection();
 						Object obj = selection.getFirstElement();
@@ -527,17 +592,17 @@ public class PandionJView extends ViewPart {
 		void copyToClipBoard() {
 			Graph item = viewer.getGraphControl();
 			Point p = item.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-			
+
 			Rectangle size = item.getClientArea();
-			
+
 			System.out.println(p +  "    " + size);
-//			compositeViewer.setBackground(Constants.HIGHLIGHT_COLOR);
+			//			compositeViewer.setBackground(Constants.HIGHLIGHT_COLOR);
 			GC gc = new GC(item);
-//			Rectangle clipping2 = gc.getClipping();
-//			Image img = new Image(Display.getDefault(), size.width, size.height);
-//			gc.copyArea(img, 0, 0);
-//			ImageData imageData = img.getImageData();
-			
+			//			Rectangle clipping2 = gc.getClipping();
+			//			Image img = new Image(Display.getDefault(), size.width, size.height);
+			//			gc.copyArea(img, 0, 0);
+			//			ImageData imageData = img.getImageData();
+
 			RGB[] rgb = new RGB[256];
 			// build grey scale palette: 256 different grey values are generated. 
 			for (int i = 0; i < 256; i++) {
@@ -547,7 +612,7 @@ public class PandionJView extends ViewPart {
 			// Construct a new indexed palette given an array of RGB values.
 			PaletteData palette = new PaletteData(rgb);
 			Image img2 = new Image(Display.getDefault(), new ImageData(size.width, size.height, 8, palette));
-//			gc.setClipping(0, 0, p.x, p.y);
+			//			gc.setClipping(0, 0, p.x, p.y);
 			gc.copyArea(img2, 0, 0);
 			Shell popup = new Shell(Display.getDefault());
 			popup.setText("Image");
@@ -606,8 +671,15 @@ public class PandionJView extends ViewPart {
 				return !stackView.isEmpty();
 			}
 		});
+	}
 
-
+	private void addToolbarAction(String name, boolean toggle, String imageName, String description, Action action) {
+		action.setImageDescriptor(ImageDescriptor.createFromImage(image(imageName)));
+		String tooltip = name;
+		if(description != null)
+			tooltip += "\n" + description;
+		action.setToolTipText(tooltip);
+		toolBar.add(action);
 	}
 
 	private void addToolbarAction(String name, boolean toggle, String imageName, String description, Runnable runnable) {
@@ -616,12 +688,37 @@ public class PandionJView extends ViewPart {
 				runnable.run();
 			}
 		};
-		a.setImageDescriptor(ImageDescriptor.createFromImage(image(imageName)));
-		String tooltip = name;
-		if(description != null)
-			tooltip += "\n" + description;
-		a.setToolTipText(tooltip);
-		toolBar.add(a);
+		addToolbarAction(name, toggle, imageName, description, a);
 	}
+
+	//	private IDebugContextListener debugUiListener;
+	//	debugUiListener = new DebugUIListener();
+	//	DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);
+	//	DebugUITools.getDebugContextManager().removeDebugContextListener(debugUiListener);
+
+
+	//	private class DebugUIListener implements IDebugContextListener {
+	//		public void debugContextChanged(DebugContextEvent event) {
+	//			IStackFrame f = getSelectedFrame(event.getContext());
+	//			if(f != null && (event.getFlags() & DebugContextEvent.ACTIVATED) != 0) {
+	//				openExpandItem(f);
+	//			}
+	//		}
+	//
+	//		private void openExpandItem(IStackFrame f) {
+	//			for(ExpandItem e : callStack.getItems())
+	//				e.setExpanded(((StackView) e.getControl()).model.getStackFrame() == f);
+	//		}
+	//
+	//		private IStackFrame getSelectedFrame(ISelection context) {
+	//			if (context instanceof IStructuredSelection) {
+	//				Object data = ((IStructuredSelection) context).getFirstElement();
+	//				if (data instanceof IStackFrame)
+	//					return (IStackFrame) data;
+	//			}
+	//			return null;
+	//		}
+	//	}
+
 
 }

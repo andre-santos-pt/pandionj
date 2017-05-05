@@ -29,8 +29,6 @@ import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.MouseEvent;
-import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -45,9 +43,7 @@ import pt.iscte.pandionj.model.ArrayPrimitiveModel;
 import pt.iscte.pandionj.model.ValueModel;
 
 
-// TODO limit size
 //TODO tool tip type
-
 public class ArrayPrimitiveFigure extends RoundedRectangle {
 	private final ArrayPrimitiveModel model;
 	private final int N; // array length

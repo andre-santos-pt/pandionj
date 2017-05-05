@@ -10,6 +10,6 @@ public interface IArrayModel extends IEntityModel {
 	boolean isMatrix();
 	void registerObserver(Observer o);
 	void registerDisplayObserver(Observer o);
-	
+	void unregisterObserver(Observer o);
 	// TODO observer event
 }

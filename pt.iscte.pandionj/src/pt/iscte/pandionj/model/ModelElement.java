@@ -56,4 +56,7 @@ public abstract class ModelElement<T extends IJavaValue> extends Observable {
 		});
 	}
 
+	public void unregisterObserver(Observer obs) {
+		deleteObserver(obs);
+	}
 }

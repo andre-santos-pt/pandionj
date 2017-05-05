@@ -156,7 +156,7 @@ public class StackFrameModel extends Observable {
 						if(!((IJavaVariable) iv).isSynthetic() && !((IJavaVariable) iv).isStatic())
 							handleVar((IJavaVariable) iv, true);
 				}
-				else if(!jv.isSynthetic() && !jv.isStatic())
+				else if(!jv.isSynthetic()) //&& !jv.isStatic())
 					handleVar(jv, false);
 			}
 
@@ -233,45 +233,7 @@ public class StackFrameModel extends Observable {
 
 
 
-//	private static class PathVisitor implements SiblingVisitor {
-//		ArrayList<String> path;
-//		boolean found;
-//		EntityModel<?> target;
-//
-//		public PathVisitor(EntityModel<?> target) {
-//			path = new ArrayList<>();
-//			this.target = target;
-//			found = false;
-//		}
-//
-//		public void visit(EntityModel<?> o, ObjectModel parent, int index, int depth, String field) {
-//			if(!found) {
-//				while(path.size() > 0 && path.size() >= depth)
-//					path.remove(path.size()-1);
-//
-//				if(field != null)
-//					path.add(field);
-//
-//				if(o.equals(target))
-//					found = true;
-//			}
-//		}
-//	}
 
-//	public String getReferenceNameTo2(EntityModel<?> object) {
-//		for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
-//			if(e.getValue() instanceof ReferenceModel) {
-//				EntityModel<?> el = ((ReferenceModel) e.getValue()).getModelTarget();
-//				if(el instanceof ObjectModel) {
-//					PathVisitor v = new PathVisitor(object);
-//					((ObjectModel) el).traverseSiblings(v, false);
-//					if(v.found)
-//						return  v.path.isEmpty() ? e.getKey() : e.getKey() + "." + String.join(".", v.path);
-//				}
-//			}
-//		}
-//		return null;
-//	}
 
 	public Collection<ReferenceModel> getReferencesTo(ModelElement<?> object) {
 		List<ReferenceModel> refs = new ArrayList<>(3);
@@ -286,7 +248,7 @@ public class StackFrameModel extends Observable {
 
 
 
-	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) { // TODO remove param?
+	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
 		assert !obj.isNull();
 		try {
 			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
@@ -299,12 +261,7 @@ public class StackFrameModel extends Observable {
 						e = new ArrayPrimitiveModel((IJavaArray) obj, this);
 				}
 				else {
-					// TODO cache, problem instance
-//					Visitor visitor = new Visitor();
-//					IJavaClassObject classObject = type.getClassObject();
-//					System.out.println(type.getName().replace('$', '.') + " " + Arrays.toString(type.getSourcePaths(null)));
-//					JavaSourceParser.createFromFile(srcFile.getRawLocation().toString()).parse(visitor);
-					e = new ObjectModel(obj, this, null);
+					e = new ObjectModel(obj, this);
 				}
 				
 				if(loose) {
@@ -517,6 +474,46 @@ public class StackFrameModel extends Observable {
 	//		return null;
 	//	}
 
+	
+//	private static class PathVisitor implements SiblingVisitor {
+//	ArrayList<String> path;
+//	boolean found;
+//	EntityModel<?> target;
+//
+//	public PathVisitor(EntityModel<?> target) {
+//		path = new ArrayList<>();
+//		this.target = target;
+//		found = false;
+//	}
+//
+//	public void visit(EntityModel<?> o, ObjectModel parent, int index, int depth, String field) {
+//		if(!found) {
+//			while(path.size() > 0 && path.size() >= depth)
+//				path.remove(path.size()-1);
+//
+//			if(field != null)
+//				path.add(field);
+//
+//			if(o.equals(target))
+//				found = true;
+//		}
+//	}
+//}
+
+//public String getReferenceNameTo2(EntityModel<?> object) {
+//	for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
+//		if(e.getValue() instanceof ReferenceModel) {
+//			EntityModel<?> el = ((ReferenceModel) e.getValue()).getModelTarget();
+//			if(el instanceof ObjectModel) {
+//				PathVisitor v = new PathVisitor(object);
+//				((ObjectModel) el).traverseSiblings(v, false);
+//				if(v.found)
+//					return  v.path.isEmpty() ? e.getKey() : e.getKey() + "." + String.join(".", v.path);
+//			}
+//		}
+//	}
+//	return null;
+//}
 
 
 }
