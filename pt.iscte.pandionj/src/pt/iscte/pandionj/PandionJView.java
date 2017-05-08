@@ -1,5 +1,7 @@
 package pt.iscte.pandionj;
 
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -124,7 +126,6 @@ public class PandionJView extends ViewPart {
 	private Map<String, Image> images;
 	private IToolBarManager toolBar;
 
-	private ILaunch launch;
 
 	public PandionJView() {
 		images = new HashMap<>();
@@ -146,7 +147,6 @@ public class PandionJView extends ViewPart {
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
 		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
 		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
-		addToolbarAction("Run", true, "run.gif", null, () -> launchDebugger()); 
 		addToolbarAction("Step into", false, "stepinto.gif", null, new Action() {
 			public void run() {
 				try {
@@ -157,62 +157,36 @@ public class PandionJView extends ViewPart {
 			}
 
 			public boolean isEnabled() {
-				return true;
+				return !model.isEmpty();
 				//return !model.isEmpty() && model.getTopFrame().getStackFrame().getThread().canStepInto();
 			}
 		});
-
 
 		addToolbarAction("Step over", false, "stepover.gif", null, () -> {
 			try {
 				model.getTopFrame().getStackFrame().getThread().stepOver();
 			} catch (DebugException e) {
+			 	e.printStackTrace();
+			}
+		}); 
+		
+		addToolbarAction("Resume", false, "resume.gif", null, () -> {
+			try {
+				model.getTopFrame().getStackFrame().getThread().resume();
+			} catch (DebugException e) {
 				e.printStackTrace();
 			}
 		}); 
-
-
-	}
-
-
-	private void launchDebugger() {
-		try {
-			if(launch != null && !launch.isTerminated())
-				launch.terminate();
-
-			IWorkbench wb = PlatformUI.getWorkbench();
-			IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
-			IWorkbenchPage page = window.getActivePage();
-			IEditorPart editor = page.getActiveEditor();
-			IEditorInput input = editor.getEditorInput();
-			IPath path = ((FileEditorInput)input).getPath();
-			IResource sampleFile =  ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
-			IJavaProject javaProj = JavaCore.create(sampleFile.getProject());
-			IPath p = sampleFile.getProjectRelativePath(); 
-			IJavaElement e = javaProj.findElement(new Path(sampleFile.getName()));
-			// TODO package in name
-			if(e != null) {
-				IType firstType = ((ICompilationUnit) e).getTypes()[0];
-				ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-				ILaunchConfigurationType type = manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
-				ILaunchConfigurationWorkingCopy wc = type.newInstance(null, "PandionJ - " + sampleFile.getName());
-				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, sampleFile.getProject().getName());
-				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, firstType.getElementName());
-				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
-				// TODO classpath
-				List<String> classpath = new ArrayList<String>();
-			    classpath.add("lib/javassist.jar");
-			    classpath.add("lib/agent.jar");
-			    
-				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_CLASSPATH, classpath);
-//				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, "-javaagent:agent.jar");
-				ILaunchConfiguration config = wc.doSave();
-				launch = config.launch(ILaunchManager.DEBUG_MODE, null, true);
+		
+		addToolbarAction("Terminate", false, "", null, () -> {
+			try {
+				model.getTopFrame().getStackFrame().getThread().getLaunch().terminate();
+			} catch (DebugException e) {
+				e.printStackTrace();
 			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
+		}); 
 	}
+
 
 	@Override
 	public void dispose() {
@@ -295,9 +269,6 @@ public class PandionJView extends ViewPart {
 				else if(e.getKind() == DebugEvent.TERMINATE) {
 					terminate();
 				}
-				else if(e.getKind() == DebugEvent.CHANGE) {
-					System.out.println(e);
-				}
 			}
 		}
 
@@ -342,7 +313,7 @@ public class PandionJView extends ViewPart {
 
 					handleFrames(frames);
 					int line = exceptionFrame.getLineNumber();
-					model.getTopFrame().processException();
+					model.getTopFrame().processException();  // TODO no top frame?
 					//					thread.terminate();
 
 					Display.getDefault().asyncExec(() -> {

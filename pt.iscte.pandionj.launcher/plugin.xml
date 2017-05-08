@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="pt.iscte.pandionj.launcher.LaunchCommand"
+            id="pt.iscte.pandionj.agent.launch"
+            name="Launch in debug mode">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="toolbar:pt.iscte.pandionj.view?after=additions">
+         <separator
+               name="pt.iscte.pandionj.launcher.separator"
+               visible="true">
+         </separator>
+         <command
+               commandId="pt.iscte.pandionj.agent.launch"
+               icon="images/run.gif"
+               label="Launch"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+
+</plugin>

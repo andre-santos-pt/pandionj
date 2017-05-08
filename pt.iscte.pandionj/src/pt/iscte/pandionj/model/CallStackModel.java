@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Observable;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 
@@ -21,11 +22,11 @@ public class CallStackModel {
 		assert stackFrames != null;
 
 		// TODO erro?
-//		for(IStackFrame f : stackFrames) {
-//			if(!(f.getLaunch().getSourceLocator().getSourceElement(f) instanceof IFile)) {
-//				return;
-//			}
-//		}
+		for(IStackFrame f : stackFrames) {
+			if(!(f.getLaunch().getSourceLocator().getSourceElement(f) instanceof IFile)) {
+				return 0;
+			}
+		}
 
 		IStackFrame[] revStackFrames = new IStackFrame[stackFrames.length];
 		for(int i = 0; i < revStackFrames.length; i++)

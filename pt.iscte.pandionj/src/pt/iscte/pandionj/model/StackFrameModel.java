@@ -307,8 +307,12 @@ public class StackFrameModel extends Observable {
 		try {
 			List<String> argumentTypeNames = frame.getArgumentTypeNames();
 			Utils.stripQualifiedNames(argumentTypeNames);
-			return (frame.isConstructor() ? "new " + frame.getReferenceType().getName() : frame.getMethodName())  + 
-					"(" + String.join(", ", argumentTypeNames) + ")";
+			if(frame.isStaticInitializer())
+				return frame.getDeclaringTypeName();
+			else if(frame.isConstructor())
+				return "new " + frame.getReferenceType().getName();
+			else
+				return frame.getMethodName() + "(" + String.join(", ", argumentTypeNames) + ")";
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.toString();

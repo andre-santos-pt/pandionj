@@ -1,0 +1,4 @@
+Manifest-Version: 1.0
+Boot-Class-Path: javassist.jar
+Premain-Class: pt.iscte.pandionj.agent.PandionJAgent
+
