@@ -12,5 +12,12 @@
             restorable="true">
       </view>
    </extension>
+   <extension
+         point="org.eclipse.jdt.debug.breakpointListeners">
+      <breakpointListener
+            class="pt.iscte.pandionj.PandionJBreakpointListener"
+            id="pt.iscte.pandionj.breakpointListener">
+      </breakpointListener>
+   </extension>
 
 </plugin>

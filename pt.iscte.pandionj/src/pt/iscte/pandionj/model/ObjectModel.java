@@ -456,6 +456,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
+	public void invoke3(String methodName, IJavaValue[] args, IWatchExpressionListener listener) {
+		IMethod method = jType.getMethod(methodName, new String[0]); // TODO
+		invoke2(method, args, listener);
+	}
+	
 	public void invoke2(IMethod m, IJavaValue[] args, IWatchExpressionListener listener) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		

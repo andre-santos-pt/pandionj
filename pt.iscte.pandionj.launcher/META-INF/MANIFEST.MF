@@ -29,4 +29,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.ide;bundle-version="3.12.1",
  org.eclipse.debug.core,
  org.eclipse.jdt.core,
- org.eclipse.debug.ui;bundle-version="3.11.201"
+ org.eclipse.debug.ui;bundle-version="3.11.201",
+ org.eclipse.jdt.debug;bundle-version="3.10.1",
+ org.eclipse.ui.workbench.texteditor,
+ org.eclipse.jface.text;bundle-version="3.11.1"

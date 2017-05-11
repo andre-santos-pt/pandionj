@@ -1,7 +1,5 @@
 package pt.iscte.pandionj;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -12,29 +10,16 @@ import java.util.Observer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.Message;
 import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaBreakpointListener;
@@ -44,9 +29,6 @@ import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
-import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
-import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
-import org.eclipse.jdt.launching.JavaRuntime;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -85,15 +67,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
-import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.GraphItem;
@@ -107,6 +83,8 @@ import pt.iscte.pandionj.model.StackFrameModel;
 // TODO reload everything on view init
 public class PandionJView extends ViewPart { 
 
+	private static PandionJView instance;
+	
 	private CallStackModel model;
 	private IStackFrame exceptionFrame;
 	private String exception;
@@ -126,12 +104,17 @@ public class PandionJView extends ViewPart {
 	private Map<String, Image> images;
 	private IToolBarManager toolBar;
 
+	
 
 	public PandionJView() {
+		instance = this;
 		images = new HashMap<>();
 	}
 
-
+	public static PandionJView getInstance() {
+		return instance;
+	}
+	
 	@Override
 	public void createPartControl(Composite parent) {
 		createWidgets(parent);
@@ -157,7 +140,7 @@ public class PandionJView extends ViewPart {
 			}
 
 			public boolean isEnabled() {
-				return !model.isEmpty();
+				return true;
 				//return !model.isEmpty() && model.getTopFrame().getStackFrame().getThread().canStepInto();
 			}
 		});
@@ -166,10 +149,10 @@ public class PandionJView extends ViewPart {
 			try {
 				model.getTopFrame().getStackFrame().getThread().stepOver();
 			} catch (DebugException e) {
-			 	e.printStackTrace();
+				e.printStackTrace();
 			}
 		}); 
-		
+
 		addToolbarAction("Resume", false, "resume.gif", null, () -> {
 			try {
 				model.getTopFrame().getStackFrame().getThread().resume();
@@ -177,8 +160,8 @@ public class PandionJView extends ViewPart {
 				e.printStackTrace();
 			}
 		}); 
-		
-		addToolbarAction("Terminate", false, "", null, () -> {
+
+		addToolbarAction("Terminate", false, "terminate.gif", null, () -> {
 			try {
 				model.getTopFrame().getStackFrame().getThread().getLaunch().terminate();
 			} catch (DebugException e) {
@@ -291,39 +274,12 @@ public class PandionJView extends ViewPart {
 		public int breakpointHit(IJavaThread thread, IJavaBreakpoint breakpoint) {
 			if(breakpoint instanceof IJavaLineBreakpoint) {
 				if(!thread.isPerformingEvaluation()) {
-					try {
-						exception = null;
-						exceptionFrame = null;
-						IStackFrame[] frames = thread.getStackFrames(); 
-						handleFrames(frames);
-					} catch (DebugException e) {
-						e.printStackTrace();
-					}
+					handleLinebreakPoint(thread);
 					return IJavaBreakpointListener.SUSPEND;
 				}
 			}
 			else if (breakpoint instanceof IJavaExceptionBreakpoint) {
-				IJavaExceptionBreakpoint exc = (IJavaExceptionBreakpoint) breakpoint;
-				try {
-					thread.terminateEvaluation();
-					exception = exc.getExceptionTypeName();
-					exceptionFrame = thread.getTopStackFrame();
-					debugStep = 0;
-					IStackFrame[] frames = thread.getStackFrames(); 
-
-					handleFrames(frames);
-					int line = exceptionFrame.getLineNumber();
-					model.getTopFrame().processException();  // TODO no top frame?
-					//					thread.terminate();
-
-					Display.getDefault().asyncExec(() -> {
-						String msg = exception + " on line " + line;
-						stackView.setError(msg);
-					});
-
-				} catch (DebugException e) {
-					e.printStackTrace();
-				}
+				handleExceptionBreakpoint(thread, (IJavaExceptionBreakpoint) breakpoint);
 				return IJavaBreakpointListener.SUSPEND;
 			}
 			return IJavaBreakpointListener.DONT_SUSPEND;
@@ -340,8 +296,39 @@ public class PandionJView extends ViewPart {
 		public void breakpointHasCompilationErrors(IJavaLineBreakpoint breakpoint, Message[] errors) { }
 	}
 
+	void handleLinebreakPoint(IJavaThread thread) {
+		try {
+			exception = null;
+			exceptionFrame = null;
+			IStackFrame[] frames = thread.getStackFrames(); 
+			handleFrames(frames);
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
+	}
 
+	void handleExceptionBreakpoint(IJavaThread thread, IJavaExceptionBreakpoint exceptionBreakPoint) {
+		try {
+			thread.terminateEvaluation();
+			exception = exceptionBreakPoint.getExceptionTypeName();
+			exceptionFrame = thread.getTopStackFrame();
+			debugStep = 0;
+			IStackFrame[] frames = thread.getStackFrames(); 
 
+			handleFrames(frames);
+			int line = exceptionFrame.getLineNumber();
+			model.getTopFrame().processException();  // TODO no top frame?
+			//					thread.terminate();
+
+			Display.getDefault().asyncExec(() -> {
+				String msg = exception + " on line " + line;
+				stackView.setError(msg);
+			});
+
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
+	}
 	//	private void clearView(boolean startMsg) {
 	//		exception = null;
 	//		exceptionFrame = null;

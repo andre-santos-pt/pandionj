@@ -6,8 +6,6 @@ import java.net.URL;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.IHandler;
-import org.eclipse.core.commands.IHandlerListener;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -26,8 +24,12 @@ import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
-import org.eclipse.osgi.service.environment.Constants;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
@@ -35,10 +37,12 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
 public class LaunchCommand extends AbstractHandler {
 	private ILaunch launch;
+	private IJavaLineBreakpoint breakPoint;
 
 	@Override
 	public boolean isEnabled() {
@@ -59,12 +63,23 @@ public class LaunchCommand extends AbstractHandler {
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
 			IWorkbenchPage page = window.getActivePage();
+			
 			IEditorPart editor = page.getActiveEditor();
 			IEditorInput input = editor.getEditorInput();
 			IPath path = ((FileEditorInput)input).getPath();
 			IResource file =  ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 			IJavaProject javaProj = JavaCore.create(file.getProject());
 			IPath p = file.getProjectRelativePath();
+			
+			int line = -1;
+			if (editor instanceof ITextEditor) {
+			  ISelectionProvider selectionProvider = ((ITextEditor)editor).getSelectionProvider();
+			  ISelection selection = selectionProvider.getSelection();
+			  if (selection instanceof ITextSelection) {
+			    ITextSelection textSelection = (ITextSelection) selection;
+			    line = textSelection.getStartLine() + 1;
+			  }
+			}
 			
 			IJavaElement e = javaProj.findElement(p.removeFirstSegments(1));
 			if(e == null)
@@ -78,6 +93,13 @@ public class LaunchCommand extends AbstractHandler {
 				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, file.getProject().getName());
 				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, firstType.getFullyQualifiedName());
 				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
+				
+				if(breakPoint != null)
+					breakPoint.delete();
+				
+				if(line != -1)
+					breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
+				
 				try {
 					Bundle bundle = Platform.getBundle(LaunchCommand.class.getPackage().getName());
 					URL find = FileLocator.find(bundle, new Path("lib/agent.jar"), null);
@@ -88,6 +110,7 @@ public class LaunchCommand extends AbstractHandler {
 				}
 				ILaunchConfiguration config = wc.doSave();
 				launch = config.launch(ILaunchManager.DEBUG_MODE, null, true);
+				
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();
