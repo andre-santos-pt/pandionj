@@ -1,6 +1,8 @@
 package pt.iscte.pandionj.extensions;
 
 import java.util.Collection;
+import java.util.Observable;
+import java.util.Observer;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IIndexedValue;
@@ -38,8 +40,18 @@ public class IterableWidget implements IObjectWidgetExtension {
 	@Override
 	public IFigure createFigure(IObjectModel e) {
 		Label label = new Label();
-		e.invoke3("toArray", new IJavaValue[0], new IWatchExpressionListener() {
+		e.registerDisplayObserver(new Observer() {
+			@Override
+			public void update(Observable o, Object arg) {
+				eval(e, label);
+			}
+		});
+		eval(e, label);
+		return label;
+	}
 
+	private static void eval(IObjectModel e, Label label) {
+		e.invoke3("toArray", new IJavaValue[0], new IWatchExpressionListener() {
 			@Override
 			public void watchEvaluationFinished(IWatchExpressionResult result) {
 				IIndexedValue value = (IIndexedValue) result.getValue();
@@ -56,14 +68,13 @@ public class IterableWidget implements IObjectWidgetExtension {
 				} catch (DebugException e1) {
 					e1.printStackTrace();
 				}
-				
+
 			}
 		});
-		return label;
-		}
-
-		@Override
-		public boolean includeMethod(String methodName) {
-			return methodName.matches("size|isEmpty|add|remove");
-		}
 	}
+
+	@Override
+	public boolean includeMethod(String methodName) {
+		return methodName.matches("size|isEmpty|add|remove");
+	}
+}

@@ -111,8 +111,9 @@ public enum PrimitiveType {
 	
 	public abstract void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array);
 	
-	
 	public abstract Object getValue(IJavaValue val);
+	
+//	public abstract String getStringValue(IJavaValue val);
 	
 	public static PrimitiveType match(IJavaType type) {
 		try {

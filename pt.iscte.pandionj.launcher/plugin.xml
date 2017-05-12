@@ -5,33 +5,98 @@
          point="org.eclipse.ui.commands">
       <command
             defaultHandler="pt.iscte.pandionj.launcher.LaunchCommand"
-            id="pt.iscte.pandionj.agent.launch"
+            id="pt.iscte.pandionj.launcher.run"
             name="Launch in debug mode">
+      </command>
+      <command
+            defaultHandler="pt.iscte.pandionj.launcher.StepIntoCommand"
+            id="pt.iscte.pandionj.launcher.stepinto"
+            name="Step into (debugger)">
+      </command>
+      <command
+            defaultHandler="pt.iscte.pandionj.launcher.StepOverCommand"
+            id="pt.iscte.pandionj.launcher.stepover"
+            name="Step over (debugger)">
+      </command>
+      <command
+            defaultHandler="pt.iscte.pandionj.launcher.ResumeCommand"
+            id="pt.iscte.pandionj.launcher.resume"
+            name="Resume (debugger)">
+      </command>
+      <command
+            defaultHandler="pt.iscte.pandionj.launcher.TerminateCommand"
+            id="pt.iscte.pandionj.launcher.terminate"
+            name="Terminate (debugger)">
+      </command>
+      <command
+            defaultHandler="pt.iscte.pandionj.launcher.StepReturnCommand"
+            id="pt.iscte.pandionj.launcher.stepreturn"
+            name="Step return (debugger)">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="toolbar:pt.iscte.pandionj.view?after=additions">
-         <separator
-               name="pt.iscte.pandionj.launcher.separator"
-               visible="true">
-         </separator>
+            locationURI="toolbar:pt.iscte.pandionj.view">
          <command
-               commandId="pt.iscte.pandionj.agent.launch"
+               commandId="pt.iscte.pandionj.launcher.run"
                icon="images/run.gif"
-               label="Launch"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.stepinto"
+               icon="images/stepinto.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.stepover"
+               icon="images/stepover.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.stepreturn"
+               icon="images/stepreturn.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.resume"
+               icon="images/resume.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.terminate"
+               icon="images/terminate.gif"
                style="push">
          </command>
       </menuContribution>
    </extension>
    <extension
-         point="org.eclipse.jdt.debug.breakpointListeners">
-      <breakpointListener
-            class="pt.iscte.pandionj.launcher.JavaBreakpointListener1"
-            id="pt.iscte.pandionj.launcher.breakpointListener1">
-      </breakpointListener>
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="pt.iscte.pandionj.launcher.run"
+            contextId="pt.iscte.pandionj.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+R">
+      </key>
+      <key
+            commandId="pt.iscte.pandionj.launcher.stepinto"
+            contextId="pt.iscte.pandionj.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F5">
+      </key>
+      <key
+            commandId="pt.iscte.pandionj.launcher.stepover"
+            contextId="pt.iscte.pandionj.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F6">
+      </key>
+      <key
+            commandId="pt.iscte.pandionj.launcher.stepreturn"
+            contextId="pt.iscte.pandionj.context"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="F7">
+      </key>
    </extension>
 
 </plugin>

@@ -20,14 +20,9 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
-import org.eclipse.jdt.core.dom.Message;
-import org.eclipse.jdt.debug.core.IJavaBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaBreakpointListener;
-import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaExceptionBreakpoint;
-import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
-import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
@@ -69,6 +64,7 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.zest.core.widgets.Graph;
@@ -104,6 +100,8 @@ public class PandionJView extends ViewPart {
 	private Map<String, Image> images;
 	private IToolBarManager toolBar;
 
+	private IContextService contextService;
+
 	
 
 	public PandionJView() {
@@ -117,10 +115,12 @@ public class PandionJView extends ViewPart {
 	
 	@Override
 	public void createPartControl(Composite parent) {
+		contextService = (IContextService)PlatformUI.getWorkbench().getService(IContextService.class);
+		
 		createWidgets(parent);
 		model = new CallStackModel();
 		debugEventListener = new DebugListener();
-		exceptionListener = new ExceptionListener();
+		exceptionListener = new PandionJBreakpointListener();
 
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
 		JDIDebugModel.addJavaBreakpointListener(exceptionListener);
@@ -128,46 +128,10 @@ public class PandionJView extends ViewPart {
 		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
+		
+		
 		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
 		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
-		addToolbarAction("Step into", false, "stepinto.gif", null, new Action() {
-			public void run() {
-				try {
-					model.getTopFrame().getStackFrame().getThread().stepInto();
-				} catch (DebugException e) {
-					e.printStackTrace();
-				}
-			}
-
-			public boolean isEnabled() {
-				return true;
-				//return !model.isEmpty() && model.getTopFrame().getStackFrame().getThread().canStepInto();
-			}
-		});
-
-		addToolbarAction("Step over", false, "stepover.gif", null, () -> {
-			try {
-				model.getTopFrame().getStackFrame().getThread().stepOver();
-			} catch (DebugException e) {
-				e.printStackTrace();
-			}
-		}); 
-
-		addToolbarAction("Resume", false, "resume.gif", null, () -> {
-			try {
-				model.getTopFrame().getStackFrame().getThread().resume();
-			} catch (DebugException e) {
-				e.printStackTrace();
-			}
-		}); 
-
-		addToolbarAction("Terminate", false, "terminate.gif", null, () -> {
-			try {
-				model.getTopFrame().getStackFrame().getThread().getLaunch().terminate();
-			} catch (DebugException e) {
-				e.printStackTrace();
-			}
-		}); 
 	}
 
 
@@ -235,6 +199,7 @@ public class PandionJView extends ViewPart {
 	@Override
 	public void setFocus() {
 		scroll.setFocus();
+		contextService.activateContext("pt.iscte.pandionj.context");
 	}
 
 	private class DebugListener implements IDebugEventSetListener {
@@ -266,36 +231,9 @@ public class PandionJView extends ViewPart {
 		}
 	}
 
+	
 
-
-
-
-	private class ExceptionListener implements IJavaBreakpointListener {
-		public int breakpointHit(IJavaThread thread, IJavaBreakpoint breakpoint) {
-			if(breakpoint instanceof IJavaLineBreakpoint) {
-				if(!thread.isPerformingEvaluation()) {
-					handleLinebreakPoint(thread);
-					return IJavaBreakpointListener.SUSPEND;
-				}
-			}
-			else if (breakpoint instanceof IJavaExceptionBreakpoint) {
-				handleExceptionBreakpoint(thread, (IJavaExceptionBreakpoint) breakpoint);
-				return IJavaBreakpointListener.SUSPEND;
-			}
-			return IJavaBreakpointListener.DONT_SUSPEND;
-		}
-
-		public int installingBreakpoint(IJavaDebugTarget target, IJavaBreakpoint breakpoint, IJavaType type) {
-			return IJavaBreakpointListener.DONT_CARE;
-		}
-
-		public void breakpointRemoved(IJavaDebugTarget target, IJavaBreakpoint breakpoint) { }
-		public void breakpointInstalled(IJavaDebugTarget target, IJavaBreakpoint breakpoint) { }
-		public void breakpointHasRuntimeException(IJavaLineBreakpoint breakpoint, DebugException exception) { }
-		public void addingBreakpoint(IJavaDebugTarget target, IJavaBreakpoint breakpoint) { }
-		public void breakpointHasCompilationErrors(IJavaLineBreakpoint breakpoint, Message[] errors) { }
-	}
-
+	
 	void handleLinebreakPoint(IJavaThread thread) {
 		try {
 			exception = null;
@@ -454,6 +392,10 @@ public class PandionJView extends ViewPart {
 			header = new Label(compositeHeader, SWT.BORDER);
 			FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
 
+//			Slider slider = new Slider(compositeHeader, SWT.HORIZONTAL | SWT.BORDER);
+//			slider.setMaximum(1);
+//			slider.setMaximum(4);
+			
 			gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 			compositeViewer = new Composite(this, SWT.NONE);
 			compositeViewer.setLayout(new FillLayout());
@@ -632,12 +574,13 @@ public class PandionJView extends ViewPart {
 	}
 
 	private void addToolbarAction(String name, boolean toggle, String imageName, String description, Action action) {
+		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
 		action.setImageDescriptor(ImageDescriptor.createFromImage(image(imageName)));
 		String tooltip = name;
 		if(description != null)
 			tooltip += "\n" + description;
 		action.setToolTipText(tooltip);
-		toolBar.add(action);
+		menuManager.add(action);
 	}
 
 	private void addToolbarAction(String name, boolean toggle, String imageName, String description, Runnable runnable) {

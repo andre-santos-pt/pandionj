@@ -19,5 +19,13 @@
             id="pt.iscte.pandionj.breakpointListener">
       </breakpointListener>
    </extension>
+   <extension
+         point="org.eclipse.ui.contexts">
+      <context
+            id="pt.iscte.pandionj.context"
+            name="PandionJ"
+            parentId="org.eclipse.ui.textEditorScope">
+      </context>
+   </extension>
 
 </plugin>

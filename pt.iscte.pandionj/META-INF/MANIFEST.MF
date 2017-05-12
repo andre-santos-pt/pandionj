@@ -16,3 +16,4 @@ Require-Bundle: pt.iscte.pandionj.parser,
  org.eclipse.jdt.launching;bundle-version="3.8.100"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
+Export-Package: pt.iscte.pandionj.extensibility
