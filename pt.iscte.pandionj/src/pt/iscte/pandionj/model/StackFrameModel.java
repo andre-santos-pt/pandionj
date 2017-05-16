@@ -32,6 +32,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
+import com.sun.jdi.Value;
 
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.Utils;
@@ -45,19 +46,18 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 
 public class StackFrameModel extends Observable {
-	interface ObserverTemp {
-		void updateEvent();
-		void newElement(ModelElement<?> e);
-	}
-	
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
 	private Map<Long, EntityModel<?>> objects;
 	private Map<Long, EntityModel<?>> looseObjects;
+
 	private ParserResult codeAnalysis;
 	private IFile srcFile;
 	private IJavaProject javaProject;
-	
+
+	private String toString;
+	private Value returnValue; // TODO
+
 	public StackFrameModel(IJavaStackFrame frame) {
 		this.frame = frame;
 		vars = new LinkedHashMap<>();
@@ -65,11 +65,11 @@ public class StackFrameModel extends Observable {
 		looseObjects = new HashMap<>();
 		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		codeAnalysis = ParserManager.getParserResult(srcFile);
-		
+
 		IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
-		System.out.println(srcFile.getProject());
 		javaProject = JavaCore.create(srcFile.getProject());
-		  
+
+		toString = calcString();
 	}
 
 	public IStackFrame getStackFrame() {
@@ -79,7 +79,7 @@ public class StackFrameModel extends Observable {
 	public IFile getSourceFile() {
 		return srcFile;
 	}
-	
+
 	public int getLineNumber() {
 		try {
 			return frame.getLineNumber();
@@ -88,7 +88,7 @@ public class StackFrameModel extends Observable {
 			return -1;
 		}
 	}
-	
+
 	public Variable getLocalVariable(String name) {
 		try {
 			int line = frame.getLineNumber();
@@ -120,6 +120,19 @@ public class StackFrameModel extends Observable {
 		}
 		setChanged();
 		notifyObservers();
+	}
+
+	public void setReturnValue(Value returnValue) {
+		this.returnValue = returnValue;
+		if(returnValue != null)
+			toString += " = " + returnValue.toString();
+		setChanged();
+		notifyObservers();
+	}
+
+	public Object getReturnValue() {
+		assert returnValue != null;
+		return returnValue.toString();
 	}
 
 	private void handleVariables() {
@@ -263,7 +276,7 @@ public class StackFrameModel extends Observable {
 				else {
 					e = new ObjectModel(obj, this);
 				}
-				
+
 				if(loose) {
 					looseObjects.put(obj.getUniqueId(), e);
 				}
@@ -302,21 +315,33 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	@Override
-	public String toString() {
+
+	private String calcString() {
 		try {
-			List<String> argumentTypeNames = frame.getArgumentTypeNames();
-			Utils.stripQualifiedNames(argumentTypeNames);
+			IJavaVariable[] localVariables = frame.getLocalVariables();
+			int nArgs = frame.getArgumentTypeNames().size();
+			List<String> args = new ArrayList<>(nArgs);
+//			for(int i = 0; i < nArgs; i++)
+//				args.add(localVariables[i].getValue().getValueString());
+
+
 			if(frame.isStaticInitializer())
 				return frame.getDeclaringTypeName();
 			else if(frame.isConstructor())
 				return "new " + frame.getReferenceType().getName();
-			else
-				return frame.getMethodName() + "(" + String.join(", ", argumentTypeNames) + ")";
+			else 
+				return frame.getMethodName() + "(" + String.join(", ", args) + ")";
+
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.toString();
 		}
+	}
+
+
+	@Override
+	public String toString() {
+		return toString;
 	}
 
 
@@ -370,15 +395,15 @@ public class StackFrameModel extends Observable {
 
 	public Collection<EntityModel<?>> getLooseObjects() {
 		return Collections.unmodifiableCollection(looseObjects.values());
-//		Collection<EntityModel<?>> referencedObjects = getReferencedObjects();
-//		List<EntityModel<?>> list = new ArrayList<>();
-//		
-//		for (EntityModel<?> m : objects.values())
-//			if(!referencedObjects.contains(m))
-//				list.add(m);
-//		return list;
+		//		Collection<EntityModel<?>> referencedObjects = getReferencedObjects();
+		//		List<EntityModel<?>> list = new ArrayList<>();
+		//		
+		//		for (EntityModel<?> m : objects.values())
+		//			if(!referencedObjects.contains(m))
+		//				list.add(m);
+		//		return list;
 	}
-	
+
 	private Collection<EntityModel<?>> getReferencedObjects() {
 		List<EntityModel<?>> list = new ArrayList<>();
 		for (VariableModel<?> var : vars.values()) {
@@ -478,46 +503,46 @@ public class StackFrameModel extends Observable {
 	//		return null;
 	//	}
 
-	
-//	private static class PathVisitor implements SiblingVisitor {
-//	ArrayList<String> path;
-//	boolean found;
-//	EntityModel<?> target;
-//
-//	public PathVisitor(EntityModel<?> target) {
-//		path = new ArrayList<>();
-//		this.target = target;
-//		found = false;
-//	}
-//
-//	public void visit(EntityModel<?> o, ObjectModel parent, int index, int depth, String field) {
-//		if(!found) {
-//			while(path.size() > 0 && path.size() >= depth)
-//				path.remove(path.size()-1);
-//
-//			if(field != null)
-//				path.add(field);
-//
-//			if(o.equals(target))
-//				found = true;
-//		}
-//	}
-//}
 
-//public String getReferenceNameTo2(EntityModel<?> object) {
-//	for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
-//		if(e.getValue() instanceof ReferenceModel) {
-//			EntityModel<?> el = ((ReferenceModel) e.getValue()).getModelTarget();
-//			if(el instanceof ObjectModel) {
-//				PathVisitor v = new PathVisitor(object);
-//				((ObjectModel) el).traverseSiblings(v, false);
-//				if(v.found)
-//					return  v.path.isEmpty() ? e.getKey() : e.getKey() + "." + String.join(".", v.path);
-//			}
-//		}
-//	}
-//	return null;
-//}
+	//	private static class PathVisitor implements SiblingVisitor {
+	//	ArrayList<String> path;
+	//	boolean found;
+	//	EntityModel<?> target;
+	//
+	//	public PathVisitor(EntityModel<?> target) {
+	//		path = new ArrayList<>();
+	//		this.target = target;
+	//		found = false;
+	//	}
+	//
+	//	public void visit(EntityModel<?> o, ObjectModel parent, int index, int depth, String field) {
+	//		if(!found) {
+	//			while(path.size() > 0 && path.size() >= depth)
+	//				path.remove(path.size()-1);
+	//
+	//			if(field != null)
+	//				path.add(field);
+	//
+	//			if(o.equals(target))
+	//				found = true;
+	//		}
+	//	}
+	//}
+
+	//public String getReferenceNameTo2(EntityModel<?> object) {
+	//	for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
+	//		if(e.getValue() instanceof ReferenceModel) {
+	//			EntityModel<?> el = ((ReferenceModel) e.getValue()).getModelTarget();
+	//			if(el instanceof ObjectModel) {
+	//				PathVisitor v = new PathVisitor(object);
+	//				((ObjectModel) el).traverseSiblings(v, false);
+	//				if(v.found)
+	//					return  v.path.isEmpty() ? e.getKey() : e.getKey() + "." + String.join(".", v.path);
+	//			}
+	//		}
+	//	}
+	//	return null;
+	//}
 
 
 }

@@ -3,7 +3,6 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Observable;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.model.IStackFrame;

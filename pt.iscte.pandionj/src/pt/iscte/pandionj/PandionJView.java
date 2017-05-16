@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IMarker;
@@ -18,12 +19,19 @@ import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
+import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.jdi.internal.VirtualMachineImpl;
+import org.eclipse.jdi.internal.request.MethodExitRequestImpl;
 import org.eclipse.jdt.debug.core.IJavaBreakpointListener;
+import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaExceptionBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
+import org.eclipse.jdt.internal.debug.core.IJDIEventListener;
+import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
+import org.eclipse.jdt.internal.debug.core.model.JDIThread;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -72,22 +80,25 @@ import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.ZestStyles;
 import org.osgi.framework.Bundle;
 
+import com.sun.jdi.event.Event;
+import com.sun.jdi.event.EventSet;
+import com.sun.jdi.event.MethodExitEvent;
+
 import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
 // TODO reload everything on view init
 public class PandionJView extends ViewPart { 
-
 	private static PandionJView instance;
-	
+
 	private CallStackModel model;
 	private IStackFrame exceptionFrame;
 	private String exception;
 	private int debugStep;
 
 	private IDebugEventSetListener debugEventListener;
-	private IJavaBreakpointListener exceptionListener;
+	private PandionJBreakpointListener breakpointListener;
 
 	private ScrolledComposite scroll; 
 	private Composite area;
@@ -98,11 +109,11 @@ public class PandionJView extends ViewPart {
 	private StackLayout stackLayout;
 
 	private Map<String, Image> images;
-	private IToolBarManager toolBar;
 
 	private IContextService contextService;
 
-	
+
+	private IToolBarManager toolBar;
 
 	public PandionJView() {
 		instance = this;
@@ -112,24 +123,25 @@ public class PandionJView extends ViewPart {
 	public static PandionJView getInstance() {
 		return instance;
 	}
-	
+
 	@Override
 	public void createPartControl(Composite parent) {
 		contextService = (IContextService)PlatformUI.getWorkbench().getService(IContextService.class);
-		
+
 		createWidgets(parent);
 		model = new CallStackModel();
 		debugEventListener = new DebugListener();
-		exceptionListener = new PandionJBreakpointListener();
+		breakpointListener = new PandionJBreakpointListener();
 
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
-		JDIDebugModel.addJavaBreakpointListener(exceptionListener);
+		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
+		
 		toolBar = getViewSite().getActionBars().getToolBarManager();
 		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
-		
-		
+
+
 		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
 		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
 	}
@@ -139,8 +151,7 @@ public class PandionJView extends ViewPart {
 	public void dispose() {
 		super.dispose();
 		DebugPlugin.getDefault().removeDebugEventListener(debugEventListener);
-		JDIDebugModel.removeJavaBreakpointListener(exceptionListener);
-
+		JDIDebugModel.removeJavaBreakpointListener(breakpointListener);
 		for(Image img : images.values())
 			img.dispose();
 
@@ -169,7 +180,7 @@ public class PandionJView extends ViewPart {
 		scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
 		area = new Composite(scroll, SWT.NONE);
 		area.setBackground(Constants.WHITE_COLOR);
-
+		
 		scroll.setContent(area);
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
@@ -203,23 +214,66 @@ public class PandionJView extends ViewPart {
 	}
 
 	private class DebugListener implements IDebugEventSetListener {
+		IStackFrame[] prev;
+		boolean stackChange(IStackFrame[] frames) {
+			if(prev == null)
+				return true;
+			
+			if(prev.length != frames.length)
+				return true;
+			
+			for(int i = 0; i < frames.length; i++)
+				if(frames[i] != prev[i])
+					return true;
+			
+			return false;
+		}
+		
 		public void handleDebugEvents(DebugEvent[] events) {
 			if(events.length > 0) {
 				DebugEvent e = events[0];
 				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
-					IThread thread = (IThread) e.getSource();
+					IJavaThread thread = (IJavaThread) e.getSource();
 					try {
-						handleFrames(thread.getStackFrames());
-					} catch (DebugException ex) {
-						ex.printStackTrace();
+						int line = thread.getTopStackFrame().getLineNumber();
+						if(line == -1)
+							thread.resume();
+
+						IStackFrame[] stackFrames = thread.getStackFrames();
+						// return
+						if(stackChange(stackFrames)) { 
+							System.out.println("stack change - " + stackFrames.length );
+							if(stackFrames.length > 0 && prev != null && 
+									prev.length > 0 && thread.getTopStackFrame() == prev[1]) {
+							
+									model.getTopFrame().setReturnValue(breakpointListener.getLastReturn());
+								System.out.println("return");
+							}
+							else {
+								handleFrames(thread.getStackFrames());
+							}
+							prev = stackFrames;
+							
+						}
+					} catch (DebugException e1) {
+						e1.printStackTrace();
 					}
+//					try {
+//						handleFrames(thread.getStackFrames());
+//						int line = thread.getTopStackFrame().getLineNumber();
+//						
+//						if(line == -1)
+//							thread.resume();
+//					} catch (DebugException ex) {
+//						ex.printStackTrace();
+//					}
 				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
 					terminate();
 				}
 			}
 		}
-
+		
 		private void terminate() {
 			//clearView(true);
 
@@ -231,9 +285,9 @@ public class PandionJView extends ViewPart {
 		}
 	}
 
-	
 
-	
+
+
 	void handleLinebreakPoint(IJavaThread thread) {
 		try {
 			exception = null;
@@ -255,13 +309,15 @@ public class PandionJView extends ViewPart {
 
 			handleFrames(frames);
 			int line = exceptionFrame.getLineNumber();
-			model.getTopFrame().processException();  // TODO no top frame?
-			//					thread.terminate();
+			if(!model.isEmpty()) {
+				model.getTopFrame().processException();  // TODO no top frame?
+				//					thread.terminate();
 
-			Display.getDefault().asyncExec(() -> {
-				String msg = exception + " on line " + line;
-				stackView.setError(msg);
-			});
+				Display.getDefault().asyncExec(() -> {
+					String msg = exception + " on line " + line;
+					stackView.setError(msg);
+				});
+			}
 
 		} catch (DebugException e) {
 			e.printStackTrace();
@@ -302,7 +358,9 @@ public class PandionJView extends ViewPart {
 
 		Display.getDefault().asyncExec(new Runnable() {
 			public void run() {
-				stackView.updateFrames(model.getStackPath());
+				List<StackFrameModel> stackPath = model.getStackPath();
+				List<StackFrameModel> filteredStack = stackPath.stream().filter((f) -> f.getLineNumber() != -1).collect(Collectors.toList());
+				stackView.updateFrames(filteredStack);
 				scroll.setOrigin(scroll.getOrigin().x, Integer.MAX_VALUE);
 			}
 		});
@@ -310,251 +368,6 @@ public class PandionJView extends ViewPart {
 
 
 
-	private class StackView extends Composite {
-		double zoom;
-		List<FrameView> frames;
-
-		public StackView(Composite parent) {
-			super(parent, SWT.NONE);
-			setBackground(Constants.WHITE_COLOR);
-			setLayout(new GridLayout(1, true));
-			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-			frames = new ArrayList<>();
-			zoom = 1.0;
-		}
-
-		public void setError(String msg) {
-			frames.get(frames.size()-1).setError(msg);
-		}
-
-		public void updateFrames(List<StackFrameModel> stackPath) {
-			int diff = stackPath.size() - frames.size();
-
-			while(diff > 0) {
-				frames.add(new FrameView(this));
-				diff--;
-			}
-			while(diff < 0) {
-				frames.remove(frames.size()-1).dispose();
-				diff++;
-			}
-
-			assert stackPath.size() == frames.size();
-
-			for(int i = 0; i < stackPath.size(); i++) {
-				StackFrameModel model = stackPath.get(i);
-				frames.get(i).setInput(model);
-				frames.get(i).setExpanded(i == stackPath.size()-1);
-			}
-		}
-
-		public void zoomIn() {
-			zoom *= 1.05;
-			for(FrameView frame : frames)
-				frame.setZoom(zoom);
-		}
-
-		public void zoomOut() {
-			zoom *= .95;
-			for(FrameView frame : frames)
-				frame.setZoom(zoom);
-		}
-
-		public boolean isEmpty() {
-			return frames.isEmpty();
-		}
-
-		public void copyToClipBoard() {
-			if(!frames.isEmpty())
-				frames.get(frames.size()-1).copyToClipBoard();
-		}
-	}
-
-
-	private class FrameView extends Composite {
-		GraphViewerZoomable viewer;
-		Composite compositeHeader;
-		Composite compositeViewer;
-		StackFrameModel model;
-		Label header;
-		GridData gridData;
-		public FrameView(Composite parent) {
-			super(parent, SWT.BORDER);
-			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-			GridLayout layout = new GridLayout(1, false);
-			setLayout(layout);
-
-			compositeHeader = new Composite(this, SWT.NONE);
-			compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
-			compositeHeader.setLayout(new RowLayout());
-
-			new Label(compositeHeader,SWT.NONE).setImage(image("frame.gif"));
-			header = new Label(compositeHeader, SWT.BORDER);
-			FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
-
-//			Slider slider = new Slider(compositeHeader, SWT.HORIZONTAL | SWT.BORDER);
-//			slider.setMaximum(1);
-//			slider.setMaximum(4);
-			
-			gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-			compositeViewer = new Composite(this, SWT.NONE);
-			compositeViewer.setLayout(new FillLayout());
-			compositeViewer.setLayoutData(gridData);
-
-			viewer = new GraphViewerZoomable(compositeViewer, SWT.BORDER);
-			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
-			viewer.setContentProvider(new NodeProvider());
-			viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
-			viewer.setLabelProvider(new FigureProvider(viewer.getGraphControl()));
-			viewer.getGraphControl().addControlListener(new ControlAdapter() {
-				public void controlResized(ControlEvent e) {
-					parent.layout();
-				}
-			});
-
-			header.addMouseListener(new MouseAdapter() {
-				@Override
-				public void mouseDown(MouseEvent e) {
-					setExpanded(!isExpanded());
-
-				}
-			});
-
-			viewer.addDoubleClickListener(new IDoubleClickListener() {
-
-				@Override
-				public void doubleClick(DoubleClickEvent event) {
-					//					navigateToLine(model.getSourceFile(), model.getLineNumber());
-					if(!event.getSelection().isEmpty()) {
-						IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-						Object obj = selection.getFirstElement();
-						GraphItem item = viewer.findGraphItem(obj);
-						Object data = item.getData();
-					}
-				}
-			});
-			viewer.addSelectionChangedListener(new ISelectionChangedListener() {
-
-				@Override
-				public void selectionChanged(SelectionChangedEvent event) {
-					System.out.println(event.getSelection());
-				}
-			});
-
-		}
-
-
-
-		public void setExpanded(boolean expanded) {
-			setLayoutData(new GridData(SWT.FILL, expanded ? SWT.FILL : SWT.DEFAULT, true, expanded));
-			gridData.exclude = !expanded;
-			compositeViewer.setVisible(expanded);
-			getParent().layout();
-			if(expanded)
-				navigateToLine(model.getSourceFile(), model.getLineNumber());
-		}
-
-		public boolean isExpanded() {
-			return !gridData.exclude;
-		}
-
-		public void setZoom(double zoom) {
-			viewer.setZoom(zoom);
-		}
-
-		public void setError(String message) {
-			setBackground(Constants.ERROR_COLOR);
-			header.setToolTipText(message);
-		}
-
-		void setInput(StackFrameModel frameModel) {
-			setBackground(null);
-			header.setToolTipText("");
-			viewer.getGraphControl().setToolTipText(frameModel.getSourceFile().getName() + " on line " + frameModel.getLineNumber());
-			if(this.model != frameModel) {
-				String headerText = frameModel.toString();
-				header.setText(headerText);
-				compositeHeader.pack();
-				this.model = frameModel;
-				viewer.setInput(frameModel);
-				viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
-				viewer.getGraphControl().setEnabled(true);
-				frameModel.registerDisplayObserver(new Observer() {
-					public void update(Observable o, Object e) {
-						viewer.refresh(); // TODO dupla chamada?
-						viewer.applyLayout();
-					}
-				}, viewer.getControl());
-				getParent().layout();
-			}
-		}
-
-		void copyToClipBoard() {
-			Graph item = viewer.getGraphControl();
-			Point p = item.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-
-			Rectangle size = item.getClientArea();
-
-			System.out.println(p +  "    " + size);
-			//			compositeViewer.setBackground(Constants.HIGHLIGHT_COLOR);
-			GC gc = new GC(item);
-			//			Rectangle clipping2 = gc.getClipping();
-			//			Image img = new Image(Display.getDefault(), size.width, size.height);
-			//			gc.copyArea(img, 0, 0);
-			//			ImageData imageData = img.getImageData();
-
-			RGB[] rgb = new RGB[256];
-			// build grey scale palette: 256 different grey values are generated. 
-			for (int i = 0; i < 256; i++) {
-				rgb[i] = new RGB(i, i, i);
-			}
-
-			// Construct a new indexed palette given an array of RGB values.
-			PaletteData palette = new PaletteData(rgb);
-			Image img2 = new Image(Display.getDefault(), new ImageData(size.width, size.height, 8, palette));
-			//			gc.setClipping(0, 0, p.x, p.y);
-			gc.copyArea(img2, 0, 0);
-			Shell popup = new Shell(Display.getDefault());
-			popup.setText("Image");
-			popup.setBounds(50, 50, 200, 200);
-			Canvas canvas = new Canvas(popup, SWT.NONE);
-			canvas.setBounds(img2.getBounds());
-			canvas.addPaintListener(new PaintListener() {
-				public void paintControl(PaintEvent e) {
-					e.gc.drawImage(img2, 0, 0);
-				}
-			});
-			popup.open();
-			Clipboard clipboard = new Clipboard(Display.getDefault());
-			clipboard.setContents(new Object[]{img2.getImageData()}, new Transfer[]{ ImageTransfer.getInstance()}); 
-			img2.dispose();
-			gc.dispose();
-		}
-	}
-
-	private static void navigateToLine(IFile file, Integer line) {
-		HashMap<String, Object> map = new HashMap<String, Object>();
-		map.put(IMarker.LINE_NUMBER, line);
-		IMarker marker = null;
-		try {
-			marker = file.createMarker(IMarker.TEXT);
-			marker.setAttributes(map);
-			try {
-				IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), marker);
-			} catch ( PartInitException e ) {
-				//complain
-			}
-		} catch ( CoreException e1 ) {
-			//complain
-		} finally {
-			try {
-				if (marker != null)
-					marker.delete();
-			} catch ( CoreException e ) {
-				//whatever
-			}
-		}
-	}
 
 	private void addMenuBarItems() {
 		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
@@ -592,6 +405,12 @@ public class PandionJView extends ViewPart {
 		addToolbarAction(name, toggle, imageName, description, a);
 	}
 
+	
+	
+	
+	
+	
+	
 	//	private IDebugContextListener debugUiListener;
 	//	debugUiListener = new DebugUIListener();
 	//	DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);

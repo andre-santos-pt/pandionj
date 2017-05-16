@@ -45,6 +45,7 @@ import com.sun.jdi.ObjectReference;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.ParamsDialog;
 import pt.iscte.pandionj.model.EntityModel;
 import pt.iscte.pandionj.model.ObjectModel;
 
@@ -157,17 +158,19 @@ public class ObjectFigure extends RoundedRectangle {
 							});	
 						}
 						else {
-							ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), p.x, p.y, m);
+							ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), m);
+							prompt.setLocation(p.x, p.y);
 							if(prompt.open()) {
 								IJavaDebugTarget debugTarget = (IJavaDebugTarget) model.getStackFrame().getStackFrame().getDebugTarget();
 								IJavaValue[] values = null;
+								String[] stringValues = prompt.getValues();
 								try {
-									values = createValues(m, prompt.values, debugTarget);
+									values = createValues(m, stringValues, debugTarget);
 								} catch (DebugException e1) {
 									e1.printStackTrace();
 								}
 								ret = model.invoke(m, values);
-								args = String.join(", ", prompt.values);
+								args = String.join(", ", stringValues);
 							}
 						}
 
@@ -255,7 +258,6 @@ public class ObjectFigure extends RoundedRectangle {
 	// TODO: move to Primitive type
 	private IJavaValue[] createValues(IMethod m, String[] values, IJavaDebugTarget debugger) throws DebugException {
 		assert values.length == m.getNumberOfParameters();
-
 		IJavaValue[] v = new IJavaValue[values.length];
 		for(int i = 0; i < v.length; i++) {
 			String pType = Signature.toString(m.getParameterTypes()[i]);
@@ -283,118 +285,7 @@ public class ObjectFigure extends RoundedRectangle {
 
 	}
 
-	private class ParamsDialog {
-		Shell shell;
-		Text[] textFields;
-		String[] values;
-		public ParamsDialog(Shell parent, int x, int y, IMethod m) {
-			shell = new Shell(parent, SWT.PRIMARY_MODAL);
-			shell.setText(m.getElementName());
-			//			org.eclipse.swt.layout.GridLayout layout = new org.eclipse.swt.layout.GridLayout(m.getNumberOfParameters(), true);
-			//			layout.marginLeft = 0;
-			//			layout.marginTop = 0;
-			//			layout.horizontalSpacing = 0;
-			//			layout.verticalSpacing = 0;
-
-			shell.setLayout(new RowLayout());
-			org.eclipse.swt.widgets.Label label = new org.eclipse.swt.widgets.Label(shell, SWT.NONE);
-			label.setText(m.getElementName() + " (");
-			FontManager.setFont(label, Constants.BUTTON_FONT_SIZE);
-
-			textFields = new Text[m.getNumberOfParameters()];
-			for(int i = 0; i < m.getNumberOfParameters(); i++) {
-				if(i != 0) {
-					org.eclipse.swt.widgets.Label comma = new org.eclipse.swt.widgets.Label(shell, SWT.NONE);
-					FontManager.setFont(comma, Constants.BUTTON_FONT_SIZE);
-					comma.setText(", ");
-				}
-				;
-				String pType = Signature.toString(m.getParameterTypes()[i]);
-				Text text = new org.eclipse.swt.widgets.Text(shell, SWT.BORDER);
-				text.setToolTipText(pType);
-				//				text.setLayoutData(new Row(40, 20));
-				FontManager.setFont(text, Constants.BUTTON_FONT_SIZE);
-				textFields[i] = text;
-				int ii = i;
-				text.addFocusListener(new FocusAdapter() {
-					public void focusLost(FocusEvent e) {
-						text.setForeground(valid() ? null : Constants.ERROR_COLOR);
-					}
-
-					public void focusGained(FocusEvent e) {
-						text.selectAll();
-					}
-
-					private boolean valid() {
-						String val = text.getText();
-						try {
-							if(pType.equals(String.class.getName())) return val.matches("\"(.)*\"|null");
-
-							if(pType.equals(char.class.getName())) return val.matches("'.'");
-
-							if(pType.equals(boolean.class.getName())) Boolean.parseBoolean(val);
-							if(pType.equals(byte.class.getName())) Byte.parseByte(val);
-							if(pType.equals(short.class.getName())) Short.parseShort(val);
-							if(pType.equals(int.class.getName())) Integer.parseInt(val);
-							if(pType.equals(long.class.getName())) Long.parseLong(val);
-							if(pType.equals(float.class.getName())) Float.parseFloat(val);
-							if(pType.equals(double.class.getName())) Double.parseDouble(val);
-
-							// TODO arrays, null, refs
-						}
-						catch(RuntimeException e) {
-							return false;
-						}
-						return true;
-					}
-				});
-				text.addKeyListener(new KeyAdapter() {
-					public void keyPressed(KeyEvent e) {
-						if(e.keyCode == SWT.CR) {
-							if(ii == textFields.length-1) {
-								values = new String[textFields.length];
-								for(int j = 0; j < values.length; j++)
-									values[j] = textFields[j].getText();
-
-								shell.close();
-							}
-							else {
-								textFields[ii+1].setFocus();
-							}
-							//shell.close();
-						}
-
-					}
-
-
-				});
-			}
-			org.eclipse.swt.widgets.Label close = new org.eclipse.swt.widgets.Label(shell, SWT.NONE);
-			FontManager.setFont(close, Constants.BUTTON_FONT_SIZE);
-			close.setText(")");
-
-			shell.addKeyListener(new KeyAdapter() {
-				public void keyPressed(KeyEvent e) {
-					if(e.keyCode == SWT.CR) {
-						shell.close();
-					}
-				}
-			});
-			shell.setLocation(x, y);
-			shell.pack();
-		}
-
-
-
-		boolean open() {
-			shell.open();
-			while(!shell.isDisposed())
-				if(!shell.getDisplay().readAndDispatch())
-					shell.getDisplay().sleep();
-
-			return values != null;
-		}
-	}
+	
 
 	private class ResultDialog {
 		Shell shell;

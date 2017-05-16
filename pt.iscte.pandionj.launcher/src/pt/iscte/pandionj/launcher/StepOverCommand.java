@@ -9,20 +9,13 @@ public class StepOverCommand extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		try {
-			for(IThread t : LaunchCommand.launch.getDebugTarget().getThreads())
-				if(t.canStepOver())
-					t.stepOver();
-
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
+		Activator.stepOver();
 		return null;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return LaunchCommand.launch != null && !LaunchCommand.launch.isTerminated();
+		return Activator.isExecutingLaunch();
 	}
 
 

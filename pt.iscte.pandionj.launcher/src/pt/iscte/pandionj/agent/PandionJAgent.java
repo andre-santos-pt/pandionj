@@ -24,7 +24,7 @@ public class PandionJAgent {
 		inst.addTransformer(new ClassFileTransformer() {
 			@Override
 			public byte[] transform(ClassLoader classLoader, String s, Class<?> aClass, ProtectionDomain protectionDomain, byte[] bytes) throws IllegalClassFormatException {
-				if(!s.startsWith("java/") && !s.startsWith("sun/")) {
+				if(s.equals(agentArgs)) {
 					try {
 						ClassPool cp = ClassPool.getDefault();
 

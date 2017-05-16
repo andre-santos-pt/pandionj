@@ -8,17 +8,13 @@ public class TerminateCommand extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		try {
-			LaunchCommand.launch.terminate();
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
+		Activator.terminate();
 		return null;
 	}
 
 	@Override
 	public boolean isEnabled() {
-		return LaunchCommand.launch != null && !LaunchCommand.launch.isTerminated();
+		return Activator.isExecutingLaunch();
 	}
 	
 	
