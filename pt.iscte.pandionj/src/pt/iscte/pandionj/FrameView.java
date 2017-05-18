@@ -22,6 +22,7 @@ import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
@@ -62,11 +63,12 @@ class FrameView extends Composite {
 
 			compositeHeader = new Composite(this, SWT.NONE);
 			compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
-			compositeHeader.setLayout(new RowLayout());
+			compositeHeader.setLayout(new FillLayout());
 
 			// TODO image manager
 //			new Label(compositeHeader,SWT.NONE).setImage(image("frame.gif"));
 			header = new Label(compositeHeader, SWT.BORDER);
+			
 			FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
 
 			//			Slider slider = new Slider(compositeHeader, SWT.HORIZONTAL | SWT.BORDER);
@@ -137,29 +139,43 @@ class FrameView extends Composite {
 			viewer.setZoom(zoom);
 		}
 
-		public void setError(String message) {
+		private void setError(String message) {
 			setBackground(Constants.ERROR_COLOR);
 			header.setToolTipText(message);
 		}
 
 		void setInput(StackFrameModel frameModel) {
-			setBackground(null);
+			Color c = frameModel.isObsolete() ? ColorManager.getColor(150, 150, 150) : null;
+			setBackground(c);
+//			header.setBackground(c);
+			
 			header.setToolTipText("");
 			viewer.getGraphControl().setToolTipText(frameModel.getSourceFile().getName() + " on line " + frameModel.getLineNumber());
 			if(this.model != frameModel) {
-				String headerText = frameModel.toString();
+				this.model = frameModel;
+				String headerText = frameModel.getInvocationExpression();
 				header.setText(headerText);
 				compositeHeader.pack();
-				this.model = frameModel;
 				viewer.setInput(frameModel);
 				viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
 				viewer.getGraphControl().setEnabled(true);
+				if(frameModel.isObsolete())
+					setBackground(ColorManager.getColor(150, 150, 150));
+				
+				setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
+				
 				frameModel.registerDisplayObserver(new Observer() {
 					public void update(Observable o, Object e) {
-						header.setText(frameModel.toString());
+						header.setText(frameModel.getInvocationExpression());
 						compositeHeader.pack();
 						viewer.refresh(); // TODO dupla chamada?
 						viewer.applyLayout();
+						if(model.exceptionOccurred())
+							setError(model.getExceptionMessage());
+						else if(frameModel.isObsolete())
+							setBackground(ColorManager.getColor(150, 150, 150));
+						
+						setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
 					}
 				}, viewer.getControl());
 				getParent().layout();

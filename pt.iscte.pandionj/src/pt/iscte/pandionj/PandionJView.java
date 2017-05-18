@@ -95,7 +95,6 @@ public class PandionJView extends ViewPart {
 	private CallStackModel model;
 	private IStackFrame exceptionFrame;
 	private String exception;
-	private int debugStep;
 
 	private IDebugEventSetListener debugEventListener;
 	private PandionJBreakpointListener breakpointListener;
@@ -130,17 +129,18 @@ public class PandionJView extends ViewPart {
 
 		createWidgets(parent);
 		model = new CallStackModel();
+		stackView.setInput(model);
+
 		debugEventListener = new DebugListener();
-		breakpointListener = new PandionJBreakpointListener();
+		breakpointListener = new PandionJBreakpointListener(model);
 
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
 		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
-		
+
 		toolBar = getViewSite().getActionBars().getToolBarManager();
 		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
-
 
 		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
 		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
@@ -180,7 +180,7 @@ public class PandionJView extends ViewPart {
 		scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
 		area = new Composite(scroll, SWT.NONE);
 		area.setBackground(Constants.WHITE_COLOR);
-		
+
 		scroll.setContent(area);
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
@@ -218,63 +218,39 @@ public class PandionJView extends ViewPart {
 		boolean stackChange(IStackFrame[] frames) {
 			if(prev == null)
 				return true;
-			
+
 			if(prev.length != frames.length)
 				return true;
-			
+
 			for(int i = 0; i < frames.length; i++)
 				if(frames[i] != prev[i])
 					return true;
-			
+
 			return false;
 		}
-		
+
 		public void handleDebugEvents(DebugEvent[] events) {
 			if(events.length > 0) {
 				DebugEvent e = events[0];
 				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 					IJavaThread thread = (IJavaThread) e.getSource();
 					try {
-						int line = thread.getTopStackFrame().getLineNumber();
-						if(line == -1)
+						if(thread.getTopStackFrame().getLineNumber() == -1)
 							thread.resume();
 
-						IStackFrame[] stackFrames = thread.getStackFrames();
-						// return
-						if(stackChange(stackFrames)) { 
-							System.out.println("stack change - " + stackFrames.length );
-							if(stackFrames.length > 0 && prev != null && 
-									prev.length > 0 && thread.getTopStackFrame() == prev[1]) {
-							
-									model.getTopFrame().setReturnValue(breakpointListener.getLastReturn());
-								System.out.println("return");
-							}
-							else {
-								handleFrames(thread.getStackFrames());
-							}
-							prev = stackFrames;
-							
-						}
-					} catch (DebugException e1) {
-						e1.printStackTrace();
+						handleFrames(thread.getStackFrames());
+					} 
+					catch (DebugException ex) {
+						ex.printStackTrace();
 					}
-//					try {
-//						handleFrames(thread.getStackFrames());
-//						int line = thread.getTopStackFrame().getLineNumber();
-//						
-//						if(line == -1)
-//							thread.resume();
-//					} catch (DebugException ex) {
-//						ex.printStackTrace();
-//					}
 				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
-					terminate();
+					model.setTerminated();
 				}
 			}
 		}
-		
-		private void terminate() {
+
+//		private void terminate() {
 			//clearView(true);
 
 			//			Display.getDefault().asyncExec(() -> {
@@ -282,7 +258,7 @@ public class PandionJView extends ViewPart {
 			//					view.setEnabled(false);
 			//				}
 			//			});
-		}
+//		}
 	}
 
 
@@ -304,19 +280,17 @@ public class PandionJView extends ViewPart {
 			thread.terminateEvaluation();
 			exception = exceptionBreakPoint.getExceptionTypeName();
 			exceptionFrame = thread.getTopStackFrame();
-			debugStep = 0;
 			IStackFrame[] frames = thread.getStackFrames(); 
-
 			handleFrames(frames);
-			int line = exceptionFrame.getLineNumber();
 			if(!model.isEmpty()) {
-				model.getTopFrame().processException();  // TODO no top frame?
-				//					thread.terminate();
+				StackFrameModel frame = model.getFrame(exceptionFrame);
+				int line = exceptionFrame.getLineNumber();
+				frame.processException(exception, line);  
 
-				Display.getDefault().asyncExec(() -> {
-					String msg = exception + " on line " + line;
-					stackView.setError(msg);
-				});
+//				Display.getDefault().asyncExec(() -> {
+//					String msg = exception + " on line " + line;
+//					stackView.setError(exception, msg);
+//				});
 			}
 
 		} catch (DebugException e) {
@@ -345,25 +319,7 @@ public class PandionJView extends ViewPart {
 				scroll.getParent().layout();
 			});
 		}
-		int unchanged = model.handle(frames);
-		//		Display.getDefault().syncExec(() -> {
-		//			Control[] items = frameComposite.getChildren();
-		//			for(int i = unchanged+1; i < items.length; i++)
-		//				items[i].dispose();
-		//		});
-
-		//Display.getDefault().syncExec(() -> clearView(false));
-
-		model.update(debugStep++);
-
-		Display.getDefault().asyncExec(new Runnable() {
-			public void run() {
-				List<StackFrameModel> stackPath = model.getStackPath();
-				List<StackFrameModel> filteredStack = stackPath.stream().filter((f) -> f.getLineNumber() != -1).collect(Collectors.toList());
-				stackView.updateFrames(filteredStack);
-				scroll.setOrigin(scroll.getOrigin().x, Integer.MAX_VALUE);
-			}
-		});
+		model.update(frames);
 	}
 
 
@@ -405,12 +361,12 @@ public class PandionJView extends ViewPart {
 		addToolbarAction(name, toggle, imageName, description, a);
 	}
 
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	//	private IDebugContextListener debugUiListener;
 	//	debugUiListener = new DebugUIListener();
 	//	DebugUITools.getDebugContextManager().addDebugContextListener(debugUiListener);

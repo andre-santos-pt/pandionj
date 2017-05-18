@@ -7,65 +7,75 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 
+import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
 class StackView extends Composite {
 		double zoom;
-		List<FrameView> frames;
-
-		public StackView(Composite parent) {
+		List<FrameView> frameViews;
+		CallStackModel model;
+		
+		StackView(Composite parent) {
 			super(parent, SWT.NONE);
 			setBackground(Constants.WHITE_COLOR);
 			setLayout(new GridLayout(1, true));
 			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-			frames = new ArrayList<>();
+			frameViews = new ArrayList<>();
 			zoom = 1.0;
 		}
 
-		public void setError(String msg) {
-			frames.get(frames.size()-1).setError(msg);
+		void setInput(CallStackModel model) {
+			assert model != null;
+			this.model = model;
+			model.addObserver((o,a) -> 
+				Display.getDefault().asyncExec(() -> updateFrames(model.getFilteredStackPath()))
+			);
 		}
-
-		public void updateFrames(List<StackFrameModel> stackPath) {
-			int diff = stackPath.size() - frames.size();
+		
+		private void updateFrames(List<StackFrameModel> stackPath) {
+			int diff = stackPath.size() - frameViews.size();
 
 			while(diff > 0) {
-				frames.add(new FrameView(this));
+				frameViews.add(new FrameView(this));
 				diff--;
 			}
 			while(diff < 0) {
-				frames.remove(frames.size()-1).dispose();
+				frameViews.remove(frameViews.size()-1).dispose();
 				diff++;
 			}
 
-			assert stackPath.size() == frames.size();
+			assert stackPath.size() == frameViews.size();
 
-			for(int i = 0; i < stackPath.size(); i++) {
-				StackFrameModel model = stackPath.get(i);
-				frames.get(i).setInput(model);
-				frames.get(i).setExpanded(i == stackPath.size()-1);
-			}
+			for(int i = 0; i < stackPath.size(); i++)
+				frameViews.get(i).setInput(stackPath.get(i));
+			
+			layout();
 		}
+
+//		public void setError(String msg) {
+//			frameViews.get(frameViews.size()-1).setError(msg);
+//		}
 
 		public void zoomIn() {
 			zoom *= 1.05;
-			for(FrameView frame : frames)
+			for(FrameView frame : frameViews)
 				frame.setZoom(zoom);
 		}
 
 		public void zoomOut() {
 			zoom *= .95;
-			for(FrameView frame : frames)
+			for(FrameView frame : frameViews)
 				frame.setZoom(zoom);
 		}
 
 		public boolean isEmpty() {
-			return frames.isEmpty();
+			return frameViews.isEmpty();
 		}
 
 		public void copyToClipBoard() {
-			if(!frames.isEmpty())
-				frames.get(frames.size()-1).copyToClipBoard();
+			if(!frameViews.isEmpty())
+				frameViews.get(frameViews.size()-1).copyToClipBoard();
 		}
 	}

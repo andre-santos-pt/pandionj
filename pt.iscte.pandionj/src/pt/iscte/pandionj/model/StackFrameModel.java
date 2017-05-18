@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.model;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -16,6 +17,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IVariable;
+import org.eclipse.jdi.internal.StackFrameImpl;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaArray;
@@ -26,12 +28,14 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
+import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
 
 import pt.iscte.pandionj.ParserManager;
@@ -45,6 +49,7 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 
 
+@SuppressWarnings("restriction")
 public class StackFrameModel extends Observable {
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
@@ -55,10 +60,30 @@ public class StackFrameModel extends Observable {
 	private IFile srcFile;
 	private IJavaProject javaProject;
 
-	private String toString;
-	private Value returnValue; // TODO
+	private String invExpression;
+	private Value returnValue;
 
-	public StackFrameModel(IJavaStackFrame frame) {
+	private boolean obsolete;
+	private String exceptionType;
+
+	private CallStackModel parent;
+
+	private int instant; // TODO
+
+	private StackFrameImpl underlyingFrame;
+
+	public StackFrameModel(CallStackModel parent, IJavaStackFrame frame) {
+		JDIStackFrame jdif = (JDIStackFrame) frame;
+		try {
+			Field field = JDIStackFrame.class.getDeclaredField("fStackFrame");
+			field.setAccessible(true);
+			underlyingFrame = (StackFrameImpl) field.get(jdif);
+			System.out.println("* " + underlyingFrame.hashCode());
+		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+			e.printStackTrace();
+		} 
+		
+		this.parent = parent;
 		this.frame = frame;
 		vars = new LinkedHashMap<>();
 		objects = new HashMap<>();
@@ -69,10 +94,19 @@ public class StackFrameModel extends Observable {
 		IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		javaProject = JavaCore.create(srcFile.getProject());
 
-		toString = calcString();
+		obsolete = false;
+		exceptionType = null;
 	}
 
-	public IStackFrame getStackFrame() {
+	public boolean isExecutionFrame() {
+		return !parent.isEmpty() && parent.getTopFrame() == this;
+	}
+
+	public boolean matchesFrame(StackFrame uFrame) {
+		return underlyingFrame.equals(uFrame);
+	}
+	
+	public IJavaStackFrame getStackFrame() {
 		return frame;
 	}
 
@@ -104,6 +138,7 @@ public class StackFrameModel extends Observable {
 
 	public void update() {
 		handleVariables();
+
 		for(VariableModel<?> e : vars.values())
 			e.update(0);
 
@@ -124,8 +159,13 @@ public class StackFrameModel extends Observable {
 
 	public void setReturnValue(Value returnValue) {
 		this.returnValue = returnValue;
-		if(returnValue != null)
-			toString += " = " + returnValue.toString();
+		obsolete = true;
+		setChanged();
+		notifyObservers();
+	}
+
+	public void setObsolete() {
+		obsolete = true;
 		setChanged();
 		notifyObservers();
 	}
@@ -246,8 +286,6 @@ public class StackFrameModel extends Observable {
 
 
 
-
-
 	public Collection<ReferenceModel> getReferencesTo(ModelElement<?> object) {
 		List<ReferenceModel> refs = new ArrayList<>(3);
 		for (ModelElement<?> e : vars.values()) {
@@ -256,8 +294,6 @@ public class StackFrameModel extends Observable {
 		}
 		return refs;
 	}
-
-
 
 
 
@@ -320,18 +356,21 @@ public class StackFrameModel extends Observable {
 		try {
 			IJavaVariable[] localVariables = frame.getLocalVariables();
 			int nArgs = frame.getArgumentTypeNames().size();
-			List<String> args = new ArrayList<>(nArgs);
-//			for(int i = 0; i < nArgs; i++)
-//				args.add(localVariables[i].getValue().getValueString());
+			List<String> args = new ArrayList<>(localVariables.length);
+			for(int i = 0; i < localVariables.length && i < nArgs ; i++)
+				args.add(localVariables[i].getValue().getValueString()); // TODO, add special chars '' ", arrays
 
 
 			if(frame.isStaticInitializer())
 				return frame.getDeclaringTypeName();
 			else if(frame.isConstructor())
 				return "new " + frame.getReferenceType().getName();
-			else 
-				return frame.getMethodName() + "(" + String.join(", ", args) + ")";
-
+			else {
+				String ret = frame.getMethodName() + "(" + String.join(", ", args) + ")";
+				if(returnValue != null)
+					ret += " = " + returnValue.toString();
+				return ret;
+			}
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.toString();
@@ -339,9 +378,17 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	@Override
-	public String toString() {
-		return toString;
+	public String getInvocationExpression() {
+		if(isObsolete() && returnValue != null && !returnValue.toString().equals("(void)"))
+			return invExpression + " = " + returnValue.toString();
+		else if(invExpression == null && !isObsolete()) {
+			invExpression = calcString();
+			return invExpression;
+		}
+		else if(invExpression != null)
+			return invExpression;
+		else
+			return toString();
 	}
 
 
@@ -367,19 +414,20 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	public void processException() {
-		try {
-			int line = frame.getLineNumber();
-			Collection<JavaException> collection = codeAnalysis.lineExceptions.get(line);
-			for(JavaException e : collection)
-				if(e instanceof ArrayOutOfBounds) {
-					ArrayOutOfBounds ae = (ArrayOutOfBounds) e;
-					ArrayPrimitiveModel arrayModel = (ArrayPrimitiveModel) ((ReferenceModel) vars.get(ae.arrayName)).getModelTarget();
-					arrayModel.setVarError(ae.arrayAccess);
-				}
-		} catch (DebugException e1) {
-			e1.printStackTrace();
-		}
+	public void processException(String exceptionType, int line) {
+		//		if(exception.equals(ArrayIndexOutOfBoundsException.class.getName()))
+		this.exceptionType = exceptionType;
+
+		Collection<JavaException> collection = codeAnalysis.lineExceptions.get(line);
+		for(JavaException e : collection)
+			if(e instanceof ArrayOutOfBounds) {
+				ArrayOutOfBounds ae = (ArrayOutOfBounds) e;
+				ArrayPrimitiveModel arrayModel = (ArrayPrimitiveModel) ((ReferenceModel) vars.get(ae.arrayName)).getModelTarget();
+				arrayModel.setVarError(ae.arrayAccess);
+			}
+
+		setChanged();
+		notifyObservers();
 	}
 
 
@@ -413,7 +461,21 @@ public class StackFrameModel extends Observable {
 		return list;
 	}
 
+	public boolean isObsolete() {
+		return obsolete;
+	}
 
+	public boolean exceptionOccurred() {
+		return exceptionType != null;
+	}
+
+	public String getExceptionMessage() {
+		return exceptionType;
+	}
+
+	public CallStackModel getCallStack() {
+		return parent;
+	}
 
 
 

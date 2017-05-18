@@ -23,12 +23,15 @@ import org.eclipse.jdt.internal.debug.core.model.JDIThread;
 import org.eclipse.swt.widgets.Display;
 
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.Location;
 import com.sun.jdi.Method;
 import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.MethodExitEvent;
+
+import pt.iscte.pandionj.model.CallStackModel;
 
 
 @SuppressWarnings("restriction")
@@ -37,32 +40,35 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 	@Override
 	public boolean handleEvent(Event event, JDIDebugTarget target, boolean suspendVote, EventSet eventSet) {
 		MethodExitEvent mevent = (MethodExitEvent) event;
-		Method method = mevent.method();
-		long uniqueID = mevent.thread().uniqueID();
-		try {
-			List<StackFrame> frames = mevent.thread().frames();
-		} catch (IncompatibleThreadStateException e) {
-			e.printStackTrace();
-		}
-		if(!method.isSynthetic() && !method.name().equals("main")) {
-			System.out.println(uniqueID + " " + mevent.method().name() + "() = " + mevent.returnValue());
-			lastReturn = mevent.returnValue();
-		}
+//		Method method = mevent.method();
+		
+		// TODO sync with stack
+//		if(!method.isSynthetic()) { //&& !method.name().equals("main")) {
+			try {
+				//System.out.println(uniqueID + " " + mevent.thread().frameCount() + " " + mevent.method().name() + "() = " + mevent.returnValue());
+				
+				model.setReturnValue( mevent.thread().frames(), mevent.returnValue());
+				
+//				System.out.println(mevent.location().);
+			} catch (IncompatibleThreadStateException e) {
+				e.printStackTrace();
+			}
+//		}
 		return true;
 	}
 	
 	@Override
 	public void eventSetComplete(Event event, JDIDebugTarget target, boolean suspend, EventSet eventSet) {
-		// TODO Auto-generated method stub
 		
 	}
-	
-	private Value lastReturn;
-	
-	public Value getLastReturn() {
-		return lastReturn;
-	}
 
+	private CallStackModel model;
+	
+	PandionJBreakpointListener(CallStackModel model) {
+		this.model = model;
+	}
+	
+	
 	private JDIDebugTarget debugTarget;
 	private MethodExitRequestImpl methodExitRequestImpl = null;
 	
@@ -73,7 +79,8 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 		if(target != debugTarget) {
 			debugTarget = target;
 			methodExitRequestImpl = new MethodExitRequestImpl((VirtualMachineImpl) target.getVM());
-			methodExitRequestImpl.addClassFilter("Rec");
+			methodExitRequestImpl.addClassFilter("Rec"); // TODO generic filter)
+//			methodExitRequestImpl.addClassFilter("Test"); 
 			methodExitRequestImpl.setEnabled(true);
 			debugTarget.addJDIEventListener(this, methodExitRequestImpl);
 		}
@@ -82,16 +89,7 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 		if(pjView == null)
 			return IJavaBreakpointListener.DONT_SUSPEND;
 		
-		if(breakpoint instanceof IJavaMethodBreakpoint) {
-			try {
-				int hitCount = ((IJavaMethodBreakpoint) breakpoint).getHitCount();
-				System.out.println(hitCount);
-			} catch (CoreException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-		else if(breakpoint instanceof IJavaLineBreakpoint) {
+		if(breakpoint instanceof IJavaLineBreakpoint) {
 			if(!thread.isPerformingEvaluation()) {
 				pjView.handleLinebreakPoint(thread);
 				return IJavaBreakpointListener.SUSPEND;
