@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.figures;
 
+import java.util.Collection;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -28,7 +29,8 @@ public class ReferenceFigure extends Label {
 					setToolTip(null);
 			}
 		});
-		
-//		setToolTip(new Label(model.getType()));
+		Collection<String> tags = model.getTags();
+		if(!tags.isEmpty())
+			setToolTip(new Label("tags: " + tags.toString()));
 	}
 }

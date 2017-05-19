@@ -33,5 +33,10 @@ public class NullModel extends EntityModel<IJavaObject> {
 		return "NULL";
 	}
 
+	@Override
+	public boolean hasWidgetExtension() {
+		return false;
+	}
+
 	
 }

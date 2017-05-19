@@ -8,4 +8,16 @@ public interface IArrayWidgetExtension extends IWidgetExtension<IArrayModel> {
 	boolean accept(IArrayModel e);
 	
 	IFigure createFigure(IArrayModel e);
+	
+	IArrayWidgetExtension NULL_EXTENSION = new IArrayWidgetExtension() {
+		@Override
+		public boolean accept(IArrayModel e) {
+			return false;
+		}
+
+		@Override
+		public IFigure createFigure(IArrayModel e) {
+			return null;
+		}		
+	};
 }

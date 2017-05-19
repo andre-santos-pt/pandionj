@@ -1,9 +1,12 @@
 package pt.iscte.pandionj.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
@@ -15,16 +18,13 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.model.ValueModel.Role;
 
 public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArrayModel {
 
-	// TODO Array Observer?
-	interface ObserverTemp {
-		void indexChanged(int index, Object oldValue, Object newValue);
-	}
-	
 	protected IJavaValue[] elements;
 
 	private int dimensions;
@@ -34,9 +34,25 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	
 	private String varError;
 	
+	private IArrayWidgetExtension extension;
+	
+	
 	ArrayModel(IJavaArray array, StackFrameModel model) {
 		super(array, model);
 		vars = new HashMap<>();
+	}
+	
+	// TODO: problem of object state
+	protected IFigure createExtensionFigure() {
+		if(extension == null)
+			extension = ExtensionManager.getArrayExtension(this);
+		
+		return extension.createFigure(this);
+	}
+		
+	@Override
+	public boolean hasWidgetExtension() {
+		return extension != IArrayWidgetExtension.NULL_EXTENSION;
 	}
 	
 	@Override
@@ -66,8 +82,11 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 			Object[] array = new Object[javaArray.getLength()];
 
 			if(compType instanceof IJavaArrayType) {
-				for(int i = 0; i < array.length; i++)
-					array[i] = getValues((IJavaArray) values[i]);
+				for(int i = 0; i < array.length; i++) {
+					IJavaValue val = values[i];
+					if(!val.isNull())
+						array[i] = getValues((IJavaArray) val);
+				}
 			}	
 			else {
 				PrimitiveType primitive = PrimitiveType.match(compType);
@@ -151,6 +170,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		return fig;
 	}
 
+	
 	protected abstract IFigure createArrayFigure();
 
 	public abstract String getElementString(int index);
@@ -228,5 +248,12 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		els += "}";
 		return getClass().getSimpleName() + " " + els;
 	}
-	
+
+	public Set<String> getTags() {
+		Set<String> tags = new HashSet<String>();
+		Collection<ReferenceModel> references = getStackFrame().getReferencesTo(this);
+		for(ReferenceModel r : references)
+			tags.addAll(r.getTags());
+		return tags;
+	}
 }

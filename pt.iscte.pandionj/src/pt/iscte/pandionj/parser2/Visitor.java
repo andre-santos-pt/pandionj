@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.parser;
+package pt.iscte.pandionj.parser2;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,14 +1,20 @@
-package pt.iscte.pandionj.parser;
+package pt.iscte.pandionj.parser2;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * This is my class
+ * @author andresantos
+ *
+ */
 public class ClassInfo {
+	private String name; // T1
 	
-	private String name;
-	private VisibilityInfo visibility;
+	/* img */
+	private VisibilityInfo visibility; // T2
 	private List<FieldInfo> fields;
 	private List<MethodInfo> methods;
 	
@@ -23,14 +29,23 @@ public class ClassInfo {
 	}
 
 	public void addField(FieldInfo f) {
+		int[][] img = null; // bwimage
 		fields.add(f);
 	}
 	
+	/*
+	 * This is a method
+	 */
 	public void addMethod(MethodInfo m) {
 		methods.add(m);
 		
 	}
 	
+	/** 
+	 * This is another method
+	 * @param visibility
+	 * @return
+	 */
 	public Iterator<MethodInfo> getMethods(EnumSet<VisibilityInfo> visibility) {
 		return methods.stream().filter((m) -> visibility.contains(m.getVisibility())).iterator();
 	}

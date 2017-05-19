@@ -24,7 +24,7 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.model.ArrayModel;
 
-public class ImageWidget implements IArrayWidgetExtension {
+public class GrayscaleImageWidget implements IArrayWidgetExtension {
 
 	@Override
 	public boolean accept(IArrayModel model) {

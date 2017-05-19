@@ -37,9 +37,6 @@ public abstract class ModelElement<T extends IJavaValue> extends Observable {
 
 	protected abstract IFigure createInnerFigure(Graph graph);
 
-	protected void debugStepEvent() {
-		
-	}
 
 	public void registerObserver(Observer o) {
 		addObserver(o);

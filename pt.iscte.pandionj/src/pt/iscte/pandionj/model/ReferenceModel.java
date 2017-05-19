@@ -1,5 +1,9 @@
 package pt.iscte.pandionj.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
@@ -14,9 +18,12 @@ import pt.iscte.pandionj.figures.ReferenceFigure;
 public class ReferenceModel extends VariableModel<IJavaObject> {
 	private NullModel nullModel;
 	
+	private Collection<String> tags;
+	
 	ReferenceModel(IJavaVariable var, boolean isInstance, StackFrameModel model) throws DebugException {
 		super(var, isInstance, model);
 		assert var.getValue() instanceof IJavaObject;
+		tags = Collections.emptyList();
 	}
 
 	public EntityModel<?> getModelTarget() {
@@ -55,5 +62,15 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 	@Override
 	public String toString() {
 		return getName() + " -> " + getModelTarget();
+	}
+
+	public void setTags(Collection<String> tags) {
+		this.tags = new ArrayList<String>(tags.size());
+		this.tags.addAll(tags);
+		
+	}
+
+	public Collection<String> getTags() {
+		return Collections.unmodifiableCollection(tags);
 	}
 }

@@ -14,7 +14,7 @@ import org.eclipse.jdt.core.IType;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
-import pt.iscte.pandionj.extensions.ImageWidget.ImageFig;
+import pt.iscte.pandionj.extensions.GrayscaleImageWidget.ImageFig;
 
 public class ImageAguia implements IObjectWidgetExtension {
 
@@ -26,7 +26,7 @@ public class ImageAguia implements IObjectWidgetExtension {
 	@Override
 	public IFigure createFigure(IObjectModel m) {
 		IArrayModel array = m.getArray("data");
-		ImageFig imageFig = new ImageWidget.ImageFig(array);
+		ImageFig imageFig = new GrayscaleImageWidget.ImageFig(array);
 		m.registerDisplayObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {

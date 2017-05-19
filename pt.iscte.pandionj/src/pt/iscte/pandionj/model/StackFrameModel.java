@@ -1,6 +1,5 @@
 package pt.iscte.pandionj.model;
 
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -15,9 +14,7 @@ import java.util.Observer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IVariable;
-import org.eclipse.jdi.internal.StackFrameImpl;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaArray;
@@ -28,18 +25,15 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.jdt.internal.debug.core.model.JDIStackFrame;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
-import com.sun.jdi.StackFrame;
 import com.sun.jdi.Value;
 
 import pt.iscte.pandionj.ParserManager;
-import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
 import pt.iscte.pandionj.parser.exception.JavaException;
@@ -70,18 +64,17 @@ public class StackFrameModel extends Observable {
 
 	private int instant; // TODO
 
-	private StackFrameImpl underlyingFrame;
+//	private StackFrameImpl underlyingFrame;
 
 	public StackFrameModel(CallStackModel parent, IJavaStackFrame frame) {
-		JDIStackFrame jdif = (JDIStackFrame) frame;
-		try {
-			Field field = JDIStackFrame.class.getDeclaredField("fStackFrame");
-			field.setAccessible(true);
-			underlyingFrame = (StackFrameImpl) field.get(jdif);
-			System.out.println("* " + underlyingFrame.hashCode());
-		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-			e.printStackTrace();
-		} 
+//		JDIStackFrame jdif = (JDIStackFrame) frame;
+//		try {
+//			Field field = JDIStackFrame.class.getDeclaredField("fStackFrame");
+//			field.setAccessible(true);
+//			underlyingFrame = (StackFrameImpl) field.get(jdif);
+//		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+//			e.printStackTrace();
+//		} 
 		
 		this.parent = parent;
 		this.frame = frame;
@@ -90,8 +83,6 @@ public class StackFrameModel extends Observable {
 		looseObjects = new HashMap<>();
 		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		codeAnalysis = ParserManager.getParserResult(srcFile);
-
-		IFile srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		javaProject = JavaCore.create(srcFile.getProject());
 
 		obsolete = false;
@@ -102,9 +93,9 @@ public class StackFrameModel extends Observable {
 		return !parent.isEmpty() && parent.getTopFrame() == this;
 	}
 
-	public boolean matchesFrame(StackFrame uFrame) {
-		return underlyingFrame.equals(uFrame);
-	}
+//	public boolean matchesFrame(StackFrame uFrame) {
+//		return underlyingFrame.equals(uFrame);
+//	}
 	
 	public IJavaStackFrame getStackFrame() {
 		return frame;
@@ -196,9 +187,9 @@ public class StackFrameModel extends Observable {
 					e.getValue().setOutOfScope();
 					iterator.remove();
 					setChanged();
-					notifyObservers();
 				}
 			}
+			notifyObservers();
 
 			for(IVariable v : frame.getVariables()) {
 				IJavaVariable jv = (IJavaVariable) v;
@@ -231,16 +222,26 @@ public class StackFrameModel extends Observable {
 			vars.get(varName).update(0);
 		}
 		else {
-			VariableModel<?> newElement = value instanceof IJavaObject ? new ReferenceModel(jv, isInstance, this) : new ValueModel(jv, isInstance, this);
-			vars.put(varName, newElement);
-			if(newElement instanceof ReferenceModel)
-				((ReferenceModel) newElement).registerObserver(new Observer() {
+			VariableModel<?> newElement = null;
+			
+			if(value instanceof IJavaObject) {
+				ReferenceModel refElement = new ReferenceModel(jv, isInstance, this);
+				refElement.registerObserver(new Observer() {
 					public void update(Observable o, Object arg) {
 						setChanged();
-						notifyObservers(newElement);
+						notifyObservers(refElement);
 					}
 				});
+				
+				Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
+				refElement.setTags(tags);
+				newElement = refElement;
+			}
+			else {
+				newElement = new ValueModel(jv, isInstance, this);
+			}
 
+			vars.put(varName, newElement);				
 			setChanged();
 			notifyObservers(newElement);
 		}

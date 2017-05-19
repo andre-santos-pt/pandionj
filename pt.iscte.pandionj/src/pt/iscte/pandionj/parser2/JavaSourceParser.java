@@ -1,24 +1,32 @@
-package pt.iscte.pandionj.parser;
+package pt.iscte.pandionj.parser2;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Map;
 
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 
+
 public class JavaSourceParser {
 	private final ASTParser parser;
-
+	private String source;
+	
 	private JavaSourceParser(String source, String className) {
+		this.source = source;
 		parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);		
 		parser.setEnvironment(null, new String[] {}, new String[] {}, true);
 		parser.setUnitName(className);
 		parser.setSource(source.toCharArray());
+		Map<String, String> options = JavaCore.getOptions();
+		options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
+		parser.setCompilerOptions(options);
 	}
 	
 	public static JavaSourceParser createFromFile(String javaFilePath) {
@@ -38,6 +46,7 @@ public class JavaSourceParser {
 	}
 
 	public void parse(ASTVisitor visitor) {
+		parser.setSource(source.toCharArray());
 		CompilationUnit unit = (CompilationUnit) parser.createAST(null);
 		
 //		if(unit.getProblems().length > 0)
@@ -70,5 +79,13 @@ public class JavaSourceParser {
 		String trim = javaFilePath.substring(0, javaFilePath.lastIndexOf('.'));
 		trim = trim.substring(trim.lastIndexOf(File.separatorChar)+1);
 		return trim;
+	}
+
+	public String getSourceFragment(int start, int end) {
+		return source.substring(start, end);
+	}
+	
+	public CompilationUnit getCompilationUnit() {
+		return (CompilationUnit) parser.createAST(null);
 	}
 }

@@ -1,13 +1,14 @@
 package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Optional;
@@ -20,7 +21,6 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.ITerminate;
 import org.eclipse.debug.core.model.IVariable;
-import org.eclipse.debug.core.model.IWatchExpression;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.draw2d.IFigure;
@@ -29,37 +29,28 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.debug.core.IEvaluationRunnable;
-import org.eclipse.jdt.debug.core.IJavaArrayType;
-import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.jdt.debug.eval.EvaluationManager;
-import org.eclipse.jdt.debug.eval.IAstEvaluationEngine;
-import org.eclipse.jdt.debug.eval.IClassFileEvaluationEngine;
-import org.eclipse.jdt.debug.eval.IEvaluationListener;
-import org.eclipse.jdt.debug.eval.IEvaluationResult;
 import org.eclipse.zest.core.widgets.Graph;
 
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 
+import pt.iscte.pandionj.ExtensionManager;
+import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.figures.ObjectFigure;
-import pt.iscte.pandionj.parser.ClassInfo;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
-
-	public interface ObserverTemp {
-		void fieldChanged(String name, Object oldValue, Object newValue);
-	}
-
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
 	private List<String> refsOfSameType; // TODO from source
@@ -69,6 +60,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private String leftField;
 	private String rightField;
 
+	private IObjectWidgetExtension extension;
+	
 	public ObjectModel(IJavaObject object, StackFrameModel model) {
 		super(object, model);
 		assert object != null;
@@ -90,12 +83,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		try {
 			for(IVariable v : object.getVariables()) {
 				IJavaVariable var = (IJavaVariable) v;
-				//				try {
-				//					var.getJavaType();
-				//				}
-				//				catch(DebugException e) {
-				//					continue;
-				//				}
 
 				if(!var.isStatic()) {
 					String name = var.getName();
@@ -107,6 +94,10 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 								notifyObservers(name);
 							}
 						});
+
+						// TODO getAttributeTags()
+//						ParserManager.getTags(getStackFrame().getSourceFile(), name, line)
+						
 						references.put(name, refModel);
 					}
 					else {
@@ -152,7 +143,18 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	protected IFigure createInnerFigure(Graph graph) {
 		return new ObjectFigure(this, graph, createExtensionFigure(), true);
 	}
+	
+	protected IFigure createExtensionFigure() {
+		if(extension == null)
+			extension = ExtensionManager.getObjectExtension(this);
+		
+		return extension.createFigure(this);
+	}
 
+	public boolean hasWidgetExtension() {
+		return extension != IObjectWidgetExtension.NULL_EXTENSION;
+	}
+	
 	public Set<String> getFieldNames() {
 		return Collections.unmodifiableSet(values.keySet());
 	}
@@ -562,6 +564,17 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	//		}
 	//	}
 
+	// TODO: attribute tags
+	public Multimap<String, String> getTags() {
+		Multimap<String,String> tags = ArrayListMultimap.create();
+		
+		for (Entry<String, ReferenceModel> e : references.entrySet()) {
+			for(String t : e.getValue().getTags())
+				tags.put(e.getKey(), t);
+		}
+		return tags;
+	}
+	
 
 	@Override
 	public String getStringValue() {
@@ -606,5 +619,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			return null;
 		}
 	}
+
+	
 
 }

@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.parser;
+package pt.iscte.pandionj.parser2;
 
 public class FieldInfo {
 	private String name;

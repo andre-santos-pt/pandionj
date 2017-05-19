@@ -18,7 +18,6 @@ public class StringWidget implements IObjectWidgetExtension {
 
 	@Override
 	public IFigure createFigure(IObjectModel e) {
-	
 		Label label = new Label("\"" + e.getStringValue() + "\"");
 		FontManager.setFont(label, Constants.VALUE_FONT_SIZE);
 		return label;

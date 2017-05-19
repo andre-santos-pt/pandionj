@@ -214,21 +214,6 @@ public class PandionJView extends ViewPart {
 	}
 
 	private class DebugListener implements IDebugEventSetListener {
-		IStackFrame[] prev;
-		boolean stackChange(IStackFrame[] frames) {
-			if(prev == null)
-				return true;
-
-			if(prev.length != frames.length)
-				return true;
-
-			for(int i = 0; i < frames.length; i++)
-				if(frames[i] != prev[i])
-					return true;
-
-			return false;
-		}
-
 		public void handleDebugEvents(DebugEvent[] events) {
 			if(events.length > 0) {
 				DebugEvent e = events[0];
@@ -244,21 +229,22 @@ public class PandionJView extends ViewPart {
 						ex.printStackTrace();
 					}
 				}
+				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
+					breakpointListener.setFilter("Rec");
+				}
+				else if(e.getKind() == DebugEvent.RESUME &&  (
+							e.getDetail() == DebugEvent.STEP_OVER || 
+							e.getDetail() == DebugEvent.STEP_RETURN || 
+							e.getDetail() == DebugEvent.CLIENT_REQUEST 
+							)
+						)  {
+					breakpointListener.disableFilter();
+				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
 					model.setTerminated();
 				}
 			}
 		}
-
-//		private void terminate() {
-			//clearView(true);
-
-			//			Display.getDefault().asyncExec(() -> {
-			//				for (Control view : callStack.getChildren()) {
-			//					view.setEnabled(false);
-			//				}
-			//			});
-//		}
 	}
 
 

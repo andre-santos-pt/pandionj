@@ -61,6 +61,7 @@ public interface Constants {
 
 	String IMAGE_FOLDER = "images";
 
+	int STACK_LIMIT = 10; // TODO stack limit
 	
 	static Color getVarColor(int i) {
 		assert i >= 0;

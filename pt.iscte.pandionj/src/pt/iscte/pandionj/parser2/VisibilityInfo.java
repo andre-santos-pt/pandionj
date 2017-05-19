@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.parser;
+package pt.iscte.pandionj.parser2;
 
 import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
