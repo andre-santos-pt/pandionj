@@ -56,6 +56,7 @@ public class ObjectFigure extends RoundedRectangle {
 	private Label headerLabel;
 
 	public ObjectFigure(ObjectModel model, Graph graph, IFigure extensionFigure, boolean addMethods) {
+		assert extensionFigure != null;
 		this.model = model;
 		this.graph = graph;
 		GridLayout layout = new GridLayout(1, false);
@@ -73,15 +74,15 @@ public class ObjectFigure extends RoundedRectangle {
 
 		fieldLabels = new HashMap<String, Label>();
 
-		if(extensionFigure == null) {
-			headerLabel = new Label();
-			headerLabel.setForegroundColor(Constants.OBJECT_HEADER_FONT_COLOR);
-			FontManager.setFont(headerLabel, Constants.OBJECT_HEADER_FONT_SIZE);
-			headerLabel.setText(model.toStringValue());
-			add(headerLabel);
-		}
-		else
-			add(extensionFigure);
+//		if(extensionFigure == null) {
+//			headerLabel = new Label();
+//			headerLabel.setForegroundColor(Constants.OBJECT_HEADER_FONT_COLOR);
+//			FontManager.setFont(headerLabel, Constants.OBJECT_HEADER_FONT_SIZE);
+//			headerLabel.setText(model.toStringValue());
+//			add(headerLabel);
+//		}
+//		else
+		add(extensionFigure);
 
 		//		model.registerObserver(new Observer() {
 		//			public void update(Observable o, Object arg) {

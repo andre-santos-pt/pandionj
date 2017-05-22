@@ -17,9 +17,9 @@ import pt.iscte.pandionj.figures.ReferenceFigure;
 
 public class ReferenceModel extends VariableModel<IJavaObject> {
 	private NullModel nullModel;
-	
+
 	private Collection<String> tags;
-	
+
 	ReferenceModel(IJavaVariable var, boolean isInstance, StackFrameModel model) throws DebugException {
 		super(var, isInstance, model);
 		assert var.getValue() instanceof IJavaObject;
@@ -34,13 +34,13 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 	public boolean isNull() {
 		return getContent().isNull();
 	}
-	
+
 	public NullModel getNullInstance() {
 		if(nullModel == null)
 			nullModel = new NullModel(getStackFrame());
 		return nullModel;
 	}
-	
+
 
 	public boolean isArrayValue() {
 		try {
@@ -53,24 +53,29 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 	}
 
 
-	
+
 	@Override
 	public IFigure createInnerFigure(Graph graph) {
 		return new ReferenceFigure(this);
 	}
-	
+
 	@Override
 	public String toString() {
 		return getName() + " -> " + getModelTarget();
 	}
 
 	public void setTags(Collection<String> tags) {
-		this.tags = new ArrayList<String>(tags.size());
-		this.tags.addAll(tags);
-		
+		if(!tags.isEmpty()) {
+			this.tags = new ArrayList<String>(tags.size());
+			this.tags.addAll(tags);
+		}
 	}
 
 	public Collection<String> getTags() {
 		return Collections.unmodifiableCollection(tags);
+	}
+	
+	public boolean hasTags() {
+		return !tags.isEmpty();
 	}
 }

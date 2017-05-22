@@ -48,6 +48,7 @@ import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.IWidgetExtension;
 import pt.iscte.pandionj.figures.ObjectFigure;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
@@ -94,10 +95,9 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 								notifyObservers(name);
 							}
 						});
-
-						// TODO getAttributeTags()
-//						ParserManager.getTags(getStackFrame().getSourceFile(), name, line)
-						
+// TODO ref change -> new fig
+						Collection<String> tags = ParserManager.getAttributeTags(getStackFrame().getSourceFile(), jType.getFullyQualifiedName(), name);
+						refModel.setTags(tags);
 						references.put(name, refModel);
 					}
 					else {
@@ -129,7 +129,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	public boolean includeMethod(IMethod method) {
-		return extension instanceof IObjectWidgetExtension && ((IObjectWidgetExtension) extension).includeMethod(method.getElementName());
+		return extension.includeMethod(method.getElementName());
 
 	}
 
@@ -144,9 +144,33 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return new ObjectFigure(this, graph, createExtensionFigure(), true);
 	}
 	
+	
+	private boolean hasAttributeTags() {
+		for(ReferenceModel r : references.values())
+			if(r.hasTags())
+				return true;
+		return false;
+	}
+	
+	
+	public Multimap<String, String> getAttributeTags() {
+		Multimap<String, String> map = ArrayListMultimap.create();
+		
+		for(ReferenceModel r : references.values()) {
+			if(r.hasTags())
+				map.putAll(r.getName(), r.getTags());
+		}
+		return map;
+	}
+	
+	
 	protected IFigure createExtensionFigure() {
-		if(extension == null)
+		if(hasAttributeTags()) {
+			extension = ExtensionManager.createTagExtension(this);
+		}
+		else if(extension == null) {
 			extension = ExtensionManager.getObjectExtension(this);
+		}
 		
 		return extension.createFigure(this);
 	}
@@ -613,7 +637,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			//			if(!(field.getJavaType() instanceof IJavaArrayType))
 			//				throw new IllegalArgumentException(fieldName + " is not an array field");
 
-			return (IArrayModel) references.get(fieldName).getModelTarget();
+			EntityModel<?> t = references.get(fieldName).getModelTarget();
+			return t instanceof IArrayModel ? (IArrayModel) t : null;
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return null;

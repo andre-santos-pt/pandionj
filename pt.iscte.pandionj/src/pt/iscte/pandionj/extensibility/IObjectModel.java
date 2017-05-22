@@ -10,4 +10,5 @@ public interface IObjectModel extends IEntityModel {
 	IArrayModel getArray(String fieldName);
 	String getStringValue();
 	void invoke3(String methodName, IJavaValue[] args, IWatchExpressionListener listener);
+	String toStringValue();
 }

@@ -1,27 +1,26 @@
 package pt.iscte.pandionj.parser2;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.BlockComment;
 import org.eclipse.jdt.core.dom.Comment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.LineComment;
+import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
 
 
 public class TagParser {
@@ -30,19 +29,30 @@ public class TagParser {
 	private JavaSourceParser parser;
 	private CompilationUnit cunit;
 
-	public TagParser(String path) {
+	private Set<String> validTags;
+	
+	public TagParser(String path, Set<String> validTags) {
 		parser = JavaSourceParser.createFromFile(path);
 		cunit = parser.getCompilationUnit();
 		variables = new ArrayList<>();
+		this.validTags = validTags;
 	}
 
-	public TagParser(IFile file) {
-		this(file.getLocation().toOSString());
+	public TagParser(IFile file, Set<String> validTags) {
+		this(file.getLocation().toOSString(), validTags);
 	}
 
 	public Collection<String> getTags(String varName, int line) {
 		for (VariableTags t : variables)
 			if(t.name.equals(varName) && t.withinLine(line))
+				return t.getTags();
+		
+		return Collections.emptyList();
+	}
+	
+	public Collection<String> getAttributeTags(String typeName, String attName) {
+		for (VariableTags t : variables)
+			if(typeName.equals(t.type) && attName.equals(t.name))
 				return t.getTags();
 		
 		return Collections.emptyList();
@@ -84,7 +94,10 @@ public class TagParser {
 			String varName = frag.getName().getIdentifier();
 			int line = cunit.getLineNumber(node.getStartPosition());
 			Scope scope = new Scope(node.getParent(), cunit);
-			VariableTags tags = new VariableTags(varName, null, line, scope);
+			TypeDeclaration dec = (TypeDeclaration) node.getParent();
+			
+			String type = !Modifier.isStatic(node.getModifiers()) ? dec.getName().getFullyQualifiedName() : null; 
+			VariableTags tags = new VariableTags(varName, type, line, scope);
 			variables.add(tags);
 			return false;
 		}
@@ -101,7 +114,9 @@ public class TagParser {
 			
 			for (VariableTags t : variables)
 				if(t.declarationLine == line)
-					t.addTags(tags);
+					for(String tag : tags)
+						if(validTags.contains(tag))
+							t.addTag(tag);
 			
 			return true;
 		}
@@ -112,33 +127,31 @@ public class TagParser {
 		private final String type;
 		private final int declarationLine;
 		private final Scope scope;
-		private final List<String> tagList; // unique
+		private final Set<String> tags;
 		
 		public VariableTags(String name, String type, int declarationLine, Scope scope) {
 			this.name = name;
 			this.type = type;
 			this.declarationLine = declarationLine;
 			this.scope = scope;
-			this.tagList = new ArrayList<String>();
+			this.tags = new HashSet<String>();
 		}
 		
 		public boolean withinLine(int line) {
 			return scope.contains(line);
 		}
 
-		public void addTags(String[] tags) {
-			for(String t : tags)
-				if(!tagList.contains(t))
-					tagList.add(t);
-		}
+		public void addTag(String tag) {
+			tags.add(tag);
+		}			
 		
 		@Override
 		public String toString() {
-			return name + " on scope " + scope + " (" + type + ") : " + tagList;
+			return name + " on scope " + scope + " (" + type + ") : " + tags;
 		}
 
-		public Collection<String> getTags() {
-			return Collections.unmodifiableList(tagList);
+		public Set<String> getTags() {
+			return Collections.unmodifiableSet(tags);
 		}
 	}
 
@@ -167,7 +180,11 @@ public class TagParser {
 		
 	}
 	public static void main(String[] args) {
-		TagParser parser = new TagParser("/Users/andresantos/git/pandionj2/pt.iscte.pandionj/src/pt/iscte/pandionj/parser2/ClassInfo.java");
+		Set<String> validtags = Sets.newHashSet();
+		validtags.add("T1");
+		validtags.add("T2");
+		
+		TagParser parser = new TagParser("/Users/andresantos/git/pandionj2/pt.iscte.pandionj/src/pt/iscte/pandionj/parser2/ClassInfo.java", validtags);
 		parser.run();
 
 		Collection<String> tags = parser.getTags("name", 14);
@@ -176,6 +193,8 @@ public class TagParser {
 		System.out.println(parser.getTags("img", 32));
 		System.out.println(parser.variables);
 	}
+
+	
 
 
 }

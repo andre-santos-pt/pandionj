@@ -4,6 +4,9 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IType;
 
+import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.FontManager;
+
 public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
 
 	boolean accept(IType objectType);
@@ -37,7 +40,11 @@ public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
 
 		@Override
 		public IFigure createFigure(IObjectModel e) {
-			return null;
+			Label label = new Label();
+			label.setForegroundColor(Constants.OBJECT_HEADER_FONT_COLOR);
+			FontManager.setFont(label, Constants.OBJECT_HEADER_FONT_SIZE);
+			label.setText(e.toStringValue());
+			return label;
 		}
 		
 		@Override

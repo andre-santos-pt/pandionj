@@ -27,15 +27,17 @@ public class ParserManager {
 			cache.put(f, r);
 			modStamps.put(f, f.getModificationStamp());
 			
-			TagParser tagParser = new TagParser(f);
+			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
 		}
 		return r;
 	}
 	
-	public static Collection<String> getAttributeTags(IFile file, String className) {
-		return null;
+	public static Collection<String> getAttributeTags(IFile file, String className, String attName) {
+		assert tagParserCache.containsKey(file);
+		TagParser tagParser = tagParserCache.get(file);
+		return tagParser.getAttributeTags(className, attName);
 	}
 			
 	public static Collection<String> getTags(IFile file, String varName, int line) {
