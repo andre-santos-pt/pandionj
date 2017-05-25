@@ -219,25 +219,22 @@ public class PandionJView extends ViewPart {
 				DebugEvent e = events[0];
 				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 					IJavaThread thread = (IJavaThread) e.getSource();
-					try {
+					executeInternal(() -> {
 						if(thread.getTopStackFrame().getLineNumber() == -1)
 							thread.resume();
 
 						handleFrames(thread.getStackFrames());
-					} 
-					catch (DebugException ex) {
-						ex.printStackTrace();
-					}
+					});
 				}
 				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
 					breakpointListener.setFilter("Rec");
 				}
-				else if(e.getKind() == DebugEvent.RESUME &&  (
-							e.getDetail() == DebugEvent.STEP_OVER || 
-							e.getDetail() == DebugEvent.STEP_RETURN || 
-							e.getDetail() == DebugEvent.CLIENT_REQUEST 
-							)
-						)  {
+				else if(e.getKind() == DebugEvent.RESUME &&
+						(
+						e.getDetail() == DebugEvent.STEP_OVER || 
+						e.getDetail() == DebugEvent.STEP_RETURN || 
+						e.getDetail() == DebugEvent.CLIENT_REQUEST 
+						))  {
 					breakpointListener.disableFilter();
 				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
@@ -251,18 +248,16 @@ public class PandionJView extends ViewPart {
 
 
 	void handleLinebreakPoint(IJavaThread thread) {
-		try {
+		executeInternal(() -> {
 			exception = null;
 			exceptionFrame = null;
 			IStackFrame[] frames = thread.getStackFrames(); 
 			handleFrames(frames);
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
+		});
 	}
 
 	void handleExceptionBreakpoint(IJavaThread thread, IJavaExceptionBreakpoint exceptionBreakPoint) {
-		try {
+		executeInternal(() -> {
 			thread.terminateEvaluation();
 			exception = exceptionBreakPoint.getExceptionTypeName();
 			exceptionFrame = thread.getTopStackFrame();
@@ -272,28 +267,9 @@ public class PandionJView extends ViewPart {
 				StackFrameModel frame = model.getFrame(exceptionFrame);
 				int line = exceptionFrame.getLineNumber();
 				frame.processException(exception, line);  
-
-//				Display.getDefault().asyncExec(() -> {
-//					String msg = exception + " on line " + line;
-//					stackView.setError(exception, msg);
-//				});
 			}
-
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
+		}); 
 	}
-	//	private void clearView(boolean startMsg) {
-	//		exception = null;
-	//		exceptionFrame = null;
-	//		model = new CallStackModel2();
-	//		handleFrames(new IStackFrame[0]);
-	//		Display.getDefault().asyncExec(() -> {
-	//			label.setText(startMsg ? Constants.START_MESSAGE : "");
-	//			area.setBackground(null);
-	//		});
-	//	}
-
 
 
 	private void handleFrames(IStackFrame[] frames) {
@@ -347,8 +323,48 @@ public class PandionJView extends ViewPart {
 		addToolbarAction(name, toggle, imageName, description, a);
 	}
 
+	public interface DebugOperation<T> {
+		T run() throws DebugException;
+	}
 
+	public interface DebugRun {
+		void run() throws DebugException;
+	}
 
+	public static <T> T execute(DebugOperation<T> r, T defaultValue)  {
+		return instance.executeInternal(r, defaultValue);
+	}
+
+	public static void execute(DebugRun r) {
+		instance.executeInternal(r);
+	}
+	
+	public static void executeUpdate(DebugRun r) {
+		Display.getDefault().asyncExec(() -> instance.executeInternal(r));
+	}
+	
+	public void executeInternal(DebugRun r) {
+		try {
+			r.run();
+		}
+		catch(DebugException e) {
+			model.setTerminated();
+		}
+	}
+
+	private <T> T executeInternal(DebugOperation<T> r, T defaultValue) {
+		try {
+			return r.run();
+		}
+		catch(DebugException e) {
+			model.setTerminated();
+			return null;
+		}
+	}
+
+	public void test() {
+		int i = PandionJView.execute(exceptionFrame::getLineNumber, 0);
+	}
 
 
 

@@ -115,14 +115,17 @@ public enum PrimitiveType {
 	
 //	public abstract String getStringValue(IJavaValue val);
 	
-	public static PrimitiveType match(IJavaType type) {
-		try {
-			return match(type.getName());
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+//	public static PrimitiveType match(IJavaType type) {
+//		try {
+//			return match(type);
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
+//	public static PrimitiveType match(String type) {
+//		return match(type);
+//	}
 			
 	public static PrimitiveType match(String type) {
 		for(PrimitiveType t : values())

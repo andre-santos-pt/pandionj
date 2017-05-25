@@ -80,13 +80,15 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 			if(request != null)
 				debugTarget.removeJDIEventListener(this, request);
 
-			IFile sourceElement = null;
-			try {
-				sourceElement = (IFile) thread.getLaunch().getSourceLocator().getSourceElement(thread.getTopStackFrame());
-				System.out.println("SOURCE: " + sourceElement.getName());
-			} catch (DebugException e) {
-				e.printStackTrace();
-			}
+			IFile sourceElement = PandionJView.execute(() -> {
+				return (IFile) thread.getLaunch().getSourceLocator().getSourceElement(thread.getTopStackFrame());
+			}, null);
+			
+//			try {
+//				sourceElement = (IFile) thread.getLaunch().getSourceLocator().getSourceElement(thread.getTopStackFrame());
+//			} catch (DebugException e) {
+//				e.printStackTrace();
+//			}
 			debugTarget = target;
 			if(sourceElement != null) {
 				request = new MethodExitRequestImpl((VirtualMachineImpl) target.getVM());

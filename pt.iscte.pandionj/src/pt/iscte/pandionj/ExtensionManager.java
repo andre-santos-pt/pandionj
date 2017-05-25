@@ -35,6 +35,7 @@ import pt.iscte.pandionj.extensions.ColorWidget;
 import pt.iscte.pandionj.extensions.ImageAguia;
 import pt.iscte.pandionj.extensions.GrayscaleImageWidget;
 import pt.iscte.pandionj.extensions.IterableWidget;
+import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.figures.NullFigure;
 import pt.iscte.pandionj.model.ArrayModel;
@@ -50,6 +51,7 @@ public class ExtensionManager {
 		arrayExtensions.put("image", new GrayscaleImageWidget());
 		
 		objectExtensions = new ArrayList<>();
+		objectExtensions.add(new NumberWidget());
 		objectExtensions.add(new StringWidget());
 		objectExtensions.add(new ColorWidget());
 		objectExtensions.add(new IterableWidget());

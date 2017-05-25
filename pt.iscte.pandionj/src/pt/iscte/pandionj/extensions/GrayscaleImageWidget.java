@@ -25,18 +25,13 @@ import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 
 public class GrayscaleImageWidget implements IArrayWidgetExtension {
 
-	private static PaletteData palette; 
+	private static PaletteData grayscalePalette; 
 	
 	static {
 		RGB[] rgb = new RGB[256];
-
-		// build grey scale palette: 256 different grey values are generated. 
-		for (int i = 0; i < rgb.length; i++) {
+		for (int i = 0; i < rgb.length; i++)
 			rgb[i] = new RGB(i, i, i);
-		}
-
-		// Construct a new indexed palette given an array of RGB values.
-		palette = new PaletteData(rgb);
+		grayscalePalette = new PaletteData(rgb);
 	}
 	
 	
@@ -117,7 +112,7 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 			g.setLineWidth(1);
 
 			if(valid) {
-				ImageData data = new ImageData(width, height, 8, palette);
+				ImageData data = new ImageData(width, height, 8, grayscalePalette);
 				for(int y = 0; y < height; y++) {
 					Object[] line = (Object[]) array[y];
 					for(int x = 0; x < line.length && x < width; x++)

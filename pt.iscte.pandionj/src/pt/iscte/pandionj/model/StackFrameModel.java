@@ -14,6 +14,7 @@ import java.util.Observer;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
@@ -251,7 +252,7 @@ public class StackFrameModel extends Observable {
 		for (Entry<String, VariableModel<?>> e : vars.entrySet()) {
 			if(e.getValue() instanceof ReferenceModel) {
 				ReferenceModel refModel = (ReferenceModel) e.getValue();
-				if(refModel.isArrayValue() && !refModel.isNull()) {
+				if(refModel.isPrimitiveArray() && !refModel.isNull()) {
 					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getModelTarget();
 					for(String itVar : findArrayIterators(e.getKey())) {
 						if(vars.containsKey(itVar))
@@ -358,14 +359,20 @@ public class StackFrameModel extends Observable {
 			IJavaVariable[] localVariables = frame.getLocalVariables();
 			int nArgs = frame.getArgumentTypeNames().size();
 			List<String> args = new ArrayList<>(localVariables.length);
-			for(int i = 0; i < localVariables.length && i < nArgs ; i++)
-				args.add(localVariables[i].getValue().getValueString()); // TODO, add special chars '' ", arrays
+			for(int i = 0; i < localVariables.length && i < nArgs ; i++) {
+				IValue value = localVariables[i].getValue();
+				if(value instanceof IJavaObject)
+					args.add(getObject((IJavaObject) value, false).toString());
+				else
+					args.add(value.getValueString());
+			}
+//				args.add(localVariables[i].getValue().getValueString()); // TODO, add special chars '' ", arrays
 
 
 			if(frame.isStaticInitializer())
-				return frame.getDeclaringTypeName();
+				return frame.getDeclaringTypeName() + " (static initializer)";
 			else if(frame.isConstructor())
-				return "new " + frame.getReferenceType().getName();
+				return "new " + frame.getReferenceType().getName() + "(" + String.join(", ", args) + ")";
 			else {
 				String ret = frame.getMethodName() + "(" + String.join(", ", args) + ")";
 				if(returnValue != null)

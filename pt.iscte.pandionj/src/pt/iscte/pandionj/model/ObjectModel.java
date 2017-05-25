@@ -23,6 +23,7 @@ import org.eclipse.debug.core.model.ITerminate;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
+import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IMethod;
@@ -233,15 +234,22 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	@Override
 	public String toString() {
 		try {
-			return "(" + getContent().getJavaType().getName() + ")";
-			//			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
-			//			for(Entry<String, ReferenceModel> e : references.entrySet())
-			//				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
-			//			return s;
+			return invoke4("toString", new IJavaValue[0]).getValueString();
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return super.toString();
 		}
+		
+//		try {
+//			return "(" + getContent().getJavaType().getName() + ")";
+//			//			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
+//			//			for(Entry<String, ReferenceModel> e : references.entrySet())
+//			//				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
+//			//			return s;
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return super.toString();
+//		}
 	}
 
 	@Override
@@ -457,6 +465,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			List<IMethod> list = new ArrayList<>();
 			IMethod[] methods = jType.getMethods();
 			for(IMethod m : methods)
+			
 				if(!m.isConstructor() && !Flags.isStatic(m.getFlags()) && isMethodVisible(m))
 					list.add(m);
 			return list;
@@ -513,6 +522,35 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 //				e.printStackTrace();
 //			}
 		}
+	}
+	
+	public IJavaValue invoke4(String methodName, IJavaValue[] args) {
+		class Temp {
+			IJavaValue val;
+		}
+		Temp t = new Temp();
+		IWatchExpressionListener listener = new IWatchExpressionListener() {
+			
+			@Override
+			public void watchEvaluationFinished(IWatchExpressionResult result) {
+				t.val = (IJavaValue) result.getValue();
+				synchronized (t) {
+					t.notifyAll();					
+				}
+			}
+		};
+		
+		invoke3(methodName, args, listener);
+		
+		try {
+			synchronized (t) {
+				if(t.val == null)
+					t.wait();
+			}	
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		return t.val;
 	}
 
 

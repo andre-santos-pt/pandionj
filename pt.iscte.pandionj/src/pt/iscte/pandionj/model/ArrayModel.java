@@ -41,7 +41,6 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		vars = new HashMap<>();
 	}
 	
-	// TODO: problem of object state
 	protected IFigure createExtensionFigure() {
 		if(extension == null)
 			extension = ExtensionManager.getArrayExtension(this);
@@ -88,7 +87,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 				}
 			}	
 			else {
-				PrimitiveType primitive = PrimitiveType.match(compType);
+				PrimitiveType primitive = PrimitiveType.match(compType.getName());
 				if(primitive == null) {
 					for(int j = 0; j < values.length; j++)
 						array[j] = values[j].isNull() ? null : values[j].getValueString();
@@ -244,8 +243,11 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		if(lim < elements.length)
 			els += ", ...";
 		
+		if(els.length() == 1)
+			els += " ";
+		
 		els += "}";
-		return getClass().getSimpleName() + " " + els;
+		return els;
 	}
 
 	public Set<String> getTags() {

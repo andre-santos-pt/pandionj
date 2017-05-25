@@ -62,7 +62,7 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	@Override
 	public String toString() {
 		try {
-			return getName() + " = " + getContent().getValueString() + " (" + role + ")";
+			return getName() + " = " + getContent().getValueString() + (role != Role.NONE ? " (" + role + ")" : "");
 		} catch (DebugException e) {
 			e.printStackTrace();
 			return getClass().getSimpleName();
@@ -70,12 +70,7 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	}
 
 	public boolean isDecimal() {
-		try {
-			return getVariableType().getName().matches("float|double");
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return false;
-		}
+		return getType().matches("float|double");
 	}
 
 	public Role getRole() {

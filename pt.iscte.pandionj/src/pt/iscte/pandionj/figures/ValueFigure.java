@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.osgi.framework.Bundle;
 
+import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.FontManager.Style;
@@ -66,9 +67,11 @@ public class ValueFigure extends Figure {
 		add(nameLabel);
 
 		valueLabel = new Label();
+		valueLabel.setOpaque(true);
+		FontManager.setFont(valueLabel, Constants.VALUE_FONT_SIZE);
+		
 		updateValue();
 
-		valueLabel.setOpaque(true);
 		FontManager.setFont(valueLabel, Constants.VAR_FONT_SIZE);
 		int lineWidth = Role.FIXED_VALUE.equals(role) ? Constants.ARRAY_LINE_WIDTH * 2: Constants.ARRAY_LINE_WIDTH;
 		valueLabel.setBorder(new LineBorder(ColorConstants.black, lineWidth, SWT.LINE_SOLID));
@@ -130,7 +133,7 @@ public class ValueFigure extends Figure {
 		if(history.size() == 1)
 			return "";
 
-		PrimitiveType pType = PrimitiveType.match(model.getVariableType());
+		PrimitiveType pType = PrimitiveType.match(model.getType());
 
 		Object v = pType.getValue(history.get(0));
 		String parcels = v.toString();
@@ -163,6 +166,11 @@ public class ValueFigure extends Figure {
 			valueLabel.setText(textValue);
 		}
 		valueLabel.setToolTip(new Label(textValue));
+		if(textValue.length() > 2)
+			FontManager.setFont(valueLabel, (int) (Constants.VALUE_FONT_SIZE*.66));
+		else
+			FontManager.setFont(valueLabel, Constants.VALUE_FONT_SIZE);
+			
 	}
 
 	private class HistoryLabel extends Label {
