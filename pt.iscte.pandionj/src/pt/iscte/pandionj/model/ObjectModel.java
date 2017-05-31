@@ -135,9 +135,12 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	@Override
-	public void update(int step) {
-		values.values().forEach(val -> val.update(0));
-		references.values().forEach(ref -> ref.update(0));
+	public boolean update(int step) {
+		long valChanges = values.values().stream().filter(val -> val.update(0)).count();
+		long refChanges = references.values().stream().filter(ref -> ref.update(0)).count();
+//		values.values().forEach(val -> val.update(0));
+//		references.values().forEach(ref -> ref.update(0));
+		return (valChanges + refChanges) != 0;
 	}
 
 	@Override

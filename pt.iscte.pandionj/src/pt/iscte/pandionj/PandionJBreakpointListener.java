@@ -61,7 +61,7 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 		this.model = model;
 	}
 
-	public void setFilter(String type) {
+	public void enableFilter() {
 		if(request != null)
 			request.setEnabled(true);
 	}

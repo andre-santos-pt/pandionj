@@ -1,15 +1,10 @@
 package pt.iscte.pandionj.figures;
 
 
-import java.net.URL;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
@@ -17,17 +12,10 @@ import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.PositionConstants;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
-import org.osgi.framework.Bundle;
 
-import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.FontManager.Style;
@@ -37,18 +25,18 @@ import pt.iscte.pandionj.model.ValueModel.Role;
 import pt.iscte.pandionj.parser.variable.Gatherer;
 
 public class ValueFigure extends Figure {
-	private static final Image trueImage = image("true.png");
-	private static final Image falseImage = image("false.png");
-
-	private static Image image(String name) {
-		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
-		ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
-		return imageDesc.createImage();
-	}
+//	private static final Image trueImage = image("true.png");
+//	private static final Image falseImage = image("false.png");
+//
+//	private static Image image(String name) {
+//		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
+//		URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
+//		ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
+//		return imageDesc.createImage();
+//	}
 
 	private String textValue;
-	private Label valueLabel;
+	private ValueLabel valueLabel;
 	private ValueModel model;
 	private Figure extraFigure;
 
@@ -66,49 +54,46 @@ public class ValueFigure extends Figure {
 			FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
 		add(nameLabel);
 
-		valueLabel = new Label();
-		valueLabel.setOpaque(true);
-		FontManager.setFont(valueLabel, Constants.VALUE_FONT_SIZE);
-		
-		updateValue();
+		valueLabel = new ValueLabel(model);
+//		valueLabel.setOpaque(true);
+//		FontManager.setFont(valueLabel, Constants.VALUE_FONT_SIZE);
+//		int lineWidth = Role.FIXED_VALUE.equals(role) ? Constants.ARRAY_LINE_WIDTH * 2: Constants.ARRAY_LINE_WIDTH;
+//		valueLabel.setBorder(new LineBorder(ColorConstants.black, lineWidth, SWT.LINE_SOLID));
 
-		FontManager.setFont(valueLabel, Constants.VAR_FONT_SIZE);
-		int lineWidth = Role.FIXED_VALUE.equals(role) ? Constants.ARRAY_LINE_WIDTH * 2: Constants.ARRAY_LINE_WIDTH;
-		valueLabel.setBorder(new LineBorder(ColorConstants.black, lineWidth, SWT.LINE_SOLID));
-		layout.setConstraint(valueLabel, new GridData(model.isDecimal() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH));
+//		updateValue();
+		Dimension size = valueLabel.getSize();
+		layout.setConstraint(valueLabel, new GridData(size.width, size.height));
+//		layout.setConstraint(valueLabel, new GridData(model.isDecimal() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH));
+
 		add(valueLabel);
 
 		if(Role.FIXED_VALUE.equals(role))
 			setBackgroundColor(ColorConstants.lightGray);
 
 		setOpaque(false); 
-		model.getStackFrame().registerObserver(new Observer() {
+		model.registerDisplayObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				Display.getDefault().asyncExec(() -> {
+				String currentValue = model.getCurrentValue();
+				if(currentValue.equals(textValue)) {
+//					valueLabel.setBackgroundColor(null);
+				}
+				else {
+//					valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR);
+					if(Role.GATHERER.equals(role))
+						((Label) extraFigure).setText(parcels());
 
+					else if(Role.MOST_WANTED_HOLDER.equals(role))
+						extraFigure.add(new HistoryLabel(textValue), 0);
 
-					String currentValue = model.getCurrentValue();
-					if(currentValue.equals(textValue)) {
-						valueLabel.setBackgroundColor(null);
-					}
-					else {
-						valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR);
-						if(Role.GATHERER.equals(role))
-							((Label) extraFigure).setText(parcels());
-
-						else if(Role.MOST_WANTED_HOLDER.equals(role))
-							extraFigure.add(new HistoryLabel(textValue), 0);
-
-						updateValue();
-					}
-				});
+//					updateValue();
+				}
 			}
 
 			private String parcels() {
 				switch(((Gatherer) model.getVariable()).operation) {
 				case SUMMATION: return sumParcels();
-				case PRODUCT_SERIES: return "?";
+				case PRODUCT_SERIES: return "?"; // TODO product parcels
 				default: return "";
 				}
 			}
@@ -150,28 +135,28 @@ public class ValueFigure extends Figure {
 
 		return "(" + parcels + ")";
 	}
-	
+
 	// TODO: prodParcels
 
 
 
-	private void updateValue() {
-		textValue = model.getCurrentValue();
-		if(model.getType().equals(boolean.class.getName())) {
-			valueLabel.setIcon(textValue.equals(Boolean.TRUE.toString()) ? trueImage : falseImage);
-			valueLabel.setIconAlignment(PositionConstants.CENTER);
-			valueLabel.setText("");
-		}
-		else {
-			valueLabel.setText(textValue);
-		}
-		valueLabel.setToolTip(new Label(textValue));
-		if(textValue.length() > 2)
-			FontManager.setFont(valueLabel, (int) (Constants.VALUE_FONT_SIZE*.66));
-		else
-			FontManager.setFont(valueLabel, Constants.VALUE_FONT_SIZE);
-			
-	}
+//	private void updateValue() {
+//		textValue = model.getCurrentValue();
+//		if(model.getType().equals(boolean.class.getName())) {
+//			valueLabel.setIcon(textValue.equals(Boolean.TRUE.toString()) ? trueImage : falseImage);
+//			valueLabel.setIconAlignment(PositionConstants.CENTER);
+//			valueLabel.setText("");
+//		}
+//		else {
+//			valueLabel.setText(textValue);
+//		}
+//		valueLabel.setToolTip(new Label(textValue));
+//		if(textValue.length() > 2)
+//			FontManager.setFont(valueLabel, (int) (Constants.VALUE_FONT_SIZE*.66));
+//		else
+//			FontManager.setFont(valueLabel, Constants.VALUE_FONT_SIZE);
+//
+//	}
 
 	private class HistoryLabel extends Label {
 

@@ -26,9 +26,6 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
@@ -44,7 +41,7 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 
 
-@SuppressWarnings("restriction")
+//@SuppressWarnings("restriction")
 public class StackFrameModel extends Observable {
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
@@ -129,7 +126,7 @@ public class StackFrameModel extends Observable {
 	}
 
 	public void update() {
-		handleVariables();
+		List<VariableModel<?>> newVars = handleVariables();
 
 		for(VariableModel<?> e : vars.values())
 			e.update(0);
@@ -145,21 +142,21 @@ public class StackFrameModel extends Observable {
 					}
 				});
 		}
-		setChanged();
-		notifyObservers();
+//		setChanged();
+		notifyObservers(newVars);
 	}
 
 	public void setReturnValue(Value returnValue) {
 		this.returnValue = returnValue;
 		obsolete = true;
 		setChanged();
-		notifyObservers();
+		notifyObservers(Collections.emptyList());
 	}
 
 	public void setObsolete() {
 		obsolete = true;
 		setChanged();
-		notifyObservers();
+		notifyObservers(Collections.emptyList());
 	}
 
 	public Object getReturnValue() {
@@ -167,7 +164,8 @@ public class StackFrameModel extends Observable {
 		return returnValue.toString();
 	}
 
-	private void handleVariables() {
+	private List<VariableModel<?>> handleVariables() {
+		List<VariableModel<?>> newVars = new ArrayList<>();
 		try {
 			// TODO getThis
 			Iterator<Entry<String, VariableModel<?>>> iterator = vars.entrySet().iterator();
@@ -190,19 +188,26 @@ public class StackFrameModel extends Observable {
 					setChanged();
 				}
 			}
-			notifyObservers();
 
+			
+			
 			for(IVariable v : frame.getVariables()) {
 				IJavaVariable jv = (IJavaVariable) v;
 				String varName = v.getName();
 
 				if(varName.equals("this")) {
 					for (IVariable iv : jv.getValue().getVariables())
-						if(!((IJavaVariable) iv).isSynthetic() && !((IJavaVariable) iv).isStatic())
-							handleVar((IJavaVariable) iv, true);
+						if(!((IJavaVariable) iv).isSynthetic() && !((IJavaVariable) iv).isStatic()) {
+							VariableModel<?> var = handleVar((IJavaVariable) iv, true);
+							if(var != null)
+								newVars.add(var);
+						}
 				}
-				else if(!jv.isSynthetic()) //&& !jv.isStatic())
-					handleVar(jv, false);
+				else if(!jv.isSynthetic()) { //&& !jv.isStatic())
+					VariableModel<?> var = handleVar(jv, false);
+					if(var != null)
+						newVars.add(var);
+				}
 			}
 
 			handleArrayIterators();
@@ -210,29 +215,38 @@ public class StackFrameModel extends Observable {
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
+		
+		if(!newVars.isEmpty())
+			setChanged();
+		
+		return newVars;
 	}
 
 
-	private void handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
+	private VariableModel<?> handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
 		String varName = jv.getName();
 
 		IJavaValue value = (IJavaValue) jv.getValue();
-		//		IJavaType type = jv.getJavaType();
 
 		if(vars.containsKey(varName)) {
-			vars.get(varName).update(0);
+			VariableModel<?> vModel = vars.get(varName);
+			boolean change = vModel.update(0);
+			if(change && vModel instanceof ReferenceModel)
+				return vModel;
+			else
+				return null;
 		}
 		else {
 			VariableModel<?> newElement = null;
 			
 			if(value instanceof IJavaObject) {
 				ReferenceModel refElement = new ReferenceModel(jv, isInstance, this);
-				refElement.registerObserver(new Observer() {
-					public void update(Observable o, Object arg) {
-						setChanged();
-						notifyObservers(refElement);
-					}
-				});
+//				refElement.registerObserver(new Observer() {
+//					public void update(Observable o, Object arg) {
+//						setChanged();
+//						notifyObservers(refElement);
+//					}
+//				});
 				
 				Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
 				refElement.setTags(tags);
@@ -242,9 +256,10 @@ public class StackFrameModel extends Observable {
 				newElement = new ValueModel(jv, isInstance, this);
 			}
 
-			vars.put(varName, newElement);				
-			setChanged();
-			notifyObservers(newElement);
+			vars.put(varName, newElement);
+			return newElement;
+//			setChanged();
+//			notifyObservers(newElement);
 		}
 	}
 
@@ -322,7 +337,7 @@ public class StackFrameModel extends Observable {
 					objects.put(obj.getUniqueId(), e);
 				}
 				setChanged();
-				notifyObservers(e);
+//				notifyObservers(e);
 			}
 			return e;
 		}
@@ -347,7 +362,7 @@ public class StackFrameModel extends Observable {
 		}
 		if(removals) {
 			setChanged();
-			notifyObservers();
+			notifyObservers(Collections.emptyList());
 		}
 
 	}
@@ -405,7 +420,7 @@ public class StackFrameModel extends Observable {
 		addObserver(o);
 	}
 
-	public void registerDisplayObserver(Observer obs, Control control) {
+	public void registerDisplayObserver(Observer obs) {
 		addObserver(new Observer() {
 			public void update(Observable o, Object arg) {
 				Display.getDefault().asyncExec(() -> {
@@ -414,11 +429,11 @@ public class StackFrameModel extends Observable {
 			}
 		});
 
-		control.addDisposeListener(new DisposeListener() {
-			public void widgetDisposed(DisposeEvent e) {
-				deleteObserver(obs);
-			}
-		});
+//		control.addDisposeListener(new DisposeListener() {
+//			public void widgetDisposed(DisposeEvent e) {
+//				deleteObserver(obs);
+//			}
+//		});
 	}
 
 
@@ -435,14 +450,14 @@ public class StackFrameModel extends Observable {
 			}
 
 		setChanged();
-		notifyObservers();
+		notifyObservers(Collections.emptyList());
 	}
 
 
 
 	public void objectReferenceChanged() {
 		setChanged();
-		notifyObservers();
+		notifyObservers(Collections.emptyList());
 	}
 
 	public IJavaProject getJavaProject() {

@@ -55,17 +55,18 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		
 		for(ModelElement<?> e : elements.toArray(new ModelElement[elements.size()])) {
 			if(e instanceof ReferenceModel) {
-				EntityModel<?> t = ((ReferenceModel) e).getModelTarget();
-				if(t instanceof ObjectModel && !t.hasWidgetExtension()) {
+				ReferenceModel r = (ReferenceModel) e;
+				EntityModel<?> t = r.getModelTarget();
+				if(t instanceof ObjectModel && r.getTags().isEmpty()) {
 					((ObjectModel) t).traverseSiblings((o,p,i,d,f) -> elements.add(o), true);
 				}
 				
 				// TODO more than 2 dims?
-				else if(t instanceof ArrayReferenceModel && !t.hasWidgetExtension()) {
+				else if(t instanceof ArrayReferenceModel && r.getTags().isEmpty()) {
 					elements.add(t); 
 					List<ReferenceModel> arrayElements = ((ArrayReferenceModel) t).getModelElements();
-					for(ReferenceModel r : arrayElements)
-						elements.add(r.getModelTarget());
+					for(ReferenceModel ref : arrayElements)
+						elements.add(ref.getModelTarget());
 				}
 				else
 					elements.add(t);

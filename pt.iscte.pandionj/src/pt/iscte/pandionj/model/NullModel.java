@@ -19,8 +19,8 @@ public class NullModel extends EntityModel<IJavaObject> {
 	}
 	
 	@Override
-	public void update(int step) {
-
+	public boolean update(int step) {
+		return false;
 	}
 
 	@Override

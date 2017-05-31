@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureUtilities;
@@ -32,6 +33,8 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.jdt.debug.core.IJavaArray;
+import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -79,9 +82,10 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 	}
 
 	@Override
-	public Dimension getPreferredSize(int wHint, int hHint) { // (positions.get(0).getBounds().width + ARRAY_POSITION_SPACING*2)
+	public Dimension getPreferredSize(int wHint, int hHint) { 
+		// (positions.get(0).getBounds().width + ARRAY_POSITION_SPACING*2)
 		int varSpace = vars.size() * 40;
-		return super.getPreferredSize(wHint, hHint).expand(0, + 50);
+		return super.getPreferredSize(wHint, hHint).expand(0, varSpace);
 	}
 
 
@@ -100,7 +104,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		else {
 			for(int i = 0; i < N; i++) {
 				Position p = new Position(i, false);
-				p.setValue(model.getElementString(i));
+//				p.setValue(model.getElementString(i));
 				fig.add(p);
 				positions.add(p);
 			}
@@ -189,14 +193,14 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 				if(i >= Constants.ARRAY_LENGTH_LIMIT)
 					return;
 
-				for(int j = 0; j < N; j++) {
-					Position p = getValidPosition(j);
-					if(j == i)
-						p.highlight();
-					else
-						p.unhighlight();
-				}
-				getValidPosition(i).setValue(model.getElementString(i));
+//				for(int j = 0; j < N; j++) {
+//					Position p = getValidPosition(j);
+//					if(j == i)
+//						p.highlight();
+//					else
+//						p.unhighlight();
+//				}
+//				getValidPosition(i).setValue(model.getElementString(i));
 			}
 		}
 		else if(arg instanceof ValueModel) {
@@ -240,7 +244,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 				graphics.drawText(v.id, to);
 			}
 
-
 			Point from = positions.get(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.id, font)/2, y);
 			if(!v.isBar()) {
 				graphics.drawText(v.id, from);
@@ -274,12 +277,12 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 
 
 	private class Position extends Figure {
-		private final Label valueLabel;
+		private ValueLabel valueLabel;
 		private boolean outOfBounds;
-//		private int width;
 		private boolean error;
 		private Label indexLabel;
-
+	
+		
 		public Position(Integer index, boolean outOfBounds) {
 			this.outOfBounds = outOfBounds;
 
@@ -288,17 +291,28 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			GridLayout layout = Constants.getOneColGridLayout();
 			setLayoutManager(layout);
 
-			valueLabel = new Label("");
-			FontManager.setFont(valueLabel, VALUE_FONT_SIZE);
+//			try {
+				ValueModel m = model.getElementModel(index); 
+				valueLabel = new ValueLabel(m);
+				layout.setConstraint(valueLabel, layoutData);
+				add(valueLabel);
+			
+//			} catch (DebugException e) {
+//				e.printStackTrace();
+//			}
+//			FontManager.setFont(valueLabel, VALUE_FONT_SIZE);
 
+			// TODO out of bounds
 			if(!outOfBounds) {
-				LineBorder lineBorder = new LineBorder(ColorConstants.black, POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
-				valueLabel.setBorder(lineBorder);
-				valueLabel.setBackgroundColor(ARRAY_POSITION_COLOR);
-				valueLabel.setOpaque(true);
+//				LineBorder lineBorder = new LineBorder(ColorConstants.black, POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
+//				valueLabel.setBorder(lineBorder);
+//				valueLabel.setBackgroundColor(ARRAY_POSITION_COLOR);
+//				valueLabel.setOpaque(true);
 			}
-			layout.setConstraint(valueLabel, layoutData);
-			add(valueLabel);
+			
+			// TODO
+//			layout.setConstraint(valueLabel, new GridData(width, height));
+			
 
 			indexLabel = new Label(index == null ? "" : Integer.toString(index));
 			FontManager.setFont(indexLabel, INDEX_FONT_SIZE);
@@ -307,28 +321,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			layout.setConstraint(indexLabel, layoutCenter);
 			add(indexLabel);
 			error = false;
-			
-//			valueLabel.addMouseListener(new MouseListener() {
-//
-//				@Override
-//				public void mouseDoubleClicked(MouseEvent arg0) {
-//					// TODO Auto-generated method stub
-//					
-//				}
-//
-//				@Override
-//				public void mousePressed(MouseEvent arg0) {
-//
-//					valueLabel.setBackgroundColor(Constants.SELECT_COLOR);
-//				}
-//
-//				@Override
-//				public void mouseReleased(MouseEvent arg0) {
-//					// TODO Auto-generated method stub
-//					
-//				}
-//				
-//			});
 		}
 
 		@Override
@@ -343,20 +335,20 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			}
 		}
 
-		public void setValue(String value) {
-			Display.getDefault().asyncExec(() -> {
-				valueLabel.setText(value);
-				valueLabel.setToolTip(new Label(value));
-			});
-		}
+//		public void setValue(String value) {
+//			Display.getDefault().asyncExec(() -> {
+//				valueLabel.setText(value);
+//				valueLabel.setToolTip(new Label(value));
+//			});
+//		}
 
-		public void highlight() {
-			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR));
-		}
+//		public void highlight() {
+//			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR));
+//		}
 
-		public void unhighlight() {
-			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR));
-		}
+//		public void unhighlight() {
+//			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR));
+//		}
 
 		public void markError() {
 			error = true;
@@ -369,17 +361,17 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 	}
 
 
-	public void highlight(int i) {
-		Position p = getValidPosition(i);
-		if(p != null)
-			p.highlight();
-	}
+//	public void highlight(int i) {
+//		Position p = getValidPosition(i);
+//		if(p != null)
+//			p.highlight();
+//	}
 
-	public void unhighlight(int i) {
-		Position p = getValidPosition(i);
-		if(p != null)
-			p.unhighlight();
-	}
+//	public void unhighlight(int i) {
+//		Position p = getValidPosition(i);
+//		if(p != null)
+//			p.unhighlight();
+//	}
 
 
 	private enum Direction {

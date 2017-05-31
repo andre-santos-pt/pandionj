@@ -227,14 +227,14 @@ public class PandionJView extends ViewPart {
 					});
 				}
 				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
-					breakpointListener.setFilter("Rec");
+					breakpointListener.enableFilter();
 				}
 				else if(e.getKind() == DebugEvent.RESUME &&
 						(
-						e.getDetail() == DebugEvent.STEP_OVER || 
-						e.getDetail() == DebugEvent.STEP_RETURN || 
-						e.getDetail() == DebugEvent.CLIENT_REQUEST 
-						))  {
+								e.getDetail() == DebugEvent.STEP_OVER || 
+								e.getDetail() == DebugEvent.STEP_RETURN || 
+								e.getDetail() == DebugEvent.CLIENT_REQUEST 
+								))  {
 					breakpointListener.disableFilter();
 				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
@@ -338,12 +338,12 @@ public class PandionJView extends ViewPart {
 	public static void execute(DebugRun r) {
 		instance.executeInternal(r);
 	}
-	
+
 	public static void executeUpdate(DebugRun r) {
 		Display.getDefault().asyncExec(() -> instance.executeInternal(r));
 	}
-	
-	public void executeInternal(DebugRun r) {
+
+	private void executeInternal(DebugRun r) {
 		try {
 			r.run();
 		}
@@ -362,10 +362,9 @@ public class PandionJView extends ViewPart {
 		}
 	}
 
-	public void test() {
-		int i = PandionJView.execute(exceptionFrame::getLineNumber, 0);
-	}
 
+
+	
 
 
 

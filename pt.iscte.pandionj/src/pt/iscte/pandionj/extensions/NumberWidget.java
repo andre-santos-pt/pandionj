@@ -46,6 +46,7 @@ public class NumberWidget implements IObjectWidgetExtension {
 
 	@Override
 	public boolean includeMethod(String methodName) {
-		return methodName.matches("equals|compareTo");
+		return false;
+		//return methodName.matches("equals|compareTo");
 	}
 }

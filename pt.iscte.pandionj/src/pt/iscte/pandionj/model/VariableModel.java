@@ -17,6 +17,7 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 	private boolean outOfScope;
 	private List<T> history;
 	
+	@SuppressWarnings("unchecked")
 	public VariableModel(IJavaVariable variable, boolean isInstance, StackFrameModel model) {
 		super(model);
 		assert variable != null;
@@ -38,7 +39,7 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 	
 	@SuppressWarnings("unchecked")
 	@Override
-	public void update(int step) {
+	public boolean update(int step) {
 		try {
 			T current = history.get(history.size()-1);
 			boolean equals = variable.getValue().equals(current);
@@ -46,11 +47,13 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 				history.add((T) variable.getValue());
 				setChanged();
 				notifyObservers();
+				return true;
 			}
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
+		return false;
 	}
 	
 	public String getName() {		
@@ -62,32 +65,13 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 	}
 	
 	public String getType() {
-//		try {
-//			return variable.getReferenceTypeName();
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
 		return type;
 	}
-//	@SuppressWarnings("unchecked")
+	
 	@Override
 	public T getContent() {
-//		try {
-//			return (T) variable.getValue();
-//		}
-//		catch(DebugException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
 		return history.get(history.size()-1);
 	}
-	
-//	public IJavaType getVariableType() {
-//		return type;
-//	}
-	
-
 	
 	public String getCurrentValue() {
 		return history.get(history.size()-1).toString();

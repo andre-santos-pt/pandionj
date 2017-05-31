@@ -9,12 +9,14 @@ import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaType;
-import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 
 public class ArrayPrimitiveModel extends ArrayModel {
 
+	private List<ValueModel> values;
+	
 	public ArrayPrimitiveModel(IJavaArray array, StackFrameModel model) {
 		super(array, model);
 	}
@@ -22,10 +24,13 @@ public class ArrayPrimitiveModel extends ArrayModel {
 	@Override
 	protected void initArray(IJavaArray array) {
 		try {
-			IJavaType componentType = ((IJavaArrayType) array.getJavaType()).getComponentType();
-			assert !(componentType instanceof IJavaReferenceType);
-		} catch (DebugException e1) {
-			e1.printStackTrace();
+			values = new ArrayList<>(array.getLength());
+			for(int i = 0; i < array.getLength(); i++) {
+				ValueModel m = new ValueModel((IJavaVariable) array.getVariable(i), false, getStackFrame());
+				values.add(m);
+			}
+		} catch (DebugException e) {
+			e.printStackTrace();
 		}
 	}
 	
@@ -37,31 +42,43 @@ public class ArrayPrimitiveModel extends ArrayModel {
 	protected IFigure createArrayFigure() {
 		return new ArrayPrimitiveFigure(this);
 	}
-
-	public void update(int step) {
-		try {
-			IJavaValue[] values = entity.getValues();
-			List<Integer> changes = new ArrayList<Integer>();
-			for(int i = 0; i < elements.length; i++) {
-				boolean equals = values[i].getValueString().equals(elements[i].getValueString());
-				if(!equals) {
-					elements[i] = values[i];
-					changes.add(i);
-				}
-			}
-			if(!changes.isEmpty()) {
-				setChanged();
-				notifyObservers(changes);
-			}
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-		}
+	
+	boolean updateInternal(int i, int step) {
+		return values.get(i).update(step);
 	}
 
-	public String getElementString(int i) {
-		return elements[i].toString();
+	
+	public ValueModel getElementModel(int index) {
+		return values.get(index);
 	}
+
+//	public boolean update(int step) {
+//		try {
+//			IJavaValue[] values = entity.getValues();
+//			List<Integer> changes = new ArrayList<Integer>();
+//			for(int i = 0; i < elements.length; i++) {
+//				boolean equals = values[i].getValueString().equals(elements[i].getValueString());
+//				if(!equals) {
+//					elements[i] = values[i];
+//					changes.add(i);
+//				}
+//				this.values.get(i).update(step);
+//			}
+//			if(!changes.isEmpty()) {
+//				setChanged();
+//				notifyObservers(changes);
+//				return true;
+//			}
+//		}
+//		catch(DebugException e) {
+//			e.printStackTrace();
+//		}
+//		return false;
+//	}
+
+	
+	
+	
 
 //	static Object[] getPrimitiveWrapperValues(IJavaValue[] elements, String type) {
 //		Object[] array = new Object[elements.length];

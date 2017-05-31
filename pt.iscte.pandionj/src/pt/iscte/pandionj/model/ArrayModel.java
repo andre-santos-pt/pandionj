@@ -1,9 +1,12 @@
 package pt.iscte.pandionj.model;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,35 +27,33 @@ import pt.iscte.pandionj.model.ValueModel.Role;
 
 public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArrayModel {
 
-	protected IJavaValue[] elements;
+	private IJavaValue[] elements;
 
 	private int dimensions;
 	private String componentType;
 	private Map<String, ValueModel> vars;
-	
-	
+
 	private String varError;
-	
+
 	private IArrayWidgetExtension extension;
-	
-	
+
+
 	ArrayModel(IJavaArray array, StackFrameModel model) {
 		super(array, model);
 		vars = new HashMap<>();
 	}
-	
+
 	protected IFigure createExtensionFigure() {
 		if(extension == null)
 			extension = ExtensionManager.getArrayExtension(this);
-		
 		return extension.createFigure(this);
 	}
-		
+
 	@Override
 	public boolean hasWidgetExtension() {
 		return extension != IArrayWidgetExtension.NULL_EXTENSION;
 	}
-	
+
 	@Override
 	protected void init(IJavaArray array) {
 		entity = array;
@@ -63,12 +64,13 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		}
 		dimensions = getDimensions(array);
 		componentType = getComponentType(array);
+		prev = getValues();
 		initArray(array);
 	}
-	
+
 	protected abstract void initArray(IJavaArray array);
-	
-	
+
+
 	public Object[] getValues() {
 		return getValues(entity);
 	}
@@ -96,7 +98,6 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 					primitive.fillPrimitiveWrapperValues(javaArray.getValues(), array);
 				}
 			}
-			
 			return array;
 		}
 		catch (DebugException e) {
@@ -104,15 +105,100 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 			return null;
 		}
 	}
-	
+
+	private Object[] prev;
+
+	private static boolean diff(Object[] a, Object[] b, int dim) {
+		if(a.length == b.length) {
+			for(int i = 0; i < a.length; i++) {
+				if(a[i] != null && b[i] != null && a[i].equals(b[i])) {
+					if(dim > 1 && diff((Object[]) a, (Object[]) b, dim - 1))
+						return true;
+				}
+				else if(a[i] != b[i])
+					return true;
+			}
+			return false;
+		}
+		return true;
+	}
+
+	private static boolean diff2(IJavaValue[] a, IJavaValue[] b, int dim) {
+		try {
+			if(a.length == b.length) {
+				for(int i = 0; i < a.length; i++) {
+					if(!a[i].isNull() && !b[i].isNull() && a[i].equals(b[i])) {
+						if(dim > 1 && diff2(((IJavaArray) a[i]).getValues(), ((IJavaArray) b[i]).getValues(), dim - 1))
+							return true;
+					}
+					else if(!a[i].equals(b[i]))
+						return true;
+				}
+				return false;
+			}
+		}
+		catch(DebugException e) {
+			e.printStackTrace();
+		}
+		return true;
+	}
+
+	public final boolean update(int step) {
+		for(int i = 0; i < getLength(); i++)
+			if(updateInternal(i, step))
+				setChanged();
+
+		if(!hasChanged() && getDimensions() > 1) {
+			Object[] newValues = getValues(entity);
+			if(diff(prev, newValues, getDimensions()))
+				setChanged();
+			prev = newValues;
+		}
+		else
+			prev = getValues(entity);
+
+
+		//		try {
+		//			IJavaValue[] values = entity.getValues();
+		//			List<Integer> changes = new ArrayList<Integer>();
+		//			for(int i = 0; i < elements.length; i++) {
+		//				boolean equals = values[i].equals(elements[i]);
+		//				if(!equals) {
+		//					elements[i] = values[i];
+		//					changes.add(i);
+		//					setChanged();
+		//				}
+		//				if(updateInternal(i, elements[i], step))
+		//					setChanged();
+		//			}
+		//			
+		//			boolean hasChanged = hasChanged();
+		//			notifyObservers(changes);
+		//			return hasChanged;
+		//		}
+		//		catch(DebugException e) {
+		//			e.printStackTrace();
+		//		}
+		boolean hasChanged = hasChanged();
+		notifyObservers();
+		return hasChanged;
+	}
+
+	abstract boolean updateInternal(int i, int step);
+
 	public int getLength() {
 		return elements.length;
 	}
-	
+
 	public int getDimensions() {
 		return dimensions;
 	}
-	
+
+	public String getElementString(int i) {
+		return elements[i].toString();
+	}
+
+
 	private static int getDimensions(IJavaArray array) {
 		int d = 0;
 		try {
@@ -126,27 +212,11 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		}
 		return d;
 	}
-	
+
 	public String getComponentType() {
 		return componentType;
 	}
-	
-//	private static String getComponentType(IJavaArray array) {
-//		String type = "";
-//		try {
-//			IJavaType t = array.getJavaType();
-//			while(t instanceof IJavaArrayType) {
-//				type += "[]";
-//				t = ((IJavaArrayType) t).getComponentType();
-//			}
-//			type = t.getName() + type;
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//		}
-//		assert !type.isEmpty();
-//		return type;
-//	}
-	
+
 	static String getComponentType(IJavaArray array) {
 		try {
 			IJavaType t = array.getJavaType();
@@ -159,8 +229,8 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 			return null;
 		}
 	}
-	
-	
+
+
 	protected IFigure createInnerFigure(Graph graph) {
 		IFigure fig = createExtensionFigure();
 		if(fig == null)
@@ -168,13 +238,12 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		return fig;
 	}
 
-	
+
 	protected abstract IFigure createArrayFigure();
 
-	public abstract String getElementString(int index);
-	
-	
-	
+
+
+
 	public void addVar(ValueModel v) {
 		assert v.getRole().equals(Role.ARRAY_ITERATOR);
 		if(!vars.containsKey(v.getName())) {
@@ -200,29 +269,29 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	public Collection<ValueModel> getVars() {
 		return Collections.unmodifiableCollection(vars.values());
 	}
-	
+
 	@Override
 	public boolean isMatrix() {
 		if(getDimensions() != 2)
 			return false;
-		
+
 		// TODO: with IJava elements
 		Object[] values = getValues();
 		for(Object o : values)
 			if(o == null)
 				return false;
-		
+
 		for(int i = 0; i < values.length-1; i++)
 			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
 				return false;
-		
+
 		return true;
 	}
-	
+
 	public Dimension getMatrixDimension() {
 		if(!isMatrix())
 			throw new IllegalStateException("not a matrix");
-		
+
 		try {
 			return new Dimension(getLength(), getLength() == 0 ? 0 : ((IJavaArray) elements[0]).getLength());
 		} catch (DebugException e) {
@@ -230,8 +299,8 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 			return null;
 		}
 	}
-	
-	@Override
+
+	@Override // TODO elements / prev
 	public String toString() {
 		int lim = Math.min(Constants.ARRAY_LENGTH_LIMIT, elements.length);
 		String els = "{";
@@ -242,10 +311,10 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		}
 		if(lim < elements.length)
 			els += ", ...";
-		
+
 		if(els.length() == 1)
 			els += " ";
-		
+
 		els += "}";
 		return els;
 	}
