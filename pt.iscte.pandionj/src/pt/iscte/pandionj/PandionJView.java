@@ -204,6 +204,7 @@ public class PandionJView extends ViewPart {
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		stackLayout.topControl = labelComposite;
 
+		new StaticArea(area);
 		stackView = new StackView(area);
 	}
 

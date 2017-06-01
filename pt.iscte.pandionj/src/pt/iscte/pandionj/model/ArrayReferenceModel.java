@@ -15,6 +15,8 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 
+
+// TODO: limit size?
 public class ArrayReferenceModel extends ArrayModel {
 
 	private List<ReferenceModel> references;
@@ -31,18 +33,6 @@ public class ArrayReferenceModel extends ArrayModel {
 			for(int i = 0; i < variables.length; i++) {
 				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, getStackFrame());
 				references.add(referenceModel);
-//				if(getDimensions() > 1) {
-//					ArrayModel line = (ArrayModel) referenceModel.getModelTarget();
-//				}
-				//				int ii = i;
-				//				referenceModel.registerObserver(new Observer() {
-				//					public void update(Observable o, Object arg) {
-				//						setChanged();
-				//						notifyObservers(new int[] {ii});
-				//						getStackFrame().objectReferenceChanged();
-				//					}
-				//				});
-
 			}
 		}
 		catch(DebugException e) {
@@ -65,48 +55,4 @@ public class ArrayReferenceModel extends ArrayModel {
 	public List<ReferenceModel> getModelElements() {
 		return Collections.unmodifiableList(references);
 	}
-
-
-	//	public boolean update(int step) {
-	//		try {
-	//			IJavaValue[] values = entity.getValues();
-	//			List<Integer> changes = new ArrayList<Integer>();
-	//			for(int i = 0; i < elements.length; i++) {
-	//				IJavaObject array = references.get(i).getContent();
-	//				boolean equals = values[i].equals(array);
-	//				if(!equals) {
-	//					elements[i] = values[i];
-	//					changes.add(i);
-	//				}
-	//			}
-	//			if(!changes.isEmpty()) {
-	//				setChanged();
-	//				notifyObservers(changes);
-	//			}
-	//
-	//		}
-	//		catch(DebugException e) {
-	//			e.printStackTrace();
-	//		}
-	//		long refChanges = references.stream().filter(ref -> ref.update(step)).count();
-	//		for(ReferenceModel r : references)
-	//			r.update(step);
-	//		// TODO review
-	//		setChanged();
-	//		notifyObservers();
-	//		
-	//		return refChanges != 0;
-	//	}
-
-
-
-	//	public String getElementString(int i) {
-	//		assert i >= 0 && i < references.size();
-	//		return references.get(i).toString();
-	//	}
-
-
-
-
-
 }

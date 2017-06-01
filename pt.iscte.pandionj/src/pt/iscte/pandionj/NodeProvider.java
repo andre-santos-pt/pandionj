@@ -6,14 +6,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.eclipse.jdt.debug.core.IJavaDebugTarget;
-import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
 
-import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
-import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
-import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.EntityModel;
 import pt.iscte.pandionj.model.ModelElement;
@@ -49,7 +44,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		Iterator<ModelElement<?>> it = elements.iterator();
 		while(it.hasNext()) {
 			VariableModel<?> v = (VariableModel<?>) it.next();
-			if((v instanceof ValueModel && ((ValueModel) v).getRole() == Role.ARRAY_ITERATOR))
+			if((v.isOutOfScope() || v instanceof ValueModel && ((ValueModel) v).getRole() == Role.ARRAY_ITERATOR))
 				it.remove();
 		}
 		

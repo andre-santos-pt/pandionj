@@ -62,6 +62,10 @@ public class StackFrameModel extends Observable {
 
 	private int instant; // TODO
 
+	private int step;
+	
+	private int stepPointer;
+	
 //	private StackFrameImpl underlyingFrame;
 
 	public StackFrameModel(CallStackModel parent, IJavaStackFrame frame) {
@@ -85,6 +89,8 @@ public class StackFrameModel extends Observable {
 
 		obsolete = false;
 		exceptionType = null;
+		
+		step = 0;
 	}
 
 	public boolean isExecutionFrame() {
@@ -128,21 +134,26 @@ public class StackFrameModel extends Observable {
 	public void update() {
 		List<VariableModel<?>> newVars = handleVariables();
 
-		for(VariableModel<?> e : vars.values())
-			e.update(0);
+//		for(VariableModel<?> e : vars.values())
+//			if(e.update(step))
+//				setChanged();
 
+		// TODO rever changes
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel)
-				o.update(0);
+				o.update(step);
 			else if(o instanceof ObjectModel)
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
 					public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
 						if(object != null)
-							object.update(0);
+							object.update(step);
 					}
 				});
 		}
-//		setChanged();
+		if(hasChanged()) {
+			step++;
+			stepPointer = step;
+		}
 		notifyObservers(newVars);
 	}
 
@@ -189,8 +200,6 @@ public class StackFrameModel extends Observable {
 				}
 			}
 
-			
-			
 			for(IVariable v : frame.getVariables()) {
 				IJavaVariable jv = (IJavaVariable) v;
 				String varName = v.getName();
@@ -203,7 +212,8 @@ public class StackFrameModel extends Observable {
 								newVars.add(var);
 						}
 				}
-				else if(!jv.isSynthetic()) { //&& !jv.isStatic())
+				
+				else if(!jv.isSynthetic()) { //&& !jv.isStatic()) // TODO repor
 					VariableModel<?> var = handleVar(jv, false);
 					if(var != null)
 						newVars.add(var);
@@ -230,7 +240,9 @@ public class StackFrameModel extends Observable {
 
 		if(vars.containsKey(varName)) {
 			VariableModel<?> vModel = vars.get(varName);
-			boolean change = vModel.update(0);
+			boolean change = vModel.update(step);
+			if(change)
+				setChanged();
 			if(change && vModel instanceof ReferenceModel)
 				return vModel;
 			else
@@ -241,13 +253,6 @@ public class StackFrameModel extends Observable {
 			
 			if(value instanceof IJavaObject) {
 				ReferenceModel refElement = new ReferenceModel(jv, isInstance, this);
-//				refElement.registerObserver(new Observer() {
-//					public void update(Observable o, Object arg) {
-//						setChanged();
-//						notifyObservers(refElement);
-//					}
-//				});
-				
 				Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
 				refElement.setTags(tags);
 				newElement = refElement;
@@ -258,8 +263,6 @@ public class StackFrameModel extends Observable {
 
 			vars.put(varName, newElement);
 			return newElement;
-//			setChanged();
-//			notifyObservers(newElement);
 		}
 	}
 
@@ -337,7 +340,6 @@ public class StackFrameModel extends Observable {
 					objects.put(obj.getUniqueId(), e);
 				}
 				setChanged();
-//				notifyObservers(e);
 			}
 			return e;
 		}
@@ -455,10 +457,10 @@ public class StackFrameModel extends Observable {
 
 
 
-	public void objectReferenceChanged() {
-		setChanged();
-		notifyObservers(Collections.emptyList());
-	}
+//	public void objectReferenceChanged() {
+//		setChanged();
+//		notifyObservers(Collections.emptyList());
+//	}
 
 	public IJavaProject getJavaProject() {
 		return javaProject;
@@ -466,13 +468,6 @@ public class StackFrameModel extends Observable {
 
 	public Collection<EntityModel<?>> getLooseObjects() {
 		return Collections.unmodifiableCollection(looseObjects.values());
-		//		Collection<EntityModel<?>> referencedObjects = getReferencedObjects();
-		//		List<EntityModel<?>> list = new ArrayList<>();
-		//		
-		//		for (EntityModel<?> m : objects.values())
-		//			if(!referencedObjects.contains(m))
-		//				list.add(m);
-		//		return list;
 	}
 
 	private Collection<EntityModel<?>> getReferencedObjects() {
@@ -500,12 +495,25 @@ public class StackFrameModel extends Observable {
 		return parent;
 	}
 
+	public int getStep() {
+		return step;
+	}
+	
+	public void setStep(int step) {
+		stepPointer = step;
+		for(VariableModel<?> var : vars.values())
+			var.setStep(stepPointer);
+		
+//		setChanged();
+//		notifyObservers(Collections.emptyList());
+	}
 
 
-
-
-
-
+	
+	
+	
+	
+	
 
 
 	//	public IValue evalMethod(ObjectModel obj, String expression, boolean addToModel) {

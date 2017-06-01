@@ -50,13 +50,6 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 
 	public boolean isPrimitiveArray() {
 		return isPrimitiveArray;
-//		try {
-//			return variable.getValue() instanceof IJavaArray &&
-//					!(((IJavaArrayType) variable.getJavaType()).getComponentType() instanceof IJavaReferenceType); 
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return false;
-//		}
 	}
 
 

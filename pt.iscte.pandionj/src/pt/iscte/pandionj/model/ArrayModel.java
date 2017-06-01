@@ -1,12 +1,9 @@
 package pt.iscte.pandionj.model;
 
-import java.lang.reflect.Array;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,6 +64,21 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		prev = getValues();
 		initArray(array);
 	}
+
+	//	private static IJavaValue[] deepCopy(IJavaValue[] array, int dim) {
+	//		Object values = Array.newInstance(IJavaValue.class, dim);
+	////		IJavaValue[] values = new IJavaValue[array.length];
+	//		for(int i = 0; i < array.length; i++) {
+	//			if(dim == 1)
+	//				Array.set(values, i, array[i]);
+	////				values[i] = array[i];
+	//			else
+	//				Array.set(values, i, deepCopy(((IJavaArray) array[i]).getValues(), dim-1));
+	////				values[i] = deepCopy(((IJavaArray) array[i]).getValues(), dim-1);
+	//		}
+	//		
+	//		return values;
+	//	}
 
 	protected abstract void initArray(IJavaArray array);
 
@@ -157,6 +169,24 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		else
 			prev = getValues(entity);
 
+		boolean hasChanged = hasChanged();
+		notifyObservers(prev);
+		return hasChanged;
+
+		//		try {
+			//			if(!hasChanged() && getDimensions() > 1) {
+		//				IJavaValue[] newValues = entity.getValues();
+		//				if(diff2(elements, newValues, getDimensions()))
+		//					setChanged();
+		//				elements = newValues;
+		//			}
+		//			else
+		//				elements = entity.getValues();
+		//		}
+		//		catch (DebugException e) {
+		//			e.printStackTrace();
+		//		}
+
 
 		//		try {
 		//			IJavaValue[] values = entity.getValues();
@@ -179,9 +209,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		//		catch(DebugException e) {
 		//			e.printStackTrace();
 		//		}
-		boolean hasChanged = hasChanged();
-		notifyObservers();
-		return hasChanged;
+
 	}
 
 	abstract boolean updateInternal(int i, int step);
@@ -240,8 +268,6 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 
 
 	protected abstract IFigure createArrayFigure();
-
-
 
 
 	public void addVar(ValueModel v) {

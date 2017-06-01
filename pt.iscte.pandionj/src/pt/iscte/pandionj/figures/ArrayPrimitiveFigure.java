@@ -1,6 +1,5 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.ARRAY_POSITION_COLOR;
 import static pt.iscte.pandionj.Constants.ARRAY_POSITION_SPACING;
 import static pt.iscte.pandionj.Constants.ARROW_EDGE;
 import static pt.iscte.pandionj.Constants.ARROW_LINE_WIDTH;
@@ -8,9 +7,7 @@ import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
 import static pt.iscte.pandionj.Constants.OBJECT_COLOR;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
 import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
-import static pt.iscte.pandionj.Constants.POSITION_LINE_WIDTH;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
-import static pt.iscte.pandionj.Constants.VALUE_FONT_SIZE;
 import static pt.iscte.pandionj.Constants.getOneColGridLayout;
 import static pt.iscte.pandionj.Constants.getVarColor;
 
@@ -21,7 +18,6 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureUtilities;
@@ -29,12 +25,9 @@ import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.jdt.debug.core.IJavaArray;
-import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -291,16 +284,10 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			GridLayout layout = Constants.getOneColGridLayout();
 			setLayoutManager(layout);
 
-//			try {
 				ValueModel m = model.getElementModel(index); 
 				valueLabel = new ValueLabel(m);
 				layout.setConstraint(valueLabel, layoutData);
 				add(valueLabel);
-			
-//			} catch (DebugException e) {
-//				e.printStackTrace();
-//			}
-//			FontManager.setFont(valueLabel, VALUE_FONT_SIZE);
 
 			// TODO out of bounds
 			if(!outOfBounds) {
@@ -310,10 +297,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 //				valueLabel.setOpaque(true);
 			}
 			
-			// TODO
-//			layout.setConstraint(valueLabel, new GridData(width, height));
-			
-
 			indexLabel = new Label(index == null ? "" : Integer.toString(index));
 			FontManager.setFont(indexLabel, INDEX_FONT_SIZE);
 			indexLabel.setLabelAlignment(SWT.CENTER);

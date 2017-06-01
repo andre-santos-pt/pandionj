@@ -84,11 +84,11 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 			this.model = model;
 			this.model.registerDisplayObserver(this);
 			
-			update(null, null);
+			update(null, model.getValues());
 		}
 
 		public void update(Observable o, Object arg) {
-			array = model.getValues();
+			array = (Object[]) arg;
 			valid = internalAccept(array);
 			if(valid) {
 				width = ((Object[]) array[0]).length;

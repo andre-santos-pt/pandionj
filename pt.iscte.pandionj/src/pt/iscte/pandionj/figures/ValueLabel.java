@@ -39,7 +39,6 @@ class ValueLabel extends Label {
 		updateValue();
 		model.registerDisplayObserver((o,a) -> updateValue());
 		
-		
 		// TODO: nao funciona, porque o evento de step nao eh propagado
 		model.getStackFrame().registerDisplayObserver(new Observer() {
 			

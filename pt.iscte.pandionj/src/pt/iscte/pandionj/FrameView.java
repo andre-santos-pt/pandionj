@@ -29,6 +29,8 @@ import org.eclipse.swt.events.MouseTrackListener;
 import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.TouchEvent;
 import org.eclipse.swt.events.TouchListener;
 import org.eclipse.swt.graphics.Color;
@@ -48,6 +50,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -65,7 +68,9 @@ class FrameView extends Composite implements Observer {
 	StackFrameModel model;
 	Label header;
 	GridData gridData;
-	
+	Slider slider;
+
+	Text stepText;
 	
 	public FrameView(Composite parent) {
 		super(parent, SWT.BORDER);
@@ -83,9 +88,21 @@ class FrameView extends Composite implements Observer {
 
 		FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
 
-					Slider slider = new Slider(compositeHeader, SWT.HORIZONTAL | SWT.BORDER);
-					slider.setMaximum(1);
-					slider.setMaximum(4);
+		stepText = new Text(compositeHeader,SWT.BORDER);
+		
+		slider = new Slider(compositeHeader, SWT.HORIZONTAL);
+		slider.setMinimum(1);
+		slider.setMaximum(1);
+		slider.setIncrement(1);
+
+		slider.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				model.setStep(slider.getSelection()-1);
+				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
+			}
+		});
+		
 
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		compositeViewer = new Composite(this, SWT.NONE);
@@ -102,30 +119,30 @@ class FrameView extends Composite implements Observer {
 				parent.layout();
 			}
 		});
-		
+
 		// TODO CTRL +-
-//		viewer.getGraphControl().addKeyListener(new KeyListener() {
-//			
-//			@Override
-//			public void keyReleased(KeyEvent e) {
-//				
-//			}
-//			
-//			@Override
-//			public void keyPressed(KeyEvent e) {
-//			}
-//		});
+		//		viewer.getGraphControl().addKeyListener(new KeyListener() {
+		//			
+		//			@Override
+		//			public void keyReleased(KeyEvent e) {
+		//				
+		//			}
+		//			
+		//			@Override
+		//			public void keyPressed(KeyEvent e) {
+		//			}
+		//		});
 		viewer.getGraphControl().setTouchEnabled(false);
 		viewer.getGraphControl().addGestureListener(new GestureListener() {
-			
+
 			@Override
 			public void gesture(GestureEvent e) {
 				if(e.detail == SWT.GESTURE_MAGNIFY)
 					viewer.zoom(e.magnification);
 			}
 		});
-		
-			
+
+
 
 		header.addMouseListener(new MouseAdapter() {
 			@Override
@@ -172,13 +189,13 @@ class FrameView extends Composite implements Observer {
 		super.dispose();
 		this.model.deleteObserver(this);
 	}
-	
+
 	public boolean isExpanded() {
 		return !gridData.exclude;
 	}
 
 	public void setZoom(double zoom) {
-//		viewer.setZoom(zoom);
+		//		viewer.setZoom(zoom);
 	}
 
 	private void setError(String message) {
@@ -189,12 +206,12 @@ class FrameView extends Composite implements Observer {
 	void setInput(StackFrameModel frameModel) {
 		Color c = frameModel.isObsolete() ? ColorManager.getColor(150, 150, 150) : null;
 		setBackground(c);
-		//			header.setBackground(c);
 
 		header.setToolTipText("");
 		viewer.getGraphControl().setToolTipText(frameModel.getSourceFile().getName() + " on line " + frameModel.getLineNumber());
 		if(this.model != frameModel) {
 			this.model = frameModel;
+			this.model.registerDisplayObserver(this);
 			String headerText = frameModel.getInvocationExpression();
 			header.setText(headerText);
 			compositeHeader.pack();
@@ -207,7 +224,9 @@ class FrameView extends Composite implements Observer {
 
 			setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
 
-			frameModel.registerDisplayObserver(this);
+			slider.setMinimum(1);
+			slider.setMaximum(1);
+			
 			getParent().layout();
 		}
 	}
@@ -225,13 +244,19 @@ class FrameView extends Composite implements Observer {
 				viewer.getGraphControl().scrollToY(h);
 			});
 		}
-		
+
 		if(model.exceptionOccurred())
 			setError(model.getExceptionMessage());
 		else if(model.isObsolete())
 			setBackground(ColorManager.getColor(150, 150, 150));
 
 		setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
+
+		slider.setMaximum(model.getStep()+1);
+		slider.setSelection(model.getStep()+1);
+		slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
+		
+		stepText.setText(model.getStep() + "");
 	}
 
 

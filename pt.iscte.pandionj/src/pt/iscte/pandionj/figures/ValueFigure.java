@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
@@ -25,17 +26,6 @@ import pt.iscte.pandionj.model.ValueModel.Role;
 import pt.iscte.pandionj.parser.variable.Gatherer;
 
 public class ValueFigure extends Figure {
-//	private static final Image trueImage = image("true.png");
-//	private static final Image falseImage = image("false.png");
-//
-//	private static Image image(String name) {
-//		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-//		URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
-//		ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
-//		return imageDesc.createImage();
-//	}
-
-	private String textValue;
 	private ValueLabel valueLabel;
 	private ValueModel model;
 	private Figure extraFigure;
@@ -55,15 +45,8 @@ public class ValueFigure extends Figure {
 		add(nameLabel);
 
 		valueLabel = new ValueLabel(model);
-//		valueLabel.setOpaque(true);
-//		FontManager.setFont(valueLabel, Constants.VALUE_FONT_SIZE);
-//		int lineWidth = Role.FIXED_VALUE.equals(role) ? Constants.ARRAY_LINE_WIDTH * 2: Constants.ARRAY_LINE_WIDTH;
-//		valueLabel.setBorder(new LineBorder(ColorConstants.black, lineWidth, SWT.LINE_SOLID));
-
-//		updateValue();
 		Dimension size = valueLabel.getSize();
 		layout.setConstraint(valueLabel, new GridData(size.width, size.height));
-//		layout.setConstraint(valueLabel, new GridData(model.isDecimal() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH));
 
 		add(valueLabel);
 
@@ -74,20 +57,21 @@ public class ValueFigure extends Figure {
 		model.registerDisplayObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				String currentValue = model.getCurrentValue();
-				if(currentValue.equals(textValue)) {
-//					valueLabel.setBackgroundColor(null);
-				}
-				else {
-//					valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR);
-					if(Role.GATHERER.equals(role))
-						((Label) extraFigure).setText(parcels());
+				if(Role.GATHERER.equals(role))
+					((Label) extraFigure).setText(parcels());
 
-					else if(Role.MOST_WANTED_HOLDER.equals(role))
-						extraFigure.add(new HistoryLabel(textValue), 0);
-
-//					updateValue();
+				else if(Role.MOST_WANTED_HOLDER.equals(role)) {
+					List<IJavaPrimitiveValue> history = model.getHistory();
+					String val = "?";
+					try {
+						val = history.get(history.size()-2).getValueString();
+					} catch (DebugException e) {
+						e.printStackTrace();
+					}
+					extraFigure.add(new HistoryLabel(val), 0);
 				}
+				
+				layout();
 			}
 
 			private String parcels() {
@@ -113,6 +97,7 @@ public class ValueFigure extends Figure {
 	}
 
 
+	// TODO: prodParcels
 	private String sumParcels() {
 		List<IJavaPrimitiveValue> history = model.getHistory();
 		if(history.size() == 1)
@@ -136,27 +121,11 @@ public class ValueFigure extends Figure {
 		return "(" + parcels + ")";
 	}
 
-	// TODO: prodParcels
+	
 
 
 
-//	private void updateValue() {
-//		textValue = model.getCurrentValue();
-//		if(model.getType().equals(boolean.class.getName())) {
-//			valueLabel.setIcon(textValue.equals(Boolean.TRUE.toString()) ? trueImage : falseImage);
-//			valueLabel.setIconAlignment(PositionConstants.CENTER);
-//			valueLabel.setText("");
-//		}
-//		else {
-//			valueLabel.setText(textValue);
-//		}
-//		valueLabel.setToolTip(new Label(textValue));
-//		if(textValue.length() > 2)
-//			FontManager.setFont(valueLabel, (int) (Constants.VALUE_FONT_SIZE*.66));
-//		else
-//			FontManager.setFont(valueLabel, Constants.VALUE_FONT_SIZE);
-//
-//	}
+	
 
 	private class HistoryLabel extends Label {
 
@@ -165,12 +134,18 @@ public class ValueFigure extends Figure {
 			FontManager.setFont(this, Constants.VAR_FONT_SIZE);
 			setForegroundColor(ColorConstants.gray);
 		}
+		
 		@Override
 		protected void paintFigure(Graphics g) {
 			super.paintFigure(g);
 			g.setForegroundColor(ColorConstants.gray);
 			Rectangle r = getBounds();
 			g.drawLine(r.getTopLeft(), r.getBottomRight());
+		}
+		
+		@Override
+		public Dimension getPreferredSize(int wHint, int hHint) {
+			return new Dimension(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH/2);
 		}
 	}
 

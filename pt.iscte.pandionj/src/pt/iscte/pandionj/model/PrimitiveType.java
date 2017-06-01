@@ -142,5 +142,73 @@ public enum PrimitiveType {
 		
 		return false;
 	}
-	
+
+//	static Object[] getPrimitiveWrapperValues(IJavaValue[] elements, String type) {
+//	Object[] array = new Object[elements.length];
+//	switch(type) {
+//	case "byte":
+//		for(int i = 0; i < elements.length; i++)
+//			array[i] = ((IJavaPrimitiveValue) elements[i]).getByteValue();
+//		break;
+//	
+//	case "short":
+//		for(int i = 0; i < elements.length; i++)
+//			array[i] = ((IJavaPrimitiveValue) elements[i]).getShortValue();
+//		break;
+//	
+//	case "int":
+//		for(int i = 0; i < elements.length; i++)
+//			array[i] = ((IJavaPrimitiveValue) elements[i]).getIntValue();
+//		break;
+//	
+//	case "long":
+//		for(int i = 0; i < elements.length; i++)
+//			array[i] = ((IJavaPrimitiveValue) elements[i]).getLongValue();
+//		break;
+//		
+//	case "double":
+//		for(int i = 0; i < elements.length; i++)
+//			array[i] = ((IJavaPrimitiveValue) elements[i]).getDoubleValue();
+//		break;
+//	
+//	case "float":
+//		for(int i = 0; i < elements.length; i++)
+//			array[i] = ((IJavaPrimitiveValue) elements[i]).getFloatValue();
+//		break;
+//	
+//	case "char":
+//		for(int i = 0; i < elements.length; i++)
+//			array[i] = ((IJavaPrimitiveValue) elements[i]).getCharValue();
+//		break;
+//	
+//	case "boolean":
+//		for(int i = 0; i < elements.length; i++)
+//			array[i] = ((IJavaPrimitiveValue) elements[i]).getBooleanValue();
+//		break;	
+//		
+//	default: throw new AssertionError();
+//	}
+//	return array;
+//}
+
+
+//private Class<?> matchType(IJavaType componentType) {
+//	try {
+//		switch(componentType.getName())  {
+//		case "byte": return Byte.class;
+//		case "short": return Short.class;
+//		case "int": return Integer.class;
+//		case "long": return Long.class;
+//		case "float": return Float.class;
+//		case "double": return Double.class;
+//		case "boolean": return Boolean.class;
+//		case "char": return Character.class;
+//		default: throw new AssertionError();
+//		}
+//	} catch (DebugException e) {
+//		e.printStackTrace();
+//	}
+//
+//	return null;
+//}
 }
