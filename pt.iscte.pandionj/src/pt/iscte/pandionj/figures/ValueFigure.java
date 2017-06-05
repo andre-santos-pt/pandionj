@@ -57,21 +57,23 @@ public class ValueFigure extends Figure {
 		model.registerDisplayObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				if(Role.GATHERER.equals(role))
-					((Label) extraFigure).setText(parcels());
+				setVisible(model.isWithinScope());
+				if(isVisible()) {
+					if(Role.GATHERER.equals(role))
+						((Label) extraFigure).setText(parcels());
 
-				else if(Role.MOST_WANTED_HOLDER.equals(role)) {
-					List<IJavaPrimitiveValue> history = model.getHistory();
-					String val = "?";
-					try {
-						val = history.get(history.size()-2).getValueString();
-					} catch (DebugException e) {
-						e.printStackTrace();
+					else if(Role.MOST_WANTED_HOLDER.equals(role)) {
+						List<IJavaPrimitiveValue> history = model.getHistory();
+						String val = "?";
+						try {
+							val = history.get(history.size()-2).getValueString();
+						} catch (DebugException e) {
+							e.printStackTrace();
+						}
+						extraFigure.add(new HistoryLabel(val), 0);
 					}
-					extraFigure.add(new HistoryLabel(val), 0);
+					layout();
 				}
-				
-				layout();
 			}
 
 			private String parcels() {
@@ -80,6 +82,13 @@ public class ValueFigure extends Figure {
 				case PRODUCT_SERIES: return "?"; // TODO product parcels
 				default: return "";
 				}
+			}
+		});
+		
+		model.getStackFrame().registerDisplayObserver(new Observer() {
+			@Override
+			public void update(Observable o, Object arg) {
+				setVisible(model.isWithinScope());
 			}
 		});
 
@@ -121,11 +130,11 @@ public class ValueFigure extends Figure {
 		return "(" + parcels + ")";
 	}
 
-	
 
 
 
-	
+
+
 
 	private class HistoryLabel extends Label {
 
@@ -134,7 +143,7 @@ public class ValueFigure extends Figure {
 			FontManager.setFont(this, Constants.VAR_FONT_SIZE);
 			setForegroundColor(ColorConstants.gray);
 		}
-		
+
 		@Override
 		protected void paintFigure(Graphics g) {
 			super.paintFigure(g);
@@ -142,7 +151,7 @@ public class ValueFigure extends Figure {
 			Rectangle r = getBounds();
 			g.drawLine(r.getTopLeft(), r.getBottomRight());
 		}
-		
+
 		@Override
 		public Dimension getPreferredSize(int wHint, int hHint) {
 			return new Dimension(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH/2);

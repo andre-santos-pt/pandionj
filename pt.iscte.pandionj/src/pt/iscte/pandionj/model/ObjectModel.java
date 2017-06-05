@@ -269,6 +269,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public boolean equals(Object obj) {
 		return obj instanceof ObjectModel && ((ObjectModel) obj).hashCode() == hashCode();
 	}
+	
+	
+	@Override
+	public void setStep(int stepPointer) {
+		// TODO stepPointer
+		
+	}
+	
+	
 
 
 	public interface SiblingVisitor {

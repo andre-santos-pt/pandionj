@@ -38,5 +38,10 @@ public class NullModel extends EntityModel<IJavaObject> {
 		return false;
 	}
 
+	@Override
+	public void setStep(int stepPointer) {
+		
+	}
+
 	
 }

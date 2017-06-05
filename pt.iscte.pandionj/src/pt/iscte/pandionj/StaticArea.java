@@ -4,27 +4,49 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
+import org.eclipse.zest.layouts.algorithms.HorizontalShift;
 
-public class StaticArea extends Composite {
+import pt.iscte.pandionj.model.StackFrameModel;
 
-	public StaticArea(Composite parent) {
+class StaticArea extends Composite {
+
+//	CallStackModel model;
+	private GraphViewerZoomable viewer;
+	
+	
+	StaticArea(Composite parent) {
 		super(parent, SWT.NONE);
 		setBackground(ColorConstants.white);
 		setLayout(new FillLayout());
-		new Label(this, SWT.NONE).setText("Static area");
-		GraphViewerZoomable viewer = new GraphViewerZoomable(this, SWT.NONE);
+		viewer = new GraphViewerZoomable(this, SWT.NONE);
+		viewer.setContentProvider(new NodeProvider());
+		viewer.setLayoutAlgorithm(new HorizontalShift(0));
+		new Label(parent, SWT.NONE).setText("static");
+	}
+	
+	
+	void setInput(StackFrameModel model) {
+		assert model != null;
+//		this.model = frames;
+		model.addObserver((o,a) -> {
+			Display.getDefault().asyncExec(() -> {
+				viewer.setInput(model);
+				layout();
+			});
+		});
+		//TODO: observer
 		
 	}
-
+	
 	
 	static class NodeProvider implements IGraphEntityRelationshipContentProvider {
-
 		@Override
-		public Object[] getElements(Object inputElement) {
-			// TODO Auto-generated method stub
-			return null;
+		public Object[] getElements(Object input) {
+			StackFrameModel model = (StackFrameModel) input;
+			return model.getStaticVariables().toArray();
 		}
 
 		@Override

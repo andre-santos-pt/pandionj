@@ -107,7 +107,6 @@ public class CallStackModel extends Observable {
 		return count;
 	}
 
-
 	public List<StackFrameModel> getStackPath() {
 		return Collections.unmodifiableList(stack);
 	}
@@ -138,6 +137,10 @@ public class CallStackModel extends Observable {
 		return terminated;
 	}
 
+//	public List<VariableModel<?>> getStaticVariables() {
+//		return getTopFrame().getStaticVariables();
+//	}
+	
 	private boolean sameLocation(Location loc, StackFrameModel frame) {
 		try {
 			return loc.declaringType().name().equals(frame.getStackFrame().getDeclaringTypeName()) &&

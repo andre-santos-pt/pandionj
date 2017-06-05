@@ -49,4 +49,11 @@ public class ArrayPrimitiveModel extends ArrayModel {
 	public ValueModel getElementModel(int index) {
 		return values.get(index);
 	}
+	
+	@Override
+	public void setStep(int stepPointer) {
+		for(ValueModel val : values)
+			val.setStep(stepPointer);
+
+	}
 }

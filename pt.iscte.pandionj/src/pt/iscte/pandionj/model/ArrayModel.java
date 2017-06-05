@@ -53,7 +53,6 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 
 	@Override
 	protected void init(IJavaArray array) {
-		entity = array;
 		try {
 			elements = array.getValues();
 		} catch (DebugException e) {
@@ -84,7 +83,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 
 
 	public Object[] getValues() {
-		return getValues(entity);
+		return getValues(getContent());
 	}
 
 	private static Object[] getValues(IJavaArray javaArray) {
@@ -161,13 +160,13 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 				setChanged();
 
 		if(!hasChanged() && getDimensions() > 1) {
-			Object[] newValues = getValues(entity);
+			Object[] newValues = getValues(getContent());
 			if(diff(prev, newValues, getDimensions()))
 				setChanged();
 			prev = newValues;
 		}
 		else
-			prev = getValues(entity);
+			prev = getValues(getContent());
 
 		boolean hasChanged = hasChanged();
 		notifyObservers(prev);
@@ -214,6 +213,9 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 
 	abstract boolean updateInternal(int i, int step);
 
+	
+	
+	
 	public int getLength() {
 		return elements.length;
 	}
@@ -275,7 +277,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		if(!vars.containsKey(v.getName())) {
 			vars.put(v.getName(), v);
 			v.addObserver((o,a) -> {
-				if(v.isOutOfScope()) {
+				if(!v.isWithinScope()) {
 					vars.remove(v.getName()); 
 					setChanged();
 					notifyObservers(v);

@@ -11,6 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Observable;
 import java.util.Observer;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
@@ -60,24 +61,24 @@ public class StackFrameModel extends Observable {
 
 	private CallStackModel parent;
 
-	private int instant; // TODO
-
 	private int step;
-	
+
 	private int stepPointer;
+	private Map<Integer, Integer> stepLines;
 	
-//	private StackFrameImpl underlyingFrame;
+	
+	//	private StackFrameImpl underlyingFrame;
 
 	public StackFrameModel(CallStackModel parent, IJavaStackFrame frame) {
-//		JDIStackFrame jdif = (JDIStackFrame) frame;
-//		try {
-//			Field field = JDIStackFrame.class.getDeclaredField("fStackFrame");
-//			field.setAccessible(true);
-//			underlyingFrame = (StackFrameImpl) field.get(jdif);
-//		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-//			e.printStackTrace();
-//		} 
-		
+		//		JDIStackFrame jdif = (JDIStackFrame) frame;
+		//		try {
+		//			Field field = JDIStackFrame.class.getDeclaredField("fStackFrame");
+		//			field.setAccessible(true);
+		//			underlyingFrame = (StackFrameImpl) field.get(jdif);
+		//		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
+		//			e.printStackTrace();
+		//		} 
+
 		this.parent = parent;
 		this.frame = frame;
 		vars = new LinkedHashMap<>();
@@ -89,18 +90,24 @@ public class StackFrameModel extends Observable {
 
 		obsolete = false;
 		exceptionType = null;
-		
+
 		step = 0;
+		stepLines = new HashMap<>();
+		try {
+			stepLines.put(step, frame.getLineNumber());
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
 	}
 
 	public boolean isExecutionFrame() {
 		return !parent.isEmpty() && parent.getTopFrame() == this;
 	}
 
-//	public boolean matchesFrame(StackFrame uFrame) {
-//		return underlyingFrame.equals(uFrame);
-//	}
-	
+	//	public boolean matchesFrame(StackFrame uFrame) {
+	//		return underlyingFrame.equals(uFrame);
+	//	}
+
 	public IJavaStackFrame getStackFrame() {
 		return frame;
 	}
@@ -134,14 +141,10 @@ public class StackFrameModel extends Observable {
 	public void update() {
 		List<VariableModel<?>> newVars = handleVariables();
 
-//		for(VariableModel<?> e : vars.values())
-//			if(e.update(step))
-//				setChanged();
-
 		// TODO rever changes
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
-			if(o instanceof ArrayModel)
-				o.update(step);
+			if(o instanceof ArrayModel && o.update(step))
+				setChanged();
 			else if(o instanceof ObjectModel)
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
 					public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
@@ -153,6 +156,11 @@ public class StackFrameModel extends Observable {
 		if(hasChanged()) {
 			step++;
 			stepPointer = step;
+			try {
+				stepLines.put(step, frame.getLineNumber());
+			} catch (DebugException e) {
+				e.printStackTrace();
+			}
 		}
 		notifyObservers(newVars);
 	}
@@ -212,8 +220,8 @@ public class StackFrameModel extends Observable {
 								newVars.add(var);
 						}
 				}
-				
-				else if(!jv.isSynthetic()) { //&& !jv.isStatic()) // TODO repor
+
+				else if(!jv.isSynthetic()) {
 					VariableModel<?> var = handleVar(jv, false);
 					if(var != null)
 						newVars.add(var);
@@ -225,10 +233,10 @@ public class StackFrameModel extends Observable {
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
-		
+
 		if(!newVars.isEmpty())
 			setChanged();
-		
+
 		return newVars;
 	}
 
@@ -250,7 +258,7 @@ public class StackFrameModel extends Observable {
 		}
 		else {
 			VariableModel<?> newElement = null;
-			
+
 			if(value instanceof IJavaObject) {
 				ReferenceModel refElement = new ReferenceModel(jv, isInstance, this);
 				Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
@@ -299,11 +307,15 @@ public class StackFrameModel extends Observable {
 
 
 
-	public Collection<VariableModel<?>> getVariables() {
-		return Collections.unmodifiableCollection(vars.values());
+	public Collection<VariableModel<?>> getInstanceVariables() {
+		return vars.values().stream().filter((v) -> !v.isStatic()).collect(Collectors.toList());
+//		return Collections.unmodifiableCollection(vars.values());
 	}
 
 
+	public List<VariableModel<?>> getStaticVariables() {
+		return vars.values().stream().filter((v) -> v.isStatic()).collect(Collectors.toList());
+	}
 
 
 	public Collection<ReferenceModel> getReferencesTo(ModelElement<?> object) {
@@ -383,7 +395,7 @@ public class StackFrameModel extends Observable {
 				else
 					args.add(value.getValueString());
 			}
-//				args.add(localVariables[i].getValue().getValueString()); // TODO, add special chars '' ", arrays
+			//				args.add(localVariables[i].getValue().getValueString()); // TODO, add special chars '' ", arrays
 
 
 			if(frame.isStaticInitializer())
@@ -430,12 +442,6 @@ public class StackFrameModel extends Observable {
 				});
 			}
 		});
-
-//		control.addDisposeListener(new DisposeListener() {
-//			public void widgetDisposed(DisposeEvent e) {
-//				deleteObserver(obs);
-//			}
-//		});
 	}
 
 
@@ -457,10 +463,10 @@ public class StackFrameModel extends Observable {
 
 
 
-//	public void objectReferenceChanged() {
-//		setChanged();
-//		notifyObservers(Collections.emptyList());
-//	}
+	//	public void objectReferenceChanged() {
+	//		setChanged();
+	//		notifyObservers(Collections.emptyList());
+	//	}
 
 	public IJavaProject getJavaProject() {
 		return javaProject;
@@ -495,25 +501,39 @@ public class StackFrameModel extends Observable {
 		return parent;
 	}
 
-	public int getStep() {
+	public int getRunningStep() {
 		return step;
 	}
-	
-	public void setStep(int step) {
-		stepPointer = step;
-		for(VariableModel<?> var : vars.values())
-			var.setStep(stepPointer);
-		
-//		setChanged();
-//		notifyObservers(Collections.emptyList());
+
+	public int getStepPointer() {
+		return stepPointer;
 	}
 
+	public void setStep(int step) {
+		if(step != stepPointer) {
+			stepPointer = step;
+			for(VariableModel<?> var : vars.values())
+				var.setStep(stepPointer);
+			
+			for(EntityModel<?> ent : objects.values())
+				ent.setStep(stepPointer);
+		}
+		setChanged();
+		notifyObservers(Collections.emptyList());
+	}
+
+	public int getStepLine() {
+		return stepLines.get(stepPointer);
+	}
 
 	
-	
-	
-	
-	
+
+
+
+
+
+
+
 
 
 	//	public IValue evalMethod(ObjectModel obj, String expression, boolean addToModel) {

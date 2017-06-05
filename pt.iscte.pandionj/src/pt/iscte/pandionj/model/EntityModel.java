@@ -6,7 +6,7 @@ import pt.iscte.pandionj.extensibility.IEntityModel;
 
 public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T> implements IEntityModel {
 
-	protected T entity;
+	private T entity;
 	
 	public EntityModel(T entity, StackFrameModel model) {
 		super(model);

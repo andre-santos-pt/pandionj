@@ -94,12 +94,16 @@ class FrameView extends Composite implements Observer {
 		slider.setMinimum(1);
 		slider.setMaximum(1);
 		slider.setIncrement(1);
-
 		slider.addSelectionListener(new SelectionAdapter() {
+			int sel = slider.getSelection();
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				model.setStep(slider.getSelection()-1);
-				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
+				if(slider.getSelection() != sel) {
+					model.setStep(slider.getSelection()-1);
+					sel = slider.getSelection();
+					navigateToLine(model.getSourceFile(), model.getStepLine());
+				}
+//				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
 			}
 		});
 		
@@ -180,8 +184,8 @@ class FrameView extends Composite implements Observer {
 		gridData.exclude = !expanded;
 		compositeViewer.setVisible(expanded);
 		getParent().layout();
-		if(expanded)
-			navigateToLine(model.getSourceFile(), model.getLineNumber());
+//		if(expanded)
+//			navigateToLine(model.getSourceFile(), model.getLineNumber());
 	}
 
 	@Override
@@ -236,14 +240,14 @@ class FrameView extends Composite implements Observer {
 		List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
 		header.setText(model.getInvocationExpression());
 		compositeHeader.pack();
-		if(!newVars.isEmpty()) {
+//		if(!newVars.isEmpty()) { // TODO repor
 			viewer.refresh();
 			viewer.applyLayout();
 			Display.getDefault().asyncExec(() -> {
 				int h = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
 				viewer.getGraphControl().scrollToY(h);
 			});
-		}
+//		}
 
 		if(model.exceptionOccurred())
 			setError(model.getExceptionMessage());
@@ -252,11 +256,11 @@ class FrameView extends Composite implements Observer {
 
 		setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
 
-		slider.setMaximum(model.getStep()+1);
-		slider.setSelection(model.getStep()+1);
+		slider.setMaximum(model.getRunningStep()+1);
+		slider.setSelection(model.getStepPointer()+1);
 		slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
 		
-		stepText.setText(model.getStep() + "");
+		stepText.setText(model.getRunningStep() + "");
 	}
 
 

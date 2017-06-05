@@ -23,6 +23,8 @@ import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 
+
+// TODO step pointer visibility
 public class GrayscaleImageWidget implements IArrayWidgetExtension {
 
 	private static PaletteData grayscalePalette; 

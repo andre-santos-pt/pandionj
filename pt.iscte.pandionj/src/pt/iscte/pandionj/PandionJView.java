@@ -101,6 +101,8 @@ public class PandionJView extends ViewPart {
 
 	private ScrolledComposite scroll; 
 	private Composite area;
+	
+	private StaticArea staticArea;
 	private StackView stackView;
 
 	private Label labelInit;
@@ -111,9 +113,11 @@ public class PandionJView extends ViewPart {
 
 	private IContextService contextService;
 
-
 	private IToolBarManager toolBar;
 
+	
+	
+	
 	public PandionJView() {
 		instance = this;
 		images = new HashMap<>();
@@ -130,7 +134,7 @@ public class PandionJView extends ViewPart {
 		createWidgets(parent);
 		model = new CallStackModel();
 		stackView.setInput(model);
-
+		
 		debugEventListener = new DebugListener();
 		breakpointListener = new PandionJBreakpointListener(model);
 
@@ -204,7 +208,7 @@ public class PandionJView extends ViewPart {
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		stackLayout.topControl = labelComposite;
 
-		new StaticArea(area);
+		staticArea = new StaticArea(area);
 		stackView = new StackView(area);
 	}
 
@@ -232,10 +236,10 @@ public class PandionJView extends ViewPart {
 				}
 				else if(e.getKind() == DebugEvent.RESUME &&
 						(
-								e.getDetail() == DebugEvent.STEP_OVER || 
-								e.getDetail() == DebugEvent.STEP_RETURN || 
-								e.getDetail() == DebugEvent.CLIENT_REQUEST 
-								))  {
+						e.getDetail() == DebugEvent.STEP_OVER || 
+						e.getDetail() == DebugEvent.STEP_RETURN || 
+						e.getDetail() == DebugEvent.CLIENT_REQUEST 
+						))  {
 					breakpointListener.disableFilter();
 				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
@@ -283,6 +287,7 @@ public class PandionJView extends ViewPart {
 			});
 		}
 		model.update(frames);
+		staticArea.setInput(model.getTopFrame());
 	}
 
 

@@ -72,6 +72,13 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		vars = new HashMap<>();
 		for(ValueModel v : model.getVars())
 			addVariable(v);
+		
+		model.getStackFrame().registerDisplayObserver(new Observer() {
+			@Override
+			public void update(Observable o, Object arg) {
+				setVisible(model.isWithinScope());
+			}
+		});
 	}
 
 	@Override
@@ -97,7 +104,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		else {
 			for(int i = 0; i < N; i++) {
 				Position p = new Position(i, false);
-//				p.setValue(model.getElementString(i));
+				//				p.setValue(model.getElementString(i));
 				fig.add(p);
 				positions.add(p);
 			}
@@ -156,8 +163,8 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		vars.remove(varModel.getName());
 		Display.getDefault().syncExec(() -> repaint());
 	}
-	
-	
+
+
 	private void setVar(String id, int index, Object bound, boolean isBar) {
 		ensureOutOfBounds(index);
 
@@ -186,22 +193,22 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 				if(i >= Constants.ARRAY_LENGTH_LIMIT)
 					return;
 
-//				for(int j = 0; j < N; j++) {
-//					Position p = getValidPosition(j);
-//					if(j == i)
-//						p.highlight();
-//					else
-//						p.unhighlight();
-//				}
-//				getValidPosition(i).setValue(model.getElementString(i));
+				//				for(int j = 0; j < N; j++) {
+				//					Position p = getValidPosition(j);
+				//					if(j == i)
+				//						p.highlight();
+				//					else
+				//						p.unhighlight();
+				//				}
+				//				getValidPosition(i).setValue(model.getElementString(i));
 			}
 		}
 		else if(arg instanceof ValueModel) {
 			ValueModel v = (ValueModel) arg;
-			if(v.isOutOfScope())
-				removeVariable(v);
-			else
+			if(v.isWithinScope())
 				addVariable(v);
+			else
+				removeVariable(v);
 		}
 		else if(arg instanceof RuntimeException) {
 			String v = ((RuntimeException) arg).getMessage();
@@ -274,8 +281,8 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		private boolean outOfBounds;
 		private boolean error;
 		private Label indexLabel;
-	
-		
+
+
 		public Position(Integer index, boolean outOfBounds) {
 			this.outOfBounds = outOfBounds;
 
@@ -284,19 +291,23 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			GridLayout layout = Constants.getOneColGridLayout();
 			setLayoutManager(layout);
 
+//			ValueModel m = model.getElementModel(index); 
+//			valueLabel = new ValueLabel(m);
+//			layout.setConstraint(valueLabel, layoutData);
+//			add(valueLabel);
+
+			// TODO out of bounds
+			if(!outOfBounds) {
 				ValueModel m = model.getElementModel(index); 
 				valueLabel = new ValueLabel(m);
 				layout.setConstraint(valueLabel, layoutData);
 				add(valueLabel);
-
-			// TODO out of bounds
-			if(!outOfBounds) {
-//				LineBorder lineBorder = new LineBorder(ColorConstants.black, POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
-//				valueLabel.setBorder(lineBorder);
-//				valueLabel.setBackgroundColor(ARRAY_POSITION_COLOR);
-//				valueLabel.setOpaque(true);
+				//				LineBorder lineBorder = new LineBorder(ColorConstants.black, POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
+				//				valueLabel.setBorder(lineBorder);
+				//				valueLabel.setBackgroundColor(ARRAY_POSITION_COLOR);
+				//				valueLabel.setOpaque(true);
 			}
-			
+
 			indexLabel = new Label(index == null ? "" : Integer.toString(index));
 			FontManager.setFont(indexLabel, INDEX_FONT_SIZE);
 			indexLabel.setLabelAlignment(SWT.CENTER);
@@ -318,20 +329,20 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			}
 		}
 
-//		public void setValue(String value) {
-//			Display.getDefault().asyncExec(() -> {
-//				valueLabel.setText(value);
-//				valueLabel.setToolTip(new Label(value));
-//			});
-//		}
+		//		public void setValue(String value) {
+		//			Display.getDefault().asyncExec(() -> {
+		//				valueLabel.setText(value);
+		//				valueLabel.setToolTip(new Label(value));
+		//			});
+		//		}
 
-//		public void highlight() {
-//			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR));
-//		}
+		//		public void highlight() {
+		//			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR));
+		//		}
 
-//		public void unhighlight() {
-//			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR));
-//		}
+		//		public void unhighlight() {
+		//			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR));
+		//		}
 
 		public void markError() {
 			error = true;
@@ -344,17 +355,17 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 	}
 
 
-//	public void highlight(int i) {
-//		Position p = getValidPosition(i);
-//		if(p != null)
-//			p.highlight();
-//	}
+	//	public void highlight(int i) {
+	//		Position p = getValidPosition(i);
+	//		if(p != null)
+	//			p.highlight();
+	//	}
 
-//	public void unhighlight(int i) {
-//		Position p = getValidPosition(i);
-//		if(p != null)
-//			p.unhighlight();
-//	}
+	//	public void unhighlight(int i) {
+	//		Position p = getValidPosition(i);
+	//		if(p != null)
+	//			p.unhighlight();
+	//	}
 
 
 	private enum Direction {

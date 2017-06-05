@@ -40,11 +40,11 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 		if(model == null)
 			return EMPTY;
 
-		List<ModelElement<?>> elements = new ArrayList<>(model.getVariables());
+		List<ModelElement<?>> elements = new ArrayList<>(model.getInstanceVariables());
 		Iterator<ModelElement<?>> it = elements.iterator();
 		while(it.hasNext()) {
 			VariableModel<?> v = (VariableModel<?>) it.next();
-			if((v.isOutOfScope() || v instanceof ValueModel && ((ValueModel) v).getRole() == Role.ARRAY_ITERATOR))
+			if((v instanceof ValueModel && ((ValueModel) v).getRole() == Role.ARRAY_ITERATOR))
 				it.remove();
 		}
 		

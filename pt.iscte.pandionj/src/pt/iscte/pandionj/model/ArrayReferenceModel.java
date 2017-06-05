@@ -51,8 +51,14 @@ public class ArrayReferenceModel extends ArrayModel {
 		return new ArrayReferenceFigure(this);
 	}
 
-
 	public List<ReferenceModel> getModelElements() {
 		return Collections.unmodifiableList(references);
+	}
+	
+	@Override
+	public void setStep(int stepPointer) {
+		for(ReferenceModel ref : references)
+			ref.setStep(stepPointer);
+
 	}
 }

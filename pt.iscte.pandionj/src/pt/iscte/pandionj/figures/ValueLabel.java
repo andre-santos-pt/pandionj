@@ -8,7 +8,6 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PositionConstants;
@@ -26,6 +25,7 @@ class ValueLabel extends Label {
 	private static final Image falseImage = image("false.png");
 
 	ValueModel model;
+	boolean dirty;
 	
 	ValueLabel(ValueModel model) {
 		this.model = model;
@@ -33,23 +33,29 @@ class ValueLabel extends Label {
 		FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
 		setSize(model.isDecimal() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
 		setBackgroundColor(ColorConstants.white);
-		
+
 		//		int lineWidth = Role.FIXED_VALUE.equals(role) ? Constants.ARRAY_LINE_WIDTH * 2: Constants.ARRAY_LINE_WIDTH;
 		setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 		updateValue();
 		model.registerDisplayObserver((o,a) -> updateValue());
-		
+
 		// TODO: nao funciona, porque o evento de step nao eh propagado
 		model.getStackFrame().registerDisplayObserver(new Observer() {
-			
+
 			@Override
 			public void update(Observable o, Object arg) {
-				String textValue = model.getCurrentValue();
-				setBackgroundColor(getText().equals(textValue) ? ColorConstants.white: Constants.HIGHLIGHT_COLOR);
+//				setVisible(model.isWithinScope());
+//				if(isVisible()) {
+//					String textValue = model.getCurrentValue();
+//					setBackgroundColor(getText().equals(textValue) ? ColorConstants.white: Constants.HIGHLIGHT_COLOR);
+//				}
+				setBackgroundColor(dirty ? Constants.HIGHLIGHT_COLOR : ColorConstants.white);
+				dirty = false;
 			}
 		});
+		dirty = false;
 	}
-	
+
 	// TODO image manager
 	private static Image image(String name) {
 		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
@@ -57,26 +63,25 @@ class ValueLabel extends Label {
 		ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
 		return imageDesc.createImage();
 	}
-	
+
 
 	private void updateValue() {
-		// TODO color update
-		String textValue = model.getCurrentValue();
-//		setBackgroundColor(getText().equals(textValue) ? null : Constants.HIGHLIGHT_COLOR);
-
-		if(model.getType().equals(boolean.class.getName())) {
-			setIcon(textValue.equals(Boolean.TRUE.toString()) ? trueImage : falseImage);
-			setIconAlignment(PositionConstants.CENTER);
-			setText("");
-		}
-		else {
-			setText(textValue);
-		}
-		setToolTip(new Label(textValue));
-		if(textValue.length() > (model.isDecimal() ? 5 : 2))
-			FontManager.setFont(this, (int) (Constants.VALUE_FONT_SIZE*.66));
-		else
-			FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
-
+//		if(model.isWithinScope()) {
+			String textValue = model.getCurrentValue();
+			dirty = !getText().equals(textValue);
+			if(model.getType().equals(boolean.class.getName())) {
+				setIcon(textValue.equals(Boolean.TRUE.toString()) ? trueImage : falseImage);
+				setIconAlignment(PositionConstants.CENTER);
+				setText("");
+			}
+			else {
+				setText(textValue);
+			}
+			setToolTip(new Label(textValue));
+			if(textValue.length() > (model.isDecimal() ? 5 : 2))
+				FontManager.setFont(this, (int) (Constants.VALUE_FONT_SIZE*.66));
+			else
+				FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
+//		}
 	}
 }

@@ -93,8 +93,9 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	@Override
 	public void selfStyleConnection(Object element, GraphConnection connection) {
 		PolylineConnection fig = (PolylineConnection) connection.getConnectionFigure();
-
-		if(((Pointer) element).isNull()) {
+		Pointer pointer = (Pointer) element;
+		
+		if(pointer.isNull()) {
 			PolygonDecoration decoration = new PolygonDecoration();
 			PointList points = new PointList();
 			points.addPoint(0,-1); // 1
@@ -122,6 +123,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		}
 
 		IFigure sFig = ((BaseFigure) connection.getSource().getNodeFigure()).innerFig;
+		
 		if(sFig instanceof ArrayReferenceFigure) {
 			// TODO anchor
 //			String refName = ((Pointer) element).refName;
@@ -131,6 +133,8 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		else if(sFig instanceof ArrayPrimitiveFigure) {
 			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		}
+		
+		fig.setVisible(pointer.source.isWithinScope() && pointer.target.isWithinScope());
 	}
 
 	enum Position {
