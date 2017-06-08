@@ -1,59 +1,72 @@
 package pt.iscte.pandionj;
 
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
-import org.eclipse.zest.layouts.algorithms.HorizontalShift;
+import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 
 import pt.iscte.pandionj.model.StackFrameModel;
 
 class StaticArea extends Composite {
 
-//	CallStackModel model;
 	private GraphViewerZoomable viewer;
-	
+	private StackFrameModel model;
 	
 	StaticArea(Composite parent) {
 		super(parent, SWT.NONE);
-		setBackground(ColorConstants.white);
 		setLayout(new FillLayout());
 		viewer = new GraphViewerZoomable(this, SWT.NONE);
-		viewer.setContentProvider(new NodeProvider());
-		viewer.setLayoutAlgorithm(new HorizontalShift(0));
-		new Label(parent, SWT.NONE).setText("static");
+		viewer.setContentProvider(new StaticNodeProvider());
+		viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
+		viewer.getGraphControl().setBackground(ColorConstants.white);
+		viewer.setLabelProvider(new FigureProvider());
 	}
-	
-	
+
+//	@Override
+//	public Point computeSize(int wHint, int hHint) {
+//		return new Point(SWT.DEFAULT, Constants.STATIC_AREA_HEIGHT);
+//	}
+
 	void setInput(StackFrameModel model) {
-		assert model != null;
-//		this.model = frames;
-		model.addObserver((o,a) -> {
-			Display.getDefault().asyncExec(() -> {
+		if(this.model != model) {
+			this.model = model;
+			boolean collapse = model.getStaticVariables().isEmpty();
+			PandionJView.executeUpdate(() -> {
+				setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, !collapse));
+				getParent().layout();
 				viewer.setInput(model);
-				layout();
+			}
+			);
+			// TODO if there are changes
+			model.addObserver((o,a) -> {
+				Display.getDefault().asyncExec(() -> {
+					viewer.refresh();
+					layout();
+				});
 			});
-		});
+		}
 		//TODO: observer
-		
+
 	}
-	
-	
-	static class NodeProvider implements IGraphEntityRelationshipContentProvider {
+
+
+	static class StaticNodeProvider implements IGraphEntityRelationshipContentProvider {
 		@Override
 		public Object[] getElements(Object input) {
 			StackFrameModel model = (StackFrameModel) input;
-			return model.getStaticVariables().toArray();
+			return NodeProvider.getElementsInternal(model.getStaticVariables()).toArray();
 		}
 
 		@Override
 		public Object[] getRelationships(Object source, Object dest) {
-			// TODO Auto-generated method stub
-			return null;
+			return NodeProvider.getRelationshipsInternal(source, dest);
 		}
-		
+
 	}
 }

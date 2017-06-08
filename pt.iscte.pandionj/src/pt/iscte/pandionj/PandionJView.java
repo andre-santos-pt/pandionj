@@ -209,7 +209,14 @@ public class PandionJView extends ViewPart {
 		stackLayout.topControl = labelComposite;
 
 		staticArea = new StaticArea(area);
+		staticArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+//		staticArea.setLayoutData(new GridData(500, 150));
+		
 		stackView = new StackView(area);
+		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		
 	}
 
 	@Override
@@ -287,7 +294,9 @@ public class PandionJView extends ViewPart {
 			});
 		}
 		model.update(frames);
-		staticArea.setInput(model.getTopFrame());
+		
+		if(!model.isEmpty())
+			staticArea.setInput(model.getTopFrame());
 	}
 
 

@@ -46,14 +46,14 @@ public abstract class ModelElement<T extends IJavaValue> extends Observable {
 	
 	public abstract void setStep(int stepPointer);
 	
-	public IFigure createFigure(Graph graph) {
+	public IFigure createFigure() {
 		if(figure == null)
-			figure = new BaseFigure(createInnerFigure(graph));
+			figure = new BaseFigure(createInnerFigure());
 
 		return figure;
 	}
 
-	protected abstract IFigure createInnerFigure(Graph graph);
+	protected abstract IFigure createInnerFigure();
 
 
 	public void registerObserver(Observer o) {

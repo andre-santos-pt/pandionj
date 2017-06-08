@@ -31,16 +31,11 @@ import pt.iscte.pandionj.model.ModelElement;
 
 class FigureProvider extends LabelProvider implements IFigureProvider, IConnectionStyleProvider, ISelfStyleProvider {
 
-	private Graph graph;
-
-	public FigureProvider(Graph graph) {
-		this.graph = graph;
-	}
 
 	@Override
 	public IFigure getFigure(Object element) {
 		ModelElement<?> model = (ModelElement<?>) element;
-		return model.createFigure(graph);		
+		return model.createFigure();		
 	}
 
 

@@ -36,7 +36,6 @@ import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.zest.core.widgets.Graph;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultiset;
@@ -144,8 +143,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	@Override
-	protected IFigure createInnerFigure(Graph graph) {
-		return new ObjectFigure(this, graph, createExtensionFigure(), true);
+	protected IFigure createInnerFigure() {
+		return new ObjectFigure(this, createExtensionFigure(), true);
 	}
 	
 	

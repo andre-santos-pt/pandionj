@@ -21,7 +21,6 @@ class StackView extends Composite {
 			super(parent, SWT.NONE);
 			setBackground(Constants.WHITE_COLOR);
 			setLayout(new GridLayout(1, true));
-			setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			frameViews = new ArrayList<>();
 			zoom = 1.0;
 		}

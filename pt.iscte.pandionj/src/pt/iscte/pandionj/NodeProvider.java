@@ -1,6 +1,7 @@
 package pt.iscte.pandionj;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,8 +40,14 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 	public Object[] getElements(Object input) {
 		if(model == null)
 			return EMPTY;
+		
+		List<ModelElement<?>> elements = getElementsInternal(model.getInstanceVariables());
+		elements.addAll(model.getLooseObjects());
+		return elements.toArray();
+	}
 
-		List<ModelElement<?>> elements = new ArrayList<>(model.getInstanceVariables());
+	static List<ModelElement<?>> getElementsInternal(Collection<VariableModel<?>> variables) {
+		List<ModelElement<?>> elements = new ArrayList<>(variables);
 		Iterator<ModelElement<?>> it = elements.iterator();
 		while(it.hasNext()) {
 			VariableModel<?> v = (VariableModel<?>) it.next();
@@ -67,13 +74,15 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 					elements.add(t);
 			}
 		}
-		
-		elements.addAll(model.getLooseObjects());
-		return elements.toArray();
+		return elements;
 	}
 
 	@Override
 	public Object[] getRelationships(Object source, Object dest) {
+		return getRelationshipsInternal(source, dest);
+	}
+
+	static Object[] getRelationshipsInternal(Object source, Object dest) {
 		if(source instanceof ReferenceModel && ((ReferenceModel) source).getModelTarget().equals(dest)) {
 			return new Object[] { new Pointer((ModelElement<?>) source, (EntityModel<?>) dest) };
 		}

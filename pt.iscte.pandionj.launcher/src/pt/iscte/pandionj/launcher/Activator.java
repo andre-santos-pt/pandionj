@@ -8,6 +8,7 @@ import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.ui.IDebugUIConstants;
@@ -123,13 +124,15 @@ public class Activator extends AbstractUIPlugin {
 	}
 
 	static boolean isExecutingLaunch() {
-		return launch != null && !launch.isTerminated();
+		return launch != null && !launch.isTerminated() && launch.getDebugTarget() != null;
 	}
 
 	static void resume() {
 		if(launch != null)
 			try {
-				launch.getDebugTarget().resume();
+				IDebugTarget debugTarget = launch.getDebugTarget();
+				if(debugTarget != null)
+					debugTarget.resume();
 			} catch (DebugException e) {
 				e.printStackTrace();
 			}
@@ -171,7 +174,9 @@ public class Activator extends AbstractUIPlugin {
 	static void terminate() {
 		if(launch != null)
 			try {
-				launch.getDebugTarget().terminate();
+				IDebugTarget debugTarget = launch.getDebugTarget();
+				if(debugTarget != null)
+					debugTarget.terminate();
 			} catch (DebugException e) {
 				e.printStackTrace();
 			}

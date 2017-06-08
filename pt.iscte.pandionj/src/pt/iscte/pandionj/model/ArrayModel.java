@@ -14,7 +14,6 @@ import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
-import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ExtensionManager;
@@ -261,7 +260,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	}
 
 
-	protected IFigure createInnerFigure(Graph graph) {
+	protected IFigure createInnerFigure() {
 		IFigure fig = createExtensionFigure();
 		if(fig == null)
 			fig = createArrayFigure();

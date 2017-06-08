@@ -11,7 +11,6 @@ import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.figures.ReferenceFigure;
@@ -55,7 +54,7 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 
 
 	@Override
-	public IFigure createInnerFigure(Graph graph) {
+	public IFigure createInnerFigure() {
 		return new ReferenceFigure(this);
 	}
 

@@ -3,7 +3,6 @@ package pt.iscte.pandionj.model;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.NullFigure;
 
@@ -24,7 +23,7 @@ public class NullModel extends EntityModel<IJavaObject> {
 	}
 
 	@Override
-	public IFigure createInnerFigure(Graph graph) {
+	public IFigure createInnerFigure() {
 		return new NullFigure();
 	}
 

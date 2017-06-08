@@ -94,7 +94,7 @@ public class LaunchCommand extends AbstractHandler {
 			// TODO package in name
 			if(e != null) {
 				IType firstType = ((ICompilationUnit) e).getTypes()[0];
-				String agentArgs = firstType.getFullyQualifiedName();
+				String agentArgs = firstType.getFullyQualifiedName().replace('.', '/');
 				
 				IMethod mainMethod = firstType.getMethod("main", new String[] {"[QString;"});
 //				if(!mainMethod.exists())

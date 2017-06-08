@@ -50,15 +50,15 @@ import pt.iscte.pandionj.model.EntityModel;
 import pt.iscte.pandionj.model.ObjectModel;
 
 public class ObjectFigure extends RoundedRectangle {
-	private Graph graph;
+//	private Graph graph;
 	private ObjectModel model;
 	private Map<String, Label> fieldLabels;
 	private Label headerLabel;
 
-	public ObjectFigure(ObjectModel model, Graph graph, IFigure extensionFigure, boolean addMethods) {
+	public ObjectFigure(ObjectModel model,IFigure extensionFigure, boolean addMethods) {
 		assert extensionFigure != null;
 		this.model = model;
-		this.graph = graph;
+//		this.graph = graph;
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;
 		layout.verticalSpacing = 0;
@@ -100,13 +100,13 @@ public class ObjectFigure extends RoundedRectangle {
 
 
 		if(addMethods)
-			addMethods(model, graph);
+			addMethods(model);
 
 		setPreferredSize(getPreferredSize().expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
 	}
 
 
-	private void addMethods(ObjectModel model, Graph graph) {
+	private void addMethods(ObjectModel model) {
 		for(IMethod m : model.getInstanceMethods()) {
 			if(model.includeMethod(m)) {
 				Figure methodFig = new Figure();
@@ -127,7 +127,8 @@ public class ObjectFigure extends RoundedRectangle {
 					@Override
 					public void mousePressed(org.eclipse.draw2d.MouseEvent arg0) {
 						Rectangle r = but.getBounds().getCopy();
-						org.eclipse.swt.graphics.Point p = graph.toDisplay(r.x,r.y);
+//						org.eclipse.swt.graphics.Point p = graph.toDisplay(r.x,r.y);
+						org.eclipse.swt.graphics.Point p = new org.eclipse.swt.graphics.Point (0, 0);
 						IJavaValue ret = null;
 						String args = "";
 						if(m.getNumberOfParameters() == 0) {

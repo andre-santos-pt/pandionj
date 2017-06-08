@@ -17,6 +17,7 @@ import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
 import org.eclipse.jdt.internal.debug.core.model.JDIThread;
 
 import com.sun.jdi.IncompatibleThreadStateException;
+import com.sun.jdi.VMDisconnectedException;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.MethodExitEvent;
@@ -62,13 +63,25 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 	}
 
 	public void enableFilter() {
-		if(request != null)
-			request.setEnabled(true);
+		if(request != null) {
+			try {
+				request.setEnabled(true);
+			}
+			catch(VMDisconnectedException e) {
+
+			}
+		}
 	}
 
 	public void disableFilter() {
-		if(request != null)
-			request.setEnabled(false);
+		if(request != null) {
+			try {
+				request.setEnabled(false);
+			}
+			catch(VMDisconnectedException e) {
+
+			}
+		}
 	}
 
 
@@ -83,12 +96,12 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 			IFile sourceElement = PandionJView.execute(() -> {
 				return (IFile) thread.getLaunch().getSourceLocator().getSourceElement(thread.getTopStackFrame());
 			}, null);
-			
-//			try {
-//				sourceElement = (IFile) thread.getLaunch().getSourceLocator().getSourceElement(thread.getTopStackFrame());
-//			} catch (DebugException e) {
-//				e.printStackTrace();
-//			}
+
+			//			try {
+			//				sourceElement = (IFile) thread.getLaunch().getSourceLocator().getSourceElement(thread.getTopStackFrame());
+			//			} catch (DebugException e) {
+			//				e.printStackTrace();
+			//			}
 			debugTarget = target;
 			if(sourceElement != null) {
 				request = new MethodExitRequestImpl((VirtualMachineImpl) target.getVM());

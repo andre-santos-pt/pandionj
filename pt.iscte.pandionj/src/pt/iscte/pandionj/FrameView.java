@@ -70,7 +70,7 @@ class FrameView extends Composite implements Observer {
 	GridData gridData;
 	Slider slider;
 
-	Text stepText;
+//	Text stepText;
 	
 	public FrameView(Composite parent) {
 		super(parent, SWT.BORDER);
@@ -79,18 +79,21 @@ class FrameView extends Composite implements Observer {
 		setLayout(layout);
 
 		compositeHeader = new Composite(this, SWT.NONE);
-		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.DEFAULT, true, false));
-		compositeHeader.setLayout(new FillLayout());
+		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		compositeHeader.setLayout(new GridLayout(2, true));
 
 		// TODO image manager
 		//	new Label(compositeHeader,SWT.NONE).setImage(image("frame.gif"));
 		header = new Label(compositeHeader, SWT.BORDER);
-
+		header.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
 		FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
 
-		stepText = new Text(compositeHeader,SWT.BORDER);
+//		stepText = new Text(compositeHeader,SWT.BORDER);
 		
 		slider = new Slider(compositeHeader, SWT.HORIZONTAL);
+		slider.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		
 		slider.setMinimum(1);
 		slider.setMaximum(1);
 		slider.setIncrement(1);
@@ -117,7 +120,7 @@ class FrameView extends Composite implements Observer {
 		viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
 		viewer.setContentProvider(new NodeProvider());
 		viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
-		viewer.setLabelProvider(new FigureProvider(viewer.getGraphControl()));
+		viewer.setLabelProvider(new FigureProvider());
 		viewer.getGraphControl().addControlListener(new ControlAdapter() {
 			public void controlResized(ControlEvent e) {
 				parent.layout();
@@ -218,7 +221,7 @@ class FrameView extends Composite implements Observer {
 			this.model.registerDisplayObserver(this);
 			String headerText = frameModel.getInvocationExpression();
 			header.setText(headerText);
-			compositeHeader.pack();
+//			compositeHeader.pack();
 			viewer.setInput(frameModel);
 			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
 			viewer.getGraphControl().setEnabled(true);
@@ -239,7 +242,7 @@ class FrameView extends Composite implements Observer {
 	public void update(Observable o, Object list) {
 		List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
 		header.setText(model.getInvocationExpression());
-		compositeHeader.pack();
+//		compositeHeader.pack();
 //		if(!newVars.isEmpty()) { // TODO repor
 			viewer.refresh();
 			viewer.applyLayout();
@@ -260,7 +263,7 @@ class FrameView extends Composite implements Observer {
 		slider.setSelection(model.getStepPointer()+1);
 		slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
 		
-		stepText.setText(model.getRunningStep() + "");
+//		stepText.setText(model.getRunningStep() + "");
 	}
 
 

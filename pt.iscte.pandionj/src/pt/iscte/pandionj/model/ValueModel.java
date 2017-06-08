@@ -4,7 +4,6 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.zest.core.widgets.Graph;
 
 import pt.iscte.pandionj.figures.ValueFigure;
 import pt.iscte.pandionj.parser.variable.FixedValue;
@@ -51,7 +50,7 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	}
 
 	@Override
-	public IFigure createInnerFigure(Graph graph) {
+	public IFigure createInnerFigure() {
 		return new ValueFigure(this, role);
 	}
 	
