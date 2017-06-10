@@ -48,6 +48,7 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
 import pt.iscte.pandionj.extensibility.PandionJUI;
+import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 
 public class LaunchCommand extends AbstractHandler {
 	private IJavaLineBreakpoint breakPoint;
@@ -88,19 +89,23 @@ public class LaunchCommand extends AbstractHandler {
 				}
 			}
 
+			final int lineFinal = line;
 			IJavaElement e = javaProj.findElement(p.removeFirstSegments(1));
 			if(e == null)
 				e = javaProj.findElement(new Path(p.lastSegment()));
-			// TODO package in name
+
 			if(e != null) {
 				IType firstType = ((ICompilationUnit) e).getTypes()[0];
-				String agentArgs = firstType.getFullyQualifiedName().replace('.', '/');
-				
-				IMethod mainMethod = firstType.getMethod("main", new String[] {"[QString;"});
-//				if(!mainMethod.exists())
-//					mainMethod = firstType.getMethod("main", new String[0]);
+				final String agentArgs = firstType.getFullyQualifiedName().replace('.', '/');
 
-				if(!mainMethod.exists()) {
+				IMethod mainMethod = firstType.getMethod("main", new String[] {"[QString;"});
+				//				if(!mainMethod.exists())
+				//					mainMethod = firstType.getMethod("main", new String[0]);
+
+				if(mainMethod.exists()) {
+					launch(file, line, firstType, agentArgs, mainMethod);
+				}
+				else {
 					IMethod selectedMethod = null;
 					for (IMethod m : firstType.getMethods()) {
 						ISourceRange sourceRange = m.getSourceRange();
@@ -114,46 +119,65 @@ public class LaunchCommand extends AbstractHandler {
 						return null;
 					}
 					else {
-						agentArgs += ";" + PandionJUI.promptInvocationExpression(selectedMethod);
+						if(selectedMethod.getParameterTypes().length != 0) {
+							PandionJUI.promptInvocation(selectedMethod, new InvocationAction() {
+
+								@Override
+								public void invoke(String expression) {
+									String args = agentArgs + ";" + expression;
+									try {
+										launch(file, lineFinal, firstType, args, mainMethod);
+									} catch (CoreException e) {
+										e.printStackTrace();
+									}
+								}
+							});
+						} 
+						else
+							launch(file, line, firstType, agentArgs + ";" + selectedMethod.getElementName() + "()", mainMethod);
 					}
 				}
-
-
-				ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-				ILaunchConfigurationType type = manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
-				ILaunchConfigurationWorkingCopy wc = type.newInstance(null, file.getName() + " (PandionJ)");
-				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, file.getProject().getName());
-				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, firstType.getFullyQualifiedName());
-				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
-
-				if(breakPoint != null)
-					breakPoint.delete();
-
-				if(line != -1) {
-					Map<String, Object> attributes = new HashMap<String, Object>(4);
-					attributes.put(IBreakpoint.PERSISTED, Boolean.FALSE);
-					attributes.put("org.eclipse.jdt.debug.ui.run_to_line", Boolean.TRUE);
-					breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
-//					breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
-				}
-				try {
-					Bundle bundle = Platform.getBundle(LaunchCommand.class.getPackage().getName());
-					URL find = FileLocator.find(bundle, new Path("lib/agent.jar"), null);
-					URL resolve = FileLocator.resolve(find);
-					if(!mainMethod.exists()) {
-						String args =  "-javaagent:" + resolve.getPath() + "=" + agentArgs;
-						wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, args);
-					}
-				} catch (IOException e1) {
-					e1.printStackTrace();
-				}
-				ILaunchConfiguration config = wc.doSave();
-				Activator.launch(config);
 			}
 		} catch (CoreException e) {
 			e.printStackTrace();
 		}
 		return null;
+	}
+
+	private void launch(IResource file, int line, IType firstType, String agentArgs, IMethod mainMethod)
+			throws CoreException {
+		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+		ILaunchConfigurationType type = manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
+		ILaunchConfigurationWorkingCopy wc = type.newInstance(null, file.getName() + " (PandionJ)");
+		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, file.getProject().getName());
+		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, firstType.getFullyQualifiedName());
+		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
+
+		if(breakPoint != null)
+			breakPoint.delete();
+
+		if(line != -1) {
+			// TODO run to line
+								Map<String, Object> attributes = new HashMap<String, Object>(4);
+								attributes.put(IBreakpoint.PERSISTED, Boolean.FALSE);
+								attributes.put("org.eclipse.jdt.debug.ui.run_to_line", Boolean.TRUE);
+								attributes.put("pandionj_gen", Boolean.TRUE); // ?
+			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, attributes);
+			//					breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
+		}
+		try {
+			Bundle bundle = Platform.getBundle(LaunchCommand.class.getPackage().getName());
+			URL find = FileLocator.find(bundle, new Path("lib/agent.jar"), null);
+			URL resolve = FileLocator.resolve(find);
+			if(!mainMethod.exists()) {
+				String args =  "-javaagent:" + resolve.getPath() + "=" + agentArgs;
+				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, args);
+			}
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		ILaunchConfiguration config = wc.doSave();
+		Activator.launch(config);
 	}
 
 

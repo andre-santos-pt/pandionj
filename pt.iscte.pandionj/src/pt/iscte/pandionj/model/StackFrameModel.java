@@ -66,6 +66,7 @@ public class StackFrameModel extends Observable {
 	private int stepPointer;
 	private Map<Integer, Integer> stepLines;
 	
+	private int lastLine;
 	
 	//	private StackFrameImpl underlyingFrame;
 
@@ -94,7 +95,8 @@ public class StackFrameModel extends Observable {
 		step = 0;
 		stepLines = new HashMap<>();
 		try {
-			stepLines.put(step, frame.getLineNumber());
+			lastLine = frame.getLineNumber();
+			stepLines.put(step, lastLine);
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
@@ -156,8 +158,10 @@ public class StackFrameModel extends Observable {
 		if(hasChanged()) {
 			step++;
 			stepPointer = step;
+			stepLines.put(step, lastLine);
+			
 			try {
-				stepLines.put(step, frame.getLineNumber());
+				lastLine = frame.getLineNumber();
 			} catch (DebugException e) {
 				e.printStackTrace();
 			}

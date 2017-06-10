@@ -1,17 +1,9 @@
 package pt.iscte.pandionj;
 
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
-import java.util.stream.Collectors;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -19,72 +11,33 @@ import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
-import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IStackFrame;
-import org.eclipse.debug.core.model.IThread;
-import org.eclipse.jdi.internal.VirtualMachineImpl;
-import org.eclipse.jdi.internal.request.MethodExitRequestImpl;
-import org.eclipse.jdt.debug.core.IJavaBreakpointListener;
-import org.eclipse.jdt.debug.core.IJavaDebugTarget;
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.debug.core.IJavaExceptionBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
-import org.eclipse.jdt.internal.debug.core.IJDIEventListener;
-import org.eclipse.jdt.internal.debug.core.model.JDIDebugTarget;
-import org.eclipse.jdt.internal.debug.core.model.JDIThread;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.ImageTransfer;
-import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.PaletteData;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.part.ViewPart;
-import org.eclipse.zest.core.widgets.Graph;
-import org.eclipse.zest.core.widgets.GraphItem;
-import org.eclipse.zest.core.widgets.ZestStyles;
 import org.osgi.framework.Bundle;
 
-import com.sun.jdi.event.Event;
-import com.sun.jdi.event.EventSet;
-import com.sun.jdi.event.MethodExitEvent;
-
 import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
@@ -104,19 +57,16 @@ public class PandionJView extends ViewPart {
 	
 	private StaticArea staticArea;
 	private StackView stackView;
-
+	
+	private InvocationArea invocationArea;
+	
 	private Label labelInit;
-
 	private StackLayout stackLayout;
-
-	private Map<String, Image> images;
-
 	private IContextService contextService;
 
 	private IToolBarManager toolBar;
 
-	
-	
+	private Map<String, Image> images;
 	
 	public PandionJView() {
 		instance = this;
@@ -175,11 +125,11 @@ public class PandionJView extends ViewPart {
 		return img;
 	}
 
-
+	
 	private void createWidgets(Composite parent) {
 		stackLayout = new StackLayout();
 		parent.setLayout(stackLayout);
-		parent.setBackground(new Color(null, 255,255,255));
+		parent.setBackground(new Color(null, 255, 255, 255));
 
 		scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
 		area = new Composite(scroll, SWT.NONE);
@@ -188,8 +138,8 @@ public class PandionJView extends ViewPart {
 		scroll.setContent(area);
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
-		scroll.setMinHeight(200);
-		scroll.setMinWidth(400);
+		scroll.setMinHeight(100);
+		scroll.setMinWidth(0);
 
 		GridLayout layout = new GridLayout(1, true);
 		layout.marginLeft = 0;
@@ -209,20 +159,25 @@ public class PandionJView extends ViewPart {
 		stackLayout.topControl = labelComposite;
 
 		staticArea = new StaticArea(area);
-		staticArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		staticArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 //		staticArea.setLayoutData(new GridData(500, 150));
 		
 		stackView = new StackView(area);
-		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
+		invocationArea = new InvocationArea(parent);
 		
+//		FillLayout fillLayout = new FillLayout();
+//		fillLayout.marginWidth = Constants.MARGIN;
+//		fillLayout.marginHeight = Constants.MARGIN;
+//		invocationArea.setLayout(fillLayout);
 	}
 
 	@Override
 	public void setFocus() {
 		scroll.setFocus();
-		contextService.activateContext("pt.iscte.pandionj.context");
+		contextService.activateContext("pt.iscte.pandionj.context"); // TODO constants
 	}
 
 	private class DebugListener implements IDebugEventSetListener {
@@ -375,6 +330,13 @@ public class PandionJView extends ViewPart {
 			model.setTerminated();
 			return null;
 		}
+	}
+
+	
+	public void promptInvocation(IMethod method, InvocationAction action) {
+		invocationArea.setMethod(method, action);
+		stackLayout.topControl = invocationArea;
+		invocationArea.getParent().layout();
 	}
 
 

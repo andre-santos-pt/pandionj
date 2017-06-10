@@ -44,6 +44,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -74,7 +75,7 @@ class FrameView extends Composite implements Observer {
 	
 	public FrameView(Composite parent) {
 		super(parent, SWT.BORDER);
-		setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+//		setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		GridLayout layout = new GridLayout(1, false);
 		setLayout(layout);
 
@@ -110,22 +111,35 @@ class FrameView extends Composite implements Observer {
 			}
 		});
 		
+		Button button = new Button(compositeHeader, SWT.PUSH);
+		button.setText(">>");
+		button.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				slider.setSelection(slider.getSelection()+1);
+			}
+		});
 
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		compositeViewer = new Composite(this, SWT.NONE);
-		compositeViewer.setLayout(new FillLayout());
+		compositeViewer.setLayout(new GridLayout());
 		compositeViewer.setLayoutData(gridData);
 
+
 		viewer = new GraphViewerZoomable(compositeViewer, SWT.BORDER);
-		viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
+//		PandionJLayoutAlgorithm layoutAlg = new PandionJLayoutAlgorithm();
+//		viewer.setLayoutAlgorithm(layoutAlg);
 		viewer.setContentProvider(new NodeProvider());
 		viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 		viewer.setLabelProvider(new FigureProvider());
-		viewer.getGraphControl().addControlListener(new ControlAdapter() {
-			public void controlResized(ControlEvent e) {
-				parent.layout();
-			}
-		});
+		viewer.getGraphControl().setLayoutData(new GridData(getBounds().width - 20, Constants.MARGIN));
+
+		
+//		viewer.getGraphControl().addControlListener(new ControlAdapter() {
+//			public void controlResized(ControlEvent e) {
+//				parent.layout();
+//			}
+//		});
 
 		// TODO CTRL +-
 		//		viewer.getGraphControl().addKeyListener(new KeyListener() {
@@ -141,21 +155,17 @@ class FrameView extends Composite implements Observer {
 		//		});
 		viewer.getGraphControl().setTouchEnabled(false);
 		viewer.getGraphControl().addGestureListener(new GestureListener() {
-
-			@Override
 			public void gesture(GestureEvent e) {
 				if(e.detail == SWT.GESTURE_MAGNIFY)
 					viewer.zoom(e.magnification);
 			}
 		});
 
-
-
 		header.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-				setExpanded(!isExpanded());
-
+//				setExpanded(!isExpanded());
+//				getParent().layout();
 			}
 		});
 
@@ -186,7 +196,8 @@ class FrameView extends Composite implements Observer {
 		setLayoutData(new GridData(SWT.FILL, expanded ? SWT.FILL : SWT.DEFAULT, true, expanded));
 		gridData.exclude = !expanded;
 		compositeViewer.setVisible(expanded);
-		getParent().layout();
+		compositeViewer.requestLayout();
+//		getParent().layout();
 //		if(expanded)
 //			navigateToLine(model.getSourceFile(), model.getLineNumber());
 	}
@@ -210,12 +221,15 @@ class FrameView extends Composite implements Observer {
 		header.setToolTipText(message);
 	}
 
+	private Point lastSize;
 	void setInput(StackFrameModel frameModel) {
 		Color c = frameModel.isObsolete() ? ColorManager.getColor(150, 150, 150) : null;
 		setBackground(c);
 
 		header.setToolTipText("");
-		viewer.getGraphControl().setToolTipText(frameModel.getSourceFile().getName() + " on line " + frameModel.getLineNumber());
+		
+		// TODO remove?
+		header.setToolTipText(frameModel.getSourceFile().getName() + " on line " + frameModel.getLineNumber());
 		if(this.model != frameModel) {
 			this.model = frameModel;
 			this.model.registerDisplayObserver(this);
@@ -223,18 +237,31 @@ class FrameView extends Composite implements Observer {
 			header.setText(headerText);
 //			compositeHeader.pack();
 			viewer.setInput(frameModel);
-			viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
+			PandionJLayoutAlgorithm layoutAlg = new PandionJLayoutAlgorithm();
+			layoutAlg.addObserver((o,a) -> {
+				Display.getDefault().asyncExec(() -> {
+					Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+					System.out.println(size + "   " + lastSize);
+					if(!size.equals(lastSize)) {
+						lastSize = size;
+						viewer.getGraphControl().setLayoutData(new GridData(getBounds().width - 20, size.y + Constants.MARGIN));
+						viewer.getGraphControl().requestLayout();
+						viewer.getGraphControl().scrollToY(size.y);
+					}
+				});
+			});
+			viewer.setLayoutAlgorithm(layoutAlg);
 			viewer.getGraphControl().setEnabled(true);
 			viewer.getGraphControl().setScrollBarVisibility(SWT.VERTICAL);
 			if(frameModel.isObsolete())
 				setBackground(ColorManager.getColor(150, 150, 150));
 
-			setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
-
+			//setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
+			setExpanded(true);
 			slider.setMinimum(1);
 			slider.setMaximum(1);
-			
-			getParent().layout();
+			viewer.refresh();
+			viewer.applyLayout();
 		}
 	}
 
@@ -242,22 +269,22 @@ class FrameView extends Composite implements Observer {
 	public void update(Observable o, Object list) {
 		List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
 		header.setText(model.getInvocationExpression());
-//		compositeHeader.pack();
+
 //		if(!newVars.isEmpty()) { // TODO repor
 			viewer.refresh();
 			viewer.applyLayout();
-			Display.getDefault().asyncExec(() -> {
-				int h = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
-				viewer.getGraphControl().scrollToY(h);
-			});
+//			Display.getDefault().syncExec(() -> {
+				
+//			});
 //		}
-
+			
 		if(model.exceptionOccurred())
 			setError(model.getExceptionMessage());
-		else if(model.isObsolete())
+		else if(model.isObsolete()) {
 			setBackground(ColorManager.getColor(150, 150, 150));
-
-		setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
+			setExpanded(false);
+		}
+	//	setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
 
 		slider.setMaximum(model.getRunningStep()+1);
 		slider.setSelection(model.getStepPointer()+1);
@@ -267,6 +294,11 @@ class FrameView extends Composite implements Observer {
 	}
 
 
+	
+	
+	
+	
+	
 	void copyToClipBoard() {
 		Graph item = viewer.getGraphControl();
 		Point p = item.computeSize(SWT.DEFAULT, SWT.DEFAULT);

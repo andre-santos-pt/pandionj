@@ -21,7 +21,7 @@ class StaticArea extends Composite {
 	StaticArea(Composite parent) {
 		super(parent, SWT.NONE);
 		setLayout(new FillLayout());
-		viewer = new GraphViewerZoomable(this, SWT.NONE);
+		viewer = new GraphViewerZoomable(this, SWT.NONE); // TODO zoom
 		viewer.setContentProvider(new StaticNodeProvider());
 		viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
 		viewer.getGraphControl().setBackground(ColorConstants.white);

@@ -4,6 +4,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
 import java.util.Set;
 import java.util.WeakHashMap;
 
@@ -29,7 +30,7 @@ import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.model.ReferenceModel;
 import pt.iscte.pandionj.model.VariableModel;
 
-public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
+public class PandionJLayoutAlgorithm extends Observable implements LayoutAlgorithm {
 
 	// index model -> layout
 	private Map<ModelElement<?>, LayoutEntity> map = new WeakHashMap<>();
@@ -174,6 +175,10 @@ public class PandionJLayoutAlgorithm implements LayoutAlgorithm {
 //				setLocation(e, Constants.MARGIN + x + Constants.OBJECT_PADDING, refY);
 //			}
 //		}
+		
+		System.out.println("layout");
+		setChanged();
+		notifyObservers();
 	}
 
 	@Override

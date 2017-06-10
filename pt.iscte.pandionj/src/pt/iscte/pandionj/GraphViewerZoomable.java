@@ -15,4 +15,6 @@ class GraphViewerZoomable extends GraphViewer {
 		ZoomManager mng = getZoomManager();
 		mng.setZoom(ratio);
 	}
+	
+	
 }
