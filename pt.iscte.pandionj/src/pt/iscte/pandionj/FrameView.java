@@ -1,13 +1,9 @@
 package pt.iscte.pandionj;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IMarker;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -17,22 +13,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.GestureEvent;
 import org.eclipse.swt.events.GestureListener;
-import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseTrackListener;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.TouchEvent;
-import org.eclipse.swt.events.TouchListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -41,24 +29,19 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.ide.IDE;
 import org.eclipse.zest.core.widgets.Graph;
 import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
+import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.model.VariableModel;
 
@@ -71,11 +54,9 @@ class FrameView extends Composite implements Observer {
 	GridData gridData;
 	Slider slider;
 
-//	Text stepText;
 	
 	public FrameView(Composite parent) {
 		super(parent, SWT.BORDER);
-//		setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		GridLayout layout = new GridLayout(1, false);
 		setLayout(layout);
 
@@ -83,16 +64,12 @@ class FrameView extends Composite implements Observer {
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		compositeHeader.setLayout(new GridLayout(2, true));
 
-		// TODO image manager
-		//	new Label(compositeHeader,SWT.NONE).setImage(image("frame.gif"));
 		header = new Label(compositeHeader, SWT.BORDER);
 		header.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
 
-//		stepText = new Text(compositeHeader,SWT.BORDER);
-		
-		slider = new Slider(compositeHeader, SWT.HORIZONTAL);
+		slider = new Slider(compositeHeader, SWT.HORIZONTAL | SWT.BORDER);
 		slider.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 		
 		slider.setMinimum(1);
@@ -105,18 +82,9 @@ class FrameView extends Composite implements Observer {
 				if(slider.getSelection() != sel) {
 					model.setStep(slider.getSelection()-1);
 					sel = slider.getSelection();
-					navigateToLine(model.getSourceFile(), model.getStepLine());
+					PandionJUI.navigateToLine(model.getSourceFile(), model.getStepLine());
 				}
 //				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
-			}
-		});
-		
-		Button button = new Button(compositeHeader, SWT.PUSH);
-		button.setText(">>");
-		button.addSelectionListener(new SelectionAdapter() {
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				slider.setSelection(slider.getSelection()+1);
 			}
 		});
 
@@ -125,34 +93,14 @@ class FrameView extends Composite implements Observer {
 		compositeViewer.setLayout(new GridLayout());
 		compositeViewer.setLayoutData(gridData);
 
-
 		viewer = new GraphViewerZoomable(compositeViewer, SWT.BORDER);
-//		PandionJLayoutAlgorithm layoutAlg = new PandionJLayoutAlgorithm();
-//		viewer.setLayoutAlgorithm(layoutAlg);
 		viewer.setContentProvider(new NodeProvider());
 		viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 		viewer.setLabelProvider(new FigureProvider());
-		viewer.getGraphControl().setLayoutData(new GridData(getBounds().width - 20, Constants.MARGIN));
-
+		viewer.getGraphControl().setLayoutData(new GridData(parent.getBounds().width - Constants.MARGIN, Constants.MARGIN));
+		viewer.getGraphControl().setEnabled(true);
+		viewer.getGraphControl().setScrollBarVisibility(SWT.VERTICAL);
 		
-//		viewer.getGraphControl().addControlListener(new ControlAdapter() {
-//			public void controlResized(ControlEvent e) {
-//				parent.layout();
-//			}
-//		});
-
-		// TODO CTRL +-
-		//		viewer.getGraphControl().addKeyListener(new KeyListener() {
-		//			
-		//			@Override
-		//			public void keyReleased(KeyEvent e) {
-		//				
-		//			}
-		//			
-		//			@Override
-		//			public void keyPressed(KeyEvent e) {
-		//			}
-		//		});
 		viewer.getGraphControl().setTouchEnabled(false);
 		viewer.getGraphControl().addGestureListener(new GestureListener() {
 			public void gesture(GestureEvent e) {
@@ -160,15 +108,6 @@ class FrameView extends Composite implements Observer {
 					viewer.zoom(e.magnification);
 			}
 		});
-
-		header.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseDown(MouseEvent e) {
-//				setExpanded(!isExpanded());
-//				getParent().layout();
-			}
-		});
-
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 
 			@Override
@@ -189,6 +128,29 @@ class FrameView extends Composite implements Observer {
 				System.out.println(event.getSelection());
 			}
 		});
+		// TODO CTRL +-
+				//		viewer.getGraphControl().addKeyListener(new KeyListener() {
+				//			
+				//			@Override
+				//			public void keyReleased(KeyEvent e) {
+				//				
+				//			}
+				//			
+				//			@Override
+				//			public void keyPressed(KeyEvent e) {
+				//			}
+				//		});
+		
+
+		header.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+//				setExpanded(!isExpanded());
+//				getParent().layout();
+			}
+		});
+
+		
 	}
 
 
@@ -222,6 +184,8 @@ class FrameView extends Composite implements Observer {
 	}
 
 	private Point lastSize;
+	
+	
 	void setInput(StackFrameModel frameModel) {
 		Color c = frameModel.isObsolete() ? ColorManager.getColor(150, 150, 150) : null;
 		setBackground(c);
@@ -230,18 +194,18 @@ class FrameView extends Composite implements Observer {
 		
 		// TODO remove?
 		header.setToolTipText(frameModel.getSourceFile().getName() + " on line " + frameModel.getLineNumber());
+		
 		if(this.model != frameModel) {
 			this.model = frameModel;
 			this.model.registerDisplayObserver(this);
 			String headerText = frameModel.getInvocationExpression();
 			header.setText(headerText);
 //			compositeHeader.pack();
-			viewer.setInput(frameModel);
 			PandionJLayoutAlgorithm layoutAlg = new PandionJLayoutAlgorithm();
 			layoutAlg.addObserver((o,a) -> {
 				Display.getDefault().asyncExec(() -> {
 					Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-					System.out.println(size + "   " + lastSize);
+//					System.out.println(size + "   " + lastSize);
 					if(!size.equals(lastSize)) {
 						lastSize = size;
 						viewer.getGraphControl().setLayoutData(new GridData(getBounds().width - 20, size.y + Constants.MARGIN));
@@ -251,8 +215,7 @@ class FrameView extends Composite implements Observer {
 				});
 			});
 			viewer.setLayoutAlgorithm(layoutAlg);
-			viewer.getGraphControl().setEnabled(true);
-			viewer.getGraphControl().setScrollBarVisibility(SWT.VERTICAL);
+			
 			if(frameModel.isObsolete())
 				setBackground(ColorManager.getColor(150, 150, 150));
 
@@ -260,7 +223,9 @@ class FrameView extends Composite implements Observer {
 			setExpanded(true);
 			slider.setMinimum(1);
 			slider.setMaximum(1);
-			viewer.refresh();
+			
+			viewer.setInput(frameModel);
+//			viewer.refresh();
 			viewer.applyLayout();
 		}
 	}
@@ -269,14 +234,9 @@ class FrameView extends Composite implements Observer {
 	public void update(Observable o, Object list) {
 		List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
 		header.setText(model.getInvocationExpression());
-
 //		if(!newVars.isEmpty()) { // TODO repor
 			viewer.refresh();
 			viewer.applyLayout();
-//			Display.getDefault().syncExec(() -> {
-				
-//			});
-//		}
 			
 		if(model.exceptionOccurred())
 			setError(model.getExceptionMessage());
@@ -341,27 +301,5 @@ class FrameView extends Composite implements Observer {
 		gc.dispose();
 	}
 
-	private static void navigateToLine(IFile file, Integer line) {
-		HashMap<String, Object> map = new HashMap<String, Object>();
-		map.put(IMarker.LINE_NUMBER, line);
-		IMarker marker = null;
-		try {
-			marker = file.createMarker(IMarker.TEXT);
-			marker.setAttributes(map);
-			try {
-				IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), marker);
-			} catch ( PartInitException e ) {
-				//complain
-			}
-		} catch ( CoreException e1 ) {
-			//complain
-		} finally {
-			try {
-				if (marker != null)
-					marker.delete();
-			} catch ( CoreException e ) {
-				//whatever
-			}
-		}
-	}
+	
 }

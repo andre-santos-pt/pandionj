@@ -69,9 +69,13 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	}
 
 	public boolean isDecimal() {
-		return getType().matches("float|double");
+		return getType().matches("float|double"); // TODO Float/Double??
 	}
 
+	public boolean isBoolean() {
+		return getType().equals("boolean"); // TODO Boolean?
+	}
+	
 	public Role getRole() {
 		return role;
 	}

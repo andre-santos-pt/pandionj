@@ -22,7 +22,6 @@ class InvocationArea extends Composite {
 		super(parent, SWT.NONE);
 		layout = new StackLayout();
 		setLayout(layout);
-		new Label(this, SWT.NONE).setText("==");
 		invWidgetsMap = new WeakHashMap<>();
 	}
 	
@@ -34,6 +33,14 @@ class InvocationArea extends Composite {
 		}
 		layout.topControl = inv;
 		layout();
+	}
+	
+	@Override
+	public boolean setFocus() {
+		if(layout.topControl != null)
+			return ((InvocationWidget) layout.topControl).setFocus();
+		else
+			return false;
 	}
 
 }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -124,7 +125,7 @@ public class LaunchCommand extends AbstractHandler {
 
 								@Override
 								public void invoke(String expression) {
-									String args = agentArgs + ";" + expression;
+									String args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\"").replaceAll("\'", "\\\\\'");
 									try {
 										launch(file, lineFinal, firstType, args, mainMethod);
 									} catch (CoreException e) {

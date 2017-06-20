@@ -3,6 +3,7 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.stream.Collectors;
 
@@ -21,6 +22,8 @@ public class CallStackModel extends Observable {
 	private List<StackFrameModel> stack;
 	private int count;
 	private boolean terminated;
+	
+
 	
 	public CallStackModel() {
 		stack = new ArrayList<>();

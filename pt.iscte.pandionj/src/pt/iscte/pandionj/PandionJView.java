@@ -37,6 +37,7 @@ import org.eclipse.ui.part.ViewPart;
 import org.osgi.framework.Bundle;
 
 import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.CallStackModel;
 import pt.iscte.pandionj.model.StackFrameModel;
@@ -93,6 +94,8 @@ public class PandionJView extends ViewPart {
 
 		toolBar = getViewSite().getActionBars().getToolBarManager();
 		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
+		
+		// TODO zoom all
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
 
@@ -140,6 +143,7 @@ public class PandionJView extends ViewPart {
 		scroll.setExpandVertical(true);
 		scroll.setMinHeight(100);
 		scroll.setMinWidth(0);
+		scroll.setAlwaysShowScrollBars(true);
 
 		GridLayout layout = new GridLayout(1, true);
 		layout.marginLeft = 0;
@@ -161,17 +165,10 @@ public class PandionJView extends ViewPart {
 		staticArea = new StaticArea(area);
 		staticArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
-//		staticArea.setLayoutData(new GridData(500, 150));
-		
 		stackView = new StackView(area);
 		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		invocationArea = new InvocationArea(parent);
-		
-//		FillLayout fillLayout = new FillLayout();
-//		fillLayout.marginWidth = Constants.MARGIN;
-//		fillLayout.marginHeight = Constants.MARGIN;
-//		invocationArea.setLayout(fillLayout);
 	}
 
 	@Override
@@ -180,6 +177,8 @@ public class PandionJView extends ViewPart {
 		contextService.activateContext("pt.iscte.pandionj.context"); // TODO constants
 	}
 
+	
+	
 	private class DebugListener implements IDebugEventSetListener {
 		public void handleDebugEvents(DebugEvent[] events) {
 			if(events.length > 0) {
@@ -250,8 +249,12 @@ public class PandionJView extends ViewPart {
 		}
 		model.update(frames);
 		
-		if(!model.isEmpty())
-			staticArea.setInput(model.getTopFrame());
+		if(!model.isEmpty()) {
+			StackFrameModel frame = model.getTopFrame();
+			staticArea.setInput(frame);
+			PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber());
+		}
+		
 	}
 
 
@@ -293,6 +296,8 @@ public class PandionJView extends ViewPart {
 		addToolbarAction(name, toggle, imageName, description, a);
 	}
 
+	
+	// TODO to UI class
 	public interface DebugOperation<T> {
 		T run() throws DebugException;
 	}
@@ -334,9 +339,10 @@ public class PandionJView extends ViewPart {
 
 	
 	public void promptInvocation(IMethod method, InvocationAction action) {
-		invocationArea.setMethod(method, action);
 		stackLayout.topControl = invocationArea;
+		invocationArea.setMethod(method, action);
 		invocationArea.getParent().layout();
+		invocationArea.setFocus();
 	}
 
 

@@ -64,6 +64,10 @@ public interface Constants {
 	int STACK_LIMIT = 10; // TODO stack limit
 
 	int STATIC_AREA_HEIGHT = 100;
+
+	int COMBO_STRING_WIDTH = 200;
+
+	int COMBO_WIDTH = 75;
 	
 	static Color getVarColor(int i) {
 		assert i >= 0;

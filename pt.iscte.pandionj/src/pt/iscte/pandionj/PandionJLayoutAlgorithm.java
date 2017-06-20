@@ -176,7 +176,6 @@ public class PandionJLayoutAlgorithm extends Observable implements LayoutAlgorit
 //			}
 //		}
 		
-		System.out.println("layout");
 		setChanged();
 		notifyObservers();
 	}

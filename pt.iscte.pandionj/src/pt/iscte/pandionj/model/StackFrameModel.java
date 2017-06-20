@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
+import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaType;
@@ -30,6 +31,9 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
+import com.sun.jdi.ArrayReference;
+import com.sun.jdi.CharValue;
+import com.sun.jdi.StringReference;
 import com.sun.jdi.Value;
 
 import pt.iscte.pandionj.ParserManager;
@@ -65,9 +69,9 @@ public class StackFrameModel extends Observable {
 
 	private int stepPointer;
 	private Map<Integer, Integer> stepLines;
-	
+
 	private int lastLine;
-	
+
 	//	private StackFrameImpl underlyingFrame;
 
 	public StackFrameModel(CallStackModel parent, IJavaStackFrame frame) {
@@ -150,8 +154,8 @@ public class StackFrameModel extends Observable {
 			else if(o instanceof ObjectModel)
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
 					public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
-						if(object != null)
-							object.update(step);
+						if(object != null && object.update(step))
+							setChanged();
 					}
 				});
 		}
@@ -159,7 +163,7 @@ public class StackFrameModel extends Observable {
 			step++;
 			stepPointer = step;
 			stepLines.put(step, lastLine);
-			
+
 			try {
 				lastLine = frame.getLineNumber();
 			} catch (DebugException e) {
@@ -182,10 +186,10 @@ public class StackFrameModel extends Observable {
 		notifyObservers(Collections.emptyList());
 	}
 
-	public Object getReturnValue() {
-		assert returnValue != null;
-		return returnValue.toString();
-	}
+	//	public Object getReturnValue() {
+	//		assert returnValue != null;
+	//		return returnValue.toString();
+	//	}
 
 	private List<VariableModel<?>> handleVariables() {
 		List<VariableModel<?>> newVars = new ArrayList<>();
@@ -313,7 +317,7 @@ public class StackFrameModel extends Observable {
 
 	public Collection<VariableModel<?>> getInstanceVariables() {
 		return vars.values().stream().filter((v) -> !v.isStatic()).collect(Collectors.toList());
-//		return Collections.unmodifiableCollection(vars.values());
+		//		return Collections.unmodifiableCollection(vars.values());
 	}
 
 
@@ -332,7 +336,7 @@ public class StackFrameModel extends Observable {
 	}
 
 
-
+	
 	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
 		assert !obj.isNull();
 		try {
@@ -393,11 +397,8 @@ public class StackFrameModel extends Observable {
 			int nArgs = frame.getArgumentTypeNames().size();
 			List<String> args = new ArrayList<>(localVariables.length);
 			for(int i = 0; i < localVariables.length && i < nArgs ; i++) {
-				IValue value = localVariables[i].getValue();
-				if(value instanceof IJavaObject)
-					args.add(getObject((IJavaObject) value, false).toString());
-				else
-					args.add(value.getValueString());
+				IJavaValue value = (IJavaValue) localVariables[i].getValue();
+				args.add(valueToString(value));
 			}
 			//				args.add(localVariables[i].getValue().getValueString()); // TODO, add special chars '' ", arrays
 
@@ -409,7 +410,7 @@ public class StackFrameModel extends Observable {
 			else {
 				String ret = frame.getMethodName() + "(" + String.join(", ", args) + ")";
 				if(returnValue != null)
-					ret += " = " + returnValue.toString();
+					ret += " = " + valueToString(returnValue);
 				return ret;
 			}
 		} catch (DebugException e) {
@@ -418,10 +419,76 @@ public class StackFrameModel extends Observable {
 		}
 	}
 
+	private String valueToString(IJavaValue value) {
+		if(value instanceof IJavaArray) {
+			try {
+				IJavaArray array = (IJavaArray) value;
+				IJavaValue[] values = array.getValues();
+				String s = "";
+				for(int i = 0; i < values.length; i++) {
+					if(!s.isEmpty())
+						s += ", ";
+					s += valueSpecialChars(values[i]);
+				}
+				return "{" + s + "}";
+			}
+			catch (DebugException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
+		else
+			return valueSpecialChars(value);
+	}
 
+	private String valueSpecialChars(IJavaValue value) {
+		try {
+			if(value.getReferenceTypeName().equals("char"))
+				return "'" + value.getValueString() + "'";
+
+			if(value.getReferenceTypeName().equals(String.class.getName()))
+				return "\"" + value.getValueString() + "\"";
+
+			if(value instanceof IJavaObject)
+				return getObject((IJavaObject) value, false).toString();
+
+			return value.getValueString();
+		}
+		catch (DebugException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	private String valueToString(Value value) {
+		if(value instanceof ArrayReference) {
+			ArrayReference array = (ArrayReference) value;
+			List<Value> values = array.getValues();
+			String s = "";
+			for(Value v : values) {
+				if(!s.isEmpty())
+					s += ", ";
+				s += valueSpecialChars(v);
+			}
+			return "{" + s + "}";
+		}
+		else
+			return valueSpecialChars(value);
+	}
+
+	private String valueSpecialChars(Value value) {
+		if(value instanceof StringReference)
+			return "\"" + ((StringReference) value).value() + "\"";
+		else if(value instanceof CharValue)
+			return "'" + ((CharValue) value).charValue() + "'";
+		else
+			return value.toString();
+
+	}
+	
 	public String getInvocationExpression() {
 		if(isObsolete() && returnValue != null && !returnValue.toString().equals("(void)"))
-			return invExpression + " = " + returnValue.toString();
+			return invExpression + " = " + valueToString(returnValue);
 		else if(invExpression == null && !isObsolete()) {
 			invExpression = calcString();
 			return invExpression;
@@ -518,7 +585,7 @@ public class StackFrameModel extends Observable {
 			stepPointer = step;
 			for(VariableModel<?> var : vars.values())
 				var.setStep(stepPointer);
-			
+
 			for(EntityModel<?> ent : objects.values())
 				ent.setStep(stepPointer);
 		}
@@ -530,7 +597,7 @@ public class StackFrameModel extends Observable {
 		return stepLines.get(stepPointer);
 	}
 
-	
+
 
 
 

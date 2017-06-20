@@ -13,6 +13,8 @@ import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 
 import pt.iscte.pandionj.model.StackFrameModel;
 
+
+// TODO adjust size
 class StaticArea extends Composite {
 
 	private GraphViewerZoomable viewer;
