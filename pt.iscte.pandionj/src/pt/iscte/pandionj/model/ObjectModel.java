@@ -3,7 +3,6 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -14,26 +13,21 @@ import java.util.Observer;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.debug.core.DebugEvent;
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IResource;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
-import org.eclipse.debug.core.model.ITerminate;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
-import org.eclipse.debug.core.model.IWatchExpressionResult;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.debug.core.IEvaluationRunnable;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
-import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
@@ -48,8 +42,6 @@ import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
-import pt.iscte.pandionj.extensibility.IWidgetExtension;
-import pt.iscte.pandionj.figures.ObjectFigure;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 	private Map<String, ValueModel> values;
@@ -63,21 +55,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	private IObjectWidgetExtension extension;
 	
-	public ObjectModel(IJavaObject object, StackFrameModel model) {
-		super(object, model);
-		assert object != null;
-		assert jType != null;
+	public ObjectModel(IJavaObject object, IType type, RuntimeModel runtime) {
+		super(object, runtime);
+		assert type != null;
+		jType = type;
+		init(object, jType, runtime);
+		
 	}
 
-	@Override
-	protected void init(IJavaObject object) {
-		try {
-			jType = getStackFrame().getJavaProject().findType(object.getJavaType().getName());
-		} catch (JavaModelException e1) {
-			e1.printStackTrace();
-		} catch (DebugException e1) {
-			e1.printStackTrace();
-		}
+	protected void init(IJavaObject object, IType type, RuntimeModel runtime) {
 		values = new LinkedHashMap<String, ValueModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
 		refsOfSameType = new ArrayList<>();
@@ -88,20 +74,25 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				if(!var.isStatic()) {
 					String name = var.getName();
 					if(var.getValue() instanceof IJavaObject) {
-						ReferenceModel refModel = new ReferenceModel(var, true, getStackFrame());
+						ReferenceModel refModel = new ReferenceModel(var, true, runtime);
 						refModel.registerObserver(new Observer() {
 							public void update(Observable o, Object arg) {
 								setChanged();
 								notifyObservers(name);
 							}
 						});
-// TODO ref change -> new fig
-						Collection<String> tags = ParserManager.getAttributeTags(getStackFrame().getSourceFile(), jType.getFullyQualifiedName(), name);
-						refModel.setTags(tags);
+						
+						
+						// TODO repor TAGS &&& ref change -> new fig
+						IResource resource = jType.getResource();
+						if(resource instanceof IFile) {
+							Collection<String> tags = ParserManager.getAttributeTags((IFile) resource, jType.getFullyQualifiedName(), name);
+							refModel.setTags(tags);
+						}
 						references.put(name, refModel);
 					}
 					else {
-						ValueModel val = new ValueModel(var, true, getStackFrame());
+						ValueModel val = new ValueModel(var, true, runtime, null);
 						val.registerObserver(new Observer() {
 							public void update(Observable o, Object arg) {
 								setChanged();
@@ -118,10 +109,13 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
+		
 		if(refsOfSameType.size() == 2) {
 			leftField = refsOfSameType.get(0);
 			rightField = refsOfSameType.get(1);
 		}
+		
+		extension = ExtensionManager.getObjectExtension(this);
 	}
 
 	public IType getType() {
@@ -137,18 +131,10 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public boolean update(int step) {
 		long valChanges = values.values().stream().filter(val -> val.update(0)).count();
 		long refChanges = references.values().stream().filter(ref -> ref.update(0)).count();
-//		values.values().forEach(val -> val.update(0));
-//		references.values().forEach(ref -> ref.update(0));
 		return (valChanges + refChanges) != 0;
 	}
 
-	@Override
-	protected IFigure createInnerFigure() {
-		return new ObjectFigure(this, createExtensionFigure(), true);
-	}
-	
-	
-	private boolean hasAttributeTags() {
+	public boolean hasAttributeTags() {
 		for(ReferenceModel r : references.values())
 			if(r.hasTags())
 				return true;
@@ -166,18 +152,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return map;
 	}
 	
-	
-	protected IFigure createExtensionFigure() {
-		if(hasAttributeTags()) {
-			extension = ExtensionManager.createTagExtension(this);
-		}
-		else if(extension == null) {
-			extension = ExtensionManager.getObjectExtension(this);
-		}
-		
-		return extension.createFigure(this);
-	}
-
 	public boolean hasWidgetExtension() {
 		return extension != IObjectWidgetExtension.NULL_EXTENSION;
 	}
@@ -200,11 +174,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public Map<String, ReferenceModel> getReferences() {
 		return Collections.unmodifiableMap(references);
 	}
-
-	public Collection<ReferenceModel> getReferencePointers() {
-		return getStackFrame().getReferencesTo(this);
-	}
-
 
 	public String toStringValue() {
 		try {
@@ -235,12 +204,12 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	@Override
 	public String toString() {
-		try {
-			return invoke4("toString", new IJavaValue[0]).getValueString();
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return super.toString();
-		}
+//		try {
+			return "?toString?"; //invoke4("toString", new IJavaValue[0]).getValueString();
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return super.toString();
+//		}
 		
 //		try {
 //			return "(" + getContent().getJavaType().getName() + ")";
@@ -502,19 +471,19 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-	public void invoke3(String methodName, IJavaValue[] args, IWatchExpressionListener listener) {
-		IMethod method = jType.getMethod(methodName, new String[0]); // TODO
-		invoke2(method, args, listener);
+	public void invoke3(String methodName, IJavaValue[] args, StackFrameModel stackFrame, IWatchExpressionListener listener) {
+		IMethod method = jType.getMethod(methodName, new String[0]);
+		invoke2(method, args, stackFrame, listener);
 	}
 	
-	public void invoke2(IMethod m, IJavaValue[] args, IWatchExpressionListener listener) {
+	public void invoke2(IMethod m, IJavaValue[] args, StackFrameModel stackFrame, IWatchExpressionListener listener) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		
-		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(getStackFrame().getStackFrame().getModelIdentifier());
-		Collection<ReferenceModel> referencesTo = getStackFrame().getReferencesTo(this);
+		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
+		Collection<ReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
 		if(!referencesTo.isEmpty()) {
 			String exp = referencesTo.iterator().next().getName() + "." + m.getElementName() + "()";
-			delegate.evaluateExpression(exp , getStackFrame().getStackFrame(), listener);
+			delegate.evaluateExpression(exp , stackFrame.getStackFrame(), listener);
 //			IWatchExpression newWatchExpression = expressionManager.newWatchExpression(exp);
 //			newWatchExpression.evaluate();
 //			IAstEvaluationEngine engine = EvaluationManager.newAstEvaluationEngine(getStackFrame().getJavaProject(), (IJavaDebugTarget) getStackFrame().getStackFrame().getDebugTarget());
@@ -535,107 +504,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 	
-	public IJavaValue invoke4(String methodName, IJavaValue[] args) {
-		class Temp {
-			IJavaValue val;
-		}
-		Temp t = new Temp();
-		IWatchExpressionListener listener = new IWatchExpressionListener() {
-			
-			@Override
-			public void watchEvaluationFinished(IWatchExpressionResult result) {
-				t.val = (IJavaValue) result.getValue();
-				synchronized (t) {
-					t.notifyAll();					
-				}
-			}
-		};
-		
-		invoke3(methodName, args, listener);
-		
-		try {
-			synchronized (t) {
-				if(t.val == null)
-					t.wait();
-			}	
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return t.val;
-	}
 
-
-	public IJavaValue invoke(IMethod m, IJavaValue ... args) {
-		try {
-			IJavaThread t = (IJavaThread) getStackFrame().getStackFrame().getThread();
-
-			class MethodCall implements IEvaluationRunnable, ITerminate {
-				IJavaValue ret;
-
-				Thread job;
-
-				@Override
-				public boolean canTerminate() {
-					return true;
-				}
-
-				@Override
-				public boolean isTerminated() {
-					return !job.isAlive();
-				}
-
-				@Override
-				public void terminate() throws DebugException {
-					job.stop();
-				}
-
-				@Override
-				public void run(IJavaThread thread, IProgressMonitor monitor) throws DebugException {
-					job = new Thread() {
-						public void run() {
-							try {
-								try {
-									ret = getContent().sendMessage(m.getElementName(), m.getSignature(), args, t, false);
-								} catch (JavaModelException e) {
-									e.printStackTrace();
-								}
-							} catch (DebugException e) {
-								e.printStackTrace();
-							}
-						};
-					};
-					job.start();
-					try {
-						job.join();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-				}
-
-			}
-
-			MethodCall call = new MethodCall();
-			t.runEvaluation(call, null, DebugEvent.EVALUATION, true);
-
-			return call.ret;
-		} catch (DebugException e) {
-			//			ObjectReference exception = ((InvocationException) e.getCause()).exception();
-			//			((InvocationException) e.getCause()).printStackTrace();
-			//			System.out.println(exception);
-			return null;
-		}
-	}
-
-	//	public IJavaValue invoke(String methodName, String returnType, IJavaValue ... args) {
-	//		String signature = JNIUtil.genJNISignature(returnType, args);
-	//
-	//		try {
-	//			return object.sendMessage(methodName, signature, args, (IJavaThread) model.getStackFrame().getThread(), null);
-	//		} catch (DebugException e) {
-	//			e.printStackTrace();
-	//			return null;
-	//		}
-	//	}
 
 	// TODO: attribute tags
 	public Multimap<String, String> getTags() {
@@ -695,5 +564,107 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	
+	
+//	public IJavaValue invoke4(String methodName, IJavaValue[] args) {
+//	class Temp {
+//		IJavaValue val;
+//	}
+//	Temp t = new Temp();
+//	IWatchExpressionListener listener = new IWatchExpressionListener() {
+//		
+//		@Override
+//		public void watchEvaluationFinished(IWatchExpressionResult result) {
+//			t.val = (IJavaValue) result.getValue();
+//			synchronized (t) {
+//				t.notifyAll();					
+//			}
+//		}
+//	};
+//	
+//	invoke3(methodName, args, listener);
+//	
+//	try {
+//		synchronized (t) {
+//			if(t.val == null)
+//				t.wait();
+//		}	
+//	} catch (InterruptedException e) {
+//		e.printStackTrace();
+//	}
+//	return t.val;
+//}
+
+
+//public IJavaValue invoke(IMethod m, IJavaValue ... args) {
+//	try {
+//		IJavaThread t = (IJavaThread) getStackFrame().getStackFrame().getThread();
+//
+//		class MethodCall implements IEvaluationRunnable, ITerminate {
+//			IJavaValue ret;
+//
+//			Thread job;
+//
+//			@Override
+//			public boolean canTerminate() {
+//				return true;
+//			}
+//
+//			@Override
+//			public boolean isTerminated() {
+//				return !job.isAlive();
+//			}
+//
+//			@Override
+//			public void terminate() throws DebugException {
+//				job.stop();
+//			}
+//
+//			@Override
+//			public void run(IJavaThread thread, IProgressMonitor monitor) throws DebugException {
+//				job = new Thread() {
+//					public void run() {
+//						try {
+//							try {
+//								ret = getContent().sendMessage(m.getElementName(), m.getSignature(), args, t, false);
+//							} catch (JavaModelException e) {
+//								e.printStackTrace();
+//							}
+//						} catch (DebugException e) {
+//							e.printStackTrace();
+//						}
+//					};
+//				};
+//				job.start();
+//				try {
+//					job.join();
+//				} catch (InterruptedException e) {
+//					e.printStackTrace();
+//				}
+//			}
+//
+//		}
+//
+//		MethodCall call = new MethodCall();
+//		t.runEvaluation(call, null, DebugEvent.EVALUATION, true);
+//
+//		return call.ret;
+//	} catch (DebugException e) {
+//		//			ObjectReference exception = ((InvocationException) e.getCause()).exception();
+//		//			((InvocationException) e.getCause()).printStackTrace();
+//		//			System.out.println(exception);
+//		return null;
+//	}
+//}
+
+//	public IJavaValue invoke(String methodName, String returnType, IJavaValue ... args) {
+//		String signature = JNIUtil.genJNISignature(returnType, args);
+//
+//		try {
+//			return object.sendMessage(methodName, signature, args, (IJavaThread) model.getStackFrame().getThread(), null);
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
 
 }

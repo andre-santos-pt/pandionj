@@ -33,25 +33,25 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 
 	private IArrayWidgetExtension extension;
 
-
-	ArrayModel(IJavaArray array, StackFrameModel model) {
-		super(array, model);
+	
+	ArrayModel(IJavaArray array, RuntimeModel runtime) {
+		super(array, runtime);
 		vars = new HashMap<>();
+		init(array, runtime);
 	}
 
-	protected IFigure createExtensionFigure() {
-		if(extension == null)
-			extension = ExtensionManager.getArrayExtension(this);
-		return extension.createFigure(this);
-	}
+//	protected IFigure createExtensionFigure() {
+//		if(extension == null)
+//			extension = ExtensionManager.getArrayExtension(this);
+//		return extension.createFigure(this);
+//	}
 
 	@Override
 	public boolean hasWidgetExtension() {
 		return extension != IArrayWidgetExtension.NULL_EXTENSION;
 	}
 
-	@Override
-	protected void init(IJavaArray array) {
+	protected void init(IJavaArray array, RuntimeModel runtime) {
 		try {
 			elements = array.getValues();
 		} catch (DebugException e) {
@@ -60,25 +60,11 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		dimensions = getDimensions(array);
 		componentType = getComponentType(array);
 		prev = getValues();
-		initArray(array);
+		initArray(array, runtime);
 	}
 
-	//	private static IJavaValue[] deepCopy(IJavaValue[] array, int dim) {
-	//		Object values = Array.newInstance(IJavaValue.class, dim);
-	////		IJavaValue[] values = new IJavaValue[array.length];
-	//		for(int i = 0; i < array.length; i++) {
-	//			if(dim == 1)
-	//				Array.set(values, i, array[i]);
-	////				values[i] = array[i];
-	//			else
-	//				Array.set(values, i, deepCopy(((IJavaArray) array[i]).getValues(), dim-1));
-	////				values[i] = deepCopy(((IJavaArray) array[i]).getValues(), dim-1);
-	//		}
-	//		
-	//		return values;
-	//	}
 
-	protected abstract void initArray(IJavaArray array);
+	protected abstract void initArray(IJavaArray array, RuntimeModel runtime);
 
 
 	public Object[] getValues() {
@@ -170,44 +156,6 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		boolean hasChanged = hasChanged();
 		notifyObservers(prev);
 		return hasChanged;
-
-		//		try {
-			//			if(!hasChanged() && getDimensions() > 1) {
-		//				IJavaValue[] newValues = entity.getValues();
-		//				if(diff2(elements, newValues, getDimensions()))
-		//					setChanged();
-		//				elements = newValues;
-		//			}
-		//			else
-		//				elements = entity.getValues();
-		//		}
-		//		catch (DebugException e) {
-		//			e.printStackTrace();
-		//		}
-
-
-		//		try {
-		//			IJavaValue[] values = entity.getValues();
-		//			List<Integer> changes = new ArrayList<Integer>();
-		//			for(int i = 0; i < elements.length; i++) {
-		//				boolean equals = values[i].equals(elements[i]);
-		//				if(!equals) {
-		//					elements[i] = values[i];
-		//					changes.add(i);
-		//					setChanged();
-		//				}
-		//				if(updateInternal(i, elements[i], step))
-		//					setChanged();
-		//			}
-		//			
-		//			boolean hasChanged = hasChanged();
-		//			notifyObservers(changes);
-		//			return hasChanged;
-		//		}
-		//		catch(DebugException e) {
-		//			e.printStackTrace();
-		//		}
-
 	}
 
 	abstract boolean updateInternal(int i, int step);
@@ -260,15 +208,15 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	}
 
 
-	protected IFigure createInnerFigure() {
-		IFigure fig = createExtensionFigure();
-		if(fig == null)
-			fig = createArrayFigure();
-		return fig;
-	}
-
-
-	protected abstract IFigure createArrayFigure();
+//	protected IFigure createInnerFigure() {
+//		IFigure fig = createExtensionFigure();
+//		if(fig == null)
+//			fig = createArrayFigure();
+//		return fig;
+//	}
+//
+//
+//	protected abstract IFigure createArrayFigure();
 
 
 	public void addVar(ValueModel v) {
@@ -346,11 +294,28 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		return els;
 	}
 
-	public Set<String> getTags() {
-		Set<String> tags = new HashSet<String>();
-		Collection<ReferenceModel> references = getStackFrame().getReferencesTo(this);
-		for(ReferenceModel r : references)
-			tags.addAll(r.getTags());
-		return tags;
-	}
+//	public Set<String> getTags() {
+//		Set<String> tags = new HashSet<String>();
+//		Collection<ReferenceModel> references = stackFrame.getReferencesTo(this);
+//		for(ReferenceModel r : references)
+//			tags.addAll(r.getTags());
+//		return tags;
+//		return Collections.emptySet(); // TODO repor TAGS
+//	}
+	
+	//	private static IJavaValue[] deepCopy(IJavaValue[] array, int dim) {
+	//		Object values = Array.newInstance(IJavaValue.class, dim);
+	////		IJavaValue[] values = new IJavaValue[array.length];
+	//		for(int i = 0; i < array.length; i++) {
+	//			if(dim == 1)
+	//				Array.set(values, i, array[i]);
+	////				values[i] = array[i];
+	//			else
+	//				Array.set(values, i, deepCopy(((IJavaArray) array[i]).getValues(), dim-1));
+	////				values[i] = deepCopy(((IJavaArray) array[i]).getValues(), dim-1);
+	//		}
+	//		
+	//		return values;
+	//	}
+
 }

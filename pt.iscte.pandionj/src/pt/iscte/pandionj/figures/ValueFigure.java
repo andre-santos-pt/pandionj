@@ -85,12 +85,13 @@ public class ValueFigure extends Figure {
 			}
 		});
 		
-		model.getStackFrame().registerDisplayObserver(new Observer() {
-			@Override
-			public void update(Observable o, Object arg) {
-				setVisible(model.isWithinScope());
-			}
-		});
+		// TODO repor com RuntimeModel
+//		model.getStackFrame().registerDisplayObserver(new Observer() {
+//			@Override
+//			public void update(Observable o, Object arg) {
+//				setVisible(model.isWithinScope());
+//			}
+//		});
 
 		if(Role.GATHERER.equals(role)) {
 			extraFigure = new Label("");

@@ -50,8 +50,8 @@ import pt.iscte.pandionj.parser.variable.Variable;
 public class StackFrameModel extends Observable {
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
-	private Map<Long, EntityModel<?>> objects;
-	private Map<Long, EntityModel<?>> looseObjects;
+//	private Map<Long, EntityModel<?>> objects;
+//	private Map<Long, EntityModel<?>> looseObjects;
 
 	private ParserResult codeAnalysis;
 	private IFile srcFile;
@@ -63,7 +63,7 @@ public class StackFrameModel extends Observable {
 	private boolean obsolete;
 	private String exceptionType;
 
-	private CallStackModel parent;
+	private RuntimeModel runtime;
 
 	private int step;
 
@@ -74,7 +74,7 @@ public class StackFrameModel extends Observable {
 
 	//	private StackFrameImpl underlyingFrame;
 
-	public StackFrameModel(CallStackModel parent, IJavaStackFrame frame) {
+	public StackFrameModel(RuntimeModel runtime, IJavaStackFrame frame) {
 		//		JDIStackFrame jdif = (JDIStackFrame) frame;
 		//		try {
 		//			Field field = JDIStackFrame.class.getDeclaredField("fStackFrame");
@@ -84,11 +84,11 @@ public class StackFrameModel extends Observable {
 		//			e.printStackTrace();
 		//		} 
 
-		this.parent = parent;
+		this.runtime = runtime;
 		this.frame = frame;
 		vars = new LinkedHashMap<>();
-		objects = new HashMap<>();
-		looseObjects = new HashMap<>();
+//		objects = new HashMap<>();
+//		looseObjects = new HashMap<>();
 		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		codeAnalysis = ParserManager.getParserResult(srcFile);
 		javaProject = JavaCore.create(srcFile.getProject());
@@ -107,7 +107,7 @@ public class StackFrameModel extends Observable {
 	}
 
 	public boolean isExecutionFrame() {
-		return !parent.isEmpty() && parent.getTopFrame() == this;
+		return !runtime.isEmpty() && runtime.getTopFrame() == this;
 	}
 
 	//	public boolean matchesFrame(StackFrame uFrame) {
@@ -147,18 +147,17 @@ public class StackFrameModel extends Observable {
 	public void update() {
 		List<VariableModel<?>> newVars = handleVariables();
 
-		// TODO rever changes
-		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
-			if(o instanceof ArrayModel && o.update(step))
-				setChanged();
-			else if(o instanceof ObjectModel)
-				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
-					public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
-						if(object != null && object.update(step))
-							setChanged();
-					}
-				});
-		}
+//		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
+//			if(o instanceof ArrayModel && o.update(step))
+//				setChanged();
+//			else if(o instanceof ObjectModel)
+//				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
+//					public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
+//						if(object != null && object.update(step))
+//							setChanged();
+//					}
+//				});
+//		}
 		if(hasChanged()) {
 			step++;
 			stepPointer = step;
@@ -274,7 +273,8 @@ public class StackFrameModel extends Observable {
 				newElement = refElement;
 			}
 			else {
-				newElement = new ValueModel(jv, isInstance, this);
+				Variable var = getLocalVariable(varName);
+				newElement = new ValueModel(jv, isInstance, this, var);
 			}
 
 			vars.put(varName, newElement);
@@ -326,7 +326,7 @@ public class StackFrameModel extends Observable {
 	}
 
 
-	public Collection<ReferenceModel> getReferencesTo(ModelElement<?> object) {
+	public Collection<ReferenceModel> getReferencesTo(EntityModel<?> object) {
 		List<ReferenceModel> refs = new ArrayList<>(3);
 		for (ModelElement<?> e : vars.values()) {
 			if(e instanceof ReferenceModel && ((ReferenceModel) e).getModelTarget().equals(object))
@@ -334,60 +334,63 @@ public class StackFrameModel extends Observable {
 		}
 		return refs;
 	}
-
-
 	
+
 	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
-		assert !obj.isNull();
-		try {
-			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
-			if(e == null) {
-				if(obj.getJavaType() instanceof IJavaArrayType) {
-					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
-					if(componentType instanceof IJavaReferenceType)
-						e = new ArrayReferenceModel((IJavaArray) obj, this);
-					else
-						e = new ArrayPrimitiveModel((IJavaArray) obj, this);
-				}
-				else {
-					e = new ObjectModel(obj, this);
-				}
-
-				if(loose) {
-					looseObjects.put(obj.getUniqueId(), e);
-				}
-				else {
-					objects.put(obj.getUniqueId(), e);
-				}
-				setChanged();
-			}
-			return e;
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-			return null;
-		}
+		return runtime.getObject(obj, loose, this);
 	}
+	
+//	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
+//		assert !obj.isNull();
+//		try {
+//			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
+//			if(e == null) {
+//				if(obj.getJavaType() instanceof IJavaArrayType) {
+//					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
+//					if(componentType instanceof IJavaReferenceType)
+//						e = new ArrayReferenceModel((IJavaArray) obj, this);
+//					else
+//						e = new ArrayPrimitiveModel((IJavaArray) obj, this);
+//				}
+//				else {
+//					e = new ObjectModel(obj, this);
+//				}
+//
+//				if(loose) {
+//					looseObjects.put(obj.getUniqueId(), e);
+//				}
+//				else {
+//					objects.put(obj.getUniqueId(), e);
+//				}
+//				setChanged();
+//			}
+//			return e;
+//		}
+//		catch(DebugException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
 
 
 
 
-	public void simulateGC() {
-		boolean removals = false;
-		Iterator<Entry<Long, EntityModel<?>>> iterator = objects.entrySet().iterator();
-		while(iterator.hasNext()) {
-			Entry<Long, EntityModel<?>> e = iterator.next();
-			if(!vars.containsValue(e.getValue())) {
-				iterator.remove();
-				removals = true;
-			}
-		}
-		if(removals) {
-			setChanged();
-			notifyObservers(Collections.emptyList());
-		}
-
-	}
+//	public void simulateGC() {
+//		boolean removals = false;
+//		Iterator<Entry<Long, EntityModel<?>>> iterator = objects.entrySet().iterator();
+//		while(iterator.hasNext()) {
+//			Entry<Long, EntityModel<?>> e = iterator.next();
+//			if(!vars.containsValue(e.getValue())) {
+//				iterator.remove();
+//				removals = true;
+//			}
+//		}
+//		if(removals) {
+//			setChanged();
+//			notifyObservers(Collections.emptyList());
+//		}
+//
+//	}
 
 
 
@@ -450,7 +453,7 @@ public class StackFrameModel extends Observable {
 				return "\"" + value.getValueString() + "\"";
 
 			if(value instanceof IJavaObject)
-				return getObject((IJavaObject) value, false).toString();
+				return runtime.getObject((IJavaObject) value, false, this).toString();
 
 			return value.getValueString();
 		}
@@ -543,9 +546,9 @@ public class StackFrameModel extends Observable {
 		return javaProject;
 	}
 
-	public Collection<EntityModel<?>> getLooseObjects() {
-		return Collections.unmodifiableCollection(looseObjects.values());
-	}
+//	public Collection<EntityModel<?>> getLooseObjects() {
+//		return Collections.unmodifiableCollection(looseObjects.values());
+//	}
 
 	private Collection<EntityModel<?>> getReferencedObjects() {
 		List<EntityModel<?>> list = new ArrayList<>();
@@ -568,8 +571,8 @@ public class StackFrameModel extends Observable {
 		return exceptionType;
 	}
 
-	public CallStackModel getCallStack() {
-		return parent;
+	public RuntimeModel getCallStack() {
+		return runtime;
 	}
 
 	public int getRunningStep() {
@@ -586,8 +589,8 @@ public class StackFrameModel extends Observable {
 			for(VariableModel<?> var : vars.values())
 				var.setStep(stepPointer);
 
-			for(EntityModel<?> ent : objects.values())
-				ent.setStep(stepPointer);
+//			for(EntityModel<?> ent : objects.values())
+//				ent.setStep(stepPointer);
 		}
 		setChanged();
 		notifyObservers(Collections.emptyList());
@@ -595,6 +598,10 @@ public class StackFrameModel extends Observable {
 
 	public int getStepLine() {
 		return stepLines.get(stepPointer);
+	}
+
+	public RuntimeModel getRuntime() {
+		return runtime;
 	}
 
 

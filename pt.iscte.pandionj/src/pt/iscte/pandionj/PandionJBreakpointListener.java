@@ -22,7 +22,8 @@ import com.sun.jdi.event.Event;
 import com.sun.jdi.event.EventSet;
 import com.sun.jdi.event.MethodExitEvent;
 
-import pt.iscte.pandionj.model.CallStackModel;
+import pt.iscte.pandionj.extensibility.PandionJUI;
+import pt.iscte.pandionj.model.RuntimeModel;
 
 
 @SuppressWarnings("restriction")
@@ -56,9 +57,9 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 	private JDIDebugTarget debugTarget;
 	private MethodExitRequestImpl request = null;
 
-	private CallStackModel model;
+	private RuntimeModel model;
 
-	PandionJBreakpointListener(CallStackModel model) {
+	PandionJBreakpointListener(RuntimeModel model) {
 		this.model = model;
 	}
 
@@ -93,7 +94,7 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener, IJDI
 			if(request != null)
 				debugTarget.removeJDIEventListener(this, request);
 
-			IFile sourceElement = PandionJView.execute(() -> {
+			IFile sourceElement = PandionJUI.execute(() -> {
 				return (IFile) thread.getLaunch().getSourceLocator().getSourceElement(thread.getTopStackFrame());
 			}, null);
 

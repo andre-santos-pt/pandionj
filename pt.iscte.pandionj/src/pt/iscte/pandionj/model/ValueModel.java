@@ -1,11 +1,9 @@
 package pt.iscte.pandionj.model;
 
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
-import pt.iscte.pandionj.figures.ValueFigure;
 import pt.iscte.pandionj.parser.variable.FixedValue;
 import pt.iscte.pandionj.parser.variable.Gatherer;
 import pt.iscte.pandionj.parser.variable.MostWantedHolder;
@@ -42,18 +40,22 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	private Role role;
 	private Variable var;
 	
-	public ValueModel(IJavaVariable variable, boolean isInstance, StackFrameModel model) throws DebugException {
-		super(variable, isInstance, model);
+	public ValueModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame, Variable var) throws DebugException {
+		super(variable, isInstance, stackFrame);
+		init(var);
+	}
+	
+	public ValueModel(IJavaVariable variable, boolean isInstance, RuntimeModel runtime, Variable var) throws DebugException {
+		super(variable, isInstance, runtime);
 		assert variable.getValue() instanceof IJavaPrimitiveValue;
-		var = model.getLocalVariable(variable.getName());
+		init(var);
+	}
+
+	private void init(Variable var) {
+		this.var = var;
 		role = Role.matchRole(var);
 	}
 
-	@Override
-	public IFigure createInnerFigure() {
-		return new ValueFigure(this, role);
-	}
-	
 	public Variable getVariable() {
 		return var;
 	}

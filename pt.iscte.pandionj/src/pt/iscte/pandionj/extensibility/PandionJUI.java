@@ -10,9 +10,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
@@ -40,7 +42,7 @@ public interface PandionJUI {
 			marker = file.createMarker(IMarker.TEXT);
 			marker.setAttributes(map);
 			IMarker finalMarker = marker;
-			PandionJView.executeUpdate(() -> {
+			executeUpdate(() -> {
 				try {
 					IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), finalMarker);
 				} catch ( PartInitException e ) {
@@ -64,5 +66,25 @@ public interface PandionJUI {
 		URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
 		ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
 		return imageDesc.createImage();
+	}
+	
+	interface DebugOperation<T> {
+		T run() throws DebugException;
+	}
+
+	interface DebugRun {
+		void run() throws DebugException;
+	}
+
+	public static <T> T execute(DebugOperation<T> r, T defaultValue)  {
+		return PandionJView.getInstance().executeInternal(r, defaultValue);
+	}
+
+	public static void execute(DebugRun r) {
+		PandionJView.getInstance().executeInternal(r);
+	}
+
+	public static void executeUpdate(DebugRun r) {
+		Display.getDefault().asyncExec(() -> PandionJView.getInstance().executeInternal(r));
 	}
 }

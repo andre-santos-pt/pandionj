@@ -18,20 +18,19 @@ import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 
 // TODO: limit size?
 public class ArrayReferenceModel extends ArrayModel {
-
 	private List<ReferenceModel> references;
 
-	public ArrayReferenceModel(IJavaArray array, StackFrameModel model) {
-		super(array, model);
+	public ArrayReferenceModel(IJavaArray array, RuntimeModel runtime) {
+		super(array, runtime);
 	}
 
 	@Override
-	protected void initArray(IJavaArray array) {
+	protected void initArray(IJavaArray array, RuntimeModel runtime) {
 		try {
 			references = new ArrayList<>(array.getLength());
 			IVariable[] variables = array.getVariables();
 			for(int i = 0; i < variables.length; i++) {
-				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, getStackFrame());
+				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, runtime);
 				references.add(referenceModel);
 			}
 		}
@@ -46,10 +45,10 @@ public class ArrayReferenceModel extends ArrayModel {
 		return refModel.update(step);
 	}
 
-	@Override
-	protected IFigure createArrayFigure() {
-		return new ArrayReferenceFigure(this);
-	}
+//	@Override
+//	protected IFigure createArrayFigure() {
+//		return new ArrayReferenceFigure(this);
+//	}
 
 	public List<ReferenceModel> getModelElements() {
 		return Collections.unmodifiableList(references);

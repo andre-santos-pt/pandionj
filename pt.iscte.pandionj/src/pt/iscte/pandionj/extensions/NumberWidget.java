@@ -18,6 +18,7 @@ import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 
 public class NumberWidget implements IObjectWidgetExtension {
 
@@ -35,12 +36,13 @@ public class NumberWidget implements IObjectWidgetExtension {
 	public IFigure createFigure(IObjectModel e) {
 		Label label = new Label();
 		FontManager.setFont(label, Constants.VALUE_FONT_SIZE);
-		e.invoke("toString", new IWatchExpressionListener() {
-			@Override
-			public void watchEvaluationFinished(IWatchExpressionResult result) {
-				PandionJView.executeUpdate(() -> label.setText(result.getValue().getValueString()));
-			}
-		});
+		// TODO repor
+//		e.invoke("toString", new IWatchExpressionListener() {
+//			@Override
+//			public void watchEvaluationFinished(IWatchExpressionResult result) {
+//				PandionJUI.executeUpdate(() -> label.setText(result.getValue().getValueString()));
+//			}
+//		});
 		return label;
 	}
 

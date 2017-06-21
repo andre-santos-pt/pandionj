@@ -10,17 +10,21 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T> {
 
 	protected final IJavaVariable variable;
+	private StackFrameModel stackFrame;  // optional (if owned by variable)
+
 	private String type;
 	private String name;
 	private boolean isInstance;
 	private boolean isStatic;
 	
-//	private boolean inScope;
 	private List<StepValue> history;
 
-//	private int stepInit;
+	private int stepInit;
+	private int scopeEnd;
+	
 	private int stepPointer;
 
+	
 	private class StepValue {
 		final T value;
 		final int step;
@@ -35,34 +39,56 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 			return "(" + value + ", " + step + ")";
 		}
 	}
+	
+	public VariableModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame) {
+		this(variable, isInstance, stackFrame.getRuntime());
+		this.stackFrame = stackFrame;
+		
+	}
 
 	@SuppressWarnings("unchecked")
-	public VariableModel(IJavaVariable variable, boolean isInstance, StackFrameModel model) {
-		super(model);
+	public VariableModel(IJavaVariable variable, boolean isInstance, RuntimeModel runtime) {
+		super(runtime);
 		assert variable != null;
-
+		
 		this.variable = variable;
 		history = new ArrayList<>();
 
-//		inScope = true;
-//		stepInit = model.getRunningStep();
 		try {
 			this.type = variable.getReferenceTypeName();
 			this.name = variable.getName();
-			// !variable.isLocal() ?
-			this.isInstance = isInstance;
+			this.isInstance = isInstance; // !variable.isLocal() ?
 			this.isStatic = variable.isStatic();
 			T val = (T) variable.getValue();
-			StepValue sv = new StepValue(val, model.getRunningStep());
+			StepValue sv = new StepValue(val, runtime.getRunningStep());
 			history.add(sv);
 			stepPointer = 0;
 
 		} catch (DebugException e) {
 			e.printStackTrace();
-
 		}
+		
+		this.stepInit = runtime.getRunningStep();
+		this.scopeEnd = Integer.MAX_VALUE;
 	}
 
+	public StackFrameModel getStackFrame() {
+		return stackFrame;
+	}
+
+	public boolean isWithinScope() {
+		if(stackFrame == null)
+			return true;
+		else
+			return stepInit <= stackFrame.getStepPointer() && stackFrame.getStepPointer() <= scopeEnd;
+	}
+	
+	public void setOutOfScope() {
+		this.scopeEnd = getRuntimeModel().getRunningStep();
+		setChanged();
+		notifyObservers();
+	}
+	
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean update(int step) {
@@ -132,18 +158,4 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 			hist.add(sv.value);
 		return hist;
 	}
-
-	
-
-
-//	public void setOutOfScope() {
-//		inScope = false;
-//		setChanged();
-//		notifyObservers();
-//	}
-//
-//	public boolean isWithinScope() {
-//		return inScope && history.get(0).step <= getStackFrame().getStepPointer();
-//	}
-
 }

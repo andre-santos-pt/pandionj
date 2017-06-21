@@ -39,14 +39,14 @@ import org.osgi.framework.Bundle;
 import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
-import pt.iscte.pandionj.model.CallStackModel;
+import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
 // TODO reload everything on view init
 public class PandionJView extends ViewPart { 
 	private static PandionJView instance;
 
-	private CallStackModel model;
+	private RuntimeModel model;
 	private IStackFrame exceptionFrame;
 	private String exception;
 
@@ -80,10 +80,10 @@ public class PandionJView extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
-		contextService = (IContextService)PlatformUI.getWorkbench().getService(IContextService.class);
+		contextService = (IContextService) PlatformUI.getWorkbench().getService(IContextService.class);
 
 		createWidgets(parent);
-		model = new CallStackModel();
+		model = new RuntimeModel();
 		stackView.setInput(model);
 		
 		debugEventListener = new DebugListener();
@@ -92,13 +92,16 @@ public class PandionJView extends ViewPart {
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
 		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
 
+		populateToolBar();
+	}
+
+	private void populateToolBar() {
 		toolBar = getViewSite().getActionBars().getToolBarManager();
 		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
 		
 		// TODO zoom all
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
-
 		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
 		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
 	}
@@ -116,17 +119,17 @@ public class PandionJView extends ViewPart {
 	}
 
 
-	private Image image(String name) {
-		Image img = images.get(name);
-		if(img == null) {
-			Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-			URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
-			ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
-			img = imageDesc.createImage();
-			images.put(name, img);
-		}
-		return img;
-	}
+//	private Image image(String name) {
+//		Image img = images.get(name);
+//		if(img == null) {
+//			Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
+//			URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
+//			ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
+//			img = imageDesc.createImage();
+//			images.put(name, img);
+//		}
+//		return img;
+//	}
 
 	
 	private void createWidgets(Composite parent) {
@@ -189,7 +192,7 @@ public class PandionJView extends ViewPart {
 						if(thread.getTopStackFrame().getLineNumber() == -1)
 							thread.resume();
 
-						handleFrames(thread.getStackFrames());
+						handleFrames(thread);
 					});
 				}
 				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
@@ -217,8 +220,7 @@ public class PandionJView extends ViewPart {
 		executeInternal(() -> {
 			exception = null;
 			exceptionFrame = null;
-			IStackFrame[] frames = thread.getStackFrames(); 
-			handleFrames(frames);
+			handleFrames(thread);
 		});
 	}
 
@@ -227,8 +229,7 @@ public class PandionJView extends ViewPart {
 			thread.terminateEvaluation();
 			exception = exceptionBreakPoint.getExceptionTypeName();
 			exceptionFrame = thread.getTopStackFrame();
-			IStackFrame[] frames = thread.getStackFrames(); 
-			handleFrames(frames);
+			handleFrames(thread);
 			if(!model.isEmpty()) {
 				StackFrameModel frame = model.getFrame(exceptionFrame);
 				int line = exceptionFrame.getLineNumber();
@@ -238,8 +239,8 @@ public class PandionJView extends ViewPart {
 	}
 
 
-	private void handleFrames(IStackFrame[] frames) {
-		assert frames != null;
+	private void handleFrames(IJavaThread thread) {
+		assert thread != null;
 
 		if(stackLayout.topControl != scroll) {
 			Display.getDefault().syncExec(() -> {
@@ -247,7 +248,8 @@ public class PandionJView extends ViewPart {
 				scroll.getParent().layout();
 			});
 		}
-		model.update(frames);
+		
+		model.update(thread);
 		
 		if(!model.isEmpty()) {
 			StackFrameModel frame = model.getTopFrame();
@@ -279,7 +281,7 @@ public class PandionJView extends ViewPart {
 
 	private void addToolbarAction(String name, boolean toggle, String imageName, String description, Action action) {
 		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
-		action.setImageDescriptor(ImageDescriptor.createFromImage(image(imageName)));
+		action.setImageDescriptor(ImageDescriptor.createFromImage(PandionJUI.getImage(imageName)));
 		String tooltip = name;
 		if(description != null)
 			tooltip += "\n" + description;
@@ -297,28 +299,27 @@ public class PandionJView extends ViewPart {
 	}
 
 	
-	// TODO to UI class
-	public interface DebugOperation<T> {
-		T run() throws DebugException;
-	}
+//	public interface DebugOperation<T> {
+//		T run() throws DebugException;
+//	}
+//
+//	public interface DebugRun {
+//		void run() throws DebugException;
+//	}
+//
+//	public static <T> T execute(DebugOperation<T> r, T defaultValue)  {
+//		return instance.executeInternal(r, defaultValue);
+//	}
+//
+//	public static void execute(DebugRun r) {
+//		instance.executeInternal(r);
+//	}
+//
+//	public static void executeUpdate(DebugRun r) {
+//		Display.getDefault().asyncExec(() -> instance.executeInternal(r));
+//	}
 
-	public interface DebugRun {
-		void run() throws DebugException;
-	}
-
-	public static <T> T execute(DebugOperation<T> r, T defaultValue)  {
-		return instance.executeInternal(r, defaultValue);
-	}
-
-	public static void execute(DebugRun r) {
-		instance.executeInternal(r);
-	}
-
-	public static void executeUpdate(DebugRun r) {
-		Display.getDefault().asyncExec(() -> instance.executeInternal(r));
-	}
-
-	private void executeInternal(DebugRun r) {
+	public void executeInternal(PandionJUI.DebugRun r) {
 		try {
 			r.run();
 		}
@@ -327,7 +328,7 @@ public class PandionJView extends ViewPart {
 		}
 	}
 
-	private <T> T executeInternal(DebugOperation<T> r, T defaultValue) {
+	public <T> T executeInternal(PandionJUI.DebugOperation<T> r, T defaultValue) {
 		try {
 			return r.run();
 		}

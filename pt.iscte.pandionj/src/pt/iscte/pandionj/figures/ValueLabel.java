@@ -26,12 +26,14 @@ class ValueLabel extends Label {
 		updateValue();
 		model.registerDisplayObserver((o,a) -> updateValue());
 
-		model.getStackFrame().registerDisplayObserver(new Observer() {
-			public void update(Observable o, Object arg) {
-				setBackgroundColor(dirty ? Constants.HIGHLIGHT_COLOR : ColorConstants.white);
-				dirty = false;
-			}
-		});
+		// TODO repor com RuntimeModel
+//		model.getStackFrame().registerDisplayObserver(new Observer() {
+//			public void update(Observable o, Object arg) {
+//				setBackgroundColor(dirty ? Constants.HIGHLIGHT_COLOR : ColorConstants.white);
+//				dirty = false;
+//			}
+//		});
+		
 		dirty = false;
 	}
 

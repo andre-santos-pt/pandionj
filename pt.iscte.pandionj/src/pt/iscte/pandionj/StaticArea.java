@@ -11,6 +11,7 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
 import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 
+import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.StackFrameModel;
 
 
@@ -27,7 +28,6 @@ class StaticArea extends Composite {
 		viewer.setContentProvider(new StaticNodeProvider());
 		viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
 		viewer.getGraphControl().setBackground(ColorConstants.white);
-		viewer.setLabelProvider(new FigureProvider());
 	}
 
 //	@Override
@@ -39,10 +39,12 @@ class StaticArea extends Composite {
 		if(this.model != model) {
 			this.model = model;
 			boolean collapse = model.getStaticVariables().isEmpty();
-			PandionJView.executeUpdate(() -> {
+			PandionJUI.executeUpdate(() -> {
 				setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, !collapse));
 				getParent().layout();
 				viewer.setInput(model);
+				viewer.setLabelProvider(new FigureProvider(model));
+				viewer.applyLayout();
 			}
 			);
 			// TODO if there are changes

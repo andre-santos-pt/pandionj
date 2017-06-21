@@ -34,6 +34,7 @@ import pt.iscte.pandionj.extensions.ColorAguia;
 import pt.iscte.pandionj.extensions.ColorWidget;
 import pt.iscte.pandionj.extensions.ImageAguia;
 import pt.iscte.pandionj.extensions.GrayscaleImageWidget;
+import pt.iscte.pandionj.extensions.HistogramWidget;
 import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringWidget;
@@ -49,6 +50,8 @@ public class ExtensionManager {
 	static {
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
 		arrayExtensions.put("image", new GrayscaleImageWidget());
+		arrayExtensions.put("hist", new HistogramWidget());
+		
 		
 		objectExtensions = new ArrayList<>();
 		objectExtensions.add(new NumberWidget());
@@ -60,17 +63,9 @@ public class ExtensionManager {
 	}
 	
 	
-//	public static <T extends IEntityModel> IWidgetExtension<?> getExtension(T e) {
-//		if(e instanceof ArrayModel)
-//			return getArrayExtension((ArrayModel) e);
-//		else if(e instanceof ObjectModel)
-//			return getObjectExtension((ObjectModel) e);
-//		else
-//			return NO_EXTENSION;
-//	}
-	
-	public static IArrayWidgetExtension getArrayExtension(ArrayModel m) {
-		for (String tag : m.getTags()) {
+	// TODO composite extension? (as TagExtension?)
+	public static IArrayWidgetExtension getArrayExtension(ArrayModel m, Set<String> tags) {
+		for (String tag : tags) {
 			IArrayWidgetExtension ext = arrayExtensions.get(tag);
 			if(ext != null && ext.accept(m))
 				return ext;
@@ -80,6 +75,9 @@ public class ExtensionManager {
 
 
 	public static IObjectWidgetExtension getObjectExtension(ObjectModel m) {
+		if(m.hasAttributeTags())
+			return new TagExtension(m.getAttributeTags());
+		
 		IType type = m.getType();
 		for(IObjectWidgetExtension ext : ExtensionManager.objectExtensions)
 			if(ext.accept(type))
@@ -88,15 +86,16 @@ public class ExtensionManager {
 	}
 
 
-	public static IObjectWidgetExtension createTagExtension(ObjectModel m) {
-		return new TagExtension(m.getAttributeTags());
-	}
+//	public static IObjectWidgetExtension createTagExtension(ObjectModel m) {
+//		return new TagExtension(m.getAttributeTags());
+//	}
 	
 	static class TagExtension implements IObjectWidgetExtension {
 		
 		private Multimap<String, String> tags;
 		private Multimap<String, IFigure> figs;
 		private IFigure compositeFig;
+		
 		public TagExtension(Multimap<String, String> tags) {
 			assert tags != null;
 			this.tags = tags;

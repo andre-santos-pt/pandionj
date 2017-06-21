@@ -10,13 +10,13 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 
-import pt.iscte.pandionj.model.CallStackModel;
+import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
 class StackView extends Composite {
 		double zoom;
 		List<FrameView> frameViews;
-		CallStackModel model;
+		RuntimeModel model;
 		
 		StackView(Composite parent) {
 			super(parent, SWT.NONE);
@@ -26,7 +26,7 @@ class StackView extends Composite {
 			zoom = 1.0;
 		}
 
-		void setInput(CallStackModel model) {
+		void setInput(RuntimeModel model) {
 			assert model != null;
 			this.model = model;
 			model.addObserver((o,a) -> 

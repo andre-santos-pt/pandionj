@@ -36,7 +36,6 @@ import pt.iscte.pandionj.model.ReferenceModel;
 
 //TODO limit size
 //TODO tool tip type
-
 public class ArrayReferenceFigure extends RoundedRectangle {
 
 	enum Direction {

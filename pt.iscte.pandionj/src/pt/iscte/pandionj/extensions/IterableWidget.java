@@ -51,26 +51,27 @@ public class IterableWidget implements IObjectWidgetExtension {
 	}
 
 	private static void eval(IObjectModel e, Label label) {
-		e.invoke3("toArray", new IJavaValue[0], new IWatchExpressionListener() {
-			@Override
-			public void watchEvaluationFinished(IWatchExpressionResult result) {
-				IIndexedValue value = (IIndexedValue) result.getValue();
-				try {
-					IVariable[] positions = value.getSize() == 0 ? new IVariable[0] : value.getVariables(0, Math.min(value.getSize(), Constants.ARRAY_LENGTH_LIMIT));
-					String s = "{";
-					for(int i = 0; i < positions.length; i++)
-						s += positions[i].getValue().getValueString() + ", ";
-					s += "}";
-					String toString = s;
-					Display.getDefault().asyncExec(() -> {
-						label.setText(toString);
-					});
-				} catch (DebugException e1) {
-					e1.printStackTrace();
-				}
-
-			}
-		});
+		// TODO repor
+//		e.invoke3("toArray", new IJavaValue[0], new IWatchExpressionListener() {
+//			@Override
+//			public void watchEvaluationFinished(IWatchExpressionResult result) {
+//				IIndexedValue value = (IIndexedValue) result.getValue();
+//				try {
+//					IVariable[] positions = value.getSize() == 0 ? new IVariable[0] : value.getVariables(0, Math.min(value.getSize(), Constants.ARRAY_LENGTH_LIMIT));
+//					String s = "{";
+//					for(int i = 0; i < positions.length; i++)
+//						s += positions[i].getValue().getValueString() + ", ";
+//					s += "}";
+//					String toString = s;
+//					Display.getDefault().asyncExec(() -> {
+//						label.setText(toString);
+//					});
+//				} catch (DebugException e1) {
+//					e1.printStackTrace();
+//				}
+//
+//			}
+//		});
 	}
 
 	@Override

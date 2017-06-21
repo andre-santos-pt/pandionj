@@ -73,10 +73,11 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		for(ValueModel v : model.getVars())
 			addVariable(v);
 		
-		model.getStackFrame().registerDisplayObserver(new Observer() {
+		model.registerDisplayObserver(new Observer() {
 			@Override
 			public void update(Observable o, Object arg) {
-				setVisible(model.isWithinScope());
+				// TODO repor
+//				setVisible(model.isWithinScope());
 			}
 		});
 	}

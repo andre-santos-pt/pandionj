@@ -21,7 +21,7 @@ import pt.iscte.pandionj.model.ValueModel;
 import pt.iscte.pandionj.model.ValueModel.Role;
 import pt.iscte.pandionj.model.VariableModel;
 
-class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGraphEntityContentProvider
+class NodeProvider implements IGraphEntityRelationshipContentProvider {
 	private static final Object[] EMPTY = new Object[0];
 
 	private StackFrameModel model;
@@ -42,7 +42,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider { // IGrap
 			return EMPTY;
 		
 		List<ModelElement<?>> elements = getElementsInternal(model.getInstanceVariables());
-		elements.addAll(model.getLooseObjects());
+//		elements.addAll(model.getLooseObjects()); // TODO repor loose objects
 		return elements.toArray();
 	}
 

@@ -4,58 +4,56 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
-import pt.iscte.pandionj.PandionJView;
-import pt.iscte.pandionj.figures.ReferenceFigure;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 
 public class ReferenceModel extends VariableModel<IJavaObject> {
 	private NullModel nullModel;
 	private boolean isPrimitiveArray;
 	private Collection<String> tags;
 
-	ReferenceModel(IJavaVariable var, boolean isInstance, StackFrameModel model) {
-		super(var, isInstance, model);
-		//assert var.getValue() instanceof IJavaObject;
+	ReferenceModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame) {
+		super(variable, isInstance, stackFrame);
+		init(variable);
+	}
+	
+	ReferenceModel(IJavaVariable var, boolean isInstance, RuntimeModel runtime) {
+		super(var, isInstance, runtime);
+		init(var);
+	}
+
+	private void init(IJavaVariable var) {
 		tags = Collections.emptyList();
-		PandionJView.execute(() -> {
+		PandionJUI.execute(() -> {
 			isPrimitiveArray = 
 					var.getValue() instanceof IJavaArray &&
 					!(((IJavaArrayType) var.getJavaType()).getComponentType() instanceof IJavaReferenceType); 
 		});
 	}
-
+	
 	public EntityModel<?> getModelTarget() {
 		IJavaObject target = getContent();
-		return target == null || target.isNull() ? getNullInstance() : getStackFrame().getObject(target, false);
+		return target == null || target.isNull() ? getNullInstance() : getRuntimeModel().getObject(target, false, getStackFrame());
 	}
 
 	public boolean isNull() {
 		return getContent().isNull();
 	}
 
-	public NullModel getNullInstance() {
+	private NullModel getNullInstance() {
 		if(nullModel == null)
-			nullModel = new NullModel(getStackFrame());
+			nullModel = new NullModel(getRuntimeModel());
 		return nullModel;
 	}
 
 
 	public boolean isPrimitiveArray() {
 		return isPrimitiveArray;
-	}
-
-
-
-	@Override
-	public IFigure createInnerFigure() {
-		return new ReferenceFigure(this);
 	}
 
 	@Override

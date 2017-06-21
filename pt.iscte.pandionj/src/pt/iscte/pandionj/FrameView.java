@@ -96,7 +96,7 @@ class FrameView extends Composite implements Observer {
 		viewer = new GraphViewerZoomable(compositeViewer, SWT.BORDER);
 		viewer.setContentProvider(new NodeProvider());
 		viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
-		viewer.setLabelProvider(new FigureProvider());
+		
 		viewer.getGraphControl().setLayoutData(new GridData(parent.getBounds().width - Constants.MARGIN, Constants.MARGIN));
 		viewer.getGraphControl().setEnabled(true);
 		viewer.getGraphControl().setScrollBarVisibility(SWT.VERTICAL);
@@ -225,6 +225,7 @@ class FrameView extends Composite implements Observer {
 			slider.setMaximum(1);
 			
 			viewer.setInput(frameModel);
+			viewer.setLabelProvider(new FigureProvider(frameModel));
 //			viewer.refresh();
 			viewer.applyLayout();
 		}

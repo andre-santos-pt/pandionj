@@ -16,16 +16,16 @@ public class ArrayPrimitiveModel extends ArrayModel {
 
 	private List<ValueModel> values;
 	
-	public ArrayPrimitiveModel(IJavaArray array, StackFrameModel model) {
-		super(array, model);
+	public ArrayPrimitiveModel(IJavaArray array, RuntimeModel runtime) {
+		super(array, runtime);
 	}
 
 	@Override
-	protected void initArray(IJavaArray array) {
+	protected void initArray(IJavaArray array, RuntimeModel runtime) {
 		try {
 			values = new ArrayList<>(array.getLength());
 			for(int i = 0; i < array.getLength(); i++) {
-				ValueModel m = new ValueModel((IJavaVariable) array.getVariable(i), false, getStackFrame());
+				ValueModel m = new ValueModel((IJavaVariable) array.getVariable(i), false, runtime, null);
 				values.add(m);
 			}
 		} catch (DebugException e) {
@@ -37,10 +37,10 @@ public class ArrayPrimitiveModel extends ArrayModel {
 		return getComponentType().matches("float|double");
 	}
 	
-	@Override
-	protected IFigure createArrayFigure() {
-		return new ArrayPrimitiveFigure(this);
-	}
+//	@Override
+//	protected IFigure createArrayFigure() {
+//		return new ArrayPrimitiveFigure(this);
+//	}
 	
 	boolean updateInternal(int i, int step) {
 		return values.get(i).update(step);

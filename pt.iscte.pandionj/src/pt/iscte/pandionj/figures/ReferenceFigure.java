@@ -33,11 +33,12 @@ public class ReferenceFigure extends Label {
 		if(!tags.isEmpty())
 			setToolTip(new Label("tags: " + tags.toString()));
 		
-		model.getStackFrame().registerDisplayObserver(new Observer() {
-			@Override
-			public void update(Observable o, Object arg) {
-				setVisible(model.isWithinScope());
-			}
-		});
+		// TODO repor com RuntimeModel
+//		model.getStackFrame().registerDisplayObserver(new Observer() {
+//			@Override
+//			public void update(Observable o, Object arg) {
+//				setVisible(model.isWithinScope());
+//			}
+//		});
 	}
 }
