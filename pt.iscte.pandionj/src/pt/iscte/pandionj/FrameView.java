@@ -101,7 +101,6 @@ class FrameView extends Composite implements Observer {
 		viewer.getGraphControl().setLayoutData(new GridData(parent.getBounds().width - Constants.MARGIN, Constants.MARGIN));
 		viewer.getGraphControl().setEnabled(true);
 		viewer.getGraphControl().setScrollBarVisibility(SWT.VERTICAL);
-		viewer.getGraphControl().setBackground(ColorConstants.blue);
 		viewer.getGraphControl().setTouchEnabled(false);
 		viewer.getGraphControl().addGestureListener(new GestureListener() {
 			public void gesture(GestureEvent e) {
