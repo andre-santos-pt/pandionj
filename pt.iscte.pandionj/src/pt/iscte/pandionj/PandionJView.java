@@ -93,6 +93,8 @@ public class PandionJView extends ViewPart {
 		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
 
 		populateToolBar();
+		
+		setPartName("TEST");
 	}
 
 	private void populateToolBar() {
