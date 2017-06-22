@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -100,7 +101,7 @@ class FrameView extends Composite implements Observer {
 		viewer.getGraphControl().setLayoutData(new GridData(parent.getBounds().width - Constants.MARGIN, Constants.MARGIN));
 		viewer.getGraphControl().setEnabled(true);
 		viewer.getGraphControl().setScrollBarVisibility(SWT.VERTICAL);
-		
+		viewer.getGraphControl().setBackground(ColorConstants.blue);
 		viewer.getGraphControl().setTouchEnabled(false);
 		viewer.getGraphControl().addGestureListener(new GestureListener() {
 			public void gesture(GestureEvent e) {
