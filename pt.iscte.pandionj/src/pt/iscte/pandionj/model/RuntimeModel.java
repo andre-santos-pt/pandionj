@@ -31,7 +31,7 @@ import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
 
-public class RuntimeModel extends Observable {
+public class RuntimeModel extends DisplayUpdateObservable {
 	private ILaunch launch;
 	private List<StackFrameModel> callStack;
 	private Map<Long, EntityModel<?>> objects;
@@ -53,10 +53,6 @@ public class RuntimeModel extends Observable {
 	
 	public IJavaDebugTarget getDebugTarget() {
 		return (IJavaDebugTarget) launch.getDebugTarget();
-	}
-	
-	public void getActiveStackFrame() {
-
 	}
 	
 	public void update(IJavaThread thread) {
@@ -94,7 +90,8 @@ public class RuntimeModel extends Observable {
 		for(int i = 0; i < countActive; i++)
 			callStack.get(i).update();
 		
-		notifyObservers();
+		step++;
+		notifyObservers(step);
 	}
 	
 	private void handle(IStackFrame[] stackFrames) {
@@ -176,29 +173,7 @@ public class RuntimeModel extends Observable {
 	public List<StackFrameModel> getFilteredStackPath() {
 		return callStack.stream().filter((f) -> f.getLineNumber() != -1).collect(Collectors.toList());
 	}
-	
-	public void simulateGC() {
-		// TODO GC
-//		boolean removals = false;
-//		Iterator<Entry<Long, EntityModel<?>>> iterator = objects.entrySet().iterator();
-//		while(iterator.hasNext()) {
-//			Entry<Long, EntityModel<?>> e = iterator.next();
-//			if(!vars.containsValue(e.getValue())) {
-//				iterator.remove();
-//				removals = true;
-//			}
-//		}
-//		if(removals) {
-//			setChanged();
-//			notifyObservers(Collections.emptyList());
-//		}
 
-	}
-
-//	public void simulateGC() {
-//		for(int i = 0; i < countActive; i++)
-//			callStack.get(i).simulateGC();
-//	}
 
 	public StackFrameModel getFrame(IStackFrame exceptionFrame) {
 		for(StackFrameModel s : callStack)
@@ -228,7 +203,7 @@ public class RuntimeModel extends Observable {
 	}
 	
 	
-	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose, StackFrameModel stackFrame) {
+	EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose, StackFrameModel stackFrame) {
 		assert !obj.isNull();
 		try {
 			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
@@ -269,6 +244,32 @@ public class RuntimeModel extends Observable {
 	public Collection<EntityModel<?>> getLooseObjects() {
 		return Collections.unmodifiableCollection(looseObjects.values());
 	}
+	
+	
+	
+	
+	public void simulateGC() {
+		// TODO GC
+//		boolean removals = false;
+//		Iterator<Entry<Long, EntityModel<?>>> iterator = objects.entrySet().iterator();
+//		while(iterator.hasNext()) {
+//			Entry<Long, EntityModel<?>> e = iterator.next();
+//			if(!vars.containsValue(e.getValue())) {
+//				iterator.remove();
+//				removals = true;
+//			}
+//		}
+//		if(removals) {
+//			setChanged();
+//			notifyObservers(Collections.emptyList());
+//		}
+
+	}
+
+//	public void simulateGC() {
+//		for(int i = 0; i < countActive; i++)
+//			callStack.get(i).simulateGC();
+//	}
 	
 	
 	private boolean sameLocation(Location loc, StackFrameModel frame) {

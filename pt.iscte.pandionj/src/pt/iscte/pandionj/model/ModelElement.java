@@ -6,7 +6,7 @@ import java.util.Observer;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.swt.widgets.Display;
 
-public abstract class ModelElement<T extends IJavaValue> extends Observable {
+public abstract class ModelElement<T extends IJavaValue> extends DisplayUpdateObservable {
 	private RuntimeModel runtime;
 	
 	public ModelElement(RuntimeModel runtime) {
@@ -24,22 +24,5 @@ public abstract class ModelElement<T extends IJavaValue> extends Observable {
 
 	public abstract void setStep(int stepPointer);
 	
-	public void registerDisplayObserver(Observer obs) {
-		addObserver(new Observer() {
-			@Override
-			public void update(Observable o, Object arg) {
-				Display.getDefault().asyncExec(() -> {
-					obs.update(o, arg);
-				});
-			}
-		});
-	}
 	
-	public void registerObserver(Observer o) {
-		addObserver(o);
-	}
-
-	public void unregisterObserver(Observer obs) {
-		deleteObserver(obs);
-	}
 }

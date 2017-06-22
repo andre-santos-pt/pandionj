@@ -1,8 +1,5 @@
 package pt.iscte.pandionj.figures;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
@@ -25,6 +22,7 @@ class ValueLabel extends Label {
 		setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 		updateValue();
 		model.registerDisplayObserver((o,a) -> updateValue());
+		dirty = false;
 
 		// TODO repor com RuntimeModel
 //		model.getStackFrame().registerDisplayObserver(new Observer() {
@@ -33,8 +31,10 @@ class ValueLabel extends Label {
 //				dirty = false;
 //			}
 //		});
-		
-		dirty = false;
+		model.getRuntimeModel().registerDisplayObserver((o,a) -> {
+			setBackgroundColor(dirty ? Constants.HIGHLIGHT_COLOR : ColorConstants.white);
+			dirty = false;
+		});
 	}
 
 	private void updateValue() {

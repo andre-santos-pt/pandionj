@@ -92,6 +92,7 @@ public class ValueFigure extends Figure {
 //				setVisible(model.isWithinScope());
 //			}
 //		});
+//		model.getRuntimeModel().registerDisplayObserver((o,a) -> setVisible(model.isWithinScope()));
 
 		if(Role.GATHERER.equals(role)) {
 			extraFigure = new Label("");
@@ -138,7 +139,6 @@ public class ValueFigure extends Figure {
 
 
 	private class HistoryLabel extends Label {
-
 		public HistoryLabel(String val) {
 			super(val);
 			FontManager.setFont(this, Constants.VAR_FONT_SIZE);
@@ -158,6 +158,4 @@ public class ValueFigure extends Figure {
 			return new Dimension(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH/2);
 		}
 	}
-
-
 }

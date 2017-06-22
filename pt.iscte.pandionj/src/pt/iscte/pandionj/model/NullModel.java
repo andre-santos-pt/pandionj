@@ -24,7 +24,7 @@ public class NullModel extends EntityModel<IJavaObject> {
 	}
 
 	@Override
-	public void setStep(int stepPointer) {
+	public void setStep(int step) {
 
 	}
 }

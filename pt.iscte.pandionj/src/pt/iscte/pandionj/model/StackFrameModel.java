@@ -9,26 +9,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaArray;
-import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
-import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
-import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.swt.widgets.Display;
 
 import com.google.common.collect.Multimap;
 import com.sun.jdi.ArrayReference;
@@ -37,7 +29,6 @@ import com.sun.jdi.StringReference;
 import com.sun.jdi.Value;
 
 import pt.iscte.pandionj.ParserManager;
-import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
 import pt.iscte.pandionj.parser.exception.JavaException;
 import pt.iscte.pandionj.parser.exception.JavaException.ArrayOutOfBounds;
@@ -46,19 +37,16 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 
 
-//@SuppressWarnings("restriction")
-public class StackFrameModel extends Observable {
+@SuppressWarnings("restriction")
+public class StackFrameModel extends DisplayUpdateObservable {
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
-//	private Map<Long, EntityModel<?>> objects;
-//	private Map<Long, EntityModel<?>> looseObjects;
 
 	private ParserResult codeAnalysis;
 	private IFile srcFile;
 	private IJavaProject javaProject;
 
 	private String invExpression;
-	private Value returnValue;
 
 	private boolean obsolete;
 	private String exceptionType;
@@ -72,6 +60,8 @@ public class StackFrameModel extends Observable {
 
 	private int lastLine;
 
+	private Value returnValue;
+	
 	//	private StackFrameImpl underlyingFrame;
 
 	public StackFrameModel(RuntimeModel runtime, IJavaStackFrame frame) {
@@ -87,8 +77,6 @@ public class StackFrameModel extends Observable {
 		this.runtime = runtime;
 		this.frame = frame;
 		vars = new LinkedHashMap<>();
-//		objects = new HashMap<>();
-//		looseObjects = new HashMap<>();
 		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		codeAnalysis = ParserManager.getParserResult(srcFile);
 		javaProject = JavaCore.create(srcFile.getProject());
@@ -158,6 +146,7 @@ public class StackFrameModel extends Observable {
 //					}
 //				});
 //		}
+		
 		if(hasChanged()) {
 			step++;
 			stepPointer = step;
@@ -172,23 +161,13 @@ public class StackFrameModel extends Observable {
 		notifyObservers(newVars);
 	}
 
-	public void setReturnValue(Value returnValue) {
-		this.returnValue = returnValue;
-		obsolete = true;
-		setChanged();
-		notifyObservers(Collections.emptyList());
-	}
+	
 
 	public void setObsolete() {
 		obsolete = true;
 		setChanged();
 		notifyObservers(Collections.emptyList());
 	}
-
-	//	public Object getReturnValue() {
-	//		assert returnValue != null;
-	//		return returnValue.toString();
-	//	}
 
 	private List<VariableModel<?>> handleVariables() {
 		List<VariableModel<?>> newVars = new ArrayList<>();
@@ -317,7 +296,6 @@ public class StackFrameModel extends Observable {
 
 	public Collection<VariableModel<?>> getInstanceVariables() {
 		return vars.values().stream().filter((v) -> !v.isStatic()).collect(Collectors.toList());
-		//		return Collections.unmodifiableCollection(vars.values());
 	}
 
 
@@ -334,64 +312,6 @@ public class StackFrameModel extends Observable {
 		}
 		return refs;
 	}
-	
-
-	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
-		return runtime.getObject(obj, loose, this);
-	}
-	
-//	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
-//		assert !obj.isNull();
-//		try {
-//			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
-//			if(e == null) {
-//				if(obj.getJavaType() instanceof IJavaArrayType) {
-//					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
-//					if(componentType instanceof IJavaReferenceType)
-//						e = new ArrayReferenceModel((IJavaArray) obj, this);
-//					else
-//						e = new ArrayPrimitiveModel((IJavaArray) obj, this);
-//				}
-//				else {
-//					e = new ObjectModel(obj, this);
-//				}
-//
-//				if(loose) {
-//					looseObjects.put(obj.getUniqueId(), e);
-//				}
-//				else {
-//					objects.put(obj.getUniqueId(), e);
-//				}
-//				setChanged();
-//			}
-//			return e;
-//		}
-//		catch(DebugException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
-
-
-
-
-//	public void simulateGC() {
-//		boolean removals = false;
-//		Iterator<Entry<Long, EntityModel<?>>> iterator = objects.entrySet().iterator();
-//		while(iterator.hasNext()) {
-//			Entry<Long, EntityModel<?>> e = iterator.next();
-//			if(!vars.containsValue(e.getValue())) {
-//				iterator.remove();
-//				removals = true;
-//			}
-//		}
-//		if(removals) {
-//			setChanged();
-//			notifyObservers(Collections.emptyList());
-//		}
-//
-//	}
-
 
 
 	private String calcString() {
@@ -489,6 +409,13 @@ public class StackFrameModel extends Observable {
 
 	}
 	
+	public void setReturnValue(Value returnValue) {
+		this.returnValue = returnValue;
+		obsolete = true;
+		setChanged();
+		notifyObservers(Collections.emptyList());
+	}
+	
 	public String getInvocationExpression() {
 		if(isObsolete() && returnValue != null && !returnValue.toString().equals("(void)"))
 			return invExpression + " = " + valueToString(returnValue);
@@ -504,23 +431,7 @@ public class StackFrameModel extends Observable {
 
 
 
-	public void registerObserver(Observer o) {
-		addObserver(o);
-	}
-
-	public void registerDisplayObserver(Observer obs) {
-		addObserver(new Observer() {
-			public void update(Observable o, Object arg) {
-				Display.getDefault().asyncExec(() -> {
-					obs.update(o, arg);
-				});
-			}
-		});
-	}
-
-
 	public void processException(String exceptionType, int line) {
-		//		if(exception.equals(ArrayIndexOutOfBoundsException.class.getName()))
 		this.exceptionType = exceptionType;
 
 		Collection<JavaException> collection = codeAnalysis.lineExceptions.get(line);
@@ -535,28 +446,8 @@ public class StackFrameModel extends Observable {
 		notifyObservers(Collections.emptyList());
 	}
 
-
-
-	//	public void objectReferenceChanged() {
-	//		setChanged();
-	//		notifyObservers(Collections.emptyList());
-	//	}
-
 	public IJavaProject getJavaProject() {
 		return javaProject;
-	}
-
-//	public Collection<EntityModel<?>> getLooseObjects() {
-//		return Collections.unmodifiableCollection(looseObjects.values());
-//	}
-
-	private Collection<EntityModel<?>> getReferencedObjects() {
-		List<EntityModel<?>> list = new ArrayList<>();
-		for (VariableModel<?> var : vars.values()) {
-			if(var instanceof ReferenceModel)
-				list.add(((ReferenceModel) var).getModelTarget());
-		}
-		return list;
 	}
 
 	public boolean isObsolete() {
@@ -588,9 +479,6 @@ public class StackFrameModel extends Observable {
 			stepPointer = step;
 			for(VariableModel<?> var : vars.values())
 				var.setStep(stepPointer);
-
-//			for(EntityModel<?> ent : objects.values())
-//				ent.setStep(stepPointer);
 		}
 		setChanged();
 		notifyObservers(Collections.emptyList());
@@ -603,12 +491,6 @@ public class StackFrameModel extends Observable {
 	public RuntimeModel getRuntime() {
 		return runtime;
 	}
-
-
-
-
-
-
 
 
 

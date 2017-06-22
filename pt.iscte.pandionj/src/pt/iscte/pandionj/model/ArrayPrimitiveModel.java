@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-
-import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 
 
 // TODO limit size?
@@ -37,11 +34,6 @@ public class ArrayPrimitiveModel extends ArrayModel {
 		return getComponentType().matches("float|double");
 	}
 	
-//	@Override
-//	protected IFigure createArrayFigure() {
-//		return new ArrayPrimitiveFigure(this);
-//	}
-	
 	boolean updateInternal(int i, int step) {
 		return values.get(i).update(step);
 	}
@@ -54,6 +46,5 @@ public class ArrayPrimitiveModel extends ArrayModel {
 	public void setStep(int stepPointer) {
 		for(ValueModel val : values)
 			val.setStep(stepPointer);
-
 	}
 }
