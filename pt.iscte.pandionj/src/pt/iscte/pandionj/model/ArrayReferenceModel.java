@@ -19,12 +19,12 @@ public class ArrayReferenceModel extends ArrayModel {
 	}
 
 	@Override
-	protected void initArray(IJavaArray array, RuntimeModel runtime) {
+	protected void initArray(IJavaArray array) {
 		try {
 			references = new ArrayList<>(array.getLength());
 			IVariable[] variables = array.getVariables();
 			for(int i = 0; i < variables.length; i++) {
-				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, runtime);
+				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, getRuntimeModel());
 				references.add(referenceModel);
 			}
 		}

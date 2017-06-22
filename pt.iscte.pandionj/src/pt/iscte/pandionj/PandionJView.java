@@ -1,12 +1,8 @@
 package pt.iscte.pandionj;
 
-import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -25,7 +21,6 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -34,7 +29,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
-import org.osgi.framework.Bundle;
 
 import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.extensibility.PandionJUI;
@@ -42,7 +36,7 @@ import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
-// TODO reload everything on view init
+// TODO reload everything on view init ?
 public class PandionJView extends ViewPart { 
 	private static PandionJView instance;
 
@@ -87,14 +81,12 @@ public class PandionJView extends ViewPart {
 		stackView.setInput(model);
 		
 		debugEventListener = new DebugListener();
-		breakpointListener = new PandionJBreakpointListener(model);
-
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
-		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
 
-		populateToolBar();
+		breakpointListener = new PandionJBreakpointListener();
+		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
 		
-		setPartName("TEST");
+		populateToolBar();
 	}
 
 	private void populateToolBar() {
@@ -106,6 +98,7 @@ public class PandionJView extends ViewPart {
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
 		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
 		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
+		addMenuBarItems();
 	}
 
 
@@ -141,7 +134,7 @@ public class PandionJView extends ViewPart {
 
 		scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
 		area = new Composite(scroll, SWT.NONE);
-		area.setBackground(Constants.WHITE_COLOR);
+		area.setBackground(Constants.Colors.VIEW_BACKGROUND);
 
 		scroll.setContent(area);
 		scroll.setExpandHorizontal(true);
@@ -179,43 +172,38 @@ public class PandionJView extends ViewPart {
 	@Override
 	public void setFocus() {
 		scroll.setFocus();
-		contextService.activateContext("pt.iscte.pandionj.context"); // TODO constants
+		contextService.activateContext(Constants.CONTEXT_ID); // TODO constants
 	}
-
-	
 	
 	private class DebugListener implements IDebugEventSetListener {
 		public void handleDebugEvents(DebugEvent[] events) {
-			if(events.length > 0) {
+			if(events.length > 0 && !model.isTerminated()) {
 				DebugEvent e = events[0];
 				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 					IJavaThread thread = (IJavaThread) e.getSource();
 					executeInternal(() -> {
+						handleFrames(thread);
 						if(thread.getTopStackFrame().getLineNumber() == -1)
 							thread.resume();
-
-						handleFrames(thread);
 					});
 				}
-				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
-					breakpointListener.enableFilter();
-				}
-				else if(e.getKind() == DebugEvent.RESUME &&
-						(
-						e.getDetail() == DebugEvent.STEP_OVER || 
-						e.getDetail() == DebugEvent.STEP_RETURN || 
-						e.getDetail() == DebugEvent.CLIENT_REQUEST 
-						))  {
-					breakpointListener.disableFilter();
-				}
+//				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
+//					breakpointListener.enableFilter();
+//				}
+//				else if(e.getKind() == DebugEvent.RESUME &&
+//						(
+//						e.getDetail() == DebugEvent.STEP_OVER || 
+//						e.getDetail() == DebugEvent.STEP_RETURN || 
+//						e.getDetail() == DebugEvent.CLIENT_REQUEST 
+//						))  {
+//					breakpointListener.disableFilter();
+//				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
 					model.setTerminated();
 				}
 			}
 		}
 	}
-
-
 
 
 	void handleLinebreakPoint(IJavaThread thread) {
@@ -243,7 +231,6 @@ public class PandionJView extends ViewPart {
 
 	private void handleFrames(IJavaThread thread) {
 		assert thread != null;
-
 		if(stackLayout.topControl != scroll) {
 			Display.getDefault().syncExec(() -> {
 				stackLayout.topControl = scroll;
@@ -262,8 +249,36 @@ public class PandionJView extends ViewPart {
 	}
 
 
+	public void executeInternal(PandionJUI.DebugRun r) {
+		try {
+			r.run();
+		}
+		catch(DebugException e) {
+			model.setTerminated();
+		}
+	}
+
+	public <T> T executeInternal(PandionJUI.DebugOperation<T> r, T defaultValue) {
+		try {
+			return r.run();
+		}
+		catch(DebugException e) {
+			model.setTerminated();
+			return null;
+		}
+	}
+
+	
+	public void promptInvocation(IMethod method, InvocationAction action) {
+		stackLayout.topControl = invocationArea;
+		invocationArea.setMethod(method, action);
+		invocationArea.getParent().layout();
+		invocationArea.setFocus();
+	}
 
 
+
+	
 	private void addMenuBarItems() {
 		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
 		menuManager.add(new Action("highlight color") {
@@ -299,59 +314,8 @@ public class PandionJView extends ViewPart {
 		};
 		addToolbarAction(name, toggle, imageName, description, a);
 	}
-
 	
-//	public interface DebugOperation<T> {
-//		T run() throws DebugException;
-//	}
-//
-//	public interface DebugRun {
-//		void run() throws DebugException;
-//	}
-//
-//	public static <T> T execute(DebugOperation<T> r, T defaultValue)  {
-//		return instance.executeInternal(r, defaultValue);
-//	}
-//
-//	public static void execute(DebugRun r) {
-//		instance.executeInternal(r);
-//	}
-//
-//	public static void executeUpdate(DebugRun r) {
-//		Display.getDefault().asyncExec(() -> instance.executeInternal(r));
-//	}
-
-	public void executeInternal(PandionJUI.DebugRun r) {
-		try {
-			r.run();
-		}
-		catch(DebugException e) {
-			model.setTerminated();
-		}
-	}
-
-	public <T> T executeInternal(PandionJUI.DebugOperation<T> r, T defaultValue) {
-		try {
-			return r.run();
-		}
-		catch(DebugException e) {
-			model.setTerminated();
-			return null;
-		}
-	}
-
 	
-	public void promptInvocation(IMethod method, InvocationAction action) {
-		stackLayout.topControl = invocationArea;
-		invocationArea.setMethod(method, action);
-		invocationArea.getParent().layout();
-		invocationArea.setFocus();
-	}
-
-
-
-	
-
 
 
 	//	private IDebugContextListener debugUiListener;

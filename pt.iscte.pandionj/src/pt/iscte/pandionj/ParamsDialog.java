@@ -51,7 +51,7 @@ public class ParamsDialog {
 				int ii = i;
 				text.addFocusListener(new FocusAdapter() {
 					public void focusLost(FocusEvent e) {
-						text.setForeground(valid() ? null : Constants.ERROR_COLOR);
+						text.setForeground(valid() ? null : Constants.Colors.ERROR);
 					}
 
 					public void focusGained(FocusEvent e) {

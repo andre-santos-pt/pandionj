@@ -3,12 +3,9 @@ package pt.iscte.pandionj.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
@@ -16,7 +13,6 @@ import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.Constants;
-import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.model.ValueModel.Role;
@@ -37,21 +33,16 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	ArrayModel(IJavaArray array, RuntimeModel runtime) {
 		super(array, runtime);
 		vars = new HashMap<>();
-		init(array, runtime);
+		init(array);
+		initArray(array);
 	}
-
-//	protected IFigure createExtensionFigure() {
-//		if(extension == null)
-//			extension = ExtensionManager.getArrayExtension(this);
-//		return extension.createFigure(this);
-//	}
 
 	@Override
 	public boolean hasWidgetExtension() {
 		return extension != IArrayWidgetExtension.NULL_EXTENSION;
 	}
 
-	protected void init(IJavaArray array, RuntimeModel runtime) {
+	private void init(IJavaArray array) {
 		try {
 			elements = array.getValues();
 		} catch (DebugException e) {
@@ -60,11 +51,10 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		dimensions = getDimensions(array);
 		componentType = getComponentType(array);
 		prev = getValues();
-		initArray(array, runtime);
 	}
 
 
-	protected abstract void initArray(IJavaArray array, RuntimeModel runtime);
+	protected abstract void initArray(IJavaArray array);
 
 
 	public Object[] getValues() {
@@ -119,25 +109,25 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		return true;
 	}
 
-	private static boolean diff2(IJavaValue[] a, IJavaValue[] b, int dim) {
-		try {
-			if(a.length == b.length) {
-				for(int i = 0; i < a.length; i++) {
-					if(!a[i].isNull() && !b[i].isNull() && a[i].equals(b[i])) {
-						if(dim > 1 && diff2(((IJavaArray) a[i]).getValues(), ((IJavaArray) b[i]).getValues(), dim - 1))
-							return true;
-					}
-					else if(!a[i].equals(b[i]))
-						return true;
-				}
-				return false;
-			}
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-		}
-		return true;
-	}
+//	private static boolean diff2(IJavaValue[] a, IJavaValue[] b, int dim) {
+//		try {
+//			if(a.length == b.length) {
+//				for(int i = 0; i < a.length; i++) {
+//					if(!a[i].isNull() && !b[i].isNull() && a[i].equals(b[i])) {
+//						if(dim > 1 && diff2(((IJavaArray) a[i]).getValues(), ((IJavaArray) b[i]).getValues(), dim - 1))
+//							return true;
+//					}
+//					else if(!a[i].equals(b[i]))
+//						return true;
+//				}
+//				return false;
+//			}
+//		}
+//		catch(DebugException e) {
+//			e.printStackTrace();
+//		}
+//		return true;
+//	}
 
 	public final boolean update(int step) {
 		for(int i = 0; i < getLength(); i++)
@@ -159,9 +149,6 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	}
 
 	abstract boolean updateInternal(int i, int step);
-
-	
-	
 	
 	public int getLength() {
 		return elements.length;

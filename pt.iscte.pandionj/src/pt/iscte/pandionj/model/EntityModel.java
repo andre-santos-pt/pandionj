@@ -12,7 +12,6 @@ public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T>
 		super(runtime);
 		assert entity != null;
 		this.entity = entity;
-//		init(entity, runtime);
 	}
 	
 	@Override
@@ -20,7 +19,5 @@ public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T>
 		return entity;
 	}
 
-//	protected abstract void init(T entity, RuntimeModel runtime);
-	
-	public abstract boolean hasWidgetExtension(); // TODO push down?
+	public abstract boolean hasWidgetExtension();
 }

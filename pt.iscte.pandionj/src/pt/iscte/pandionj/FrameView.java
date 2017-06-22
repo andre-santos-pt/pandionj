@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -46,7 +45,7 @@ import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.model.VariableModel;
 
-class FrameView extends Composite implements Observer {
+class FrameView extends Composite {
 	GraphViewerZoomable viewer;
 	Composite compositeHeader;
 	Composite compositeViewer;
@@ -55,7 +54,7 @@ class FrameView extends Composite implements Observer {
 	GridData gridData;
 	Slider slider;
 
-	
+
 	public FrameView(Composite parent) {
 		super(parent, SWT.BORDER);
 		GridLayout layout = new GridLayout(1, false);
@@ -67,12 +66,12 @@ class FrameView extends Composite implements Observer {
 
 		header = new Label(compositeHeader, SWT.BORDER);
 		header.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
+
 		FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
 
 		slider = new Slider(compositeHeader, SWT.HORIZONTAL | SWT.BORDER);
 		slider.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		
+
 		slider.setMinimum(1);
 		slider.setMaximum(1);
 		slider.setIncrement(1);
@@ -84,8 +83,8 @@ class FrameView extends Composite implements Observer {
 					model.setStep(slider.getSelection()-1);
 					sel = slider.getSelection();
 					PandionJUI.navigateToLine(model.getSourceFile(), model.getStepLine());
+					//				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
 				}
-//				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
 			}
 		});
 
@@ -97,7 +96,7 @@ class FrameView extends Composite implements Observer {
 		viewer = new GraphViewerZoomable(compositeViewer, SWT.BORDER);
 		viewer.setContentProvider(new NodeProvider());
 		viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
-		
+
 		viewer.getGraphControl().setLayoutData(new GridData(parent.getBounds().width - Constants.MARGIN, Constants.MARGIN));
 		viewer.getGraphControl().setEnabled(true);
 		viewer.getGraphControl().setScrollBarVisibility(SWT.VERTICAL);
@@ -129,28 +128,28 @@ class FrameView extends Composite implements Observer {
 			}
 		});
 		// TODO CTRL +-
-				//		viewer.getGraphControl().addKeyListener(new KeyListener() {
-				//			
-				//			@Override
-				//			public void keyReleased(KeyEvent e) {
-				//				
-				//			}
-				//			
-				//			@Override
-				//			public void keyPressed(KeyEvent e) {
-				//			}
-				//		});
-		
+		//		viewer.getGraphControl().addKeyListener(new KeyListener() {
+		//			
+		//			@Override
+		//			public void keyReleased(KeyEvent e) {
+		//				
+		//			}
+		//			
+		//			@Override
+		//			public void keyPressed(KeyEvent e) {
+		//			}
+		//		});
+
 
 		header.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseDown(MouseEvent e) {
-//				setExpanded(!isExpanded());
-//				getParent().layout();
+				//				setExpanded(!isExpanded());
+				//				getParent().layout();
 			}
 		});
 
-		
+
 	}
 
 
@@ -159,15 +158,13 @@ class FrameView extends Composite implements Observer {
 		gridData.exclude = !expanded;
 		compositeViewer.setVisible(expanded);
 		compositeViewer.requestLayout();
-//		getParent().layout();
-//		if(expanded)
-//			navigateToLine(model.getSourceFile(), model.getLineNumber());
 	}
 
 	@Override
 	public void dispose() {
 		super.dispose();
-		this.model.deleteObserver(this);
+		model.deleteObserver(stackObserver);
+		model.getRuntime().deleteObserver(runtimeObserver);
 	}
 
 	public boolean isExpanded() {
@@ -179,87 +176,102 @@ class FrameView extends Composite implements Observer {
 	}
 
 	private void setError(String message) {
-		setBackground(Constants.ERROR_COLOR);
+		setBackground(Constants.Colors.ERROR);
 		header.setToolTipText(message);
 	}
 
-	private Point lastSize;
 	
-	
+
+
 	void setInput(StackFrameModel frameModel) {
 		Color c = frameModel.isObsolete() ? ColorManager.getColor(150, 150, 150) : null;
 		setBackground(c);
 
 		header.setToolTipText("");
-		
-		// TODO remove?
-		header.setToolTipText(frameModel.getSourceFile().getName() + " on line " + frameModel.getLineNumber());
-		
+
 		if(this.model != frameModel) {
 			this.model = frameModel;
-			this.model.registerDisplayObserver(this);
+			this.model.registerDisplayObserver(stackObserver);
+			this.model.getRuntime().registerDisplayObserver(runtimeObserver);
 			String headerText = frameModel.getInvocationExpression();
 			header.setText(headerText);
-//			compositeHeader.pack();
-			PandionJLayoutAlgorithm layoutAlg = new PandionJLayoutAlgorithm();
-			layoutAlg.addObserver((o,a) -> {
-				Display.getDefault().asyncExec(() -> {
-					Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-//					System.out.println(size + "   " + lastSize);
-					if(!size.equals(lastSize)) {
-						lastSize = size;
-						viewer.getGraphControl().setLayoutData(new GridData(getBounds().width - 20, size.y + Constants.MARGIN));
-						viewer.getGraphControl().requestLayout();
-						viewer.getGraphControl().scrollToY(size.y);
-					}
-				});
-			});
-			viewer.setLayoutAlgorithm(layoutAlg);
-			
-			if(frameModel.isObsolete())
-				setBackground(ColorManager.getColor(150, 150, 150));
 
-			//setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
+			PandionJLayoutAlgorithm layoutAlg = new PandionJLayoutAlgorithm();
+			layoutAlg.addObserver(viewSizeObserver);
+			viewer.setLayoutAlgorithm(layoutAlg);
+
+			updateLook();
+
 			setExpanded(true);
 			slider.setMinimum(1);
 			slider.setMaximum(1);
-			
+
 			viewer.setInput(frameModel);
 			viewer.setLabelProvider(new FigureProvider(frameModel));
-//			viewer.refresh();
 			viewer.applyLayout();
 		}
 	}
 
-
-	public void update(Observable o, Object list) {
-		List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
-		header.setText(model.getInvocationExpression());
-//		if(!newVars.isEmpty()) { // TODO repor
+	private Observer viewSizeObserver = new Observer() {
+		private Point lastSize;
+		
+		public void update(Observable o, Object arg) {
+			PandionJUI.executeUpdate(() -> {
+				Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+				if(!size.equals(lastSize)) {
+					lastSize = size;
+					viewer.getGraphControl().setLayoutData(new GridData(getBounds().width - 20, size.y + Constants.MARGIN));
+					viewer.getGraphControl().requestLayout();
+					viewer.getGraphControl().scrollToY(size.y);
+				}
+			});
+		}
+	};
+	
+	private Observer runtimeObserver = new Observer() {
+		public void update(Observable o, Object arg) {
+			updateLook();
 			viewer.refresh();
 			viewer.applyLayout();
-			
-		if(model.exceptionOccurred())
-			setError(model.getExceptionMessage());
-		else if(model.isObsolete()) {
-			setBackground(ColorManager.getColor(150, 150, 150));
+		}
+	};
+
+	private void updateLook() {
+		if(model.isObsolete()) {
+			setBackground(Constants.Colors.OBSOLETE);
 			setExpanded(false);
 		}
-	//	setExpanded(model.isExecutionFrame() || model.exceptionOccurred() || model.getCallStack().isTerminated());
-
-		slider.setMaximum(model.getRunningStep()+1);
-		slider.setSelection(model.getStepPointer()+1);
-		slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
-		
-//		stepText.setText(model.getRunningStep() + "");
+		else if(model.isExecutionFrame()) {
+			setBackground(Constants.Colors.INST_POINTER);
+			setExpanded(true);
+		}
+		else
+			setBackground(null);
 	}
 
+	private Observer stackObserver = new Observer() {
+		public void update(Observable o, Object list) {
+			@SuppressWarnings("unchecked")
+			List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
+			header.setText(model.getInvocationExpression());
+			if(!newVars.isEmpty()) { 
+				viewer.refresh();
+				viewer.applyLayout();
+			}
+			if(model.exceptionOccurred())
+				setError(model.getExceptionMessage());
 
-	
-	
-	
-	
-	
+
+			slider.setMaximum(model.getRunningStep()+1);
+			slider.setSelection(model.getStepPointer()+1);
+			slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
+		}
+	};
+
+
+
+
+
 	void copyToClipBoard() {
 		Graph item = viewer.getGraphControl();
 		Point p = item.computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -302,5 +314,5 @@ class FrameView extends Composite implements Observer {
 		gc.dispose();
 	}
 
-	
+
 }

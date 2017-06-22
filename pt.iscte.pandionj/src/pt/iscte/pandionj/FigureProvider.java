@@ -164,7 +164,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 
 	@Override
 	public Color getHighlightColor(Object rel) {
-		return Constants.SELECT_COLOR;
+		return Constants.Colors.SELECT;
 	}
 
 	@Override

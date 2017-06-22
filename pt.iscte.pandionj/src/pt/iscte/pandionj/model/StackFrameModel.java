@@ -23,10 +23,6 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import com.google.common.collect.Multimap;
-import com.sun.jdi.ArrayReference;
-import com.sun.jdi.CharValue;
-import com.sun.jdi.StringReference;
-import com.sun.jdi.Value;
 
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
@@ -37,49 +33,40 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 
 
-@SuppressWarnings("restriction")
 public class StackFrameModel extends DisplayUpdateObservable {
+	private RuntimeModel runtime;
 	private IJavaStackFrame frame;
 	private Map<String, VariableModel<?>> vars;
 
-	private ParserResult codeAnalysis;
 	private IFile srcFile;
+	private ParserResult codeAnalysis;
 	private IJavaProject javaProject;
 
+	private IJavaValue returnValue;
+	
 	private String invExpression;
 
 	private boolean obsolete;
 	private String exceptionType;
 
-	private RuntimeModel runtime;
-
 	private int step;
-
 	private int stepPointer;
 	private Map<Integer, Integer> stepLines;
 
 	private int lastLine;
 
-	private Value returnValue;
-	
-	//	private StackFrameImpl underlyingFrame;
-
 	public StackFrameModel(RuntimeModel runtime, IJavaStackFrame frame) {
-		//		JDIStackFrame jdif = (JDIStackFrame) frame;
-		//		try {
-		//			Field field = JDIStackFrame.class.getDeclaredField("fStackFrame");
-		//			field.setAccessible(true);
-		//			underlyingFrame = (StackFrameImpl) field.get(jdif);
-		//		} catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException e) {
-		//			e.printStackTrace();
-		//		} 
-
+		assert runtime != null && frame != null;
 		this.runtime = runtime;
 		this.frame = frame;
+		
 		vars = new LinkedHashMap<>();
-		srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
-		codeAnalysis = ParserManager.getParserResult(srcFile);
-		javaProject = JavaCore.create(srcFile.getProject());
+		Object sourceElement = frame.getLaunch().getSourceLocator().getSourceElement(frame);
+		if(sourceElement instanceof IFile) {
+			srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
+			codeAnalysis = ParserManager.getParserResult(srcFile);
+			javaProject = JavaCore.create(srcFile.getProject());
+		}
 
 		obsolete = false;
 		exceptionType = null;
@@ -93,14 +80,14 @@ public class StackFrameModel extends DisplayUpdateObservable {
 			e.printStackTrace();
 		}
 	}
+	
+	public RuntimeModel getRuntime() {
+		return runtime;
+	}
 
 	public boolean isExecutionFrame() {
 		return !runtime.isEmpty() && runtime.getTopFrame() == this;
 	}
-
-	//	public boolean matchesFrame(StackFrame uFrame) {
-	//		return underlyingFrame.equals(uFrame);
-	//	}
 
 	public IJavaStackFrame getStackFrame() {
 		return frame;
@@ -134,19 +121,6 @@ public class StackFrameModel extends DisplayUpdateObservable {
 
 	public void update() {
 		List<VariableModel<?>> newVars = handleVariables();
-
-//		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
-//			if(o instanceof ArrayModel && o.update(step))
-//				setChanged();
-//			else if(o instanceof ObjectModel)
-//				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
-//					public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
-//						if(object != null && object.update(step))
-//							setChanged();
-//					}
-//				});
-//		}
-		
 		if(hasChanged()) {
 			step++;
 			stepPointer = step;
@@ -172,7 +146,6 @@ public class StackFrameModel extends DisplayUpdateObservable {
 	private List<VariableModel<?>> handleVariables() {
 		List<VariableModel<?>> newVars = new ArrayList<>();
 		try {
-			// TODO getThis
 			Iterator<Entry<String, VariableModel<?>>> iterator = vars.entrySet().iterator();
 			while(iterator.hasNext()) {
 				Entry<String, VariableModel<?>> e = iterator.next();
@@ -228,8 +201,12 @@ public class StackFrameModel extends DisplayUpdateObservable {
 
 
 	private VariableModel<?> handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
+		if(jv.getClass().getSimpleName().equals("JDIReturnValueVariable")) {
+			runtime.setReturnOnFrame(this, (IJavaValue) jv.getValue());
+			return null;
+		}
+		
 		String varName = jv.getName();
-
 		IJavaValue value = (IJavaValue) jv.getValue();
 
 		if(vars.containsKey(varName)) {
@@ -323,8 +300,6 @@ public class StackFrameModel extends DisplayUpdateObservable {
 				IJavaValue value = (IJavaValue) localVariables[i].getValue();
 				args.add(valueToString(value));
 			}
-			//				args.add(localVariables[i].getValue().getValueString()); // TODO, add special chars '' ", arrays
-
 
 			if(frame.isStaticInitializer())
 				return frame.getDeclaringTypeName() + " (static initializer)";
@@ -373,7 +348,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 				return "\"" + value.getValueString() + "\"";
 
 			if(value instanceof IJavaObject)
-				return runtime.getObject((IJavaObject) value, false, this).toString();
+				return runtime.getObject((IJavaObject) value, false).toString();
 
 			return value.getValueString();
 		}
@@ -383,34 +358,9 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		}
 	}
 
-	private String valueToString(Value value) {
-		if(value instanceof ArrayReference) {
-			ArrayReference array = (ArrayReference) value;
-			List<Value> values = array.getValues();
-			String s = "";
-			for(Value v : values) {
-				if(!s.isEmpty())
-					s += ", ";
-				s += valueSpecialChars(v);
-			}
-			return "{" + s + "}";
-		}
-		else
-			return valueSpecialChars(value);
-	}
-
-	private String valueSpecialChars(Value value) {
-		if(value instanceof StringReference)
-			return "\"" + ((StringReference) value).value() + "\"";
-		else if(value instanceof CharValue)
-			return "'" + ((CharValue) value).charValue() + "'";
-		else
-			return value.toString();
-
-	}
 	
-	public void setReturnValue(Value returnValue) {
-		this.returnValue = returnValue;
+	public void setReturnValue(IJavaValue v) {
+		this.returnValue = v;
 		obsolete = true;
 		setChanged();
 		notifyObservers(Collections.emptyList());
@@ -428,8 +378,6 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		else
 			return toString();
 	}
-
-
 
 	public void processException(String exceptionType, int line) {
 		this.exceptionType = exceptionType;
@@ -450,6 +398,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		return javaProject;
 	}
 
+	
 	public boolean isObsolete() {
 		return obsolete;
 	}
@@ -460,10 +409,6 @@ public class StackFrameModel extends DisplayUpdateObservable {
 
 	public String getExceptionMessage() {
 		return exceptionType;
-	}
-
-	public RuntimeModel getCallStack() {
-		return runtime;
 	}
 
 	public int getRunningStep() {
@@ -487,135 +432,4 @@ public class StackFrameModel extends DisplayUpdateObservable {
 	public int getStepLine() {
 		return stepLines.get(stepPointer);
 	}
-
-	public RuntimeModel getRuntime() {
-		return runtime;
-	}
-
-
-
-
-
-	//	public IValue evalMethod(ObjectModel obj, String expression, boolean addToModel) {
-	//		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-	//		IWatchExpression newWatchExpression = expressionManager.newWatchExpression(expression);
-	//		newWatchExpression.evaluate();
-	//
-	//		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(frame.getModelIdentifier());
-	//		class Wrapper<T> {
-	//			T value = null;
-	//		};
-	//		Wrapper<IValue> res = new Wrapper<>();
-	//		Semaphore sem = new Semaphore(0);
-	//
-	//		IWatchExpressionListener valueListener = result -> {
-	//			try {
-	//				res.value = result.getValue();
-	//			} finally {
-	//				sem.release();
-	//			}
-	//		};
-	//		String refName = getReferenceNameTo2(obj);
-	//		//		System.out.println(refName);
-	//		if(refName == null)
-	//			return null;
-	//
-	//		String exp = refName + "." + expression;
-	//		delegate.evaluateExpression(exp, frame, valueListener);
-	//		try {
-	//			sem.acquire();
-	//		} catch (InterruptedException e) {
-	//			e.printStackTrace();
-	//		}
-	//		//		try {
-	//		if(res.value != null) {
-	//			try {
-	//				if(res.value instanceof IJavaPrimitiveValue)
-	//					MessageDialog.openInformation(Display.getDefault().getActiveShell(), exp, res.value.getValueString());
-	//				else if(res.value instanceof IJavaObject) {
-	//					IJavaObject o = (IJavaObject) res.value;
-	//					if(!o.isNull() && addToModel) {
-	//						getObject(o, addToModel);
-	//						setChanged();
-	//						notifyObservers();
-	//					}
-	//				}
-	//			}
-	//			catch (DebugException e) {
-	//				e.printStackTrace();
-	//			}
-	//		}
-	//
-	//		return res.value;
-	//		//		} catch (DebugException e) {
-	//		//			e.printStackTrace();
-	//		//		}
-	//		//		return null;
-	//	}
-
-
-
-	//	public void evalMethod2(ObjectModel obj, String expression, IWatchExpressionListener listener) {
-	//		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-	//
-	//		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(frame.getModelIdentifier());
-	//
-	//		String refName = getReferenceNameTo(obj);
-	//		if(refName == null)
-	//			return;
-	//
-	//		delegate.evaluateExpression(refName + "." + expression, frame, listener);
-	//	}
-	//	
-	//	
-	//	public String getReferenceNameTo(ModelElement<?> object) {
-	//		for(Entry<String, VariableModel<?>> e : vars.entrySet())
-	//			if(e.getValue() instanceof ReferenceModel && ((ReferenceModel) e.getValue()).getModelTarget().equals(object))
-	//				return e.getKey();
-	//
-	//		return null;
-	//	}
-
-
-	//	private static class PathVisitor implements SiblingVisitor {
-	//	ArrayList<String> path;
-	//	boolean found;
-	//	EntityModel<?> target;
-	//
-	//	public PathVisitor(EntityModel<?> target) {
-	//		path = new ArrayList<>();
-	//		this.target = target;
-	//		found = false;
-	//	}
-	//
-	//	public void visit(EntityModel<?> o, ObjectModel parent, int index, int depth, String field) {
-	//		if(!found) {
-	//			while(path.size() > 0 && path.size() >= depth)
-	//				path.remove(path.size()-1);
-	//
-	//			if(field != null)
-	//				path.add(field);
-	//
-	//			if(o.equals(target))
-	//				found = true;
-	//		}
-	//	}
-	//}
-
-	//public String getReferenceNameTo2(EntityModel<?> object) {
-	//	for(Entry<String, VariableModel<?>> e : vars.entrySet()) {
-	//		if(e.getValue() instanceof ReferenceModel) {
-	//			EntityModel<?> el = ((ReferenceModel) e.getValue()).getModelTarget();
-	//			if(el instanceof ObjectModel) {
-	//				PathVisitor v = new PathVisitor(object);
-	//				((ObjectModel) el).traverseSiblings(v, false);
-	//				if(v.found)
-	//					return  v.path.isEmpty() ? e.getKey() : e.getKey() + "." + String.join(".", v.path);
-	//			}
-	//		}
-	//	}
-	//	return null;
-	//}
-
-
 }

@@ -171,7 +171,7 @@ public class LaunchCommand extends AbstractHandler {
 			URL find = FileLocator.find(bundle, new Path("lib/agent.jar"), null);
 			URL resolve = FileLocator.resolve(find);
 			if(!mainMethod.exists()) {
-				String args =  "-javaagent:" + resolve.getPath() + "=" + agentArgs;
+				String args =  "-javaagent:\"" + resolve.getPath() + "=" + agentArgs + "\"";
 				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, args);
 			}
 		} catch (IOException e1) {

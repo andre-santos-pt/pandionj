@@ -126,7 +126,7 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 				img.dispose();
 			}
 			else {
-				g.setForegroundColor(Constants.ERROR_COLOR);
+				g.setForegroundColor(Constants.Colors.ERROR);
 				g.drawText("Invalid matrix", r.getLocation().translate(5, 15));
 			}
 		}

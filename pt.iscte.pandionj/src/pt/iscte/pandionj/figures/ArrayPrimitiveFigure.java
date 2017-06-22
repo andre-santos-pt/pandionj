@@ -4,12 +4,11 @@ import static pt.iscte.pandionj.Constants.ARRAY_POSITION_SPACING;
 import static pt.iscte.pandionj.Constants.ARROW_EDGE;
 import static pt.iscte.pandionj.Constants.ARROW_LINE_WIDTH;
 import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
-import static pt.iscte.pandionj.Constants.OBJECT_COLOR;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
 import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
 import static pt.iscte.pandionj.Constants.getOneColGridLayout;
-import static pt.iscte.pandionj.Constants.getVarColor;
+import static pt.iscte.pandionj.Constants.Colors.OBJECT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,7 +57,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		lowerOffSet = 0;
 
 		setCornerDimensions(OBJECT_CORNER);
-		setBackgroundColor(OBJECT_COLOR);
+		setBackgroundColor(OBJECT);
 
 		layout = getOneColGridLayout();
 		setLayoutManager(layout);
@@ -176,7 +175,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 
 		Var v = vars.get(id);
 		if(v == null) {
-			v = new Var(id, index, bound, isBar, getVarColor(vars.size()));
+			v = new Var(id, index, bound, isBar, Constants.Colors.getVarColor(vars.size()));
 			vars.put(id, v);
 		}
 		else {
@@ -322,7 +321,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		protected void paintFigure(Graphics graphics) {
 			super.paintFigure(graphics);
 			if(outOfBounds) {
-				graphics.setForegroundColor(error ? Constants.ERROR_COLOR : ColorConstants.gray);
+				graphics.setForegroundColor(error ? Constants.Colors.ERROR : ColorConstants.gray);
 				graphics.setLineWidth(error ? Constants.ARRAY_LINE_WIDTH*2 : Constants.ARRAY_LINE_WIDTH);
 				graphics.setLineDashOffset(2.5f);
 				graphics.setLineStyle(Graphics.LINE_DASH);
@@ -348,7 +347,7 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		public void markError() {
 			error = true;
 			Display.getDefault().asyncExec(() -> {
-				indexLabel.setForegroundColor(Constants.ERROR_COLOR);
+				indexLabel.setForegroundColor(Constants.Colors.ERROR);
 				setToolTip(new Label("Illegal access to position " + indexLabel.getText()));
 				repaint();
 			});

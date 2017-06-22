@@ -24,15 +24,8 @@ class ValueLabel extends Label {
 		model.registerDisplayObserver((o,a) -> updateValue());
 		dirty = false;
 
-		// TODO repor com RuntimeModel
-//		model.getStackFrame().registerDisplayObserver(new Observer() {
-//			public void update(Observable o, Object arg) {
-//				setBackgroundColor(dirty ? Constants.HIGHLIGHT_COLOR : ColorConstants.white);
-//				dirty = false;
-//			}
-//		});
 		model.getRuntimeModel().registerDisplayObserver((o,a) -> {
-			setBackgroundColor(dirty ? Constants.HIGHLIGHT_COLOR : ColorConstants.white);
+			setBackgroundColor(dirty ? Constants.Colors.HIGHLIGHT : ColorConstants.white);
 			dirty = false;
 		});
 	}
@@ -42,7 +35,7 @@ class ValueLabel extends Label {
 		dirty = !getText().equals(textValue);
 		setText(textValue);
 		if(model.isBoolean())
-			setForegroundColor(textValue.equals(Boolean.TRUE.toString()) ? ColorConstants.lightGreen : ColorConstants.red);
+			setForegroundColor(textValue.equals(Boolean.TRUE.toString()) ? ColorConstants.green : ColorConstants.red);
 
 		setToolTip(new Label(textValue));
 		if(!model.isBoolean() && textValue.length() > (model.isDecimal() ? 5 : 2))

@@ -1,6 +1,9 @@
 package pt.iscte.pandionj;
 
 
+import java.util.Observable;
+import java.util.Observer;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
@@ -16,7 +19,7 @@ import pt.iscte.pandionj.model.StackFrameModel;
 
 
 // TODO adjust size
-class StaticArea extends Composite {
+class StaticArea extends Composite implements Observer {
 
 	private GraphViewerZoomable viewer;
 	private StackFrameModel model;
@@ -48,17 +51,20 @@ class StaticArea extends Composite {
 			}
 			);
 			// TODO if there are changes
-			model.addObserver((o,a) -> {
-				Display.getDefault().asyncExec(() -> {
-					viewer.refresh();
-					layout();
-				});
-			});
+			model.registerDisplayObserver(this);
 		}
-		//TODO: observer
-
 	}
 
+	@Override
+	public void update(Observable o, Object arg) {
+		if(model.isObsolete()) {
+			viewer.refresh();
+			viewer.applyLayout();
+		}
+		else {
+			model.unregisterObserver(this);
+		}
+	}
 
 	static class StaticNodeProvider implements IGraphEntityRelationshipContentProvider {
 		@Override

@@ -31,7 +31,6 @@ public class PandionJAgent2 {
 			className = split[0];
 			expression = split[1];
 		}
-		System.out.println(expression);
 		inst.addTransformer(new ClassFileTransformer() {
 			@Override
 			public byte[] transform(ClassLoader classLoader, String s, Class<?> aClass, ProtectionDomain protectionDomain, byte[] bytes) throws IllegalClassFormatException {

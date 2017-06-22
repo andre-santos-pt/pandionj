@@ -1,10 +1,10 @@
 package pt.iscte.pandionj.model;
 
-import java.util.List;
-
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.Signature;
+import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
-import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
 public enum PrimitiveType {
@@ -143,6 +143,36 @@ public enum PrimitiveType {
 		return false;
 	}
 
+	
+	public static IJavaValue[] createValues(IMethod m, String[] values, IJavaDebugTarget debugger) throws DebugException {
+		assert values.length == m.getNumberOfParameters();
+		IJavaValue[] v = new IJavaValue[values.length];
+		for(int i = 0; i < v.length; i++) {
+			String pType = Signature.toString(m.getParameterTypes()[i]);
+			if(pType.equals(char.class.getName()))			v[i] = debugger.newValue(values[i].charAt(0));
+			else if(pType.equals(boolean.class.getName())) 	v[i] = debugger.newValue(Boolean.parseBoolean(values[i]));
+			else if(pType.equals(byte.class.getName())) 		v[i] = debugger.newValue(Byte.parseByte(values[i]));
+			else if(pType.equals(short.class.getName()))		v[i] = debugger.newValue(Short.parseShort(values[i]));
+			else if(pType.equals(int.class.getName())) 		v[i] = debugger.newValue(Integer.parseInt(values[i]));
+			else if(pType.equals(long.class.getName())) 		v[i] = debugger.newValue(Long.parseLong(values[i]));
+			else if(pType.equals(float.class.getName())) 	v[i] = debugger.newValue(Float.parseFloat(values[i]));
+			else if(pType.equals(double.class.getName())) 	v[i] = debugger.newValue(Double.parseDouble(values[i]));
+
+			else if(pType.equals(String.class.getName()) && values[i].matches("\"(.)*\"")) 	
+				v[i] = debugger.newValue(values[i].substring(1, values[i].length()-1));
+
+			else if(values[i].equals("null"))
+				v[i] = debugger.nullValue();
+			else {
+				IJavaValue val = (IJavaValue) debugger.findVariable(values[i]);
+				v[i] = val == null ? debugger.nullValue() : val;
+			}
+		}
+
+		return v;
+
+	}
+	
 //	static Object[] getPrimitiveWrapperValues(IJavaValue[] elements, String type) {
 //	Object[] array = new Object[elements.length];
 //	switch(type) {

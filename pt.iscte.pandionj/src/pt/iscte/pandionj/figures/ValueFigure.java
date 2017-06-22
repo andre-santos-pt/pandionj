@@ -84,15 +84,15 @@ public class ValueFigure extends Figure {
 				}
 			}
 		});
-		
+
 		// TODO repor com RuntimeModel
-//		model.getStackFrame().registerDisplayObserver(new Observer() {
-//			@Override
-//			public void update(Observable o, Object arg) {
-//				setVisible(model.isWithinScope());
-//			}
-//		});
-//		model.getRuntimeModel().registerDisplayObserver((o,a) -> setVisible(model.isWithinScope()));
+		//		model.getStackFrame().registerDisplayObserver(new Observer() {
+		//			@Override
+		//			public void update(Observable o, Object arg) {
+		//				setVisible(model.isWithinScope());
+		//			}
+		//		});
+		//		model.getRuntimeModel().registerDisplayObserver((o,a) -> setVisible(model.isWithinScope()));
 
 		if(Role.GATHERER.equals(role)) {
 			extraFigure = new Label("");
@@ -120,19 +120,17 @@ public class ValueFigure extends Figure {
 		String parcels = v.toString();
 		for(int i = 1; i < history.size(); i++) {
 			Object x = pType.getValue(history.get(i));
-			if(pType.equals(PrimitiveType.BYTE))		parcels += " + " + ((Byte) 		x - (Byte) v);
-			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 	x - (Short) v);
+			if(pType.equals(PrimitiveType.BYTE))			parcels += " + " + ((Byte) 		x - (Byte) v);
+			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 		x - (Short) v);
 			else if(pType.equals(PrimitiveType.INT)) 	parcels += " + " + ((Integer) 	x - (Integer) v);
 			else if(pType.equals(PrimitiveType.LONG))	parcels += " + " + ((Long) 		x - (Long) v);
-			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 	x - (Float) v);
-			else if(pType.equals(PrimitiveType.DOUBLE)) parcels += " + " + ((Double) 	x - (Double) v);
+			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 		x - (Float) v);
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
 			v = x;
 		}
 
 		return "(" + parcels + ")";
 	}
-
-
 
 
 

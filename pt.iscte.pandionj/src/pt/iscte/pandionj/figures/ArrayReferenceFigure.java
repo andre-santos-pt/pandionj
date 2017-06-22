@@ -1,6 +1,6 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.OBJECT_COLOR;
+import static pt.iscte.pandionj.Constants.Colors.*;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
 import static pt.iscte.pandionj.Constants.getOneColGridLayout;
 
@@ -115,7 +115,7 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 		layout2.marginWidth = 0;
 		
 		setCornerDimensions(OBJECT_CORNER);
-		setBackgroundColor(OBJECT_COLOR);
+		setBackgroundColor(OBJECT);
 		setOpaque(false);
 		
 	
@@ -243,7 +243,7 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 
 		Var v = vars.get(id);
 		if(v == null) {
-			v = new Var(id, index, bound, Constants.getVarColor(vars.size()));
+			v = new Var(id, index, bound, Constants.Colors.getVarColor(vars.size()));
 			vars.put(id, v);
 		}
 		else {
@@ -254,7 +254,7 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 	}
 
 	public void addVarBound(int index, String id) {
-		vars.put(id, new Var(id, index, -1, Constants.getVarColor(vars.size())));
+		vars.put(id, new Var(id, index, -1, Constants.Colors.getVarColor(vars.size())));
 		repaint();
 	}
 
@@ -295,7 +295,7 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 			
 			setLayoutManager(layout);
 			valueLabel = new Label("");
-			valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR);
+			valueLabel.setBackgroundColor(Constants.Colors.ARRAY_POSITION);
 			valueLabel.setOpaque(true);
 			if(!outOfBounds) {
 				LineBorder lineBorder = new LineBorder(ColorConstants.black, Constants.POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);

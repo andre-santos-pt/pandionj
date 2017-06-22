@@ -139,6 +139,7 @@ public class ExtensionManager {
 			return compositeFig;
 		}
 
+		// TODO BUG: field values on null / undefined fields
 		private void addChildFigures(IObjectModel m, String attName) {
 			for (String tag : tags.get(attName)) {
 				IArrayWidgetExtension ext = arrayExtensions.get(tag);

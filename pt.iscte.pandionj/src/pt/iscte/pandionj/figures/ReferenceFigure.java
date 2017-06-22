@@ -11,7 +11,6 @@ import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.model.NullModel;
 import pt.iscte.pandionj.model.ReferenceModel;
 
-// TODO click to variable
 public class ReferenceFigure extends Label {
 
 	public ReferenceFigure(ReferenceModel model) {
@@ -24,7 +23,7 @@ public class ReferenceFigure extends Label {
 		model.registerDisplayObserver(new Observer() {
 			public void update(Observable o, Object arg) {
 				if(model.getModelTarget() instanceof NullModel)
-					setToolTip(new Label("null reference"));
+					setToolTip(new Label("null"));
 				else
 					setToolTip(null);
 			}

@@ -13,11 +13,16 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
 import pt.iscte.pandionj.Constants;
@@ -44,9 +49,16 @@ public interface PandionJUI {
 			IMarker finalMarker = marker;
 			executeUpdate(() -> {
 				try {
-					IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), finalMarker);
+				IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				ITextEditor editor = (ITextEditor) IDE.openEditor(activePage, file);
+				IDocument document = editor.getDocumentProvider().getDocument(editor.getEditorInput());
+				int offset = document.getLineOffset(line);
+				editor.selectAndReveal(offset, 0);
+//					IDE.openEditor(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage(), finalMarker);
 				} catch ( PartInitException e ) {
 					//complain
+				} catch (BadLocationException e) {
+
 				}
 			});
 		} catch ( CoreException e1 ) {

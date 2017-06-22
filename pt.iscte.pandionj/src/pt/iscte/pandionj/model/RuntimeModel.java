@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
 import java.util.stream.Collectors;
 
 import org.eclipse.debug.core.DebugException;
@@ -22,10 +21,7 @@ import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
-
-import com.sun.jdi.Location;
-import com.sun.jdi.StackFrame;
-import com.sun.jdi.Value;
+import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
@@ -68,7 +64,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		
 		terminated = false;
 	
-		// TODO ERRO disconnected
+		// TODO ERRO disconnected : launch is the same??
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel && o.update(step))
 				setChanged();
@@ -121,6 +117,11 @@ public class RuntimeModel extends DisplayUpdateObservable {
 				callStack.add(new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i]));
 			setChanged();
 		}
+		notifyObservers();
+	}
+	
+	public void refresh() {
+		setChanged();
 		notifyObservers();
 	}
 	
@@ -192,18 +193,12 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		return terminated;
 	}
 
-//	public List<VariableModel<?>> getStaticVariables() {
-//		return getTopFrame().getStaticVariables();
-//	}
-	
-
-
 	public int getRunningStep() {
 		return step;
 	}
 	
 	
-	EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose, StackFrameModel stackFrame) {
+	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
 		assert !obj.isNull();
 		try {
 			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
@@ -218,7 +213,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 				else {
 					IType type = null;
 					try {
-						type = stackFrame.getJavaProject().findType(obj.getJavaType().getName());
+						type = getTopFrame().getJavaProject().findType(obj.getJavaType().getName());
 					} catch (JavaModelException e1) {
 						e1.printStackTrace();
 					}
@@ -246,6 +241,14 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	}
 	
 	
+	public void setReturnOnFrame(StackFrameModel current, IJavaValue returnValue) {
+		assert callStack.contains(current);
+		
+		int i = callStack.indexOf(current);
+		if(i + 1 < callStack.size()) {
+			callStack.get(i+1).setReturnValue(returnValue);
+		}
+	}
 	
 	
 	public void simulateGC() {
@@ -272,31 +275,26 @@ public class RuntimeModel extends DisplayUpdateObservable {
 //	}
 	
 	
-	private boolean sameLocation(Location loc, StackFrameModel frame) {
-		try {
-			return loc.declaringType().name().equals(frame.getStackFrame().getDeclaringTypeName()) &&
-					loc.lineNumber() == frame.getLineNumber();
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return false;
-		}
-	}
-	public void setReturnValue(List<StackFrame> frames, Value returnValue) {
-		if(frames.size() == countActive) {
-			for(int i = 0; i < frames.size(); i++) {
-				if(!sameLocation(frames.get(i).location(), callStack.get(countActive-1-i)))
-					return;
-			
-			}
-			callStack.get(countActive-1).setReturnValue(returnValue);
-		}
-	}
-
-
 	
+//	public void setReturnValue(List<StackFrame> frames, Value returnValue) {
+//		if(frames.size() == countActive) {
+//			for(int i = 0; i < frames.size(); i++) {
+//				if(!sameLocation(frames.get(i).location(), callStack.get(countActive-1-i)))
+//					return;
+//			
+//			}
+//			callStack.get(countActive-1).setReturnValue(returnValue);
+//		}
+//	}
 
-	
-
-
+//	private boolean sameLocation(Location loc, StackFrameModel frame) {
+//		try {
+//			return loc.declaringType().name().equals(frame.getStackFrame().getDeclaringTypeName()) &&
+//					loc.lineNumber() == frame.getLineNumber();
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return false;
+//		}
+//	}
 	
 }

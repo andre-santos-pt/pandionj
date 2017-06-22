@@ -42,7 +42,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 			return EMPTY;
 		
 		List<ModelElement<?>> elements = getElementsInternal(model.getInstanceVariables());
-//		elements.addAll(model.getLooseObjects()); // TODO repor loose objects
+		elements.addAll(model.getRuntime().getLooseObjects());
 		return elements.toArray();
 	}
 

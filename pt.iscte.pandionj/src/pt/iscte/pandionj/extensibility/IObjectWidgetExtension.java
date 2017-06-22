@@ -41,7 +41,7 @@ public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
 		@Override
 		public IFigure createFigure(IObjectModel e) {
 			Label label = new Label();
-			label.setForegroundColor(Constants.OBJECT_HEADER_FONT_COLOR);
+			label.setForegroundColor(Constants.Colors.OBJECT_HEADER_FONT);
 			FontManager.setFont(label, Constants.OBJECT_HEADER_FONT_SIZE);
 			label.setText(e.toStringValue());
 			return label;
