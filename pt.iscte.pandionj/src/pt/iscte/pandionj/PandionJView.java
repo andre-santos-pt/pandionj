@@ -89,17 +89,7 @@ public class PandionJView extends ViewPart {
 		populateToolBar();
 	}
 
-	private void populateToolBar() {
-		toolBar = getViewSite().getActionBars().getToolBarManager();
-		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
-		
-		// TODO zoom all
-		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
-		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
-		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
-		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
-		addMenuBarItems();
-	}
+	
 
 
 	@Override
@@ -245,7 +235,6 @@ public class PandionJView extends ViewPart {
 			staticArea.setInput(frame);
 			PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber());
 		}
-		
 	}
 
 
@@ -277,6 +266,23 @@ public class PandionJView extends ViewPart {
 	}
 
 
+	
+	
+	
+	
+	
+	
+	private void populateToolBar() {
+		toolBar = getViewSite().getActionBars().getToolBarManager();
+		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
+		
+		// TODO zoom all
+		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
+		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
+		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
+		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
+		addMenuBarItems();
+	}
 
 	
 	private void addMenuBarItems() {

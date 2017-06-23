@@ -15,15 +15,15 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.ValueModel.Role;
 
 public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArrayModel {
 
 	private IJavaValue[] elements;
-
 	private int dimensions;
 	private String componentType;
-	private Map<String, ValueModel> vars;
+	private Map<String, ValueModel> varsRoles;
 
 	private String varError;
 
@@ -32,7 +32,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	
 	ArrayModel(IJavaArray array, RuntimeModel runtime) {
 		super(array, runtime);
-		vars = new HashMap<>();
+		varsRoles = new HashMap<>();
 		init(array);
 		initArray(array);
 	}
@@ -208,11 +208,11 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 
 	public void addVar(ValueModel v) {
 		assert v.getRole().equals(Role.ARRAY_ITERATOR);
-		if(!vars.containsKey(v.getName())) {
-			vars.put(v.getName(), v);
+		if(!varsRoles.containsKey(v.getName())) {
+			varsRoles.put(v.getName(), v);
 			v.addObserver((o,a) -> {
 				if(!v.isWithinScope()) {
-					vars.remove(v.getName()); 
+					varsRoles.remove(v.getName()); 
 					setChanged();
 					notifyObservers(v);
 				}
@@ -228,8 +228,8 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		notifyObservers(new RuntimeException(var));
 	}
 
-	public Collection<ValueModel> getVars() {
-		return Collections.unmodifiableCollection(vars.values());
+	public Collection<IVariableModel> getVars() {
+		return Collections.unmodifiableCollection(varsRoles.values());
 	}
 
 	@Override

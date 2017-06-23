@@ -7,13 +7,13 @@ import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.model.ValueModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 
 class ValueLabel extends Label {
-	ValueModel model;
+	IVariableModel model;
 	boolean dirty;
 
-	ValueLabel(ValueModel model) {
+	ValueLabel(IVariableModel model) {
 		this.model = model;
 		setOpaque(true);
 		FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
@@ -23,11 +23,6 @@ class ValueLabel extends Label {
 		updateValue();
 		model.registerDisplayObserver((o,a) -> updateValue());
 		dirty = false;
-
-		model.getRuntimeModel().registerDisplayObserver((o,a) -> {
-			setBackgroundColor(dirty ? Constants.Colors.HIGHLIGHT : ColorConstants.white);
-			dirty = false;
-		});
 	}
 
 	private void updateValue() {
@@ -42,5 +37,10 @@ class ValueLabel extends Label {
 			FontManager.setFont(this, (int) (Constants.VALUE_FONT_SIZE*.66));
 		else
 			FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
+	}
+	
+	void updateBackground() {
+		setBackgroundColor(dirty ? Constants.Colors.HIGHLIGHT : ColorConstants.white);
+		dirty = false;
 	}
 }

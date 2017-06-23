@@ -18,4 +18,6 @@ Require-Bundle: pt.iscte.pandionj.parser,
  org.eclipse.text
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: pt.iscte.pandionj.extensibility
+Export-Package: pt.iscte.pandionj.extensibility,
+ pt.iscte.pandionj.figures,
+ pt.iscte.pandionj.model

@@ -2,9 +2,7 @@ package pt.iscte.pandionj.model;
 
 import org.eclipse.jdt.debug.core.IJavaObject;
 
-import pt.iscte.pandionj.extensibility.IEntityModel;
-
-public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T> implements IEntityModel {
+public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T> {
 
 	private final T entity;
 	

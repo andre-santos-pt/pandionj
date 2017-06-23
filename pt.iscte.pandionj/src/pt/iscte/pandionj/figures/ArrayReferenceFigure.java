@@ -1,15 +1,13 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.Colors.*;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
 import static pt.iscte.pandionj.Constants.getOneColGridLayout;
+import static pt.iscte.pandionj.Constants.Colors.OBJECT;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 
 import org.eclipse.draw2d.AbstractConnectionAnchor;
 import org.eclipse.draw2d.ColorConstants;
@@ -26,80 +24,27 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.model.ArrayReferenceModel;
-import pt.iscte.pandionj.model.ReferenceModel;
+import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.figures.Var.Direction;
 
-//TODO limit size
-//TODO tool tip type
+//TODO limit size (to Constants.ARRAY_LENGTH_LIMIT)
 public class ArrayReferenceFigure extends RoundedRectangle {
-
-	enum Direction {
-		NONE, FORWARD, BACKWARD;
-	}
-
-	private class Var {
-		final String id;
-		final Color color;
-		List<Integer> indexes;
-		Object bound;
-		Var(String id, int index, Object bound, Color color) {
-			assert bound == null || bound instanceof Integer || bound instanceof String && vars.containsKey((String) bound);
-			this.id = id;
-			this.indexes = new ArrayList<>();
-			indexes.add(index);
-			this.bound = bound;
-			this.color = color;
-		}
-
-		int getCurrentIndex() {
-			return indexes.get(indexes.size()-1);
-		}
-
-		boolean isBounded() {
-			return bound != null;
-		}
-
-		int getBound() {
-			if(bound == null || bound instanceof String && !vars.containsKey((String) bound))
-				return -1;
-			else
-				return bound instanceof Integer ? (Integer) bound : vars.get((String) bound).getCurrentIndex();
-		}
-
-		Direction getDirection() {
-			int i =  getCurrentIndex() ;
-			int b = getBound();
-			return b == -1 || b == i ? Direction.NONE : i < b ? Direction.FORWARD : Direction.BACKWARD;
-		}
-
-		public void updateIndex(int index) {
-			indexes.add(index);			
-		}
-
-		public List<Integer> getIndexes() {
-			return indexes;
-		}
-
-
-	}
-
 	private final int N;
 	private int lowerOffSet;
 	private List<Position> positions;
 	private Map<String, Var> vars;
 
 	private GridLayout layout;
-	private ArrayReferenceModel model;
+	private IArrayModel model;
 
 	private Figure positionsFig;
 
 	
-	public ArrayReferenceFigure(ArrayReferenceModel model) {
+	public ArrayReferenceFigure(IArrayModel model) {
 		this.model = model;
 		N = model.getLength();
 		lowerOffSet = 0;
@@ -109,7 +54,7 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 
 		GridLayout layout = new GridLayout(1, true);
 		setLayoutManager(layout);
-	
+		
 		GridLayout layout2 = new GridLayout(1, true);
 		layout2.horizontalSpacing = Constants.ARRAY_POSITION_SPACING;
 		layout2.marginWidth = 0;
@@ -164,7 +109,6 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 
 
 	public void addOutOfUpperBound(int index) {
-
 		for(int i = 0; i < index-(N-1); i++) {
 			Position p = new Position(positions.size(), true);
 			positionsFig.add(p);
@@ -224,8 +168,6 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 					a = a.getTranslated(0, Constants.ARROW_EDGE*2);
 					graphics.drawLine(to, a);
 				}
-
-
 			}
 			y += Constants.ARROW_EDGE*2;
 		}
@@ -243,7 +185,7 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 
 		Var v = vars.get(id);
 		if(v == null) {
-			v = new Var(id, index, bound, Constants.Colors.getVarColor(vars.size()));
+			v = new Var(id, index, bound, false, Constants.Colors.getVarColor(vars.size()));
 			vars.put(id, v);
 		}
 		else {
@@ -254,7 +196,7 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 	}
 
 	public void addVarBound(int index, String id) {
-		vars.put(id, new Var(id, index, -1, Constants.Colors.getVarColor(vars.size())));
+		vars.put(id, new Var(id, index, -1, false, Constants.Colors.getVarColor(vars.size())));
 		repaint();
 	}
 
@@ -298,11 +240,11 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 			valueLabel.setBackgroundColor(Constants.Colors.ARRAY_POSITION);
 			valueLabel.setOpaque(true);
 			if(!outOfBounds) {
-				LineBorder lineBorder = new LineBorder(ColorConstants.black, Constants.POSITION_LINE_WIDTH, outOfBounds ? Graphics.LINE_DASH : Graphics.LINE_SOLID);
+				LineBorder lineBorder = new LineBorder(ColorConstants.black, Constants.POSITION_LINE_WIDTH, Graphics.LINE_SOLID);
 				valueLabel.setBorder(lineBorder);
 			}
 			layout.setConstraint(valueLabel, layoutData);
-//			add(valueLabel);
+//			add(valueLabel); // ?
 
 
 		}
@@ -323,6 +265,8 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 				graphics.drawRectangle(getLocation().x, getLocation().y, Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH-1);
 			}
 		}
+		
+		
 		
 		private class Anchor extends AbstractConnectionAnchor {
 			public Anchor(IFigure fig) {

@@ -1,5 +1,8 @@
 package pt.iscte.pandionj.model;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
@@ -29,11 +32,11 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 		};
 		
 		static Role matchRole(Variable v) {
-			if(v instanceof FixedValue) 			return FIXED_VALUE;
+			if(v instanceof FixedValue) 				return FIXED_VALUE;
 			else if(v instanceof Gatherer)			return GATHERER;
 			else if(v instanceof ArrayIterator)		return ARRAY_ITERATOR;
 			else if(v instanceof MostWantedHolder)	return MOST_WANTED_HOLDER;
-			else									return NONE;
+			else										return NONE;
 		}
 	}
 	
@@ -71,17 +74,25 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	}
 
 	public boolean isDecimal() {
-		return getType().matches("float|double"); // TODO Float/Double??
+		return getTypeName().matches("float|double"); // TODO Float/Double??
 	}
 
 	public boolean isBoolean() {
-		return getType().equals("boolean"); // TODO Boolean?
+		return getTypeName().equals("boolean"); // TODO Boolean?
 	}
 	
 	public Role getRole() {
 		return role;
 	}
 
+	@Override
+	public Variable getVariableRole() {
+		return var;
+	}
+
 	
-	
+	@Override
+	public Collection<String> getTags() {
+		return Collections.emptyList();
+	}
 }

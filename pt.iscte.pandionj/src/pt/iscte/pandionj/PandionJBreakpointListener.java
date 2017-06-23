@@ -10,8 +10,6 @@ import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 
-import pt.iscte.pandionj.model.RuntimeModel;
-
 
 public class PandionJBreakpointListener implements IJavaBreakpointListener { // IJDIEventListener {
 

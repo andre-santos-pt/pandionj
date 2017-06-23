@@ -7,7 +7,9 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
-public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T> {
+import pt.iscte.pandionj.extensibility.IVariableModel;
+
+public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T> implements IVariableModel {
 
 	protected final IJavaVariable variable;
 	private StackFrameModel stackFrame;  // optional (if owned by variable)
@@ -122,7 +124,15 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 		return isStatic;
 	}
 
-	public String getType() {
+	public boolean isDecimal() {
+		return false;
+	}
+
+	public boolean isBoolean() {
+		return false;
+	}
+	
+	public String getTypeName() {
 		return type;
 	}
 
@@ -148,14 +158,16 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 		return history.get(stepPointer).value;
 	}
 
-	public String getCurrentValue() {
+	public String getCurrentValue() { // TODO: convert to normal type?
 		return history.get(stepPointer).value.toString();
 	}
 
-	public List<T> getHistory() {
-		List<T> hist = new ArrayList<>();
+	public List<String> getHistory() {
+		List<String> hist = new ArrayList<>();
 		for(StepValue sv : history)
-			hist.add(sv.value);
+			hist.add(sv.value.toString());
 		return hist;
 	}
+	
+	
 }

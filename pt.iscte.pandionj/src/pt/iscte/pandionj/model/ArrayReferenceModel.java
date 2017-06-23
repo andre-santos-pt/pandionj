@@ -34,8 +34,9 @@ public class ArrayReferenceModel extends ArrayModel {
 	}
 
 	@Override
-	boolean updateInternal(int i, int step) {
-		ReferenceModel refModel = references.get(i);
+	boolean updateInternal(int index, int step) {
+		assert index >= 0 && index < getLength();
+		ReferenceModel refModel = references.get(index);
 		return refModel.update(step);
 	}
 
@@ -47,5 +48,16 @@ public class ArrayReferenceModel extends ArrayModel {
 	public void setStep(int stepPointer) {
 		for(ReferenceModel ref : references)
 			ref.setStep(stepPointer);
+	}
+
+	@Override
+	public boolean isDecimal() {
+		return false;
+	}
+
+	@Override
+	public VariableModel<?> getElementModel(int index) {
+		assert index >= 0 && index < getLength();
+		return references.get(index);
 	}
 }

@@ -15,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-import java.util.Observer;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
@@ -28,31 +27,31 @@ import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.model.ArrayPrimitiveModel;
-import pt.iscte.pandionj.model.ValueModel;
+import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.PandionJUI;
+import pt.iscte.pandionj.figures.Var.Direction;
 
 
-//TODO tool tip type
 public class ArrayPrimitiveFigure extends RoundedRectangle {
-	private final ArrayPrimitiveModel model;
+	private final IArrayModel model; // array being displayed
 	private final int N; // array length
 	private List<Position> positions; // existing array positions
-	private Map<String, Var> vars; // variables associated with the array
+	private Map<String, Var> vars; // variables (roles) associated with the array
 	private int lowerOffSet; // number of positions below the lower bound (given by vars)
 
 	private GridLayout layout;
 	private Figure positionsFig;
 
-	public ArrayPrimitiveFigure(ArrayPrimitiveModel model) {
+	public ArrayPrimitiveFigure(IArrayModel model) {
 		this.model = model;
 		model.registerObserver((o, indexes) -> observerAction(o, indexes));
-		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
+		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT); // limit size
 		positions = new ArrayList<>(N+2);
 		lowerOffSet = 0;
 
@@ -65,31 +64,22 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		Label lengthLabel = new Label("length = " + N);
 		setToolTip(lengthLabel);
 
-		positionsFig = createPositionsFig(model);
+		positionsFig = createPositionsFig();
 		add(positionsFig);
 
 		vars = new HashMap<>();
-		for(ValueModel v : model.getVars())
+		for(IVariableModel v : model.getVars())
 			addVariable(v);
-		
-		model.registerDisplayObserver(new Observer() {
-			@Override
-			public void update(Observable o, Object arg) {
-				// TODO repor
-//				setVisible(model.isWithinScope());
-			}
-		});
 	}
 
 	@Override
 	public Dimension getPreferredSize(int wHint, int hHint) { 
-		// (positions.get(0).getBounds().width + ARRAY_POSITION_SPACING*2)
 		int varSpace = vars.size() * 40;
 		return super.getPreferredSize(wHint, hHint).expand(0, varSpace);
 	}
 
 
-	private Figure createPositionsFig(ArrayPrimitiveModel model) {
+	private Figure createPositionsFig() {
 		Figure fig = new Figure();
 		GridLayout layout = new GridLayout(Math.max(1, N), true);
 		layout.horizontalSpacing = ARRAY_POSITION_SPACING;
@@ -104,7 +94,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		else {
 			for(int i = 0; i < N; i++) {
 				Position p = new Position(i, false);
-				//				p.setValue(model.getElementString(i));
 				fig.add(p);
 				positions.add(p);
 			}
@@ -146,25 +135,43 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		return positions.get(lowerOffSet + arrayIndex);
 	}
 
-	private void addVariable(ValueModel varModel) {
-		Display.getDefault().asyncExec(() -> setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false));
-		varModel.registerObserver(new Observer() {
-			@Override
-			public void update(Observable o, Object arg) {
-				Display.getDefault().asyncExec(() -> {
-					setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false);
-					repaint();
-				});
-			}
-		});
+	private void addVariable(IVariableModel varModel) {
+//		PandionJUI.executeUpdate(() -> setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false));
+//		varModel.registerDisplayObserver((o, a) -> {
+//			setVar(varModel.getName(), Integer.parseInt(varModel.getCurrentValue()), null, false);
+//			repaint();
+//		});
 	}
 
-	private void removeVariable(ValueModel varModel) {
+	private void removeVariable(IVariableModel varModel) {
 		vars.remove(varModel.getName());
-		Display.getDefault().syncExec(() -> repaint());
+		PandionJUI.executeUpdate(() -> repaint());
 	}
 
 
+//	private void setVar2(ValueModel varModel) {
+//		int index = Integer.parseInt(varModel.getCurrentValue());
+//		ensureOutOfBounds(index);
+//
+//		if(bound instanceof Integer) {
+//			int boundI = (Integer) bound;
+//			ensureOutOfBounds(boundI);
+//		}
+//
+//		Var v = vars.get(id);
+//		if(v == null) {
+//			v = new Var(id, index, bound, isBar, Constants.Colors.getVarColor(vars.size()));
+//			vars.put(id, v);
+//		}
+//		else {
+//			v.updateIndex(index);
+//			v.bound = bound;
+//			v.isBar = isBar;
+//		}
+//		repaint();
+//	}
+	
+	
 	private void setVar(String id, int index, Object bound, boolean isBar) {
 		ensureOutOfBounds(index);
 
@@ -192,19 +199,10 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			for(int i : indexes) {
 				if(i >= Constants.ARRAY_LENGTH_LIMIT)
 					return;
-
-				//				for(int j = 0; j < N; j++) {
-				//					Position p = getValidPosition(j);
-				//					if(j == i)
-				//						p.highlight();
-				//					else
-				//						p.unhighlight();
-				//				}
-				//				getValidPosition(i).setValue(model.getElementString(i));
 			}
 		}
-		else if(arg instanceof ValueModel) {
-			ValueModel v = (ValueModel) arg;
+		else if(arg instanceof IVariableModel) {
+			IVariableModel v = (IVariableModel) arg;
 			if(v.isWithinScope())
 				addVariable(v);
 			else
@@ -218,7 +216,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			}
 		}
 	}
-
 
 
 	@Override
@@ -282,7 +279,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 		private boolean error;
 		private Label indexLabel;
 
-
 		public Position(Integer index, boolean outOfBounds) {
 			this.outOfBounds = outOfBounds;
 
@@ -291,14 +287,9 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			GridLayout layout = Constants.getOneColGridLayout();
 			setLayoutManager(layout);
 
-//			ValueModel m = model.getElementModel(index); 
-//			valueLabel = new ValueLabel(m);
-//			layout.setConstraint(valueLabel, layoutData);
-//			add(valueLabel);
-
 			// TODO out of bounds
 			if(!outOfBounds) {
-				ValueModel m = model.getElementModel(index); 
+				IVariableModel m = model.getElementModel(index); 
 				valueLabel = new ValueLabel(m);
 				layout.setConstraint(valueLabel, layoutData);
 				add(valueLabel);
@@ -329,21 +320,6 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			}
 		}
 
-		//		public void setValue(String value) {
-		//			Display.getDefault().asyncExec(() -> {
-		//				valueLabel.setText(value);
-		//				valueLabel.setToolTip(new Label(value));
-		//			});
-		//		}
-
-		//		public void highlight() {
-		//			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.HIGHLIGHT_COLOR));
-		//		}
-
-		//		public void unhighlight() {
-		//			Display.getDefault().asyncExec(() -> valueLabel.setBackgroundColor(Constants.ARRAY_POSITION_COLOR));
-		//		}
-
 		public void markError() {
 			error = true;
 			Display.getDefault().asyncExec(() -> {
@@ -353,80 +329,4 @@ public class ArrayPrimitiveFigure extends RoundedRectangle {
 			});
 		}
 	}
-
-
-	//	public void highlight(int i) {
-	//		Position p = getValidPosition(i);
-	//		if(p != null)
-	//			p.highlight();
-	//	}
-
-	//	public void unhighlight(int i) {
-	//		Position p = getValidPosition(i);
-	//		if(p != null)
-	//			p.unhighlight();
-	//	}
-
-
-	private enum Direction {
-		NONE, FORWARD, BACKWARD;
-	}
-
-	private class Var {
-		final String id;
-		final Color color;
-		List<Integer> indexes;
-		Object bound;
-		boolean isBar;
-		boolean markError;
-
-		Var(String id, int index, Object bound, boolean isBar, Color color) {
-			assert bound == null || bound instanceof Integer || bound instanceof String && vars.containsKey((String) bound);
-			this.id = id;
-			this.indexes = new ArrayList<>();
-			indexes.add(index);
-			this.bound = bound;
-			this.color = color;
-			this.isBar = isBar;
-			markError = false;
-		}
-
-		int getCurrentIndex() {
-			return indexes.get(indexes.size()-1);
-		}
-
-		boolean isBounded() {
-			return bound != null;
-		}
-
-		int getBound() {
-			if(bound == null || bound instanceof String && !vars.containsKey((String) bound))
-				return -1;
-			else
-				return bound instanceof Integer ? (Integer) bound : vars.get((String) bound).getCurrentIndex();
-		}
-
-		Direction getDirection() {
-			int i = getCurrentIndex() ;
-			int b = getBound();
-			return b == -1 || b == i ? Direction.NONE : i < b ? Direction.FORWARD : Direction.BACKWARD;
-		}
-
-		boolean isBar() {
-			return isBar;
-		}
-
-		void updateIndex(int index) {
-			indexes.add(index);			
-		}
-
-		List<Integer> getIndexes() {
-			return indexes;
-		}
-
-		void markError() {
-			markError = true;
-		}
-	}
-
 }

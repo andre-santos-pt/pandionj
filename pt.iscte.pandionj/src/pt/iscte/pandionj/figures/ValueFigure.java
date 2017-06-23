@@ -20,6 +20,7 @@ import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.PrimitiveType;
 import pt.iscte.pandionj.model.ValueModel;
 import pt.iscte.pandionj.model.ValueModel.Role;
@@ -27,10 +28,10 @@ import pt.iscte.pandionj.parser.variable.Gatherer;
 
 public class ValueFigure extends Figure {
 	private ValueLabel valueLabel;
-	private ValueModel model;
+	private IVariableModel model;
 	private Figure extraFigure;
 
-	public ValueFigure(ValueModel model, Role role) {
+	public ValueFigure(IVariableModel model, Role role) {
 		this.model = model;
 
 		GridLayout layout = new GridLayout(3, false);
@@ -63,13 +64,8 @@ public class ValueFigure extends Figure {
 						((Label) extraFigure).setText(parcels());
 
 					else if(Role.MOST_WANTED_HOLDER.equals(role)) {
-						List<IJavaPrimitiveValue> history = model.getHistory();
-						String val = "?";
-						try {
-							val = history.get(history.size()-2).getValueString();
-						} catch (DebugException e) {
-							e.printStackTrace();
-						}
+						List<String> history = model.getHistory();
+						String val = history.get(history.size()-2);
 						extraFigure.add(new HistoryLabel(val), 0);
 					}
 					layout();
@@ -77,7 +73,7 @@ public class ValueFigure extends Figure {
 			}
 
 			private String parcels() {
-				switch(((Gatherer) model.getVariable()).operation) {
+				switch(((Gatherer) model.getVariableRole()).operation) {
 				case SUMMATION: return sumParcels();
 				case PRODUCT_SERIES: return "?"; // TODO product parcels
 				default: return "";
@@ -110,30 +106,41 @@ public class ValueFigure extends Figure {
 
 	// TODO: prodParcels
 	private String sumParcels() {
-		List<IJavaPrimitiveValue> history = model.getHistory();
+		List<String> history = model.getHistory();
 		if(history.size() == 1)
 			return "";
 
-		PrimitiveType pType = PrimitiveType.match(model.getType());
+		PrimitiveType pType = PrimitiveType.match(model.getTypeName());
 
-		Object v = pType.getValue(history.get(0));
-		String parcels = v.toString();
-		for(int i = 1; i < history.size(); i++) {
-			Object x = pType.getValue(history.get(i));
-			if(pType.equals(PrimitiveType.BYTE))			parcels += " + " + ((Byte) 		x - (Byte) v);
-			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 		x - (Short) v);
-			else if(pType.equals(PrimitiveType.INT)) 	parcels += " + " + ((Integer) 	x - (Integer) v);
-			else if(pType.equals(PrimitiveType.LONG))	parcels += " + " + ((Long) 		x - (Long) v);
-			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 		x - (Float) v);
-			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
-			v = x;
-		}
+		// TODO
+//		String v = history.get(0);
+//		String parcels = v
+//		for(int i = 1; i < history.size(); i++) {
+//			Object x = pType.getValue(history.get(i));
+//			if(pType.equals(PrimitiveType.BYTE))			parcels += " + " + ((Byte) 		x - (Byte) v);
+//			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 		x - (Short) v);
+//			else if(pType.equals(PrimitiveType.INT)) 	parcels += " + " + ((Integer) 	x - (Integer) v);
+//			else if(pType.equals(PrimitiveType.LONG))	parcels += " + " + ((Long) 		x - (Long) v);
+//			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 		x - (Float) v);
+//			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
+//			v = x;
+//		}
 
+//		Object v = pType.getValue(history.get(0));
+//		String parcels = v.toString();
+//		for(int i = 1; i < history.size(); i++) {
+//			Object x = pType.getValue(history.get(i));
+//			if(pType.equals(PrimitiveType.BYTE))			parcels += " + " + ((Byte) 		x - (Byte) v);
+//			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 		x - (Short) v);
+//			else if(pType.equals(PrimitiveType.INT)) 	parcels += " + " + ((Integer) 	x - (Integer) v);
+//			else if(pType.equals(PrimitiveType.LONG))	parcels += " + " + ((Long) 		x - (Long) v);
+//			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 		x - (Float) v);
+//			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
+//			v = x;
+//		}
+		String parcels = "?";
 		return "(" + parcels + ")";
 	}
-
-
-
 
 
 	private class HistoryLabel extends Label {

@@ -5,7 +5,9 @@ import java.util.Observer;
 
 import org.eclipse.swt.widgets.Display;
 
-public class DisplayUpdateObservable extends Observable {
+import pt.iscte.pandionj.extensibility.IObservableModel;
+
+public class DisplayUpdateObservable extends Observable implements IObservableModel {
 
 	public void registerObserver(Observer o) {
 		addObserver(o);
@@ -24,4 +26,5 @@ public class DisplayUpdateObservable extends Observable {
 	public void unregisterObserver(Observer o) {
 		deleteObserver(o);
 	}
+
 }

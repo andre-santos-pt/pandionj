@@ -21,10 +21,12 @@ import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
+import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
@@ -35,6 +37,8 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
+import com.sun.jdi.InvocationException;
+import com.sun.jdi.ObjectReference;
 
 import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.ParserManager;
@@ -42,6 +46,7 @@ import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.IVisibleMethod;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 	private Map<String, ValueModel> values;
@@ -120,6 +125,10 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return jType;
 	}
 
+	public String getTypeName() {
+		return jType.getFullyQualifiedName();
+	}
+	
 	public boolean includeMethod(IMethod method) {
 		return extension.includeMethod(method.getElementName());
 
@@ -459,11 +468,13 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private boolean isMethodVisible(IMethod m) {
 		try {
 			int f = m.getFlags();
-			return 	
+			return 	extension.includeMethod(m.getElementName()) && 
+					(
 					!jType.isMember() && jType.getPackageFragment().isDefaultPackage() && 
 					(Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
 					||
-					Flags.isPublic(f);
+					Flags.isPublic(f)
+					);
 		}
 		catch (JavaModelException e) {
 			e.printStackTrace();
@@ -471,7 +482,34 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-	
+	private static class VisibleMethod implements IVisibleMethod {
+		String name;
+		List<String> paramTypes;
+		VisibleMethod(IMethod method) {
+			name = method.getElementName();
+			paramTypes = new ArrayList<>();
+			String[] parameterTypes = method.getParameterTypes();
+			for(String pType : parameterTypes)
+				paramTypes.add(Signature.getSignatureQualifier(pType) + "." + Signature.getSignatureSimpleName(pType));
+		}
+		@Override
+		public String getName() {
+			return name;
+		}
+		
+		@Override
+		public List<String> getParameterTypes() {
+			return paramTypes;
+		}
+	}
+	@Override
+	public List<IVisibleMethod> getVisibleMethods() {
+		List<IVisibleMethod> list = new ArrayList<>();
+		for(IMethod m : getInstanceMethods())
+			if(isMethodVisible(m))
+				list.add(new VisibleMethod(m));
+		return list;
+	}
 	
 //	public void invoke(IMethod method, IWatchExpressionListener listener, IJavaValue ... args) {
 //		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
@@ -485,23 +523,66 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 //		}
 //	}
 	
-	@Override
-	public void invoke(String methodName, IWatchExpressionListener listener, IJavaValue[] args) {
-		// TODO
-		
-	}
 	
-	public void invoke(IMethod method, IWatchExpressionListener listener, String ... args) {
+	public void invoke(String methodName, InvocationResult listener, String ... args) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
 		Collection<ReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
 		if(!referencesTo.isEmpty()) {
-			String exp = referencesTo.iterator().next().getName() + "." + method.getElementName() + "(" + String.join(", ", args) + ")";
-			System.out.println(exp);
-			delegate.evaluateExpression(exp , stackFrame.getStackFrame(), listener);
+			String exp = referencesTo.iterator().next().getName() + "." + methodName + "(" + String.join(", ", args) + ")";
+			
+			delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(listener));
 		}
 	}
+	
+	private class ExpressionListener implements IWatchExpressionListener {
+		InvocationResult listener;
+		ExpressionListener(InvocationResult listener) {
+			this.listener = listener;
+		}
+		
+		@Override
+		public void watchEvaluationFinished(IWatchExpressionResult result) {
+			//			try {
+			IJavaValue ret = (IJavaValue) result.getValue();
+			if(ret != null) {
+				if(ret instanceof IJavaObject) {
+			
+				EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject((IJavaObject) ret, true);
+					System.out.println(ret + " == " + object);
+				}
+				else
+					listener.valueReturn(ret.toString());
+//				processInvocationResult((IJavaValue) result.getValue()); 
+			}
+			else {
+				DebugException exception = result.getException();
+				if(exception.getCause() instanceof InvocationException) {
+					InvocationException e = (InvocationException) exception.getCause();
+					ObjectReference exception2 = e.exception();
+				}
+			}
+		}
+
+//		private void processInvocationResult(IJavaValue ret) {
+//			if(ret instanceof IJavaObject) {
+//				EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject((IJavaObject) ret, true);
+//				System.out.println(ret + " == " + object);
+//			}
+//			else if(ret instanceof IJavaPrimitiveValue) {
+//				PandionJUI.executeUpdate(() -> {
+//					try {
+//						//					new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
+//						new ResultDialog(Display.getDefault().getActiveShell(), 400, 400, ret.getValueString()).open();
+//					} catch (DebugException e) {
+//						e.printStackTrace();
+//					}
+//				});
+//			}
+//			getRuntimeModel().refresh();
+//		}
+	};
 
 	// TODO: attribute tags
 	public Multimap<String, String> getTags() {
