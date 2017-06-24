@@ -38,12 +38,11 @@ import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.ArrayIndexVariableModel;
 
 
-public class ArrayPrimitiveFigure extends Figure {
+public class ArrayPrimitiveFigure extends RoundedRectangle {
 	private final IArrayModel model; // array being displayed
 	private final int N; // array length
 	private List<Position> positions; // existing array positions
 	private Map<String, ArrayIndexVariableModel> vars; // variables (roles) associated with the array
-	private int lowerOffSet; // number of positions below the lower bound (given by vars)
 
 	private GridLayout outerLayout;
 	private GridLayout arrayLayout;
@@ -54,10 +53,9 @@ public class ArrayPrimitiveFigure extends Figure {
 		model.registerObserver((o, indexes) -> observerAction(o, indexes));
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT); // limit size
 		positions = new ArrayList<>(N+2);
-		lowerOffSet = 0;
 
-//		setCornerDimensions(OBJECT_CORNER);
-		setBackgroundColor(ColorConstants.white);
+		setCornerDimensions(OBJECT_CORNER);
+		setBackgroundColor(Constants.Colors.OBJECT);
 
 		outerLayout = getOneColGridLayout();
 		setLayoutManager(outerLayout);
@@ -92,7 +90,6 @@ public class ArrayPrimitiveFigure extends Figure {
 			Position p = new Position(-1);
 			fig.add(p);
 			positions.add(p);
-			lowerOffSet = 1;
 		}
 		else {
 			for(int i = -1; i <= N; i++) {

@@ -257,6 +257,7 @@ class FrameView extends Composite {
 
 	private Observer stackObserver = new Observer() {
 		public void update(Observable o, Object list) {
+			header.setText(model.getInvocationExpression());
 			if(model.isObsolete()) {
 				model.unregisterObserver(stackObserver);
 				model.getRuntime().unregisterObserver(runtimeObserver);
@@ -264,7 +265,6 @@ class FrameView extends Composite {
 			else {
 				@SuppressWarnings("unchecked")
 				List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
-				header.setText(model.getInvocationExpression());
 				if(!newVars.isEmpty()) { 
 					viewer.refresh();
 					viewer.applyLayout();

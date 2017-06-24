@@ -34,7 +34,7 @@ public class MockVariable extends DisplayUpdateObservable implements IVariableMo
 	}
 	@Override
 	public String getCurrentValue() {
-		return value.toString();
+		return value == null ? "null" : value.toString();
 	}
 	@Override
 	public boolean isDecimal() {

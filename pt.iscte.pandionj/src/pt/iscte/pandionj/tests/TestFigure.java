@@ -52,7 +52,7 @@ public class TestFigure {
 	
 
 	private static void createDiagram(IFigure root) {
-		MockArray array = new MockArray("int", 1,2,3);
+		MockArray array = new MockArray("int", new Integer[30]);
 		MockVariable var = new MockVariable("int", "i", null, 0);
 		array.addVariableRole(var);
 		ArrayPrimitiveFigure fig = new ArrayPrimitiveFigure(array);
