@@ -33,7 +33,7 @@ public interface Constants {
 	int POSITION_LINE_WIDTH = 1;
 	int INDEX_FONT_SIZE = 10;
 
-	int ARRAY_POSITION_SPACING = 1;
+	int ARRAY_POSITION_SPACING = 2;
 	int ARRAY_LINE_WIDTH = 1;
 
 	int ARRAY_LENGTH_LIMIT = 20;

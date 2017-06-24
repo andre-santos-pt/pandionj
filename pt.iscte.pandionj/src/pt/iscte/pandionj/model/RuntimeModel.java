@@ -45,7 +45,6 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		terminated = false;
 		step = 0;
 	}
-
 	
 	public IJavaDebugTarget getDebugTarget() {
 		return (IJavaDebugTarget) launch.getDebugTarget();
@@ -87,6 +86,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 			callStack.get(i).update();
 		
 		step++;
+		setChanged();
 		notifyObservers(step);
 	}
 	
@@ -187,6 +187,8 @@ public class RuntimeModel extends DisplayUpdateObservable {
 
 	public void setTerminated() {
 		terminated = true;
+		setChanged();
+		notifyObservers();
 	}
 	
 	public boolean isTerminated() {

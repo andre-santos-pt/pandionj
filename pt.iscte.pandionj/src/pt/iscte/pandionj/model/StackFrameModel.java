@@ -42,11 +42,10 @@ public class StackFrameModel extends DisplayUpdateObservable {
 	private ParserResult codeAnalysis;
 	private IJavaProject javaProject;
 
-	private IJavaValue returnValue;
-	
 	private String invExpression;
 
 	private boolean obsolete;
+	private String returnValue;
 	private String exceptionType;
 
 	private int step;
@@ -308,7 +307,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 			else {
 				String ret = frame.getMethodName() + "(" + String.join(", ", args) + ")";
 				if(returnValue != null)
-					ret += " = " + valueToString(returnValue);
+					ret += " = " + returnValue;
 				return ret;
 			}
 		} catch (DebugException e) {
@@ -360,15 +359,15 @@ public class StackFrameModel extends DisplayUpdateObservable {
 
 	
 	public void setReturnValue(IJavaValue v) {
-		this.returnValue = v;
+		this.returnValue = valueToString(v);
 		obsolete = true;
 		setChanged();
 		notifyObservers(Collections.emptyList());
 	}
 	
 	public String getInvocationExpression() {
-		if(isObsolete() && returnValue != null && !returnValue.toString().equals("(void)"))
-			return invExpression + " = " + valueToString(returnValue);
+		if(isObsolete() && returnValue != null && !returnValue.equals("(void)"))
+			return invExpression + " = " + returnValue;
 		else if(invExpression == null && !isObsolete()) {
 			invExpression = calcString();
 			return invExpression;

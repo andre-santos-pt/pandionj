@@ -42,6 +42,7 @@ import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.extensibility.PandionJUI;
+import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.model.VariableModel;
 
@@ -127,6 +128,15 @@ class FrameView extends Composite {
 				System.out.println(event.getSelection());
 			}
 		});
+
+
+		header.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseDown(MouseEvent e) {
+				//				setExpanded(!isExpanded());
+				//				getParent().layout();
+			}
+		});
 		// TODO CTRL +-
 		//		viewer.getGraphControl().addKeyListener(new KeyListener() {
 		//			
@@ -139,15 +149,6 @@ class FrameView extends Composite {
 		//			public void keyPressed(KeyEvent e) {
 		//			}
 		//		});
-
-
-		header.addMouseListener(new MouseAdapter() {
-			@Override
-			public void mouseDown(MouseEvent e) {
-				//				setExpanded(!isExpanded());
-				//				getParent().layout();
-			}
-		});
 
 
 	}
@@ -163,8 +164,8 @@ class FrameView extends Composite {
 	@Override
 	public void dispose() {
 		super.dispose();
-		model.deleteObserver(stackObserver);
-		model.getRuntime().deleteObserver(runtimeObserver);
+		model.unregisterObserver(stackObserver);
+		model.getRuntime().unregisterObserver(runtimeObserver);
 	}
 
 	public boolean isExpanded() {
@@ -180,7 +181,7 @@ class FrameView extends Composite {
 		header.setToolTipText(message);
 	}
 
-	
+
 
 
 	void setInput(StackFrameModel frameModel) {
@@ -214,7 +215,7 @@ class FrameView extends Composite {
 
 	private Observer viewSizeObserver = new Observer() {
 		private Point lastSize;
-		
+
 		public void update(Observable o, Object arg) {
 			PandionJUI.executeUpdate(() -> {
 				Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
@@ -227,23 +228,28 @@ class FrameView extends Composite {
 			});
 		}
 	};
-	
+
 	private Observer runtimeObserver = new Observer() {
 		public void update(Observable o, Object arg) {
-			updateLook();
-			viewer.refresh();
-			viewer.applyLayout();
+//			updateLook();
+			//			RuntimeModel runtime = (RuntimeModel) o;
+			//			if(runtime.isTerminated())
+			//				runtime.unregisterObserver(runtimeObserver);
+			//			else {
+//			viewer.refresh();
+//			viewer.applyLayout();
+			//			}
 		}
 	};
 
 	private void updateLook() {
 		if(model.isObsolete()) {
 			setBackground(Constants.Colors.OBSOLETE);
-			setExpanded(false);
+			//			setExpanded(false);
 		}
 		else if(model.isExecutionFrame()) {
 			setBackground(Constants.Colors.INST_POINTER);
-			setExpanded(true);
+			//			setExpanded(true);
 		}
 		else
 			setBackground(null);
@@ -251,20 +257,25 @@ class FrameView extends Composite {
 
 	private Observer stackObserver = new Observer() {
 		public void update(Observable o, Object list) {
-			@SuppressWarnings("unchecked")
-			List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
-			header.setText(model.getInvocationExpression());
-			if(!newVars.isEmpty()) { 
-				viewer.refresh();
-				viewer.applyLayout();
+			if(model.isObsolete()) {
+				model.unregisterObserver(stackObserver);
+				model.getRuntime().unregisterObserver(runtimeObserver);
 			}
-			if(model.exceptionOccurred())
-				setError(model.getExceptionMessage());
+			else {
+				@SuppressWarnings("unchecked")
+				List<VariableModel<?>> newVars = (List<VariableModel<?>>) list;
+				header.setText(model.getInvocationExpression());
+				if(!newVars.isEmpty()) { 
+					viewer.refresh();
+					viewer.applyLayout();
+				}
+				if(model.exceptionOccurred())
+					setError(model.getExceptionMessage());
 
-
-			slider.setMaximum(model.getRunningStep()+1);
-			slider.setSelection(model.getStepPointer()+1);
-			slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
+				slider.setMaximum(model.getRunningStep()+1);
+				slider.setSelection(model.getStepPointer()+1);
+				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
+			}
 		}
 	};
 

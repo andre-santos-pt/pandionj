@@ -29,14 +29,14 @@ import org.eclipse.swt.graphics.Font;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
-import pt.iscte.pandionj.figures.Var.Direction;
+import pt.iscte.pandionj.model.ArrayIndexVariableModel;
 
 //TODO limit size (to Constants.ARRAY_LENGTH_LIMIT)
 public class ArrayReferenceFigure extends RoundedRectangle {
 	private final int N;
 	private int lowerOffSet;
 	private List<Position> positions;
-	private Map<String, Var> vars;
+	private Map<String, ArrayIndexVariableModel> vars;
 
 	private GridLayout layout;
 	private IArrayModel model;
@@ -143,20 +143,21 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 		graphics.setLineWidth(Constants.ARROW_LINE_WIDTH);
 		Font font = FontManager.getFont(Constants.VAR_FONT_SIZE);
 		graphics.setFont(font);
-		for(Var v : vars.values()) {
-			graphics.setForegroundColor(v.color);
+		for(ArrayIndexVariableModel v : vars.values()) {
+//			graphics.setForegroundColor(v.color);
 			int i = v.getCurrentIndex();
-			boolean forward = v.getDirection().equals(Direction.FORWARD);
+			boolean forward = v.getDirection().equals(pt.iscte.pandionj.model.ArrayIndexVariableModel.Direction.FORWARD);
 
 
-			Point from = getPosition(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.id, font)/2, y);
-			graphics.drawText(v.id, from);
+			Point from = getPosition(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.getName(), font)/2, y);
+			graphics.drawText(v.getName(), from);
 
-			List<Integer> indexes = v.getIndexes();
-			for(int iOld = 0; iOld < indexes.size()-1; iOld++) {
-				Point p = getPosition(indexes.get(iOld)).getLocation().getTranslated(pWidth, y + vars.size()*Constants.ARROW_EDGE);
-				graphics.drawOval(p.x-1, p.y-1, 2, 2);
-			}
+			// TODO
+//			List<Integer> indexes = v.getIndexes();
+//			for(int iOld = 0; iOld < indexes.size()-1; iOld++) {
+//				Point p = getPosition(indexes.get(iOld)).getLocation().getTranslated(pWidth, y + vars.size()*Constants.ARROW_EDGE);
+//				graphics.drawOval(p.x-1, p.y-1, 2, 2);
+//			}
 
 			if(v.isBounded()) {
 				if(i != v.getBound()) {
@@ -174,31 +175,31 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 
 	}
 
-	public void setVar(String id, int index, Object bound, boolean isBar) {
-		if(index >= N && positions.size() - 1 -lowerOffSet < index)
-			addOutOfUpperBound(index);
-		else if(bound instanceof Integer && ((Integer) bound) >= N)
-			addOutOfUpperBound((Integer) bound);
-		else if(index + lowerOffSet < 0) {
-			addOutOfLowerBound(index);
-		}
+//	public void setVar(String id, int index, Object bound, boolean isBar) {
+//		if(index >= N && positions.size() - 1 -lowerOffSet < index)
+//			addOutOfUpperBound(index);
+//		else if(bound instanceof Integer && ((Integer) bound) >= N)
+//			addOutOfUpperBound((Integer) bound);
+//		else if(index + lowerOffSet < 0) {
+//			addOutOfLowerBound(index);
+//		}
+//
+//		Var v = vars.get(id);
+//		if(v == null) {
+//			v = new Var(id, index, bound, false, Constants.Colors.getVarColor(vars.size()));
+//			vars.put(id, v);
+//		}
+//		else {
+//			v.updateIndex(index);
+//			v.bound = bound;
+//		}
+//		repaint();
+//	}
 
-		Var v = vars.get(id);
-		if(v == null) {
-			v = new Var(id, index, bound, false, Constants.Colors.getVarColor(vars.size()));
-			vars.put(id, v);
-		}
-		else {
-			v.updateIndex(index);
-			v.bound = bound;
-		}
-		repaint();
-	}
-
-	public void addVarBound(int index, String id) {
-		vars.put(id, new Var(id, index, -1, false, Constants.Colors.getVarColor(vars.size())));
-		repaint();
-	}
+//	public void addVarBound(int index, String id) {
+//		vars.put(id, new Var(id, index, -1, false, Constants.Colors.getVarColor(vars.size())));
+//		repaint();
+//	}
 
 //	public boolean setValue(int index, Object value) {
 //		Position p = getPosition(index);

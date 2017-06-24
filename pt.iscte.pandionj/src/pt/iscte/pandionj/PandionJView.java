@@ -36,7 +36,6 @@ import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
-// TODO reload everything on view init ?
 public class PandionJView extends ViewPart { 
 	private static PandionJView instance;
 
@@ -61,7 +60,7 @@ public class PandionJView extends ViewPart {
 
 	private IToolBarManager toolBar;
 
-	private Map<String, Image> images;
+	private Map<String, Image> images; // TODO image manager
 	
 	public PandionJView() {
 		instance = this;
@@ -102,19 +101,6 @@ public class PandionJView extends ViewPart {
 
 		FontManager.dispose();
 	}
-
-
-//	private Image image(String name) {
-//		Image img = images.get(name);
-//		if(img == null) {
-//			Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-//			URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
-//			ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
-//			img = imageDesc.createImage();
-//			images.put(name, img);
-//		}
-//		return img;
-//	}
 
 	
 	private void createWidgets(Composite parent) {
