@@ -52,7 +52,7 @@ public class TestFigure {
 	
 
 	private static void createDiagram(IFigure root) {
-		MockArray array = new MockArray("int", new Integer[30]);
+		MockArray array = new MockArray("int", 1,2,3,4);
 		MockVariable var = new MockVariable("int", "i", null, 0);
 		array.addVariableRole(var);
 		ArrayPrimitiveFigure fig = new ArrayPrimitiveFigure(array);
@@ -70,7 +70,7 @@ public class TestFigure {
 				try {
 					int i = Integer.parseInt(var.getCurrentValue());
 					array.set(i, 9);
-					var.set(i+1);
+					var.set(i-1);
 					System.out.println(i);
 				}
 				catch(IndexOutOfBoundsException e) {

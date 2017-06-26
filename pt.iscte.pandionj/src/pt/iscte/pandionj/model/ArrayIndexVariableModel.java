@@ -1,35 +1,36 @@
 package pt.iscte.pandionj.model;
 
-import pt.iscte.pandionj.extensibility.IVariableModel;
+import java.util.Collection;
+import java.util.List;
 
-public class ArrayIndexVariableModel {
-	public enum Direction {
-		NONE, FORWARD, BACKWARD;
-	}
-	
+import pt.iscte.pandionj.extensibility.IArrayIndexModel;
+import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.parser.variable.Variable;
+
+public class ArrayIndexVariableModel implements IArrayIndexModel {
 	private final IVariableModel model;
-	private final int arrayLength;
 	
 	private int constBound;
 	private IVariableModel varBound;
 	
 	private boolean illegalAccess;
 	
-	public ArrayIndexVariableModel(IVariableModel model, int arrayLength) {
+	public ArrayIndexVariableModel(IVariableModel model) {
+		assert model != null;
 		this.model = model;
-		this.arrayLength = arrayLength;
 		constBound = -1;
 		varBound = null;
 		illegalAccess = false;
 	}
 			
-	public ArrayIndexVariableModel(IVariableModel model, int arrayLength, int constBound) {
-		this(model, arrayLength);
+	public ArrayIndexVariableModel(IVariableModel model, int constBound) {
+		this(model);
 		this.constBound = constBound;
 	}
 
-	public ArrayIndexVariableModel(IVariableModel model, int arrayLength, IVariableModel varBound) {
-		this(model, arrayLength);
+	public ArrayIndexVariableModel(IVariableModel model, IVariableModel varBound) {
+		this(model);
 		this.varBound = varBound;
 	}
 	
@@ -41,9 +42,9 @@ public class ArrayIndexVariableModel {
 		return Integer.parseInt(model.getCurrentValue());
 	}
 	
-	public boolean isOutOfBounds() {
+	public boolean isOutOfBounds(IArrayModel array) {
 		int i = getCurrentIndex();
-		return i < 0 || i >= arrayLength;
+		return i < 0 || i >= array.getLength();
 	}
 
 	public boolean isBounded() {
@@ -70,5 +71,50 @@ public class ArrayIndexVariableModel {
 
 	public boolean isIllegalAccess() {
 		return illegalAccess;
+	}
+
+	@Override
+	public String getTypeName() {
+		return model.getTypeName();
+	}
+
+	@Override
+	public String getCurrentValue() {
+		return model.getCurrentValue();
+	}
+
+	@Override
+	public List<String> getHistory() {
+		return model.getHistory();
+	}
+
+	@Override
+	public boolean isDecimal() {
+		return model.isDecimal();
+	}
+
+	@Override
+	public boolean isBoolean() {
+		return model.isBoolean();
+	}
+
+	@Override
+	public boolean isInstance() {
+		return model.isInstance();
+	}
+
+	@Override
+	public boolean isWithinScope() {
+		return model.isWithinScope();
+	}
+
+	@Override
+	public Variable getVariableRole() {
+		return model.getVariableRole();
+	}
+
+	@Override
+	public Collection<String> getTags() {
+		return model.getTags();
 	}
 }

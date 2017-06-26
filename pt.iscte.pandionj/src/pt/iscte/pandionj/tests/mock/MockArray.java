@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
@@ -12,7 +13,7 @@ import pt.iscte.pandionj.model.DisplayUpdateObservable;
 public class MockArray extends DisplayUpdateObservable implements IArrayModel {
 	final String type;
 	final List<MockVariable> values;
-	final List<MockVariable> variableRoles;
+	final List<MockArrayIndex> variableRoles;
 
 	public MockArray(String type, Object ... values) {
 		this.type = type;
@@ -59,12 +60,7 @@ public class MockArray extends DisplayUpdateObservable implements IArrayModel {
 		return values.get(index);
 	}
 
-	@Override
-	public Collection<IVariableModel> getVars() {
-		return Collections.unmodifiableList(variableRoles);
-	}
-
-	public void addVariableRole(MockVariable role) {
+	public void addIndexVariable(MockArrayIndex role) {
 		variableRoles.add(role);
 	}
 
@@ -78,5 +74,10 @@ public class MockArray extends DisplayUpdateObservable implements IArrayModel {
 			setChanged();
 			notifyObservers(index);
 		}
+	}
+
+	@Override
+	public Collection<IArrayIndexModel> getIndexModels() {
+		return Collections.unmodifiableList(variableRoles);
 	}
 }
