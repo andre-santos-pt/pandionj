@@ -16,9 +16,10 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.tests.mock.MockArray;
-import pt.iscte.pandionj.tests.mock.MockVariable;
+import pt.iscte.pandionj.tests.mock.MockArrayIndex;
 
 public class TestFigure {
 	public static void main(String[] args) {
@@ -53,8 +54,12 @@ public class TestFigure {
 
 	private static void createDiagram(IFigure root) {
 		MockArray array = new MockArray("int", 1,2,3,4);
-		MockVariable var = new MockVariable("int", "i", null, 0);
-		array.addVariableRole(var);
+		MockArrayIndex i1 = new MockArrayIndex("i1", null, 4, IArrayIndexModel.Direction.FORWARD,-4);
+		MockArrayIndex i2 = new MockArrayIndex("i2", null, 0, IArrayIndexModel.Direction.FORWARD, i1);
+		MockArrayIndex i3 = new MockArrayIndex("i3", null, 0, IArrayIndexModel.Direction.FORWARD, 3); ;
+		array.addIndexVariable(i1);
+		array.addIndexVariable(i2);
+		array.addIndexVariable(i3);
 		ArrayPrimitiveFigure fig = new ArrayPrimitiveFigure(array);
 		fig.setSize(fig.getPreferredSize());
 		fig.setLocation(new Point(100, 100));
@@ -68,10 +73,10 @@ public class TestFigure {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				try {
-					int i = Integer.parseInt(var.getCurrentValue());
-					array.set(i, 9);
-					var.set(i-1);
-					System.out.println(i);
+					array.set(i2.getCurrentIndex(), 9);
+					i2.set(i2.getCurrentIndex() + 1);
+					i1.set(i1.getCurrentIndex() - 1);
+					
 				}
 				catch(IndexOutOfBoundsException e) {
 					e.printStackTrace();
