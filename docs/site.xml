@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <feature url="features/pt.iscte.pandion.feature_0.1.0.jar" id="pt.iscte.pandion.feature" version="0.1"/>
+</site>
