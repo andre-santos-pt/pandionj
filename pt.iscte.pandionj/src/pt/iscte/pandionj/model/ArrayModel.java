@@ -210,7 +210,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 
 
 	public void addVar(IArrayIndexModel v) {
-		assert v.getVariableRole() instanceof ArrayIterator;
+//		assert v.getVariableRole() instanceof ArrayIterator;
 		if(!varsRoles.containsKey(v.getName())) {
 			varsRoles.put(v.getName(), v);
 			v.registerObserver((o,a) -> {

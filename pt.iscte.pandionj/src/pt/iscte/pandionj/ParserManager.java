@@ -10,11 +10,15 @@ import org.eclipse.core.resources.IFile;
 import pt.iscte.pandionj.parser.ParserAPI;
 import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
 import pt.iscte.pandionj.parser2.TagParser;
+import pt.iscte.pandionj.parser2.VarParser;
 
 public class ParserManager {
 
 	private static Map<IFile, ParserResult> cache = new WeakHashMap<>();
 	private static Map<IFile, Long> modStamps = new WeakHashMap<>();
+
+	private static Map<IFile, VarParser> cacheParser = new WeakHashMap<>();
+
 	
 	private static Map<IFile, TagParser> tagParserCache = new WeakHashMap<>();
 	
@@ -33,6 +37,24 @@ public class ParserManager {
 		}
 		return r;
 	}
+	
+	
+	public static VarParser getVarParserResult(IFile f) {
+		VarParser r = cacheParser.get(f);
+		if(r == null || f.getModificationStamp() != modStamps.get(f)) {
+			r = new VarParser(f.getRawLocation().toOSString());
+			r.run();
+			System.out.println(r.toText());
+			cacheParser.put(f, r);
+			modStamps.put(f, f.getModificationStamp());
+			
+			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
+			tagParser.run();
+			tagParserCache.put(f, tagParser);
+		}
+		return r;
+	}
+	
 	
 	public static Collection<String> getAttributeTags(IFile file, String className, String attName) {
 		assert tagParserCache.containsKey(file);

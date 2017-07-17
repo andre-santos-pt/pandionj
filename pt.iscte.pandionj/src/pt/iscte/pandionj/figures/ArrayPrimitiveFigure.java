@@ -208,6 +208,9 @@ public class ArrayPrimitiveFigure extends Figure{
 					else
 						rightBound.markError();
 		}
+		else if(arg instanceof IArrayIndexModel) {
+			addVariable((IArrayIndexModel) arg); 
+		}
 	}
 
 

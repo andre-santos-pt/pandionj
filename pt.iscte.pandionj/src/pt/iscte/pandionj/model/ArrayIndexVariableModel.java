@@ -8,7 +8,7 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.variable.Variable;
 
-public class ArrayIndexVariableModel implements IArrayIndexModel {
+public class ArrayIndexVariableModel extends DisplayUpdateObservable implements IArrayIndexModel {
 	private final IVariableModel model;
 	
 	private int constBound;
