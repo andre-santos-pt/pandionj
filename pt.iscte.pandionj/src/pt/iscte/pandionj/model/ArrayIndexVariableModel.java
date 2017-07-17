@@ -10,27 +10,29 @@ import pt.iscte.pandionj.parser.variable.Variable;
 
 public class ArrayIndexVariableModel extends DisplayUpdateObservable implements IArrayIndexModel {
 	private final IVariableModel model;
+	private final IVariableModel arrayRefName;
 	
 	private int constBound;
 	private IVariableModel varBound;
 	
 	private boolean illegalAccess;
 	
-	public ArrayIndexVariableModel(IVariableModel model) {
+	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName) {
 		assert model != null;
 		this.model = model;
+		this.arrayRefName = arrayRefName;
 		constBound = -1;
 		varBound = null;
 		illegalAccess = false;
 	}
 			
-	public ArrayIndexVariableModel(IVariableModel model, int constBound) {
-		this(model);
+	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, int constBound) {
+		this(model, arrayRefName);
 		this.constBound = constBound;
 	}
 
-	public ArrayIndexVariableModel(IVariableModel model, IVariableModel varBound) {
-		this(model);
+	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, IVariableModel varBound) {
+		this(model, arrayRefName);
 		this.varBound = varBound;
 	}
 	
@@ -116,5 +118,10 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 	@Override
 	public Collection<String> getTags() {
 		return model.getTags();
+	}
+
+	@Override
+	public String getArrayReferenceName() {
+		return arrayRefName.getName();
 	}
 }

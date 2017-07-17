@@ -252,10 +252,14 @@ public class StackFrameModel extends DisplayUpdateObservable {
 						VariableInfo info = varParser.locateVariable(v, getLineNumber());
 						for (String arrayVar : info.getAccessedArrays()) {
 							if(arrayVar.equals(refModel.getName()))
-								array.addVar(new ArrayIndexVariableModel(vars.get(v)));
+								array.addVar(new ArrayIndexVariableModel(vars.get(v), refModel));
 //							array.addVar(new ArrayIndexVariableModel(vars.get(itVar)));
 						}
 					}
+//					for(String itVar : findArrayIterators(e.getKey())) {
+//						if(vars.containsKey(itVar))
+//							array.addVar(new ArrayIndexVariableModel(vars.get(itVar), refModel));
+//					}
 					
 //					for (String arrayVar : var.getAccessedArrays()) {
 //						array.addVar(new ArrayIndexVariableModel(vars.get(itVar)));
