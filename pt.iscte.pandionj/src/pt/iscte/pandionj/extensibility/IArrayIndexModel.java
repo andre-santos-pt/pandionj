@@ -5,6 +5,8 @@ public interface IArrayIndexModel extends IVariableModel {
 		NONE, FORWARD, BACKWARD;
 	}
 
+	String getArrayReferenceName();
+	
 	int getCurrentIndex();
 	
 	Direction getDirection();

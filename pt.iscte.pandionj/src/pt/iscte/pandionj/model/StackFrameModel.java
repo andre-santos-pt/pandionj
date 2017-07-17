@@ -245,7 +245,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getModelTarget();
 					for(String itVar : findArrayIterators(e.getKey())) {
 						if(vars.containsKey(itVar))
-							array.addVar(new ArrayIndexVariableModel(vars.get(itVar)));
+							array.addVar(new ArrayIndexVariableModel(vars.get(itVar), refModel));
 					}
 				}
 			}

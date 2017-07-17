@@ -5,38 +5,33 @@ import static pt.iscte.pandionj.Constants.ARROW_EDGE;
 import static pt.iscte.pandionj.Constants.ARROW_LINE_WIDTH;
 import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
-import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
-import static pt.iscte.pandionj.Constants.getOneColGridLayout;
-import static pt.iscte.pandionj.Constants.Colors.OBJECT;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-
+import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureUtilities;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.RoundedRectangle;
-import org.eclipse.draw2d.TextUtilities;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
-
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.model.ArrayIndexVariableModel;
 
 
 public class ArrayPrimitiveFigure extends Figure{
@@ -63,16 +58,18 @@ public class ArrayPrimitiveFigure extends Figure{
 		outerLayout = new GridLayout(3, false);
 		setLayoutManager(outerLayout);
 
-		Label lengthLabel = new Label("length = " + N);
-		setToolTip(lengthLabel);
-
 		leftBound = new PositionOutBounds();
 		rightBound = new PositionOutBounds();
 		positionsFig = createPositionsFig();
 		
-		add(leftBound);
-		add(positionsFig);
-		add(rightBound);
+		GridData boundConstraints = new GridData(SWT.CENTER, SWT.TOP, false, false);
+		add(leftBound, boundConstraints);
+		if(N > 0) {
+			add(positionsFig);
+			add(rightBound, boundConstraints);
+		}else {
+			leftBound.setToolTip(new Label("length = " + N));
+		}
 		
 		vars = new HashMap<>();
 		for(IArrayIndexModel v : model.getIndexModels())
@@ -89,27 +86,33 @@ public class ArrayPrimitiveFigure extends Figure{
 
 
 	private RoundedRectangle createPositionsFig() {
-		RoundedRectangle fig = new RoundedRectangle() {
-			@Override
-			public void paintFigure(Graphics graphics) {
-				super.paintFigure(graphics);
-				graphics.setForegroundColor(ColorConstants.red);
-				graphics.drawRectangle(getLocation().x, getLocation().y, 20, 40);
-			}
-		};
+		RoundedRectangle fig = new RoundedRectangle();
 		arrayLayout = new GridLayout(Math.max(1, N), false);
 		arrayLayout.horizontalSpacing = ARRAY_POSITION_SPACING;
+		arrayLayout.marginHeight = ARRAY_POSITION_SPACING*2;
 		fig.setLayoutManager(arrayLayout);
 		fig.setCornerDimensions(OBJECT_CORNER);
-
 		
-		for(int i = 0; i < N; i++) {
-			Position p = new Position(i);
+		Label lengthLabel = new Label("length = " + N);
+		fig.setToolTip(lengthLabel);
+		
+		if(model.getLength() <= Constants.ARRAY_LENGTH_LIMIT) {
+			for(int i = 0; i < N; i++) {
+				Position p = new Position(i);
+				fig.add(p);
+				positions.add(p);
+			}
+		}else {
+			for(int i = 0; i < Constants.ARRAY_LENGTH_LIMIT - 2; i++) {
+				Position p = new Position(i);
+				fig.add(p);
+				positions.add(p);
+			}
+			fig.add(new Label("..."));
+			Position p = new Position(model.getLength() - 1);
 			fig.add(p);
 			positions.add(p);
 		}
-		if(N > Constants.ARRAY_LENGTH_LIMIT) // TODO review
-			fig.add(new Label("..."));
 		return fig;
 	}
 
@@ -143,22 +146,23 @@ public class ArrayPrimitiveFigure extends Figure{
 	}
 
 	private class PositionOutBounds extends Figure {
+		public static final int TOP_PADDING = ARRAY_POSITION_SPACING*2;
 		private boolean error;
 
 		public PositionOutBounds() {
 			error = false;
 			setVisible(false);
-			setSize(POSITION_WIDTH, POSITION_WIDTH);
+			setSize(POSITION_WIDTH, POSITION_WIDTH + TOP_PADDING * 2);
 		}
 
 		@Override
 		protected void paintFigure(Graphics graphics) {
 			super.paintFigure(graphics);
 			graphics.setForegroundColor(error ? Constants.Colors.ERROR : ColorConstants.gray);
-			graphics.setLineWidth(error ? Constants.ARRAY_LINE_WIDTH*3 : Constants.ARRAY_LINE_WIDTH);
+			graphics.setLineWidth(Constants.ARRAY_LINE_WIDTH);
 			graphics.setLineDashOffset(2.5f);
 			graphics.setLineStyle(Graphics.LINE_DASH);
-			graphics.drawRectangle(getLocation().x, getLocation().y, POSITION_WIDTH-1, POSITION_WIDTH-1);
+			graphics.drawRectangle(getLocation().x, getLocation().y + TOP_PADDING, POSITION_WIDTH-1, POSITION_WIDTH-1);
 		}
 
 		public void markError() {
@@ -181,11 +185,16 @@ public class ArrayPrimitiveFigure extends Figure{
 		boolean upperOff = false;
 
 		for(IArrayIndexModel v : vars.values()) {
-			if (v.getCurrentIndex() < 0)
+			if (v.getCurrentIndex() < 0 || v.getBound() < 0)
 				lowerOff = true;
-			else if (v.getCurrentIndex() >= N)
+			else if (v.getCurrentIndex() >= N || v.getBound() >= N)
 				upperOff = true;
 		}
+		
+		if(N == 0) {
+			lowerOff = true;
+		}
+		
 		leftBound.setVisible(lowerOff); 
 		rightBound.setVisible(upperOff);
 	}
@@ -215,7 +224,7 @@ public class ArrayPrimitiveFigure extends Figure{
 	public void paintFigure(final Graphics graphics) {
 		super.paintFigure(graphics);
 
-		Dimension dim = N == 0 ? new Dimension(5, 5) : positions.get(0).getSize();
+		Dimension dim = N == 0 ? new Dimension(10,10) : positions.get(0).getSize();
 		int pWidth = dim.width / 2;
 		int y = ARRAY_POSITION_SPACING + dim.height;
 		graphics.setLineWidth(ARROW_LINE_WIDTH);
@@ -223,40 +232,34 @@ public class ArrayPrimitiveFigure extends Figure{
 		graphics.setFont(font);
 
 		for(IArrayIndexModel v : vars.values()) {
-			if(!v.isBounded())
-				continue;
-
 			int i = v.getCurrentIndex();
-			boolean right = i < v.getBound();
-
 			String text = v.getName();
 			Point from;
 			if(isOutOfBounds(i)) {
 				text += "=" + i;
 				from = getIndexLocation(i).getTranslated(pWidth - FigureUtilities.getTextWidth(text, font)/2, y);
-				graphics.drawText(text, from);
-			}else if(v.isBounded()) {
+			}
+			
+			if(!v.isBounded()) {
+				continue;
+			}else{
+				boolean right = i < v.getBound();
 				from = getIndexLocation(i).getTranslated(pWidth - FigureUtilities.getTextWidth(text, font)/2, y);
 				Point to = getIndexLocation(v.getBound()).getTranslated(pWidth + (right ? -ARROW_EDGE : ARROW_EDGE), y + pWidth);
-				
-				if(v.getBound() != i) {
-					Point zero = new Point(0, 0);
-					Point top = zero.getTranslated(getIndexLocation(i).x, 0);
-					graphics.drawLine(top, top.getTranslated(0, y+100));
-					
-					graphics.drawLine(from.getTranslated(right ? ARROW_EDGE : -ARROW_EDGE, pWidth), to);
-					Point a = to.getTranslated(right ? -ARROW_EDGE : ARROW_EDGE, -ARROW_EDGE);
-					graphics.drawLine(to, a);
-					a = a.getTranslated(0, ARROW_EDGE*2);
-					graphics.drawLine(to, a);
-				}
-				
-				graphics.setForegroundColor(ColorConstants.black); // XXX qual a formatacao correta da font?
-				to = to.getTranslated(0, -pWidth);
 				graphics.drawText(text, from);
-
-				if(v.getBound() < 0 || v.getBound() >= N) {
-					graphics.drawText(Integer.toString(v.getBound()), to);
+				if(v.getBound() != i && ((right && i <= model.getLength() - 1) || (!right && i >= 0))) {
+					Point arrowTo = to.getTranslated(right ? 0 : pWidth/2, 0);
+					graphics.drawLine(from.getTranslated(right ? pWidth : 0, pWidth), arrowTo);
+					Point a = arrowTo.getTranslated(right ? -ARROW_EDGE : ARROW_EDGE, -ARROW_EDGE);
+					graphics.drawLine(arrowTo, a);
+					a = a.getTranslated(0, ARROW_EDGE*2);
+					graphics.drawLine(arrowTo, a);
+					
+					if(v.getBound() < 0 || v.getBound() >= N) {
+						text = Integer.toString(v.getBound());
+						to = to.getTranslated(0, -pWidth);
+						graphics.drawText(text, right ? to : to.getTranslated(-FigureUtilities.getTextWidth(text, font)/2, 0));
+					}
 				}
 			}
 			y += pWidth;
@@ -269,9 +272,9 @@ public class ArrayPrimitiveFigure extends Figure{
 	
 	private Point getIndexLocation(int index) {
 		if(index >= N || N == 0) {
-			return rightBound.getLocation();
+			return rightBound.getLocation().getTranslated(0.0, PositionOutBounds.TOP_PADDING);
 		}else if(index < 0) {
-			return leftBound.getLocation();
+			return leftBound.getLocation().getTranslated(0.0, PositionOutBounds.TOP_PADDING);
 		}else {
 			return positions.get(index).getLocation();
 		}
