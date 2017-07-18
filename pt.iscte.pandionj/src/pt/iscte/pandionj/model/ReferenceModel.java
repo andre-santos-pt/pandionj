@@ -11,7 +11,7 @@ import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.parser.variable.Variable;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public class ReferenceModel extends VariableModel<IJavaObject> {
 	private NullModel nullModel;
@@ -78,7 +78,7 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 	}
 
 	@Override
-	public Variable getVariableRole() {
+	public VariableInfo getVariableRole() {
 		return null;
 	}
 }

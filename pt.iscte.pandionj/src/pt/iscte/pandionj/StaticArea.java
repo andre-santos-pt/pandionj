@@ -6,13 +6,10 @@ import java.util.Observer;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
-import org.eclipse.zest.layouts.algorithms.SpringLayoutAlgorithm;
 
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.StackFrameModel;

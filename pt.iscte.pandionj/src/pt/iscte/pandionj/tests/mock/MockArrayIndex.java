@@ -2,7 +2,7 @@ package pt.iscte.pandionj.tests.mock;
 
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.parser.variable.Variable;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockArrayIndex extends MockVariable implements IArrayIndexModel {
 	private final String arrayRefName;
@@ -11,18 +11,18 @@ public class MockArrayIndex extends MockVariable implements IArrayIndexModel {
 	private Integer constBound;
 	private IVariableModel varBound;
 	
-	public MockArrayIndex(String name, String arrayRefName, Variable role, int value, Direction direction) {
+	public MockArrayIndex(String name, String arrayRefName, VariableInfo role, int value, Direction direction) {
 		super("int", name, role, value);
 		this.arrayRefName = arrayRefName;
 		this.direction = direction;
 	}
 
-	public MockArrayIndex(String name, String arrayRefName, Variable role, int value, Direction direction, int constBound) {
+	public MockArrayIndex(String name, String arrayRefName, VariableInfo role, int value, Direction direction, int constBound) {
 		this(name, arrayRefName, role, value, direction);
 		this.constBound = constBound;
 	}
 	
-	public MockArrayIndex(String name, String arrayRefName, Variable role, int value, Direction direction, IVariableModel varBound) {
+	public MockArrayIndex(String name, String arrayRefName, VariableInfo role, int value, Direction direction, IVariableModel varBound) {
 		this(name, arrayRefName, role, value, direction);
 		this.varBound = varBound;
 	}

@@ -62,7 +62,7 @@ public class TestFigureParser {
 		VariableInfo sum = parser.locateVariable("sum", 24);
 		VariableInfo i = parser.locateVariable("i", 24);
 
-		MockArray array = new MockArray("int", 1,2,3,4);
+		MockArray array = new MockArray("int", "a", 1,2,3,4);
 		MockArrayIndex i1 = new MockArrayIndex(i.getName(), null, 1, IArrayIndexModel.Direction.FORWARD,-4);
 //		MockArrayIndex v = new MockArrayIndex(v, null, 0, IArrayIndexModel.Direction.FORWARD, 3); ;
 		array.addIndexVariable(i1);

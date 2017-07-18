@@ -1,16 +1,12 @@
 package pt.iscte.pandionj.figures;
 
 import java.util.Collection;
-import java.util.Observable;
-import java.util.Observer;
 
 import org.eclipse.draw2d.Label;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.model.NullModel;
-import pt.iscte.pandionj.model.ReferenceModel;
 
 public class ReferenceFigure extends Label {
 

@@ -6,7 +6,7 @@ import java.util.List;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.parser.variable.Variable;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public class ArrayIndexVariableModel extends DisplayUpdateObservable implements IArrayIndexModel {
 	private final IVariableModel model;
@@ -111,7 +111,7 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 	}
 
 	@Override
-	public Variable getVariableRole() {
+	public VariableInfo getVariableRole() {
 		return model.getVariableRole();
 	}
 

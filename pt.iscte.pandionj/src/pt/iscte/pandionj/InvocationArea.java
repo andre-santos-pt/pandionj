@@ -6,10 +6,7 @@ import java.util.WeakHashMap;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
 
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 

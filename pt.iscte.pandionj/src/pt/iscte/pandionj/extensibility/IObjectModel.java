@@ -2,9 +2,6 @@ package pt.iscte.pandionj.extensibility;
 
 import java.util.List;
 
-import org.eclipse.debug.core.model.IWatchExpressionListener;
-import org.eclipse.jdt.debug.core.IJavaValue;
-
 public interface IObjectModel extends IObservableModel {
 	String getTypeName();
 	IArrayModel getArray(String fieldName);

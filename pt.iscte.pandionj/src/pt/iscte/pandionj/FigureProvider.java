@@ -2,7 +2,6 @@ package pt.iscte.pandionj;
 
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -29,7 +28,6 @@ import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.NodeProvider.Pointer;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
-import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.BaseFigure;

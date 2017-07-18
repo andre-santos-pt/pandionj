@@ -1,13 +1,11 @@
-package pt.iscte.pandionj.parser2;
+package pt.iscte.pandionj.parser;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ArrayAccess;
@@ -19,11 +17,15 @@ import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ForStatement;
+import org.eclipse.jdt.core.dom.IMethodBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NumberLiteral;
 import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -32,11 +34,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
-import pt.iscte.pandionj.parser.data.BlockInfo;
-import pt.iscte.pandionj.parser.data.VariableInfo;
-import pt.iscte.pandionj.parser.data.VariableOperation;
-import pt.iscte.pandionj.parser.data.VariableOperation.Type;
-
+import pt.iscte.pandionj.parser.VariableOperation.Type;
 
 
 public class VarParser {
@@ -77,7 +75,7 @@ public class VarParser {
 		}
 		return null;
 	}
-	
+
 
 	class MethodVisitor extends ASTVisitor {
 		List<BlockInfo> roots = new ArrayList<>();
@@ -96,24 +94,25 @@ public class VarParser {
 
 			else if(node instanceof MethodDeclaration)
 				return BlockInfo.Type.METHOD;
-			
+
 			else if(node instanceof WhileStatement)
 				return BlockInfo.Type.WHILE;
-			
+
 			else if(node instanceof ForStatement)
 				return BlockInfo.Type.FOR;
-			
+
 			else if(node instanceof IfStatement)
 				return BlockInfo.Type.IF;
-			
+
 			else
 				return BlockInfo.Type.OTHER;
 		}
-		
+
 		@Override
 		public boolean visit(TypeDeclaration node) {
 			BlockInfo block = createBlock(node);
 			current = block;
+			current.setId(node.getName().toString());
 			if(node.getParent() instanceof CompilationUnit)
 				roots.add(block);
 			return true;
@@ -128,7 +127,7 @@ public class VarParser {
 		public boolean visit(FieldDeclaration node) {
 			for(Object o : node.fragments()) {
 				VariableDeclarationFragment frag = (VariableDeclarationFragment) o;
-				current.addVar(frag.getName().toString());
+				current.addVar(frag.getName().toString(), false);
 			}
 			return true;
 		}
@@ -148,8 +147,9 @@ public class VarParser {
 				current = createBlock(node.getParent());
 				ASTNode parent = node.getParent();
 
-				if(parent instanceof MethodDeclaration)
+				if(parent instanceof MethodDeclaration) {
 					handleMethodParams((MethodDeclaration) parent);
+				}
 			}
 			return true;
 		}
@@ -161,9 +161,10 @@ public class VarParser {
 		}
 
 		private void handleMethodParams(MethodDeclaration node) {
+			current.setId(node.getName().toString());
 			for(Object p : node.parameters()) {
 				SingleVariableDeclaration var = (SingleVariableDeclaration) p;
-				current.addVar(var.getName().getIdentifier());
+				current.addVar(var.getName().getIdentifier(), true);
 			}
 		}
 
@@ -173,7 +174,7 @@ public class VarParser {
 		public boolean visit(VariableDeclarationExpression node) {
 			for(Object var : node.fragments()) {
 				VariableDeclarationFragment frag = (VariableDeclarationFragment) var;
-				current.addVar(frag.getName().toString());
+				current.addVar(frag.getName().toString(), false);
 			}
 			return true;
 		}
@@ -183,7 +184,7 @@ public class VarParser {
 		public boolean visit(VariableDeclarationStatement node) {
 			for(Object var : node.fragments()) {
 				VariableDeclarationFragment frag = (VariableDeclarationFragment) var;
-				current.addVar(frag.getName().toString());
+				current.addVar(frag.getName().toString(), false);
 			}
 			return true;
 		}
@@ -196,21 +197,34 @@ public class VarParser {
 				VariableOperation.Type op = null;
 
 				if(node.getOperator() == Assignment.Operator.PLUS_ASSIGN && node.getRightHandSide() instanceof NumberLiteral || 
-						node.getOperator() == Assignment.Operator.ASSIGN && isAcumulationLiteral(node, InfixExpression.Operator.PLUS))
+						isAcumulationAssign(node, InfixExpression.Operator.PLUS, (e) -> e instanceof NumberLiteral))
 					op = VariableOperation.Type.INC;
 
 				else if(node.getOperator() == Assignment.Operator.MINUS_ASSIGN && node.getRightHandSide() instanceof NumberLiteral ||
-						node.getOperator() == Assignment.Operator.ASSIGN && isAcumulationLiteral(node, InfixExpression.Operator.PLUS))
+						isAcumulationAssign(node, InfixExpression.Operator.MINUS, (e) -> e instanceof NumberLiteral))
 					op = VariableOperation.Type.DEC;
 
 				if(op != null)
 					current.addOperation(new VariableOperation(varName, op));
 				else {
 					op = Type.SUBS;
-					if(node.getOperator() == Assignment.Operator.PLUS_ASSIGN || node.getOperator() == Assignment.Operator.MINUS_ASSIGN)
+					Object[] params = new Object[0];
+					if(node.getOperator() == Assignment.Operator.PLUS_ASSIGN ||
+						isAcumulationAssign(node, InfixExpression.Operator.PLUS, (e) -> !(e instanceof NumberLiteral)) || 
+						node.getOperator() == Assignment.Operator.MINUS_ASSIGN ||
+						isAcumulationAssign(node, InfixExpression.Operator.MINUS, (e) -> !(e instanceof NumberLiteral))) {
 						op = Type.ACC;
-					
-					current.addOperation(new VariableOperation(varName, op));
+						params = new Object[] {"sum"};
+					}
+					else if(node.getOperator() == Assignment.Operator.TIMES_ASSIGN ||
+							isAcumulationAssign(node, InfixExpression.Operator.TIMES, (e) -> !(e instanceof NumberLiteral)) || 
+							node.getOperator() == Assignment.Operator.DIVIDE_ASSIGN ||
+							isAcumulationAssign(node, InfixExpression.Operator.DIVIDE, (e) -> !(e instanceof NumberLiteral))) {
+						op = Type.ACC;
+						params = new Object[] {"prod"};
+					}
+
+					current.addOperation(new VariableOperation(varName, op, params));
 				}
 			}
 			return true;
@@ -234,15 +248,6 @@ public class VarParser {
 		}
 
 
-
-
-
-		//		private void handleWhile(WhileStatement whileStatement) {
-		//			Expression expression = whileStatement.getExpression();
-		//			ProgressVisitor progressVisitor = new ProgressVisitor();
-		//			whileStatement.accept(progressVisitor);
-		//			handleCondition(expression, progressVisitor.vars);
-		//		}
 
 		private void handleCondition(Expression expression) {
 			Set<String> incVars = current.getVarsModified(VariableOperation.Type.INC);
@@ -311,38 +316,47 @@ public class VarParser {
 
 
 
-		// TODO bug dimensions
 		@Override
 		public boolean visit(ArrayAccess node) {
 			if(node.getArray() instanceof SimpleName || node.getArray() instanceof ArrayAccess) {
-				String arrayRef = arrayRef(node.getArray());
+				String arrayRef = arrayRef(node);
 				SearchVarVisitor v = new SearchVarVisitor();
 				node.getIndex().accept(v);
 				for(String varName : v.vars) {
-					VariableOperation op = new VariableOperation(varName, VariableOperation.Type.INDEX, arrayRef, Integer.toString(indexDepth(node)));
+					int dim = indexDepth(node);
+					VariableOperation op = new VariableOperation(varName, VariableOperation.Type.INDEX, arrayRef, dim);
 					current.addOperation(op);
 				}
 			}
-
-			return super.visit(node);
+			return true;
 		}
 
-		private String arrayRef(Expression node) {
-			while(node.getParent() instanceof ArrayAccess) {
-				node = (ArrayAccess) node.getParent();
+		private String arrayRef(ArrayAccess node) {
+			ArrayAccess a = node;
+			while(a.getArray() instanceof ArrayAccess) {
+				a = (ArrayAccess) a.getArray();
 			}
-			return ((ArrayAccess) node).getArray().toString();
+			return a.getArray().toString();
 		}
 
-		private int indexDepth(Expression node) {
+		private int indexDepth(ArrayAccess node) {
 			int i = 0;
-			while(node.getParent() instanceof ArrayAccess) {
+			ArrayAccess a = node;
+			while(a.getArray() instanceof ArrayAccess) {
+				a = (ArrayAccess) a.getArray();
 				i++;
-				node = (ArrayAccess) node.getParent();
 			}
 			return i;
 		}
 
+		@Override
+		public boolean visit(MethodInvocation node) {
+			IMethodBinding method = node.resolveMethodBinding();
+			if(method == null)
+				return true;
+			ITypeBinding[] parameterTypes = method.getParameterTypes();
+			return super.visit(node);
+		}
 
 		//		private void handleFor(ForStatement forStatement) {
 		//			for(Object init : forStatement.initializers()) {
@@ -442,15 +456,18 @@ public class VarParser {
 			final List<String> vars = new ArrayList<>(5);
 			@Override
 			public boolean visit(SimpleName node) {
-				vars.add(node.getIdentifier());
+				if(!(node.getParent() instanceof QualifiedName))
+					vars.add(node.getIdentifier());
 				return true;
 			}
 		}
 	}
 
-	private static boolean isAcumulationLiteral(Assignment assignment, InfixExpression.Operator op) {
-		if(!(assignment.getRightHandSide() instanceof InfixExpression) || 
-				!(assignment.getLeftHandSide() instanceof SimpleName))
+	private static boolean isAcumulationAssign(Assignment assignment, InfixExpression.Operator op, Predicate<Expression> acceptExpression) {
+		if(!(
+				assignment.getRightHandSide() instanceof InfixExpression && 
+				assignment.getLeftHandSide() instanceof SimpleName &&
+				assignment.getOperator() == Assignment.Operator.ASSIGN))
 			return false;
 
 		InfixExpression exp = (InfixExpression) assignment.getRightHandSide();
@@ -460,15 +477,20 @@ public class VarParser {
 		String assignVar = assignment.getLeftHandSide().toString();
 		if(	exp.getLeftOperand() instanceof SimpleName &&
 				exp.getLeftOperand().toString().equals(assignVar) &&
-				exp.getRightOperand() instanceof NumberLiteral)
+				acceptExpression.test(exp.getRightOperand()))
 			return true;
 
 		if(	exp.getRightOperand() instanceof SimpleName && 
 				exp.getRightOperand().toString().equals(assignVar) &&
-				exp.getLeftOperand() instanceof NumberLiteral)
+				acceptExpression.test(exp.getLeftOperand()))
 			return true;
 
 		return false;
+	}
+
+	public void print() {
+		for(BlockInfo b : visitor.roots)
+			b.print();
 	}
 
 

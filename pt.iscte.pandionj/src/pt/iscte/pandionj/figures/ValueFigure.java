@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
@@ -15,16 +14,13 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.PrimitiveType;
-import pt.iscte.pandionj.model.ValueModel;
 import pt.iscte.pandionj.model.ValueModel.Role;
-import pt.iscte.pandionj.parser.variable.Gatherer;
 
 public class ValueFigure extends Figure {
 	private ValueLabel valueLabel;
@@ -73,9 +69,9 @@ public class ValueFigure extends Figure {
 			}
 
 			private String parcels() {
-				switch(((Gatherer) model.getVariableRole()).operation) {
-				case SUMMATION: return sumParcels();
-				case PRODUCT_SERIES: return "?"; // TODO product parcels
+				switch(model.getVariableRole().getGathererType()) {
+				case SUM: return sumParcels();
+				case PROD: return "?"; // TODO product parcels
 				default: return "";
 				}
 			}

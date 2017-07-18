@@ -42,7 +42,6 @@ import org.eclipse.zest.core.widgets.GraphItem;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.model.VariableModel;
 

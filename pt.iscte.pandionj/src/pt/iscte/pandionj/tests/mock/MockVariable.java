@@ -8,17 +8,17 @@ import java.util.List;
 
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
-import pt.iscte.pandionj.parser.variable.Variable;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockVariable extends DisplayUpdateObservable implements IVariableModel {
 	final String type;
 	final String name;
-	final Variable role;
+	final VariableInfo role;
 	final List<String> tags;
 	Object value;
 
 
-	public MockVariable(String type, String name, Variable role, Object value, String ... tags) {
+	public MockVariable(String type, String name, VariableInfo role, Object value, String ... tags) {
 		this.type = type;
 		this.name = name;
 		this.role = role;
@@ -61,7 +61,7 @@ public class MockVariable extends DisplayUpdateObservable implements IVariableMo
 		return true;
 	}
 	@Override
-	public Variable getVariableRole() {
+	public VariableInfo getVariableRole() {
 		return role;
 	}
 	@Override

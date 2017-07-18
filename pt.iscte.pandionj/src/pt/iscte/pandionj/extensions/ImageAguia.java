@@ -7,8 +7,6 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.ImageFigure;
-import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IType;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;

@@ -3,7 +3,7 @@ package pt.iscte.pandionj.extensibility;
 import java.util.Collection;
 import java.util.List;
 
-import pt.iscte.pandionj.parser.variable.Variable;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public interface IVariableModel extends IObservableModel {
 	String getName();
@@ -16,6 +16,6 @@ public interface IVariableModel extends IObservableModel {
 	boolean isInstance();
 	boolean isWithinScope();
 	
-	Variable getVariableRole();
+	VariableInfo getVariableRole();
 	Collection<String> getTags();
 }

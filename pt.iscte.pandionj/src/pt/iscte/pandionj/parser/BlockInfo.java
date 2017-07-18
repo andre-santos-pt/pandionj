@@ -1,8 +1,6 @@
-package pt.iscte.pandionj.parser.data;
+package pt.iscte.pandionj.parser;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,9 +16,10 @@ public class BlockInfo {
 	private final int lineStart;
 	private final int lineEnd;
 	private final Type type;
-	
 	private final BlockInfo parent;
 
+	private String id;
+	
 	private List<BlockInfo> children = new ArrayList<>(5);
 	private Map<String, VariableInfo> vars = new LinkedHashMap<>(5);
 	private List<VariableOperation> operationRecord = new ArrayList<>();
@@ -36,6 +35,13 @@ public class BlockInfo {
 		this.type = type;
 	}
 
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getId() {
+		return id == null ? type.name() : id + (type == Type.METHOD ? "()" : "");
+	}
 	public BlockInfo getParent() {
 		return parent;
 	}
@@ -44,8 +50,49 @@ public class BlockInfo {
 		children.add(b);
 	}
 
+	public interface BlockInfoVisitor {
+		default boolean visit(BlockInfo b) { return true; };
+		default void endVisit(BlockInfo b) { };
+	}
+	
+	public void accept(BlockInfoVisitor v) {
+		if(v.visit(this)) {
+			for(BlockInfo c : children)
+				c.accept(v);
+		}
+		v.endVisit(this);
+	}
+	
+	public void print() {
+		accept(new BlockInfoVisitor() {
+			int depth = 0;
+			@Override
+			public boolean visit(BlockInfo b) {
+				tabs(depth);
+				System.out.println(lineStart+"-"+lineEnd+ " " + b.getId() + " {");
+				for(VariableInfo v : b.vars.values()) {
+					tabs(depth);
+					System.out.println("\t" + v.toString());
+				}
+				depth++;
+				return true;
+			}
+			
+			@Override
+			public void endVisit(BlockInfo b) {
+				depth--;
+				tabs(depth);
+				System.out.println("}\n");
+			}
+			
+			private void tabs(int n) {
+				while(n-- > 0)
+					System.out.print("\t");
+			}
+		});
+	}
 	public String toText() {
-		String s = lineStart+"-"+lineEnd+ " " + type + " {\n";
+		String s = lineStart+"-"+lineEnd+ " " + getId() + " {\n";
 		for(VariableInfo v : vars.values())
 			s	 += "\t" + v.toString() + "\n";
 
@@ -59,8 +106,8 @@ public class BlockInfo {
 		return s;
 	}
 
-	public void addVar(String var) {
-		vars.put(var, new VariableInfo(var));
+	public void addVar(String var, boolean param) {
+		vars.put(var, new VariableInfo(var, param, this));
 	}
 
 	private boolean inScope(int line) {
@@ -91,7 +138,10 @@ public class BlockInfo {
 	}
 
 	public VariableInfo locateVariable(String name, int line) {
-		return locateVariable(this, name, line);
+		if(line == -1)
+			return getVariable(name);
+		else
+			return locateVariable(this, name, line);
 	}
 
 
@@ -118,6 +168,10 @@ public class BlockInfo {
 			if(op.getType().equals(t))
 				set.add(op.getVarName());
 		return set;
+	}
+
+	public Type getType() {
+		return type;
 	}
 
 //	public Collection<VariableInfo> getVars() {

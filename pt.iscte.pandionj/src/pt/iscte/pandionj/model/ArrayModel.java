@@ -16,10 +16,6 @@ import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
-import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.model.ValueModel.Role;
-import pt.iscte.pandionj.parser.variable.Stepper;
-import pt.iscte.pandionj.parser.variable.Stepper.ArrayIterator;
 
 public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArrayModel {
 

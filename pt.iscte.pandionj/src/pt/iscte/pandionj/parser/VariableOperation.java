@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.parser.data;
+package pt.iscte.pandionj.parser;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,7 +12,8 @@ public class VariableOperation {
 		DEC,
 		BOUNDED(1), 
 		SUBS,
-		ACC(1);
+		ACC(1),
+		IN_ASSIGN(1);
 
 		private int nParams;
 
@@ -76,5 +77,6 @@ public class VariableOperation {
 		assert index < paramValues.size();
 		return paramValues.get(index);
 	}
+
 
 }

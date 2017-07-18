@@ -7,11 +7,7 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
-import pt.iscte.pandionj.parser.variable.FixedValue;
-import pt.iscte.pandionj.parser.variable.Gatherer;
-import pt.iscte.pandionj.parser.variable.MostWantedHolder;
-import pt.iscte.pandionj.parser.variable.Stepper.ArrayIterator;
-import pt.iscte.pandionj.parser.variable.Variable;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	public enum Role {
@@ -31,37 +27,35 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 			public String toString() { return "";}
 		};
 		
-		static Role matchRole(Variable v) {
-			if(v instanceof FixedValue) 				return FIXED_VALUE;
-			else if(v instanceof Gatherer)			return GATHERER;
-			else if(v instanceof ArrayIterator)		return ARRAY_ITERATOR;
-			else if(v instanceof MostWantedHolder)	return MOST_WANTED_HOLDER;
-			else										return NONE;
+		static Role matchRole(VariableInfo v) {
+			if(v == null)								return NONE;
+			else if(v.isFixedValue()) 					return FIXED_VALUE;
+			else if(v.isGatherer())						return GATHERER;
+			else if(!v.getAccessedArrays().isEmpty())	return ARRAY_ITERATOR;
+			else if(v.isMostWantedHolder())				return MOST_WANTED_HOLDER;
+			else											return NONE;
 		}
 	}
 	
 	private Role role;
-	private Variable var;
+	private VariableInfo var;
 	
-	public ValueModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame, Variable var) throws DebugException {
+	public ValueModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame, VariableInfo var) throws DebugException {
 		super(variable, isInstance, stackFrame);
 		init(var);
 	}
 	
-	public ValueModel(IJavaVariable variable, boolean isInstance, RuntimeModel runtime, Variable var) throws DebugException {
+	public ValueModel(IJavaVariable variable, boolean isInstance, RuntimeModel runtime, VariableInfo var) throws DebugException {
 		super(variable, isInstance, runtime);
 		assert variable.getValue() instanceof IJavaPrimitiveValue;
 		init(var);
 	}
 
-	private void init(Variable var) {
+	private void init(VariableInfo var) {
 		this.var = var;
 		role = Role.matchRole(var);
 	}
 
-	public Variable getVariable() {
-		return var;
-	}
 	
 	@Override
 	public String toString() {
@@ -86,7 +80,7 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	}
 
 	@Override
-	public Variable getVariableRole() {
+	public VariableInfo getVariableRole() {
 		return var;
 	}
 

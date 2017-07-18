@@ -22,16 +22,9 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
-import com.google.common.collect.Multimap;
-
 import pt.iscte.pandionj.ParserManager;
-import pt.iscte.pandionj.parser.ParserAPI.ParserResult;
-import pt.iscte.pandionj.parser.data.VariableInfo;
-import pt.iscte.pandionj.parser.exception.JavaException;
-import pt.iscte.pandionj.parser.exception.JavaException.ArrayOutOfBounds;
-import pt.iscte.pandionj.parser.variable.Stepper.ArrayIterator;
-import pt.iscte.pandionj.parser.variable.Variable;
-import pt.iscte.pandionj.parser2.VarParser;
+import pt.iscte.pandionj.parser.VarParser;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 
 
@@ -233,7 +226,9 @@ public class StackFrameModel extends DisplayUpdateObservable {
 			}
 			else {
 //				Variable var = getLocalVariable(varName);
-				newElement = new ValueModel(jv, isInstance, this, null);
+				VariableInfo info = varParser.locateVariable(varName, frame.getLineNumber());
+				System.err.println(varName + ": " + info);
+				newElement = new ValueModel(jv, isInstance, this, info);
 			}
 
 			vars.put(varName, newElement);
@@ -250,11 +245,15 @@ public class StackFrameModel extends DisplayUpdateObservable {
 					
 					for(String v : vars.keySet()) {
 						VariableInfo info = varParser.locateVariable(v, getLineNumber());
+						if(info != null) {
 						for (String arrayVar : info.getAccessedArrays()) {
 							if(arrayVar.equals(refModel.getName()))
 								array.addVar(new ArrayIndexVariableModel(vars.get(v), refModel));
 //							array.addVar(new ArrayIndexVariableModel(vars.get(itVar)));
 						}
+						}
+						else
+							System.err.println("info not found " + v + " " + getLineNumber());
 					}
 //					for(String itVar : findArrayIterators(e.getKey())) {
 //						if(vars.containsKey(itVar))

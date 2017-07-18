@@ -3,6 +3,7 @@ package pt.iscte.pandionj.tests;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -12,7 +13,8 @@ import org.eclipse.jdt.core.dom.ForStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.PostfixExpression;
 import org.eclipse.jdt.core.dom.PrefixExpression;
-import pt.iscte.pandionj.parser2.JavaSourceParser;
+
+import pt.iscte.pandionj.parser.JavaSourceParser;
 
 public class TestParser {
 	private JavaSourceParser parser;
@@ -44,7 +46,7 @@ public class TestParser {
 			node.getExpression().accept(expVisitor);
 			
 			if(!bodyVisitor.isArrayPrimitiveFigure()) {
-				System.out.println("Este ciclo não itera sobre uma array.");
+				System.out.println("Este ciclo nï¿½o itera sobre uma array.");
 			}
 			
 			return super.visit(node);
@@ -87,7 +89,7 @@ public class TestParser {
 				iterators.add(iteratorName);
 				allIterators.add(iteratorName);
 				iteratorsByArray.put(arrayName, iterators);
-				System.out.println("A variavel " + iteratorName + " está a iterar sobre a array: " + node.getArray().toString());
+				System.out.println("A variavel " + iteratorName + " estï¿½ a iterar sobre a array: " + node.getArray().toString());
 			}
 			
 			return super.visit(node);
@@ -167,7 +169,7 @@ public class TestParser {
 				relacao = "igual a ";
 				break;
 			default:
-				throw new IllegalStateException("Não foi possivel descodificar a condição para terminar o for.");
+				throw new IllegalStateException("Nï¿½o foi possivel descodificar a condiï¿½ï¿½o para terminar o for.");
 			}
 			String result = "Enquanto " + varName + " for " + relacao + bound;
 			
@@ -206,7 +208,7 @@ public class TestParser {
 						continue;
 					}
 				}
-				result += ", o iterador " + iterador + " " + sentido + " por " + quantidade + " a cada iteração.";
+				result += ", o iterador " + iterador + " " + sentido + " por " + quantidade + " a cada iteraï¿½ï¿½o.";
 			}
 			
 			System.out.println(result);
@@ -255,7 +257,7 @@ public class TestParser {
 			int b = localArray[j];
 		}
 		
-		// ciclo for que não itera sobre uma array
+		// ciclo for que nï¿½o itera sobre uma array
 		for(int j = 0; j < 10; j++) {
 			int b = j + j;
 			b = b > j ? b : j;
@@ -280,7 +282,7 @@ public class TestParser {
 	
 
 	public static void main(String[] args) {
-		TestParser parser = new TestParser("C:\\Users\\André Freire\\git\\pandionj\\pt.iscte.pandionj\\src\\pt\\iscte\\pandionj\\tests\\TestParser.java");
+		TestParser parser = new TestParser("src/pt/iscte/pandionj/tests/TestParser.java");
 		parser.run();
 	}
 }

@@ -4,20 +4,11 @@ import java.util.Collection;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IIndexedValue;
-import org.eclipse.debug.core.model.IValue;
-import org.eclipse.debug.core.model.IVariable;
-import org.eclipse.debug.core.model.IWatchExpressionListener;
-import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.debug.core.IJavaValue;
-import org.eclipse.swt.widgets.Display;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 

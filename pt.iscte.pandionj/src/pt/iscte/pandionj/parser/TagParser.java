@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.parser2;
+package pt.iscte.pandionj.parser;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
 import com.google.common.collect.Sets;
+
 
 
 public class TagParser {

@@ -3,9 +3,6 @@ package pt.iscte.pandionj.figures;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.model.IWatchExpressionListener;
-import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
@@ -17,33 +14,19 @@ import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.Signature;
-import org.eclipse.jdt.debug.core.IJavaDebugTarget;
-import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
-import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
-import com.sun.jdi.InvocationException;
-import com.sun.jdi.ObjectReference;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.ParamsDialog;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
-import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.model.EntityModel;
-import pt.iscte.pandionj.model.ObjectModel;
 
 public class ObjectFigure extends RoundedRectangle {
 	private IObjectModel model;
