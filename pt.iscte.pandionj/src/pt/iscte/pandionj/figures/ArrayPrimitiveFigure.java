@@ -6,13 +6,11 @@ import static pt.iscte.pandionj.Constants.ARROW_LINE_WIDTH;
 import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureUtilities;
@@ -25,7 +23,6 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
-
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
@@ -63,13 +60,10 @@ public class ArrayPrimitiveFigure extends Figure{
 		positionsFig = createPositionsFig();
 		
 		GridData boundConstraints = new GridData(SWT.CENTER, SWT.TOP, false, false);
+		
 		add(leftBound, boundConstraints);
-		if(N > 0) {
-			add(positionsFig);
-			add(rightBound, boundConstraints);
-		}else {
-			leftBound.setToolTip(new Label("length = " + N));
-		}
+		add(positionsFig);
+		add(rightBound, boundConstraints);
 		
 		vars = new HashMap<>();
 		for(IArrayIndexModel v : model.getIndexModels())
@@ -95,8 +89,10 @@ public class ArrayPrimitiveFigure extends Figure{
 		
 		Label lengthLabel = new Label("length = " + N);
 		fig.setToolTip(lengthLabel);
-		
-		if(model.getLength() <= Constants.ARRAY_LENGTH_LIMIT) {
+		if(N == 0) {
+			fig.setPreferredSize(new Dimension(Constants.POSITION_WIDTH/2,Constants.POSITION_WIDTH));
+		}
+		else if(model.getLength() <= Constants.ARRAY_LENGTH_LIMIT) {
 			for(int i = 0; i < N; i++) {
 				Position p = new Position(i);
 				fig.add(p);
@@ -108,8 +104,9 @@ public class ArrayPrimitiveFigure extends Figure{
 				fig.add(p);
 				positions.add(p);
 			}
-			fig.add(new Label("..."));
-			Position p = new Position(model.getLength() - 1);
+//			fig.add(new Label("..."));
+//			Position p = new Position(model.getLength() - 1);
+			Position p = new Position(null);
 			fig.add(p);
 			positions.add(p);
 		}
@@ -131,12 +128,16 @@ public class ArrayPrimitiveFigure extends Figure{
 			GridLayout layout = Constants.getOneColGridLayout();
 			setLayoutManager(layout);
 
-			IVariableModel m = model.getElementModel(index); 
-			valueLabel = new ValueLabel(m);
-			layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
-			add(valueLabel);
+			if(index != null) {
+				IVariableModel m = model.getElementModel(index); 
+				valueLabel = new ValueLabel(m);
+				layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
+				add(valueLabel);
+			}else {
+				
+			}
 
-			indexLabel = new Label(index == null ? "" : Integer.toString(index));
+			indexLabel = new Label(index == null ? "..." : Integer.toString(index));
 			FontManager.setFont(indexLabel, INDEX_FONT_SIZE);
 			indexLabel.setLabelAlignment(SWT.CENTER);
 			indexLabel.setForegroundColor(ColorConstants.gray);
@@ -189,10 +190,6 @@ public class ArrayPrimitiveFigure extends Figure{
 				lowerOff = true;
 			else if (v.getCurrentIndex() >= N || v.getBound() >= N)
 				upperOff = true;
-		}
-		
-		if(N == 0) {
-			lowerOff = true;
 		}
 		
 		leftBound.setVisible(lowerOff); 
