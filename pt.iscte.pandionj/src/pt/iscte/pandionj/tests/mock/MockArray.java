@@ -11,13 +11,11 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 
 public class MockArray extends DisplayUpdateObservable implements IArrayModel {
-	final String name;
 	final String type;
 	final List<MockVariable> values;
 	final List<MockArrayIndex> variableRoles;
 
-	public MockArray(String name, String type, Object ... values) {
-		this.name = name;
+	public MockArray(String type, Object ... values) {
 		this.type = type;
 		this.values = new ArrayList<>();
 		for(int i = 0; i < values.length; i++) {
@@ -81,9 +79,5 @@ public class MockArray extends DisplayUpdateObservable implements IArrayModel {
 	@Override
 	public Collection<IArrayIndexModel> getIndexModels() {
 		return Collections.unmodifiableList(variableRoles);
-	}
-	
-	public String getName() {
-		return name;
 	}
 }

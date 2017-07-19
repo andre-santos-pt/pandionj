@@ -19,6 +19,11 @@ public enum PrimitiveType {
 		public Object getValue(IJavaValue val) {
 			return new Byte(((IJavaPrimitiveValue) val).getByteValue());
 		}
+
+		@Override
+		public Object getValue(String val) {
+			return Byte.valueOf(val);
+		}
 	},
 	SHORT {
 		@Override
@@ -30,6 +35,11 @@ public enum PrimitiveType {
 		@Override
 		public Object getValue(IJavaValue val) {
 			return new Short(((IJavaPrimitiveValue) val).getShortValue());
+		}
+		
+		@Override
+		public Object getValue(String val) {
+			return Short.valueOf(val);
 		}
 	},
 	INT {
@@ -43,6 +53,11 @@ public enum PrimitiveType {
 		public Object getValue(IJavaValue val) {
 			return new Integer(((IJavaPrimitiveValue) val).getIntValue());
 		}
+		
+		@Override
+		public Object getValue(String val) {
+			return Integer.valueOf(val);
+		}
 	},
 	LONG {
 		@Override
@@ -55,6 +70,11 @@ public enum PrimitiveType {
 		public Object getValue(IJavaValue val) {
 			return new Long(((IJavaPrimitiveValue) val).getLongValue());
 		}
+		
+		@Override
+		public Object getValue(String val) {
+			return Long.valueOf(val);
+		}
 	},
 	FLOAT {
 		@Override
@@ -65,6 +85,10 @@ public enum PrimitiveType {
 		@Override
 		public Object getValue(IJavaValue val) {
 			return new Float(((IJavaPrimitiveValue) val).getFloatValue());
+		}
+		@Override
+		public Object getValue(String val) {
+			return Float.valueOf(val);
 		}
 	},
 	DOUBLE {
@@ -78,6 +102,11 @@ public enum PrimitiveType {
 		public Object getValue(IJavaValue val) {
 			return new Double(((IJavaPrimitiveValue) val).getDoubleValue());
 		}
+		
+		@Override
+		public Object getValue(String val) {
+			return Double.valueOf(val);
+		}
 	},
 	CHAR {
 		@Override
@@ -90,6 +119,11 @@ public enum PrimitiveType {
 		public Object getValue(IJavaValue val) {
 			return new Character(((IJavaPrimitiveValue) val).getCharValue());
 		}
+		
+		@Override
+		public Object getValue(String val) {
+			return new Character(val.charAt(0));
+		}
 	},
 	BOOLEAN {
 		@Override
@@ -100,6 +134,11 @@ public enum PrimitiveType {
 		@Override
 		public Object getValue(IJavaValue val) {
 			return new Boolean(((IJavaPrimitiveValue) val).getBooleanValue());
+		}
+		
+		@Override
+		public Object getValue(String val) {
+			return Boolean.valueOf(val);
 		}
 	};
  	
@@ -112,6 +151,8 @@ public enum PrimitiveType {
 	public abstract void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array);
 	
 	public abstract Object getValue(IJavaValue val);
+	
+	public abstract Object getValue(String val);
 	
 //	public abstract String getStringValue(IJavaValue val);
 	

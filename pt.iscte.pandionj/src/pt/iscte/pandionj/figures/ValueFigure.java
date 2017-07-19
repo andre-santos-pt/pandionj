@@ -109,18 +109,18 @@ public class ValueFigure extends Figure {
 		PrimitiveType pType = PrimitiveType.match(model.getTypeName());
 
 		// TODO
-//		String v = history.get(0);
-//		String parcels = v
-//		for(int i = 1; i < history.size(); i++) {
-//			Object x = pType.getValue(history.get(i));
-//			if(pType.equals(PrimitiveType.BYTE))			parcels += " + " + ((Byte) 		x - (Byte) v);
-//			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 		x - (Short) v);
-//			else if(pType.equals(PrimitiveType.INT)) 	parcels += " + " + ((Integer) 	x - (Integer) v);
-//			else if(pType.equals(PrimitiveType.LONG))	parcels += " + " + ((Long) 		x - (Long) v);
-//			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 		x - (Float) v);
-//			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
-//			v = x;
-//		}
+		Object v = pType.getValue(history.get(0));
+		String parcels = v.toString();
+		for(int i = 1; i < history.size(); i++) {
+			Object x = pType.getValue(history.get(i));
+			if(pType.equals(PrimitiveType.BYTE))			parcels += " + " + ((Byte) 		x - (Byte) v);
+			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 		x - (Short) v);
+			else if(pType.equals(PrimitiveType.INT)) 	parcels += " + " + ((Integer) 	x - (Integer) v);
+			else if(pType.equals(PrimitiveType.LONG))	parcels += " + " + ((Long) 		x - (Long) v);
+			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 		x - (Float) v);
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
+			v = x;
+		}
 
 //		Object v = pType.getValue(history.get(0));
 //		String parcels = v.toString();
@@ -134,7 +134,6 @@ public class ValueFigure extends Figure {
 //			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
 //			v = x;
 //		}
-		String parcels = "?";
 		return "(" + parcels + ")";
 	}
 

@@ -7,6 +7,18 @@ class T {
 }
 
 public class Test {
+	int max(int[] v) {
+		int max = 0;
+		int i = 0;
+		while(i < v.length) {
+		if(v.length > 0)
+			max = 2;
+		}
+		
+		return max;
+	}
+
+	
 	class Inner {
 		int xxx;
 	}
@@ -55,6 +67,7 @@ public class Test {
 		v[i] = t;
 		v[j] = t;
 	}
+	
 
 	public static void main(String[] args) {
 

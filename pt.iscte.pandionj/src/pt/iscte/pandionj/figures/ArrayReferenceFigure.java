@@ -12,7 +12,6 @@ import java.util.Map;
 import org.eclipse.draw2d.AbstractConnectionAnchor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.FigureUtilities;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
@@ -20,11 +19,9 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.RoundedRectangle;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
@@ -135,78 +132,10 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 	}
 
 	@Override
-	public void paintFigure(final Graphics graphics) {
-		super.paintFigure(graphics);
-		Dimension dim = N == 0 ? new Dimension(5, 5) : getPosition(0).getSize();
-		int pWidth = dim.width / 2;
-		int y = Constants.OBJECT_PADDING + dim.height;
-		graphics.setLineWidth(Constants.ARROW_LINE_WIDTH);
-		Font font = FontManager.getFont(Constants.VAR_FONT_SIZE);
-		graphics.setFont(font);
-		for(ArrayIndexVariableModel v : vars.values()) {
-//			graphics.setForegroundColor(v.color);
-			int i = v.getCurrentIndex();
-			boolean forward = v.getDirection().equals(pt.iscte.pandionj.model.ArrayIndexVariableModel.Direction.FORWARD);
-
-
-			Point from = getPosition(i).getLocation().getTranslated(pWidth - FigureUtilities.getTextWidth(v.getName(), font)/2, y);
-			graphics.drawText(v.getName(), from);
-
+	public void paintFigure(final Graphics graphics) {	
 			// TODO
-//			List<Integer> indexes = v.getIndexes();
-//			for(int iOld = 0; iOld < indexes.size()-1; iOld++) {
-//				Point p = getPosition(indexes.get(iOld)).getLocation().getTranslated(pWidth, y + vars.size()*Constants.ARROW_EDGE);
-//				graphics.drawOval(p.x-1, p.y-1, 2, 2);
-//			}
-
-			if(v.isBounded()) {
-				if(i != v.getBound()) {
-					Point to = positions.get(v.getBound()).getLocation().getTranslated(pWidth + (forward ? -Constants.ARROW_EDGE : Constants.ARROW_EDGE), y+Constants.ARROW_EDGE);
-					from = from.getTranslated(forward ? Constants.ARROW_EDGE : -Constants.ARROW_EDGE, Constants.ARROW_EDGE);
-					graphics.drawLine(from, to);
-					Point a = to.getTranslated(forward ? -Constants.ARROW_EDGE : Constants.ARROW_EDGE, -Constants.ARROW_EDGE);
-					graphics.drawLine(to, a);
-					a = a.getTranslated(0, Constants.ARROW_EDGE*2);
-					graphics.drawLine(to, a);
-				}
-			}
-			y += Constants.ARROW_EDGE*2;
-		}
-
 	}
 
-//	public void setVar(String id, int index, Object bound, boolean isBar) {
-//		if(index >= N && positions.size() - 1 -lowerOffSet < index)
-//			addOutOfUpperBound(index);
-//		else if(bound instanceof Integer && ((Integer) bound) >= N)
-//			addOutOfUpperBound((Integer) bound);
-//		else if(index + lowerOffSet < 0) {
-//			addOutOfLowerBound(index);
-//		}
-//
-//		Var v = vars.get(id);
-//		if(v == null) {
-//			v = new Var(id, index, bound, false, Constants.Colors.getVarColor(vars.size()));
-//			vars.put(id, v);
-//		}
-//		else {
-//			v.updateIndex(index);
-//			v.bound = bound;
-//		}
-//		repaint();
-//	}
-
-//	public void addVarBound(int index, String id) {
-//		vars.put(id, new Var(id, index, -1, false, Constants.Colors.getVarColor(vars.size())));
-//		repaint();
-//	}
-
-//	public boolean setValue(int index, Object value) {
-//		Position p = getPosition(index);
-//		boolean change = !p.getValue().equals(value.toString());
-//		p.setValue(value.toString());
-//		return change;
-//	}
 
 	public AbstractConnectionAnchor getAnchor(int positionIndex) {
 		return positions.get(positionIndex).anchor;

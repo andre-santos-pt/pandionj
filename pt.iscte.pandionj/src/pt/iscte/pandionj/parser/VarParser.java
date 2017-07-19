@@ -132,31 +132,31 @@ public class VarParser {
 			return true;
 		}
 
-		private boolean isLoopBlock(Block block) {
+		private boolean isLoopStatement(Block block) {
 			ASTNode parent = block.getParent();
 			return
 					parent instanceof WhileStatement ||
 					parent instanceof ForStatement ||
 					parent instanceof DoStatement ||
-					parent instanceof EnhancedForStatement;
+					parent instanceof EnhancedForStatement ||
+					parent instanceof IfStatement;
 		}
 
 		@Override
 		public boolean visit(Block node) {
-			if(!isLoopBlock(node)) {
-				current = createBlock(node.getParent());
+			if(!isLoopStatement(node)) {
 				ASTNode parent = node.getParent();
+				current = createBlock(parent);
 
-				if(parent instanceof MethodDeclaration) {
+				if(parent instanceof MethodDeclaration)
 					handleMethodParams((MethodDeclaration) parent);
-				}
 			}
 			return true;
 		}
 
 		@Override
 		public void endVisit(Block node) {
-			if(!isLoopBlock(node))
+			if(!isLoopStatement(node))
 				current = current.getParent();
 		}
 
@@ -230,6 +230,8 @@ public class VarParser {
 			return true;
 		}
 
+		
+		// TODO ++ prefix
 		@Override
 		public boolean visit(PostfixExpression node) {
 			if(node.getOperand() instanceof SimpleName) {
@@ -249,8 +251,10 @@ public class VarParser {
 
 
 
+		//TODO bug esq/dir
 		private void handleCondition(Expression expression) {
-			Set<String> incVars = current.getVarsModified(VariableOperation.Type.INC);
+			Set<String> incVars = current.getVarsModified(VariableOperation.Type.INC); // falta DEC
+			
 			if(expression instanceof InfixExpression) {
 				InfixExpression exp = (InfixExpression) expression;
 				if(exp.getLeftOperand() instanceof SimpleName) {
@@ -265,7 +269,8 @@ public class VarParser {
 						}
 					}
 				}
-				else if(exp.getRightOperand() instanceof SimpleName) {
+				
+				if(exp.getRightOperand() instanceof SimpleName) {
 					String var = exp.getRightOperand().toString();
 					if(incVars.contains(var)) {
 						SearchVarVisitor v = new SearchVarVisitor();
@@ -314,6 +319,18 @@ public class VarParser {
 		}
 
 
+		
+		@Override
+		public boolean visit(IfStatement node) {
+			current = createBlock(node);
+			return true;
+		}
+
+		@Override
+		public void endVisit(IfStatement node) {
+			current = current.getParent();
+		}
+		
 
 
 		@Override

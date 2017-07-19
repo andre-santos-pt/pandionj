@@ -32,6 +32,10 @@ public class VariableOperation {
 		public boolean isModifier() {
 			return this == INC || this == DEC || this == SUBS || this == ACC;
 		}
+		
+		public boolean isStepper() {
+			return this == INC || this == DEC;
+		}
 	}
 
 	private final String varName;
@@ -72,6 +76,12 @@ public class VariableOperation {
 	public boolean isModifier() {
 		return type.isModifier();
 	}
+	
+	public boolean isStepper() {
+		return type.isStepper();
+	}
+	
+	
 
 	public Object getParam(int index) {
 		assert index < paramValues.size();

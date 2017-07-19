@@ -5,13 +5,21 @@ public interface IArrayIndexModel extends IVariableModel {
 		NONE, FORWARD, BACKWARD;
 	}
 
-	String getArrayReferenceName();
+	enum BoundType {
+		OPEN, CLOSE;
+	}
+	
+	interface IBound {
+		int getValue();
+		BoundType getType();
+		String getExpression();
+	}
+	
+	IVariableModel getArrayReference();
 	
 	int getCurrentIndex();
 	
 	Direction getDirection();
 	
-	boolean isBounded();
-
-	int getBound();
+	IBound getBound();	
 }

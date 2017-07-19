@@ -20,6 +20,7 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.tests.mock.MockArray;
 import pt.iscte.pandionj.tests.mock.MockArrayIndex;
+import pt.iscte.pandionj.tests.mock.MockVariable;
 
 public class TestFigure {
 	public static void main(String[] args) {
@@ -54,13 +55,20 @@ public class TestFigure {
 	
 
 	private static void createDiagram(IFigure root) {
-		MockArray array = new MockArray("array1", "int", 1,2,3,4,5);
-		MockArrayIndex i1 = new MockArrayIndex("i1", array.getName(), null, 5, IArrayIndexModel.Direction.FORWARD,-4);
-		MockArrayIndex i2 = new MockArrayIndex("i2", array.getName(), null, 0, IArrayIndexModel.Direction.FORWARD, i1);
-		MockArrayIndex i3 = new MockArrayIndex("i3", array.getName(), null, 0, IArrayIndexModel.Direction.FORWARD, 3); ;
-		array.addIndexVariable(i1);
+		MockArray array = new MockArray("int", 1,2,3,4,5);
+		MockVariable var = new MockVariable("int[]", "v", null, array);
+		
+		MockVariable i = new MockVariable("int", "i", null, 0);
+		
+		MockArrayIndex i2 = new MockArrayIndex(i, var, 5, IArrayIndexModel.Direction.FORWARD);
 		array.addIndexVariable(i2);
-		array.addIndexVariable(i3);
+		
+//		MockArrayIndex i1 = new MockArrayIndex("i1", null, 5, IArrayIndexModel.Direction.FORWARD,
+//		MockArrayIndex i2 = new MockArrayIndex("i2", null, 0, IArrayIndexModel.Direction.FORWARD, i1);
+//		MockArrayIndex i3 = new MockArrayIndex("i3", null, 0, IArrayIndexModel.Direction.FORWARD, 3); ;
+//		array.addIndexVariable(i1);
+//		array.addIndexVariable(i2);
+//		array.addIndexVariable(i3);
 		
 		ArrayPrimitiveFigure fig = new ArrayPrimitiveFigure(array);
 		fig.setSize(fig.getPreferredSize());
@@ -90,12 +98,12 @@ public class TestFigure {
 			public void actionPerformed(ActionEvent event) {
 				try {
 					array.set(i2.getCurrentIndex(), 9);
-					if(i2.getBound() != i2.getCurrentIndex()) {
-						i2.set(i2.getCurrentIndex() + 1);
+					if(i2.getBound().getValue() != i2.getCurrentIndex()) {
+						i.set(i2.getCurrentIndex() + 1);
 					}
 					
-					if(i1.getBound() != i1.getCurrentIndex()) {
-						i1.set(i1.getCurrentIndex() - 1);
+					if(i2.getBound().getValue() != i2.getCurrentIndex()) {
+						i.set(i2.getCurrentIndex() - 1);
 					}
 				}
 				catch(IndexOutOfBoundsException e) {

@@ -10,30 +10,23 @@ import pt.iscte.pandionj.parser.VariableInfo;
 
 public class ArrayIndexVariableModel extends DisplayUpdateObservable implements IArrayIndexModel {
 	private final IVariableModel model;
-	private final IVariableModel arrayRefName;
+	private final IVariableModel arrayRef;
 	
-	private int constBound;
-	private IVariableModel varBound;
+	private IBound bound;
 	
 	private boolean illegalAccess;
 	
-	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName) {
+	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRef) {
 		assert model != null;
 		this.model = model;
-		this.arrayRefName = arrayRefName;
-		constBound = -1;
-		varBound = null;
+		this.arrayRef = arrayRef;
+		bound = null;
 		illegalAccess = false;
 	}
 			
-	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, int constBound) {
+	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, IBound bound) {
 		this(model, arrayRefName);
-		this.constBound = constBound;
-	}
-
-	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, IVariableModel varBound) {
-		this(model, arrayRefName);
-		this.varBound = varBound;
+		this.bound = bound;
 	}
 	
 	public String getName() {
@@ -50,20 +43,19 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 	}
 
 	public boolean isBounded() {
-		return constBound != -1 || varBound != null;
+		return bound != null;
 	}
 
-	public int getBound() {
-		if(!isBounded())
-			return -1;
-		else
-			return constBound != -1 ? constBound : Integer.parseInt(varBound.getCurrentValue());
+	public IBound getBound() {
+		return bound;
 	}
 
 	public Direction getDirection() {
-		if(isBounded())
-			return getCurrentIndex() < getBound() ? Direction.FORWARD : Direction.BACKWARD;
-		else	
+		if(getVariableRole().isStepperForward())
+			return Direction.FORWARD;
+		else if(getVariableRole().isStepperBackward())
+			return Direction.BACKWARD;
+		else
 			return Direction.NONE;
 	}
 	
@@ -121,7 +113,7 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 	}
 
 	@Override
-	public String getArrayReferenceName() {
-		return arrayRefName.getName();
+	public IVariableModel getArrayReference() {
+		return arrayRef;
 	}
 }

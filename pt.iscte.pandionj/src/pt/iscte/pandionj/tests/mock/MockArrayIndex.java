@@ -1,30 +1,29 @@
 package pt.iscte.pandionj.tests.mock;
 
+import java.util.Collection;
+import java.util.List;
+
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.model.DisplayUpdateObservable;
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public class MockArrayIndex extends MockVariable implements IArrayIndexModel {
-	private final String arrayRefName;
+public class MockArrayIndex extends DisplayUpdateObservable implements IArrayIndexModel {
+	private final IVariableModel variable;
+	private final IVariableModel arrayReference;
 	private final Direction direction;
 	
-	private Integer constBound;
-	private IVariableModel varBound;
+	private IBound bound;
 	
-	public MockArrayIndex(String name, String arrayRefName, VariableInfo role, int value, Direction direction) {
-		super("int", name, role, value);
-		this.arrayRefName = arrayRefName;
+	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, int value, Direction direction) {
+		this.variable = variable;
+		this.arrayReference = arrayReference;
 		this.direction = direction;
 	}
 
-	public MockArrayIndex(String name, String arrayRefName, VariableInfo role, int value, Direction direction, int constBound) {
-		this(name, arrayRefName, role, value, direction);
-		this.constBound = constBound;
-	}
-	
-	public MockArrayIndex(String name, String arrayRefName, VariableInfo role, int value, Direction direction, IVariableModel varBound) {
-		this(name, arrayRefName, role, value, direction);
-		this.varBound = varBound;
+	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, int value, Direction direction, IBound bound) {
+		this(variable, arrayReference, value, direction);
+		this.bound = bound;
 	}
 	
 	@Override
@@ -38,18 +37,62 @@ public class MockArrayIndex extends MockVariable implements IArrayIndexModel {
 	}
 
 	@Override
-	public boolean isBounded() {
-		return constBound != null || varBound != null;
+	public IBound getBound() {
+		return bound;
 	}
 
 	@Override
-	public int getBound() {
-		assert isBounded();
-		return constBound != null ? constBound.intValue() : Integer.parseInt(varBound.getCurrentValue());
+	public IVariableModel getArrayReference() {
+		return arrayReference;
 	}
 
 	@Override
-	public String getArrayReferenceName() {
-		return arrayRefName;
+	public String getName() {
+		return variable.getName();
+	}
+
+	@Override
+	public String getTypeName() {
+		return variable.getTypeName();
+	}
+
+	@Override
+	public String getCurrentValue() {
+		return variable.getCurrentValue();
+	}
+
+	@Override
+	public List<String> getHistory() {
+		return variable.getHistory();
+	}
+
+	@Override
+	public boolean isDecimal() {
+		return variable.isDecimal();
+	}
+
+	@Override
+	public boolean isBoolean() {
+		return variable.isBoolean();
+	}
+
+	@Override
+	public boolean isInstance() {
+		return variable.isInstance();
+	}
+
+	@Override
+	public boolean isWithinScope() {
+		return variable.isWithinScope();
+	}
+
+	@Override
+	public VariableInfo getVariableRole() {
+		return variable.getVariableRole();
+	}
+
+	@Override
+	public Collection<String> getTags() {
+		return variable.getTags();
 	}
 }

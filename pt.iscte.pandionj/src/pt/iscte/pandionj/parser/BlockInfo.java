@@ -12,6 +12,10 @@ import java.util.Set;
 public class BlockInfo {
 	public enum Type {
 		TYPE, METHOD, WHILE, FOR, DO_WHILE, FOR_EACH, IF, OTHER;
+
+		public boolean isLoop() {
+			return this == WHILE || this == FOR || this == DO_WHILE || this == FOR_EACH;
+		}
 	}
 	private final int lineStart;
 	private final int lineEnd;
@@ -46,6 +50,11 @@ public class BlockInfo {
 		return parent;
 	}
 
+	public boolean isLoop() {
+		return type.isLoop();
+	}
+
+	
 	private void addChild(BlockInfo b) {
 		children.add(b);
 	}
@@ -104,6 +113,11 @@ public class BlockInfo {
 		}
 		s += "}\n";
 		return s;
+	}
+	
+	@Override
+	public String toString() {
+		return lineStart+"-"+lineEnd+ " " + getId();
 	}
 
 	public void addVar(String var, boolean param) {
@@ -173,6 +187,11 @@ public class BlockInfo {
 	public Type getType() {
 		return type;
 	}
+
+	public boolean contains(VariableOperation op) {
+		return operationRecord.contains(op);
+	}
+
 
 //	public Collection<VariableInfo> getVars() {
 //		return vars.values();

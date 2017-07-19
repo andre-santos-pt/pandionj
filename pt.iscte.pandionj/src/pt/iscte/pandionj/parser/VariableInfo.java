@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
+
 public class VariableInfo {
 	private final String name;
 	private final boolean isParam;
@@ -24,6 +26,7 @@ public class VariableInfo {
 				(isFixedValue() ? "CONSTANT " : "") +
 				(isGatherer() ? "GATHERER " : "") + 
 				(!accessedArrays.isEmpty() ? "ARRAY_INDEX " : "") + 
+				(isMostWantedHolder() ? "HOLDER " : "") +
 				operations;
 	}
 
@@ -86,6 +89,17 @@ public class VariableInfo {
 			return GathererType.UNDEFINED;
 	}
 	
+	public boolean isArrayIndex() {
+		boolean arrayAccess = false;
+		for(VariableOperation op : operations)
+			if(op.getType() == VariableOperation.Type.INDEX)
+				arrayAccess = true;
+			else if(op.isModifier() && !op.isStepper())
+				return false;
+		
+		return arrayAccess;
+	}
+	
 	public List<String> getAccessedArrays() {
 		List<String> list = new ArrayList<>();
 		for(VariableOperation op : operations)
@@ -93,6 +107,25 @@ public class VariableInfo {
 				list.add(op.getParam(0).toString());
 		
 		return list;
+	}
+	
+	private boolean isStepper(VariableOperation.Type t) {
+		boolean found = false;
+		for(VariableOperation op : operations)
+			if(op.getType() == t)
+				found = true;
+			else if(op.isModifier())
+				return false;
+		
+		return found;
+	}
+	
+	public boolean isStepperForward() {
+		return isStepper(VariableOperation.Type.INC);
+	}
+	
+	public boolean isStepperBackward() {
+		return isStepper(VariableOperation.Type.DEC);
 	}
 	
 	public String getBound() {
@@ -103,30 +136,42 @@ public class VariableInfo {
 		return null;
 	}
 
-	public boolean isMostWantedHolder() {
-		return false;
-	}
+	private class IfVisitor implements BlockInfoVisitor {
+		boolean insideIf = false;
+		VariableOperation op;
+		
+		public IfVisitor(VariableOperation op) {
+			this.op = op;
+		}
+
+		public boolean visit(BlockInfo b) {
+			if(b != declarationBlock && b.getType() == BlockInfo.Type.IF && b.contains(op)) {
+				BlockInfo n = b;
+				while(n != declarationBlock && !insideIf) {
+					n = n.getParent();
+					if(n.isLoop())
+						insideIf = true;
+				}
+			}
+			return true;
+		}
+		
+	};
 	
-//	public boolean isMostWantedHolder() {
-//		boolean hasSubs = false;
-//		for(VariableOperation op : operations)
-//			if(op.getType() != VariableOperation.Type.SUBS) {
-//				hasSubs = true;
-//				BlockInfoVisitor v = new BlockInfoVisitor() {
-//					insideIf = false;
-//					public boolean visit(BlockInfo b) {
-//						if(b != declarationBlock && b.getType() == BlockInfo.Type.IF) {
-//							
-//						}
-//						return true;
-//					}
-//					
-//				});
-//				declarationBlock.accept(
-//			}
-//			else if(op.isModifier())
-//				return false;
-//		
-//		return hasSubs;
-//	}
+	public boolean isMostWantedHolder() {
+		boolean hasSubs = false;
+		for(VariableOperation op : operations) {
+			if(op.getType() == VariableOperation.Type.SUBS) {
+				hasSubs = true;
+				IfVisitor v = new IfVisitor(op);
+				declarationBlock.accept(v);
+				if(!v.insideIf)
+					return false;
+			}
+			else if(op.isModifier())
+				return false;
+		}
+		
+		return hasSubs;
+	}
 }
