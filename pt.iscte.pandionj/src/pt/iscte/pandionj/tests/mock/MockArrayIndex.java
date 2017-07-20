@@ -15,14 +15,14 @@ public class MockArrayIndex extends DisplayUpdateObservable implements IArrayInd
 	
 	private IBound bound;
 	
-	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, int value, Direction direction) {
+	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, Direction direction) {
 		this.variable = variable;
 		this.arrayReference = arrayReference;
 		this.direction = direction;
 	}
 
-	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, int value, Direction direction, IBound bound) {
-		this(variable, arrayReference, value, direction);
+	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, Direction direction, IBound bound) {
+		this(variable, arrayReference, direction);
 		this.bound = bound;
 	}
 	

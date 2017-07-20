@@ -57,7 +57,6 @@ public class TestFigure {
 	private static void createDiagram(IFigure root) {
 		MockArray array = new MockArray("int", 1,2,3,4,5);
 		MockVariable var = new MockVariable("int[]", "v", null, array);
-		
 		MockVariable i = new MockVariable("int", "i", null, 0);
 		
 		MockArrayIndex i2 = new MockArrayIndex(i, var, 5, IArrayIndexModel.Direction.FORWARD);

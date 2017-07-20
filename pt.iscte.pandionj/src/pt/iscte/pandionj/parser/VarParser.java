@@ -21,10 +21,12 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
+import org.eclipse.jdt.core.dom.InfixExpression.Operator;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NumberLiteral;
 import org.eclipse.jdt.core.dom.PostfixExpression;
+import org.eclipse.jdt.core.dom.PrefixExpression;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
@@ -34,6 +36,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
+import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.parser.VariableOperation.Type;
 
 
@@ -210,9 +213,9 @@ public class VarParser {
 					op = Type.SUBS;
 					Object[] params = new Object[0];
 					if(node.getOperator() == Assignment.Operator.PLUS_ASSIGN ||
-						isAcumulationAssign(node, InfixExpression.Operator.PLUS, (e) -> !(e instanceof NumberLiteral)) || 
-						node.getOperator() == Assignment.Operator.MINUS_ASSIGN ||
-						isAcumulationAssign(node, InfixExpression.Operator.MINUS, (e) -> !(e instanceof NumberLiteral))) {
+							isAcumulationAssign(node, InfixExpression.Operator.PLUS, (e) -> !(e instanceof NumberLiteral)) || 
+							node.getOperator() == Assignment.Operator.MINUS_ASSIGN ||
+							isAcumulationAssign(node, InfixExpression.Operator.MINUS, (e) -> !(e instanceof NumberLiteral))) {
 						op = Type.ACC;
 						params = new Object[] {"sum"};
 					}
@@ -230,17 +233,16 @@ public class VarParser {
 			return true;
 		}
 
-		
-		// TODO ++ prefix
+
 		@Override
-		public boolean visit(PostfixExpression node) {
-			if(node.getOperand() instanceof SimpleName) {
-				String varName = node.getOperand().toString(); 
+		public boolean visit(PostfixExpression exp) {
+			if(exp.getOperand() instanceof SimpleName) {
+				String varName = exp.getOperand().toString(); 
 				VariableOperation op = null;
-				if(node.getOperator() == PostfixExpression.Operator.INCREMENT)
+				if(exp.getOperator() == PostfixExpression.Operator.INCREMENT)
 					op = new VariableOperation(varName, VariableOperation.Type.INC);
 
-				else if(node.getOperator() == PostfixExpression.Operator.DECREMENT)
+				else if(exp.getOperator() == PostfixExpression.Operator.DECREMENT)
 					op = new VariableOperation(varName, VariableOperation.Type.DEC);
 
 				if(op != null)
@@ -251,16 +253,33 @@ public class VarParser {
 
 
 
-		//TODO bug esq/dir
+		@Override
+		public boolean visit(PrefixExpression exp) {
+			if(exp.getOperand() instanceof SimpleName) {
+				String varName = exp.getOperand().toString(); 
+				VariableOperation op = null;
+				if(exp.getOperator() == PrefixExpression.Operator.INCREMENT)
+					op = new VariableOperation(varName, VariableOperation.Type.INC);
+
+				else if(exp.getOperator() == PrefixExpression.Operator.DECREMENT)
+					op = new VariableOperation(varName, VariableOperation.Type.DEC);
+
+				if(op != null)
+					current.addOperation(op);
+			}
+			return true;
+		}
+
 		private void handleCondition(Expression expression) {
-			Set<String> incVars = current.getVarsModified(VariableOperation.Type.INC); // falta DEC
-			
+			Set<String> incVars = current.getOperations(VariableOperation.Type.INC, VariableOperation.Type.DEC);
+
 			if(expression instanceof InfixExpression) {
 				InfixExpression exp = (InfixExpression) expression;
+
 				if(exp.getLeftOperand() instanceof SimpleName) {
 					String var = exp.getLeftOperand().toString();
 					if(incVars.contains(var)) {
-						SearchVarVisitor v = new SearchVarVisitor();
+						SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
 						exp.getRightOperand().accept(v);
 						if(v.vars.size() == 1) {
 							String varName = v.vars.get(0);
@@ -269,11 +288,11 @@ public class VarParser {
 						}
 					}
 				}
-				
+
 				if(exp.getRightOperand() instanceof SimpleName) {
 					String var = exp.getRightOperand().toString();
 					if(incVars.contains(var)) {
-						SearchVarVisitor v = new SearchVarVisitor();
+						SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
 						exp.getLeftOperand().accept(v);
 						if(v.vars.size() == 1) {
 							String varName = v.vars.get(0);
@@ -285,10 +304,76 @@ public class VarParser {
 			}
 		}
 
+		private void checkBounds(Expression exp) {
+			exp.accept(new BoundVisitor());
+		}
+
+		class BoundVisitor extends ASTVisitor {
+			public boolean visit(InfixExpression exp) {
+				System.err.println(exp);
+				Operator op = exp.getOperator();
+				if(isCompareOperator(op)) {
+					String leftExp = exp.getLeftOperand().toString();
+					String rightExp = exp.getRightOperand().toString();
+
+					Set<String> incVars = current.getOperations(VariableOperation.Type.INC, VariableOperation.Type.DEC);
+
+					if(exp.getLeftOperand() instanceof SimpleName && incVars.contains(leftExp))
+						aux(leftExp, op, exp.getRightOperand());
+
+					if(exp.getRightOperand() instanceof SimpleName && incVars.contains(rightExp))
+						aux(rightExp, op, exp.getLeftOperand());
+				}
+				return true;
+			}
+		}
+
+		private boolean isCompareOperator(InfixExpression.Operator op) {
+			return
+					op == InfixExpression.Operator.LESS || 
+					op == InfixExpression.Operator.LESS_EQUALS ||
+					op == InfixExpression.Operator.GREATER ||
+					op == InfixExpression.Operator.GREATER_EQUALS ||
+					op == InfixExpression.Operator.NOT_EQUALS;
+		}
+
+		private boolean isOpen(InfixExpression.Operator op){
+			return
+					op == InfixExpression.Operator.LESS ||
+					op == InfixExpression.Operator.GREATER ||
+					op == InfixExpression.Operator.NOT_EQUALS;
+		}
 
 
+		private void aux(String var, InfixExpression.Operator operator, Expression exp) {
 
+			String type = (isOpen(operator) ? IArrayIndexModel.BoundType.OPEN : IArrayIndexModel.BoundType.CLOSE).name();
+			VariableOperation op = new VariableOperation(var, VariableOperation.Type.BOUNDED, exp.toString(), type);
+			current.addOperation(op);
+		}
 
+		class CheckBoundExpression extends ASTVisitor {
+			boolean ok = true;
+			
+			@Override
+			public void preVisit(ASTNode node) {
+				if(!(node instanceof SimpleName || node instanceof QualifiedName || node instanceof NumberLiteral))
+					ok = false;
+			}
+		}
+		class SearchSimpleVarVisitor extends ASTVisitor {
+			final List<String> vars = new ArrayList<>(5);
+			@Override
+			public boolean visit(SimpleName node) {
+				if(!(node.getParent() instanceof QualifiedName))
+					vars.add(node.getIdentifier());
+				return true;
+			}
+
+			boolean contains(String var) {
+				return vars.contains(var);
+			}
+		}
 
 
 
@@ -300,7 +385,8 @@ public class VarParser {
 
 		@Override
 		public void endVisit(WhileStatement node) {
-			handleCondition(node.getExpression());
+			checkBounds(node.getExpression());
+			//			handleCondition(node.getExpression());
 			current = current.getParent();
 		}
 
@@ -319,7 +405,7 @@ public class VarParser {
 		}
 
 
-		
+
 		@Override
 		public boolean visit(IfStatement node) {
 			current = createBlock(node);
@@ -330,14 +416,14 @@ public class VarParser {
 		public void endVisit(IfStatement node) {
 			current = current.getParent();
 		}
-		
+
 
 
 		@Override
 		public boolean visit(ArrayAccess node) {
 			if(node.getArray() instanceof SimpleName || node.getArray() instanceof ArrayAccess) {
 				String arrayRef = arrayRef(node);
-				SearchVarVisitor v = new SearchVarVisitor();
+				SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
 				node.getIndex().accept(v);
 				for(String varName : v.vars) {
 					int dim = indexDepth(node);
@@ -463,21 +549,7 @@ public class VarParser {
 
 
 
-		private boolean containsVar(Expression expression, String varName) {
-			SearchVarVisitor v = new SearchVarVisitor();
-			expression.accept(v);
-			return v.vars.contains(varName);
-		}
 
-		class SearchVarVisitor extends ASTVisitor {
-			final List<String> vars = new ArrayList<>(5);
-			@Override
-			public boolean visit(SimpleName node) {
-				if(!(node.getParent() instanceof QualifiedName))
-					vars.add(node.getIdentifier());
-				return true;
-			}
-		}
 	}
 
 	private static boolean isAcumulationAssign(Assignment assignment, InfixExpression.Operator op, Predicate<Expression> acceptExpression) {

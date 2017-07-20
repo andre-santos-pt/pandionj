@@ -10,7 +10,7 @@ public class Test {
 	int max(int[] v) {
 		int max = 0;
 		int i = 0;
-		while(i < v.length) {
+		while(i < (v.length)) {
 		if(v.length > 0)
 			max = 2;
 		}
@@ -34,8 +34,8 @@ public class Test {
 //		v[2] = 9;
 //
 		int sum = 0;
-		while(i < jj) {
-			i = i + 1;
+		while(i <= jj && i != (jj+1)) {
+			--i;
 			sum = sum + v[i];
 		}
 //		
@@ -45,7 +45,7 @@ public class Test {
 //
 		int[][] m = new int[10][10];
 		for(int y = 0; y < 10; y = y + 1)
-			for(int x = 0; x < y; x++) {
+			for(int x = 0; x < y; ++x) {
 				m[y][x] = 1;
 				v[x] = 1;
 			}

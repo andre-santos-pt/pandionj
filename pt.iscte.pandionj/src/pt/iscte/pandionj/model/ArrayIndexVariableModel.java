@@ -22,6 +22,7 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 		this.arrayRef = arrayRef;
 		bound = null;
 		illegalAccess = false;
+		model.registerObserver((o,a) -> {setChanged(); notifyObservers();});
 	}
 			
 	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, IBound bound) {

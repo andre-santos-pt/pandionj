@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import pt.iscte.pandionj.PandionJView;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
 
 public class VariableInfo {
@@ -128,14 +131,75 @@ public class VariableInfo {
 		return isStepper(VariableOperation.Type.DEC);
 	}
 	
-	public String getBound() {
+	public boolean isBounded() {
+		boolean hasBound = false;
 		for(VariableOperation op : operations)
-			if(op.getType() == VariableOperation.Type.BOUNDED)
-				return op.getParam(0).toString();
+			if(op.getType() == VariableOperation.Type.BOUNDED) {
+				if(hasBound)
+					return false;
+				else
+					hasBound = true;
+			}
+		
+		return hasBound;
+						
+	}
+	public IArrayIndexModel.IBound getBound() {
+		for(VariableOperation op : operations)
+			if(op.getType() == VariableOperation.Type.BOUNDED) {
+				return new Bound(op.getParam(0).toString(), IArrayIndexModel.BoundType.valueOf(op.getParam(1).toString()));
+			}
 		
 		return null;
 	}
 
+	private class Bound implements IArrayIndexModel.IBound {
+		String expression;
+		IArrayIndexModel.BoundType type;
+		
+		Bound(String expression, IArrayIndexModel.BoundType type) {
+			assert expression != null;
+			assert type != null;
+			this.expression = expression;
+			this.type = type;
+		}
+		
+		@Override
+		public String getExpression() {
+			return expression;
+		}
+
+		@Override
+		public int getValue() {
+			// TODO eval
+			PandionJView.getInstance().evaluate(expression, null);
+			return -1;
+		}
+
+		@Override
+		public BoundType getType() {
+			return type;
+		}
+	}
+	
+
+	public boolean isMostWantedHolder() {
+		boolean hasSubs = false;
+		for(VariableOperation op : operations) {
+			if(op.getType() == VariableOperation.Type.SUBS) {
+				hasSubs = true;
+				IfVisitor v = new IfVisitor(op);
+				declarationBlock.accept(v);
+				if(!v.insideIf)
+					return false;
+			}
+			else if(op.isModifier())
+				return false;
+		}
+		
+		return hasSubs;
+	}
+	
 	private class IfVisitor implements BlockInfoVisitor {
 		boolean insideIf = false;
 		VariableOperation op;
@@ -155,23 +219,6 @@ public class VariableInfo {
 			}
 			return true;
 		}
-		
-	};
-	
-	public boolean isMostWantedHolder() {
-		boolean hasSubs = false;
-		for(VariableOperation op : operations) {
-			if(op.getType() == VariableOperation.Type.SUBS) {
-				hasSubs = true;
-				IfVisitor v = new IfVisitor(op);
-				declarationBlock.accept(v);
-				if(!v.insideIf)
-					return false;
-			}
-			else if(op.isModifier())
-				return false;
-		}
-		
-		return hasSubs;
 	}
+	
 }

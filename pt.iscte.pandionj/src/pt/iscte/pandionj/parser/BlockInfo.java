@@ -176,11 +176,12 @@ public class BlockInfo {
 		return null;
 	}
 
-	public Set<String> getVarsModified(VariableOperation.Type t) {
+	public Set<String> getOperations(VariableOperation.Type ... types) {
 		Set<String> set = new HashSet<>();
 		for(VariableOperation op : operationRecord)
-			if(op.getType().equals(t))
-				set.add(op.getVarName());
+			for(VariableOperation.Type t : types)
+				if(op.getType().equals(t))
+					set.add(op.getVarName());
 		return set;
 	}
 

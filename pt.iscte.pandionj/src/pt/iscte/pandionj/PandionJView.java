@@ -7,7 +7,11 @@ import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
+import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IStackFrame;
+import org.eclipse.debug.core.model.IWatchExpressionDelegate;
+import org.eclipse.debug.core.model.IWatchExpressionListener;
+import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.debug.core.IJavaExceptionBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
@@ -31,6 +35,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
 
 import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.RuntimeModel;
@@ -308,7 +313,19 @@ public class PandionJView extends ViewPart {
 	}
 	
 	
-
+	public void evaluate(String expression, InvocationResult listener) {
+		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+		StackFrameModel stackFrame = model.getTopFrame();
+		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());	
+		delegate.evaluateExpression(expression , stackFrame.getStackFrame(), new IWatchExpressionListener() {
+			
+			@Override
+			public void watchEvaluationFinished(IWatchExpressionResult result) {
+				System.out.println("EVAL: " + result.getValue());
+			}
+		});
+		
+	}
 
 	//	private IDebugContextListener debugUiListener;
 	//	debugUiListener = new DebugUIListener();
