@@ -19,6 +19,7 @@ public class MockArrayIndex extends DisplayUpdateObservable implements IArrayInd
 		this.variable = variable;
 		this.arrayReference = arrayReference;
 		this.direction = direction;
+		variable.registerObserver((o,a) -> {setChanged(); notifyObservers();});
 	}
 
 	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, int value, Direction direction, IBound bound) {
