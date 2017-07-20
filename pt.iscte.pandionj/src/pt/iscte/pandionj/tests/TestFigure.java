@@ -15,12 +15,11 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-
-import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.tests.mock.MockArray;
 import pt.iscte.pandionj.tests.mock.MockArrayIndex;
 import pt.iscte.pandionj.tests.mock.MockVariable;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel.*;
 
 public class TestFigure {
 	public static void main(String[] args) {
@@ -55,36 +54,35 @@ public class TestFigure {
 	
 
 	private static void createDiagram(IFigure root) {
+		// Array com iteradores
 		MockArray array = new MockArray("int", 1,2,3,4,5);
 		MockVariable var = new MockVariable("int[]", "v", null, array);
-		MockVariable i = new MockVariable("int", "i", null, 0);
+
 		
-		MockArrayIndex i2 = new MockArrayIndex(i, var, 5, IArrayIndexModel.Direction.FORWARD);
-		array.addIndexVariable(i2);
-		
-//		MockArrayIndex i1 = new MockArrayIndex("i1", null, 5, IArrayIndexModel.Direction.FORWARD,
-//		MockArrayIndex i2 = new MockArrayIndex("i2", null, 0, IArrayIndexModel.Direction.FORWARD, i1);
-//		MockArrayIndex i3 = new MockArrayIndex("i3", null, 0, IArrayIndexModel.Direction.FORWARD, 3); ;
-//		array.addIndexVariable(i1);
-//		array.addIndexVariable(i2);
-//		array.addIndexVariable(i3);
+		MockVariable i1 = new MockVariable("int", "i1", null, 0);
+		MockArrayIndex ii1 = new MockArrayIndex(i1, var, 0, Direction.NONE);
+		MockVariable i2 = new MockVariable("int", "i2", null, 1);
+		MockArrayIndex ii2 = new MockArrayIndex(i2, var, 1, Direction.FORWARD);
+		MockVariable i3 = new MockVariable("int", "i3", null, 5);
+		MockArrayIndex ii3 = new MockArrayIndex(i3, var, 5, Direction.FORWARD, new MyBound(-1, BoundType.OPEN, "-1"));
+
+		array.addIndexVariable(ii1);
+		array.addIndexVariable(ii2);
+		array.addIndexVariable(ii3);
 		
 		ArrayPrimitiveFigure fig = new ArrayPrimitiveFigure(array);
-		fig.setSize(fig.getPreferredSize());
 		fig.setLocation(new Point(100, 100));
 		root.add(fig);
 		
-		
-		MockArray array2 = new MockArray("array2", "int", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25);
+		// Array com lenght maior que o tamanho maximo da figura
+		MockArray array2 = new MockArray("int", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25);
 		ArrayPrimitiveFigure fig2 = new ArrayPrimitiveFigure(array2);
-		fig2.setSize(fig2.getPreferredSize());
 		fig2.setLocation(new Point(250, 300));
 		root.add(fig2);
-		
-		
-		MockArray array3 = new MockArray("array3", "int");
+
+		// Array vazia
+		MockArray array3 = new MockArray("int");
 		ArrayPrimitiveFigure fig3 = new ArrayPrimitiveFigure(array3);
-		fig3.setSize(fig3.getPreferredSize());
 		fig3.setLocation(new Point(400, 200));
 		root.add(fig3);
 		
@@ -96,14 +94,10 @@ public class TestFigure {
 			@Override
 			public void actionPerformed(ActionEvent event) {
 				try {
-					array.set(i2.getCurrentIndex(), 9);
-					if(i2.getBound().getValue() != i2.getCurrentIndex()) {
-						i.set(i2.getCurrentIndex() + 1);
+					if(ii3.getBound().getValue() != ii3.getCurrentIndex()) {
+						i3.set(ii3.getCurrentIndex() - 1);
 					}
-					
-					if(i2.getBound().getValue() != i2.getCurrentIndex()) {
-						i.set(i2.getCurrentIndex() - 1);
-					}
+					array.set(ii3.getCurrentIndex(), 9);
 				}
 				catch(IndexOutOfBoundsException e) {
 					e.printStackTrace();
@@ -113,5 +107,30 @@ public class TestFigure {
 		root.add(but);
 	}
 
+	private static class MyBound implements IBound {
+		int value;
+		BoundType type; 
+		String expression;
+		
+		public MyBound(int value, BoundType type, String expression) {
+			this.value = value;
+			this.type = type;
+			this.expression = expression;
+		}
+		
+		@Override
+		public int getValue() {
+			return value;
+		}
+	
+		@Override
+		public BoundType getType() {
+			return type;
+		}
+	
+		@Override
+		public String getExpression() {
+			return expression;
+		}
+	}
 }
-

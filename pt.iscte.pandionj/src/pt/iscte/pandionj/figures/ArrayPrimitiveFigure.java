@@ -12,7 +12,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureUtilities;
@@ -25,14 +24,11 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
-
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.extensibility.PandionJUI;
-
 
 public class ArrayPrimitiveFigure extends Figure{
 	private static final GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
@@ -49,7 +45,7 @@ public class ArrayPrimitiveFigure extends Figure{
 
 	public ArrayPrimitiveFigure(IArrayModel model) {
 		this.model = model;
-		model.registerObserver((o, indexes) -> observerAction(o, indexes));
+		model.registerDisplayObserver((o, indexes) -> observerAction(o, indexes));
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT); // limit size
 		positions = new ArrayList<>(N);
 
@@ -64,23 +60,20 @@ public class ArrayPrimitiveFigure extends Figure{
 		
 		GridData boundConstraints = new GridData(SWT.CENTER, SWT.TOP, false, false);
 		add(leftBound, boundConstraints);
-		if(N > 0) {
-			add(positionsFig);
-			add(rightBound, boundConstraints);
-		}else {
-			leftBound.setToolTip(new Label("length = " + N));
-		}
+		add(positionsFig);
+		add(rightBound, boundConstraints);
 		
 		vars = new HashMap<>();
 		for(IArrayIndexModel v : model.getIndexModels())
 			addVariable(v);
 
 		updateOutOfBoundsPositions();
+		setSize(getPreferredSize());
 	}
 
 	@Override
 	public Dimension getPreferredSize(int wHint, int hHint) { 
-		int varSpace = vars.size() * 20;
+		int varSpace = vars.size() * 30;
 		return super.getPreferredSize(wHint, hHint).expand(0, varSpace);
 	}
 
@@ -95,8 +88,10 @@ public class ArrayPrimitiveFigure extends Figure{
 		
 		Label lengthLabel = new Label("length = " + N);
 		fig.setToolTip(lengthLabel);
-		
-		if(model.getLength() <= Constants.ARRAY_LENGTH_LIMIT) {
+		if(N == 0) {
+			fig.setPreferredSize(new Dimension(Constants.POSITION_WIDTH/2,Constants.POSITION_WIDTH));
+		}
+		else if(model.getLength() <= Constants.ARRAY_LENGTH_LIMIT) {
 			for(int i = 0; i < N; i++) {
 				Position p = new Position(i);
 				fig.add(p);
@@ -108,10 +103,11 @@ public class ArrayPrimitiveFigure extends Figure{
 				fig.add(p);
 				positions.add(p);
 			}
-			fig.add(new Label("..."));
-			Position p = new Position(model.getLength() - 1);
-			fig.add(p);
-			positions.add(p);
+			Position emptyPosition = new Position(null);
+			fig.add(emptyPosition);
+			Position lastPosition = new Position(model.getLength() - 1);
+			fig.add(lastPosition);
+			positions.add(lastPosition);
 		}
 		return fig;
 	}
@@ -131,12 +127,21 @@ public class ArrayPrimitiveFigure extends Figure{
 			GridLayout layout = Constants.getOneColGridLayout();
 			setLayoutManager(layout);
 
-			IVariableModel m = model.getElementModel(index); 
-			valueLabel = new ValueLabel(m);
-			layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
-			add(valueLabel);
+			if(index != null) {
+				IVariableModel m = model.getElementModel(index); 
+				valueLabel = new ValueLabel(m);
+				layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
+				add(valueLabel);
+			}else {
+				Label emptyLabel = new Label("...");
+				FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
+				IVariableModel measure = model.getElementModel(model.getLength() - 1);
+				setSize(measure.isDecimal() || measure.isBoolean() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
+				layout.setConstraint(emptyLabel, new GridData(width, POSITION_WIDTH));
+				add(emptyLabel);
+			}
 
-			indexLabel = new Label(index == null ? "" : Integer.toString(index));
+			indexLabel = new Label(index == null ? "..." : Integer.toString(index));
 			FontManager.setFont(indexLabel, INDEX_FONT_SIZE);
 			indexLabel.setLabelAlignment(SWT.CENTER);
 			indexLabel.setForegroundColor(ColorConstants.gray);
@@ -183,16 +188,11 @@ public class ArrayPrimitiveFigure extends Figure{
 	private void updateOutOfBoundsPositions() {
 		boolean lowerOff = false;
 		boolean upperOff = false;
-
 		for(IArrayIndexModel v : vars.values()) {
-			if (v.getCurrentIndex() < 0 || v.getBound() < 0)
+			if (v.getCurrentIndex() < 0 || (v.getBound() != null && v.getBound().getValue() < 0))
 				lowerOff = true;
-			else if (v.getCurrentIndex() >= N || v.getBound() >= N)
+			if (v.getCurrentIndex() >= N || (v.getBound() != null && v.getBound().getValue() >= N))
 				upperOff = true;
-		}
-		
-		if(N == 0) {
-			lowerOff = true;
 		}
 		
 		leftBound.setVisible(lowerOff); 
@@ -200,10 +200,10 @@ public class ArrayPrimitiveFigure extends Figure{
 	}
 
 	// TODO
-	private void removeVariable(IVariableModel varModel) {
-		vars.remove(varModel.getName());
-		PandionJUI.executeUpdate(() -> repaint());
-	}
+//	private void removeVariable(IVariableModel varModel) {
+//		vars.remove(varModel.getName());
+//		PandionJUI.executeUpdate(() -> repaint());
+//	}
 
 
 	private void observerAction(Observable o, Object arg) {
@@ -237,35 +237,62 @@ public class ArrayPrimitiveFigure extends Figure{
 		for(IArrayIndexModel v : vars.values()) {
 			int i = v.getCurrentIndex();
 			String text = v.getName();
+			
 			Point from;
 			if(isOutOfBounds(i)) {
 				text += "=" + i;
 				from = getIndexLocation(i).getTranslated(pWidth - FigureUtilities.getTextWidth(text, font)/2, y);
 			}
 			
-			if(!v.isBounded()) {
-				continue;
-			}else{
-				boolean right = i < v.getBound();
+			if(v.getBound() != null) {
+				boolean right = i < v.getBound().getValue();
 				from = getIndexLocation(i).getTranslated(pWidth - FigureUtilities.getTextWidth(text, font)/2, y);
-				Point to = getIndexLocation(v.getBound()).getTranslated(pWidth + (right ? -ARROW_EDGE : ARROW_EDGE), y + pWidth);
+				Point to = getIndexLocation(v.getBound().getValue()).getTranslated(pWidth + (right ? -ARROW_EDGE : ARROW_EDGE), y + pWidth);
 				graphics.drawText(text, from);
-				if(v.getBound() != i && ((right && i <= model.getLength() - 1) || (!right && i >= 0))) {
-					Point arrowTo = to.getTranslated(right ? 0 : pWidth/2, 0);
-					graphics.drawLine(from.getTranslated(right ? pWidth : 0, pWidth), arrowTo);
-					Point a = arrowTo.getTranslated(right ? -ARROW_EDGE : ARROW_EDGE, -ARROW_EDGE);
-					graphics.drawLine(arrowTo, a);
-					a = a.getTranslated(0, ARROW_EDGE*2);
-					graphics.drawLine(arrowTo, a);
+				if(v.getBound().getValue() != i && ((right && i <= model.getLength() - 1) || (!right && i >= 0))) {
+					drawArrow(from, to, pWidth, right, graphics);
 					
-					if(v.getBound() < 0 || v.getBound() >= N) {
-						text = Integer.toString(v.getBound());
+					if(v.getBound().getValue() < 0 || v.getBound().getValue() >= N) {
+						text = Integer.toString(v.getBound().getValue());
 						to = to.getTranslated(0, -pWidth);
 						graphics.drawText(text, right ? to : to.getTranslated(-FigureUtilities.getTextWidth(text, font)/2, 0));
 					}
 				}
+				y += pWidth;
+			}else {
+				graphics.drawText(v.getName(), getIndexLocation(v.getCurrentIndex()).getTranslated(0, y));
+				y += pWidth;
+				if(v.getDirection() != IArrayIndexModel.Direction.NONE) {
+					boolean right = v.getDirection() == IArrayIndexModel.Direction.FORWARD;
+					Point origin = getIndexLocation(i).getTranslated(0, y + pWidth);
+					from = right ?  origin : origin.getTranslated(pWidth, 0);
+					Point to = right ? origin.getTranslated(pWidth, 0) : origin;
+					drawArrow(from, to, 0, right, graphics);
+					y += pWidth;
+				}
 			}
-			y += pWidth;
+		}
+	}
+	
+	private void drawArrow(Point from, Point to, int pWidth, boolean right, Graphics graphics) {
+		Point arrowTo = to.getTranslated(right ? 0 : pWidth/2, 0);
+		graphics.drawLine(from.getTranslated(right ? pWidth : 0, pWidth), arrowTo);
+		Point a = arrowTo.getTranslated(right ? -ARROW_EDGE : ARROW_EDGE, -ARROW_EDGE);
+		graphics.drawLine(arrowTo, a);
+		a = a.getTranslated(0, ARROW_EDGE*2);
+		graphics.drawLine(arrowTo, a);
+	}
+	
+	@Override
+	protected void paintBorder(Graphics graphics) {
+		super.paintBorder(graphics);
+		for(IArrayIndexModel v : vars.values()) {
+			if(v.getBound() != null) {
+				Point origin = getIndexLocation(v.getBound().getValue());
+				Point from = origin.getTranslated(0, -100);
+				Point to = origin.getTranslated(0, 100);
+				graphics.drawLine(from, to);
+			}
 		}
 	}
 
