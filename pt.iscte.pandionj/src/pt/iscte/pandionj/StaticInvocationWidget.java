@@ -12,23 +12,33 @@ import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
+import pt.iscte.pandionj.model.PrimitiveType;
 
-public class InvocationWidget extends Composite {
-	private Combo[] paramBoxes; 
+//TODO always validate before invocation
+// TODO value cache
+public class StaticInvocationWidget extends Composite {
 	private String methodName;
 	private IMethod method;
+	private Combo[] paramBoxes; 
+	private String[] parameterTypes;
 
 
-	public InvocationWidget(Composite parent, IMethod method, InvocationAction action) {
+	public StaticInvocationWidget(Composite parent, IMethod method, InvocationAction action) {
 		super(parent, SWT.NONE);
 		this.method = method;
 		methodName = method.getElementName();
+		parameterTypes = method.getParameterTypes();
+
 		RowLayout rowLayout = new RowLayout();
 		rowLayout.marginTop = Constants.MARGIN;
 		rowLayout.marginLeft = Constants.MARGIN;
@@ -40,29 +50,21 @@ public class InvocationWidget extends Composite {
 		label.setText(method.getElementName() + " (");
 
 		paramBoxes = new Combo[method.getNumberOfParameters()];
-		for(int i = 0; i < method.getNumberOfParameters(); i++) {
+		for(int i = 0; i < parameterTypes.length; i++) {
 			if(i != 0) {
 				org.eclipse.swt.widgets.Label comma = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
 				FontManager.setFont(comma, Constants.MESSAGE_FONT_SIZE);
 				comma.setText(", ");
 			}
 
-			String pType = Signature.toString(method.getParameterTypes()[i]);
+			String pType = Signature.toString(parameterTypes[i]);
 			Combo combo = new Combo(this, SWT.DROP_DOWN);
 			combo.setToolTipText(pType);
 			FontManager.setFont(combo, Constants.MESSAGE_FONT_SIZE);
 			int comboWidth = pType.equals(String.class.getSimpleName()) ? Constants.COMBO_STRING_WIDTH : Constants.COMBO_WIDTH; 
 			combo.setLayoutData(new RowData(comboWidth, SWT.DEFAULT));
-			IType owner = (IType) method.getParent();
-			try {
-				IField[] fields = owner.getFields();
-				for(IField f : fields)
-					if(Flags.isStatic(f.getFlags()) && f.getTypeSignature().equals(method.getParameterTypes()[i]))
-						combo.add(f.getElementName());
 
-			} catch (JavaModelException e1) {
-				e1.printStackTrace();
-			}
+			addCombovalues(combo, parameterTypes[i]);
 
 			if(combo.getItemCount() == 0)
 				combo.setText(defaultItem(pType));
@@ -72,20 +74,28 @@ public class InvocationWidget extends Composite {
 			int ii = i;
 			combo.addFocusListener(new FocusAdapter() {
 				public void focusLost(FocusEvent e) {
-					combo.setForeground(valid(combo, pType) ? null : Constants.Colors.ERROR);
+					combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
 				}
 			});
 			combo.addKeyListener(new KeyAdapter() {
 				public void keyPressed(KeyEvent e) {
 					if(e.keyCode == SWT.CR) {
-						if(ii == paramBoxes.length-1) {
-							if(allValid())
-								action.invoke(getInvocationExpression());
-						}
-						else {
-							paramBoxes[ii+1].setFocus();
-						}
+						invokeOrNext(action, ii);
 					}
+					//					else
+					//						combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
+				}
+			});
+//			combo.addVerifyListener(new VerifyListener() {
+//
+//				@Override
+//				public void verifyText(VerifyEvent e) {
+//					combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
+//				}
+//			});
+			combo.addSelectionListener(new SelectionAdapter() {
+				public void widgetDefaultSelected(SelectionEvent e) {
+					invokeOrNext(action, ii);
 				}
 			});
 		}
@@ -94,12 +104,64 @@ public class InvocationWidget extends Composite {
 		close.setText(")");
 	}
 
+	private void invokeOrNext(InvocationAction action, int i) {
+//		if(i == paramBoxes.length-1) {
+			if(allValid()) {
+				for(int j = 0; j < paramBoxes.length; j++) {
+					if(PrimitiveType.isPrimitiveSig(parameterTypes[i]))
+						if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
+							paramBoxes[i].add(paramBoxes[i].getText());
+				}
+				action.invoke(getInvocationExpression());
+			}
+//		}
+//		else {
+//			paramBoxes[i+1].setFocus();
+//		}
+	}
+
+	public void refreshItems() {
+		for(int i = 0; i < paramBoxes.length; i++)
+			addCombovalues(paramBoxes[i], parameterTypes[i]);
+	}
+
+	private void addCombovalues(Combo combo, String paramType) {
+		if(!PrimitiveType.isPrimitiveSig(paramType)) {
+			int i = combo.getSelectionIndex();
+//			String sel = i == -1 ? null : combo.getItem(i);
+			String sel = combo.getText();
+			combo.removeAll();
+			IType owner = (IType) method.getParent();
+			try {
+				IField[] fields = owner.getFields();
+				for(IField f : fields)
+					if(Flags.isStatic(f.getFlags()) && f.getTypeSignature().equals(paramType))
+						combo.add(f.getElementName());
+
+
+			} catch (JavaModelException e1) {
+				e1.printStackTrace();
+			}
+			if(sel != null)
+				combo.setText(sel);
+		}
+	}
+
+	private boolean containsItem(Combo combo, String item) {
+		for(int i = 0; i < combo.getItemCount(); i++)
+			if(combo.getItem(i).equals(item))
+				return true;
+
+		return false;
+	}
+
+
 	// TODO review bugs
 	private boolean allValid() {
 		boolean allValid = true;
 		for(int i = 0; i < paramBoxes.length; i++) {
 			boolean v = valid(paramBoxes[i], Signature.getSignatureSimpleName(method.getParameterTypes()[i]));
-			paramBoxes[i].setForeground(v ? ColorConstants.black : Constants.Colors.ERROR);
+			paramBoxes[i].setBackground(v ? null : Constants.Colors.ERROR);
 			if(!v)
 				allValid = false;
 		}
@@ -107,30 +169,28 @@ public class InvocationWidget extends Composite {
 		return allValid;
 	}
 
-	// TODO review bugs
 	private boolean valid(Combo combo, String pType) {
-		String val = combo.getText();
+		return validValue(combo.getText(), pType) ||  containsItem(combo, combo.getText());
+	}
+
+	private boolean validValue(String val, String pType) {
 		try {
 			if(pType.equals(String.class.getSimpleName())) return val.matches("(\"(.)*\")|null");
-
-			if(pType.equals(char.class.getName())) return val.matches("'.'");
-
-			if(pType.equals(boolean.class.getName())) Boolean.parseBoolean(val);
-			if(pType.equals(byte.class.getName())) Byte.parseByte(val);
-			if(pType.equals(short.class.getName())) Short.parseShort(val);
-			if(pType.equals(int.class.getName())) Integer.parseInt(val);
-			if(pType.equals(long.class.getName())) Long.parseLong(val);
-			if(pType.equals(float.class.getName())) Float.parseFloat(val);
-			if(pType.equals(double.class.getName())) Double.parseDouble(val);
-
-			// TODO arrays, null, refs
+			else if(pType.equals(char.class.getName())) return val.matches("'.'");
+			else if(pType.equals(boolean.class.getName())) return  val.matches("true|false");
+			else if(pType.equals(byte.class.getName())) Byte.parseByte(val);
+			else if(pType.equals(short.class.getName())) Short.parseShort(val);
+			else if(pType.equals(int.class.getName())) Integer.parseInt(val);
+			else if(pType.equals(long.class.getName())) Long.parseLong(val);
+			else if(pType.equals(float.class.getName())) Float.parseFloat(val);
+			else if(pType.equals(double.class.getName())) Double.parseDouble(val);
+			else return false;
 		}
 		catch(RuntimeException e) {
 			return false;
 		}
 		return true;
 	}
-
 
 	private String defaultItem(String pType) {
 		if(pType.equals(byte.class.getName())) 		return "0";
@@ -180,4 +240,6 @@ public class InvocationWidget extends Composite {
 		pack();
 		return true;
 	}
+
+
 }

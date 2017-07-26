@@ -82,6 +82,8 @@ public interface Constants {
 
 	
 
+	
+
 	// TODO FONT FLYWEIGHT
 	//	static void SET_FONT(Figure fig, int size) {
 	//		fig.setFont(new Font(Display.getDefault(), FONT_FACE, size, SWT.NONE));

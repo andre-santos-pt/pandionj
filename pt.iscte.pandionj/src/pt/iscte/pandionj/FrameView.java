@@ -62,31 +62,14 @@ class FrameView extends Composite {
 
 		compositeHeader = new Composite(this, SWT.NONE);
 		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		compositeHeader.setLayout(new GridLayout(2, true));
+		compositeHeader.setLayout(new GridLayout(1, true));
 
 		header = new Label(compositeHeader, SWT.BORDER);
 		header.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
 
-		slider = new Slider(compositeHeader, SWT.HORIZONTAL | SWT.BORDER);
-		slider.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-
-		slider.setMinimum(1);
-		slider.setMaximum(1);
-		slider.setIncrement(1);
-		slider.addSelectionListener(new SelectionAdapter() {
-			int sel = slider.getSelection();
-			@Override
-			public void widgetSelected(SelectionEvent e) {
-				if(slider.getSelection() != sel) {
-					model.setStep(slider.getSelection()-1);
-					sel = slider.getSelection();
-					PandionJUI.navigateToLine(model.getSourceFile(), model.getStepLine());
-					//				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
-				}
-			}
-		});
+		
 
 		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
 		compositeViewer = new Composite(this, SWT.NONE);
@@ -149,7 +132,25 @@ class FrameView extends Composite {
 		//			}
 		//		});
 
+		slider = new Slider(this, SWT.HORIZONTAL | SWT.BORDER);
+		slider.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
+		slider.setMinimum(1);
+		slider.setMaximum(1);
+		slider.setIncrement(1);
+		slider.addSelectionListener(new SelectionAdapter() {
+			int sel = slider.getSelection();
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				if(slider.getSelection() != sel) {
+					model.setStep(slider.getSelection()-1);
+					sel = slider.getSelection();
+					PandionJUI.navigateToLine(model.getSourceFile(), model.getStepLine());
+					//				slider.setToolTipText(slider.getSelection() + "/" + slider.getMaximum());
+				}
+			}
+		});
+		slider.setVisible(false);
 	}
 
 

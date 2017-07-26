@@ -40,12 +40,12 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	private Role role;
 	private VariableInfo var;
 	
-	public ValueModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame, VariableInfo var) throws DebugException {
+	public ValueModel(IJavaVariable variable, boolean isInstance, VariableInfo var, StackFrameModel stackFrame) throws DebugException {
 		super(variable, isInstance, stackFrame);
 		init(var);
 	}
 	
-	public ValueModel(IJavaVariable variable, boolean isInstance, RuntimeModel runtime, VariableInfo var) throws DebugException {
+	public ValueModel(IJavaVariable variable, boolean isInstance, VariableInfo var, RuntimeModel runtime) throws DebugException {
 		super(variable, isInstance, runtime);
 		assert variable.getValue() instanceof IJavaPrimitiveValue;
 		init(var);

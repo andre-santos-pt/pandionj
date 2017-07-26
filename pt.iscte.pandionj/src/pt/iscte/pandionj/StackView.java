@@ -29,10 +29,11 @@ class StackView extends Composite {
 		assert model != null;
 		this.model = model;
 		model.registerDisplayObserver((o,a) -> updateFrames(model.getFilteredStackPath()));
-//		model.registerDisplayObserver((o,a) -> updateFrames(model.getStackPath()));
 	}
 
 	private void updateFrames(List<StackFrameModel> stackPath) {
+		if(model.isTerminated())
+			return;
 		int diff = stackPath.size() - frameViews.size();
 
 		while(diff > 0) {

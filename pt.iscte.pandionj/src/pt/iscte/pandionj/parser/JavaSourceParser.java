@@ -14,16 +14,16 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 
 public class JavaSourceParser {
 	private final ASTParser parser;
-	private String source;
+	private char[] source;
 	
 	private JavaSourceParser(String source, String className) {
-		this.source = source;
+		this.source = source.toCharArray();
 		parser = ASTParser.newParser(AST.JLS8);
 		parser.setResolveBindings(true);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);		
 		parser.setEnvironment(null, new String[] {}, new String[] {}, true);
 		parser.setUnitName(className);
-		parser.setSource(source.toCharArray());
+		parser.setSource(this.source);
 		Map<String, String> options = JavaCore.getOptions();
 		options.put(JavaCore.COMPILER_DOC_COMMENT_SUPPORT, JavaCore.ENABLED);
 		parser.setCompilerOptions(options);
@@ -46,7 +46,7 @@ public class JavaSourceParser {
 	}
 
 	public void parse(ASTVisitor visitor) {
-		parser.setSource(source.toCharArray());
+		parser.setSource(this.source);
 		CompilationUnit unit = (CompilationUnit) parser.createAST(null);
 		
 //		if(unit.getProblems().length > 0)
@@ -81,8 +81,9 @@ public class JavaSourceParser {
 		return trim;
 	}
 
-	public String getSourceFragment(int start, int end) {
-		return source.substring(start, end);
+	public String getSourceFragment(int start, int length) {
+		return new String(source, start, length);
+//		return source.substring(start, end);
 	}
 	
 	public CompilationUnit getCompilationUnit() {

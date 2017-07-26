@@ -76,8 +76,8 @@ public class MockArray extends DisplayUpdateObservable implements IArrayModel {
 		}
 	}
 
-	@Override
-	public Collection<IArrayIndexModel> getIndexModels() {
-		return Collections.unmodifiableList(variableRoles);
-	}
+//	@Override
+//	public Collection<IArrayIndexModel> getIndexModels() {
+//		return Collections.unmodifiableList(variableRoles);
+//	}
 }

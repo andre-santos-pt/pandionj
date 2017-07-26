@@ -8,6 +8,7 @@ public class VariableOperation {
 	public enum Type {
 		CONST,
 		INDEX(2),
+		ACCESS(2),
 		INC,
 		DEC,
 		BOUNDED(1), 
@@ -84,8 +85,7 @@ public class VariableOperation {
 	
 
 	public Object getParam(int index) {
-		assert index < paramValues.size();
-		return paramValues.get(index);
+		return index < paramValues.size() ? paramValues.get(index) : null;
 	}
 
 

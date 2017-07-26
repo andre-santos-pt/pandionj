@@ -13,7 +13,7 @@ import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 class InvocationArea extends Composite {
 
 	StackLayout layout;
-	Map<IMethod, InvocationWidget> invWidgetsMap;
+	Map<IMethod, StaticInvocationWidget> invWidgetsMap;
 
 	InvocationArea(Composite parent) {
 		super(parent, SWT.NONE);
@@ -23,11 +23,12 @@ class InvocationArea extends Composite {
 	}
 	
 	void setMethod(IMethod method, InvocationAction a) {
-		InvocationWidget inv = invWidgetsMap.get(method);
+		StaticInvocationWidget inv = invWidgetsMap.get(method);
 		if(inv == null) {
-			inv = new InvocationWidget(this, method, a);
+			inv = new StaticInvocationWidget(this, method, a);
 			invWidgetsMap.put(method, inv);
 		}
+		inv.refreshItems();
 		layout.topControl = inv;
 		layout();
 	}
@@ -35,7 +36,7 @@ class InvocationArea extends Composite {
 	@Override
 	public boolean setFocus() {
 		if(layout.topControl != null)
-			return ((InvocationWidget) layout.topControl).setFocus();
+			return ((StaticInvocationWidget) layout.topControl).setFocus();
 		else
 			return false;
 	}

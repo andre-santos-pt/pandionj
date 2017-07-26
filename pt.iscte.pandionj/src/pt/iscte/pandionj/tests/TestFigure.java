@@ -1,14 +1,25 @@
 package pt.iscte.pandionj.tests;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.draw2d.ActionEvent;
 import org.eclipse.draw2d.ActionListener;
+import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.Button;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.MarginBorder;
+import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.XYLayout;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -16,9 +27,12 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
+import pt.iscte.pandionj.figures.ArrayPrimitiveFigure2;
+import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.tests.mock.MockArray;
 import pt.iscte.pandionj.tests.mock.MockArrayIndex;
 import pt.iscte.pandionj.tests.mock.MockVariable;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.*;
 
 public class TestFigure {
@@ -58,21 +72,31 @@ public class TestFigure {
 		MockArray array = new MockArray("int", 1,2,3,4,5);
 		MockVariable var = new MockVariable("int[]", "v", null, array);
 
-		
 		MockVariable i1 = new MockVariable("int", "i1", null, 0);
-		MockArrayIndex ii1 = new MockArrayIndex(i1, var, 0, Direction.NONE);
+		MockArrayIndex ii1 = new MockArrayIndex(i1, var, Direction.NONE);
 		MockVariable i2 = new MockVariable("int", "i2", null, 1);
-		MockArrayIndex ii2 = new MockArrayIndex(i2, var, 1, Direction.FORWARD);
+		MockArrayIndex ii2 = new MockArrayIndex(i2, var, Direction.FORWARD);
 		MockVariable i3 = new MockVariable("int", "i3", null, 5);
-		MockArrayIndex ii3 = new MockArrayIndex(i3, var, 5, Direction.FORWARD, new MyBound(-1, BoundType.OPEN, "-1"));
+		MockArrayIndex ii3 = new MockArrayIndex(i3, var, Direction.FORWARD, new MyBound(-1, BoundType.OPEN, "-1"));
 
-		array.addIndexVariable(ii1);
-		array.addIndexVariable(ii2);
-		array.addIndexVariable(ii3);
+//		array.addIndexVariable(ii1);
+//		array.addIndexVariable(ii2);
+//		array.addIndexVariable(ii3);
 		
-		ArrayPrimitiveFigure fig = new ArrayPrimitiveFigure(array);
+		List<IArrayIndexModel> vars = new ArrayList<>();
+		vars.add(ii1);
+		vars.add(ii2);
+		
+		ArrayPrimitiveFigure2 fig = new ArrayPrimitiveFigure2(array);
 		fig.setLocation(new Point(100, 100));
+		
+		
 		root.add(fig);
+		
+//		IllustrationBorder b = new IllustrationBorder(vars, fig);
+//		MarginBorder b = new MarginBorder(15);
+//		fig.setBorder(b);
+		
 		
 		// Array com lenght maior que o tamanho maximo da figura
 		MockArray array2 = new MockArray("int", 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25);
@@ -93,6 +117,7 @@ public class TestFigure {
 		but.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent event) {
+				i1.set(ii1.getCurrentIndex()+1);
 				try {
 					if(ii3.getBound().getValue() != ii3.getCurrentIndex()) {
 						i3.set(ii3.getCurrentIndex() - 1);
@@ -102,6 +127,7 @@ public class TestFigure {
 				catch(IndexOutOfBoundsException e) {
 					e.printStackTrace();
 				}
+				fig.repaint();
 			}
 		});
 		root.add(but);
@@ -119,7 +145,7 @@ public class TestFigure {
 		}
 		
 		@Override
-		public int getValue() {
+		public Integer getValue() {
 			return value;
 		}
 	

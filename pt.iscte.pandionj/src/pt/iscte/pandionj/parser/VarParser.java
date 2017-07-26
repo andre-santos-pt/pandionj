@@ -354,13 +354,14 @@ public class VarParser {
 
 		class CheckBoundExpression extends ASTVisitor {
 			boolean ok = true;
-			
+
 			@Override
 			public void preVisit(ASTNode node) {
 				if(!(node instanceof SimpleName || node instanceof QualifiedName || node instanceof NumberLiteral))
 					ok = false;
 			}
 		}
+
 		class SearchSimpleVarVisitor extends ASTVisitor {
 			final List<String> vars = new ArrayList<>(5);
 			@Override
@@ -390,8 +391,6 @@ public class VarParser {
 			current = current.getParent();
 		}
 
-
-
 		@Override
 		public boolean visit(ForStatement node) {
 			current = createBlock(node);
@@ -400,11 +399,11 @@ public class VarParser {
 
 		@Override
 		public void endVisit(ForStatement node) {
-			handleCondition(node.getExpression());
+//			handleCondition(node.getExpression());
+			checkBounds(node.getExpression());
+
 			current = current.getParent();
 		}
-
-
 
 		@Override
 		public boolean visit(IfStatement node) {
@@ -419,17 +418,39 @@ public class VarParser {
 
 
 
+		// TODO pre and postfix i++
 		@Override
 		public boolean visit(ArrayAccess node) {
 			if(node.getArray() instanceof SimpleName || node.getArray() instanceof ArrayAccess) {
 				String arrayRef = arrayRef(node);
-				SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
-				node.getIndex().accept(v);
-				for(String varName : v.vars) {
-					int dim = indexDepth(node);
-					VariableOperation op = new VariableOperation(varName, VariableOperation.Type.INDEX, arrayRef, dim);
+				int dim = indexDepth(node);
+				if(node.getIndex() instanceof SimpleName) {
+					VariableOperation op = new VariableOperation(node.getIndex().toString(), VariableOperation.Type.INDEX, arrayRef, dim);
 					current.addOperation(op);
 				}
+				class NoInvocationVisitor extends ASTVisitor {
+					boolean ok = true;
+					@Override
+					public boolean visit(MethodInvocation node) {
+						ok = false;
+						return false;
+					}
+				};
+				
+				//TODO: 2 dim
+				NoInvocationVisitor v = new NoInvocationVisitor();
+				node.getIndex().accept(v);
+				if(v.ok) {
+					VariableOperation op = new VariableOperation(node.getArray().toString(), VariableOperation.Type.ACCESS, node.getIndex(), dim);
+					current.addOperation(op);
+				}
+				//				SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
+				//				node.getIndex().accept(v);
+				//				for(String varName : v.vars) {
+				//					int dim = indexDepth(node);
+				//					VariableOperation op = new VariableOperation(varName, VariableOperation.Type.INDEX, arrayRef, dim);
+				//					current.addOperation(op);
+				//				}
 			}
 			return true;
 		}

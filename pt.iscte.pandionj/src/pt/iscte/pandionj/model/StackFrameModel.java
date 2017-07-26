@@ -16,6 +16,11 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
@@ -23,6 +28,9 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.ParserManager;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VarParser;
 import pt.iscte.pandionj.parser.VariableInfo;
 
@@ -34,7 +42,6 @@ public class StackFrameModel extends DisplayUpdateObservable {
 	private Map<String, VariableModel<?>> vars;
 
 	private IFile srcFile;
-//	private ParserResult codeAnalysis;
 	private VarParser varParser;
 	private IJavaProject javaProject;
 
@@ -54,12 +61,11 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		assert runtime != null && frame != null;
 		this.runtime = runtime;
 		this.frame = frame;
-		
+
 		vars = new LinkedHashMap<>();
 		Object sourceElement = frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		if(sourceElement instanceof IFile) {
 			srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
-//			codeAnalysis = ParserManager.getParserResult(srcFile);
 			varParser = ParserManager.getVarParserResult(srcFile);
 			javaProject = JavaCore.create(srcFile.getProject());
 		}
@@ -76,7 +82,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public RuntimeModel getRuntime() {
 		return runtime;
 	}
@@ -102,18 +108,18 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		}
 	}
 
-//	public Variable getLocalVariable(String name) {
-//		try {
-//			int line = frame.getLineNumber();
-//			for(Variable v : codeAnalysis.variableRoles.get(name))
-//				if(v.scopeIncludesLine(line))
-//					return v;
-//		}
-//		catch(DebugException e) {
-//			e.printStackTrace();
-//		}
-//		return null;
-//	}
+	//	public Variable getLocalVariable(String name) {
+	//		try {
+	//			int line = frame.getLineNumber();
+	//			for(Variable v : codeAnalysis.variableRoles.get(name))
+	//				if(v.scopeIncludesLine(line))
+	//					return v;
+	//		}
+	//		catch(DebugException e) {
+	//			e.printStackTrace();
+	//		}
+	//		return null;
+	//	}
 
 	public void update() {
 		List<VariableModel<?>> newVars = handleVariables();
@@ -131,7 +137,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		notifyObservers(newVars);
 	}
 
-	
+
 
 	public void setObsolete() {
 		obsolete = true;
@@ -183,7 +189,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 				}
 			}
 
-			handleArrayIterators();
+//			handleArrayIterators2();
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -201,11 +207,11 @@ public class StackFrameModel extends DisplayUpdateObservable {
 			runtime.setReturnOnFrame(this, (IJavaValue) jv.getValue());
 			return null;
 		}
-		
+
 		String varName = jv.getName();
 		IJavaValue value = (IJavaValue) jv.getValue();
 
-		if(vars.containsKey(varName)) {
+		if(vars.containsKey(varName) && vars.get(varName).variable == jv) {
 			VariableModel<?> vModel = vars.get(varName);
 			boolean change = vModel.update(step);
 			if(change)
@@ -216,19 +222,20 @@ public class StackFrameModel extends DisplayUpdateObservable {
 				return null;
 		}
 		else {
+			VariableInfo info = varParser.locateVariable(varName, frame.getLineNumber());
+			System.err.println(varName + ": " + info);
+
 			VariableModel<?> newElement = null;
 
 			if(value instanceof IJavaObject) {
-				ReferenceModel refElement = new ReferenceModel(jv, isInstance, this);
+				ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
 				Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
 				refElement.setTags(tags);
+
 				newElement = refElement;
 			}
 			else {
-//				Variable var = getLocalVariable(varName);
-				VariableInfo info = varParser.locateVariable(varName, frame.getLineNumber());
-				System.err.println(varName + ": " + info);
-				newElement = new ValueModel(jv, isInstance, this, info);
+				newElement = new ValueModel(jv, isInstance, info, this);
 			}
 
 			vars.put(varName, newElement);
@@ -236,56 +243,107 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		}
 	}
 
-	private void handleArrayIterators() throws DebugException {
-		for (Entry<String, VariableModel<?>> e : vars.entrySet()) {
-			if(e.getValue() instanceof ReferenceModel) {
-				ReferenceModel refModel = (ReferenceModel) e.getValue();
-				if(refModel.isPrimitiveArray() && !refModel.isNull()) {
-					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getModelTarget();
-					
-					for(String v : vars.keySet()) {
-						VariableInfo info = varParser.locateVariable(v, getLineNumber());
-						if(info != null) {
-						for (String arrayVar : info.getAccessedArrays()) {
-							if(arrayVar.equals(refModel.getName()))
-								array.addVar(new ArrayIndexVariableModel(vars.get(v), refModel));
-//							array.addVar(new ArrayIndexVariableModel(vars.get(itVar)));
-						}
-						}
-						else
-							System.err.println("info not found " + v + " " + getLineNumber());
-					}
-//					for(String itVar : findArrayIterators(e.getKey())) {
-//						if(vars.containsKey(itVar))
-//							array.addVar(new ArrayIndexVariableModel(vars.get(itVar), refModel));
-//					}
-					
-//					for (String arrayVar : var.getAccessedArrays()) {
-//						array.addVar(new ArrayIndexVariableModel(vars.get(itVar)));
-//					}
-//					for(String itVar : findArrayIterators(e.getKey())) {
-//						if(vars.containsKey(itVar))
-//							array.addVar(new ArrayIndexVariableModel(vars.get(itVar)));
-//					}
-				}
-			}
-		}
-	}
+	//	private void handleArrayIterators() throws DebugException {
+	//		for (Entry<String, VariableModel<?>> e : vars.entrySet()) {
+	//			if(e.getValue() instanceof ReferenceModel) {
+	//				ReferenceModel refModel = (ReferenceModel) e.getValue();
+	//				if(refModel.isPrimitiveArray() && !refModel.isNull()) {
+	//					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getModelTarget();
+	//
+	//					for(String v : vars.keySet()) {
+	//						VariableInfo info = varParser.locateVariable(v, getLineNumber());
+	//						if(info != null) {
+	//							for (String arrayVar : info.getAccessedArrays()) {
+	//								if(arrayVar.equals(refModel.getName())) {
+	//									if(!array.hasVar(v)) {
+	//										ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vars.get(v), refModel);
+	//										array.addVar(indexModel);
+	//
+	//										IBound bound = info.getBound();
+	//										if(bound != null) {
+	//											ArrayIndexBound iBound = handleBound(bound);
+	//											indexModel.setBound(iBound);
+	//										}
+	//									}
+	//
+	//								}
+	//							}
+	//						}
+	//						else
+	//							System.err.println("info not found " + v + " " + getLineNumber());
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
 
 
-//	private Collection<String> findArrayIterators(String pointerVar) throws DebugException {
-//		List<String> iterators = new ArrayList<>(2);
-//		for (Variable var : codeAnalysis.variableRoles.values()) {
-//			if(var.scopeIncludesLine(frame.getLineNumber()) && var instanceof ArrayIterator) {
-//				ArrayIterator it = (ArrayIterator) var;
-//				Multimap<Integer, Variable> arrayDimensions = it.getArrayDimensions();
-//				Collection<Variable> collection = arrayDimensions.get(1);
-//				for(Variable v : collection)
-//					if(v.name.equals(pointerVar))
-//						iterators.add(var.name);
+//	private void handleArrayIterators2() throws DebugException {
+//		for (Entry<String, VariableModel<?>> e : vars.entrySet()) {
+//			if(e.getValue() instanceof ReferenceModel) {
+//				ReferenceModel refModel = (ReferenceModel) e.getValue();
+//				if(refModel.isPrimitiveArray() && !refModel.isNull()) {
+//					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getModelTarget();
+//
+//					for(String v : vars.keySet()) {
+//						VariableInfo info = varParser.locateVariable(v, getLineNumber());
+//						if(info != null) {
+//							for (String indexVar : info.getArrayAccessVariables()) {
+//								VariableModel<?> vi = vars.get(indexVar);
+//								if(vi != null) {
+//									ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vi, refModel);
+//									refModel.addVar(indexModel);
+//								
+//									IBound bound = info.getBound();
+//									if(bound != null && bound.getType() != null) {
+//										ArrayIndexBound iBound = handleBound(bound);
+//										indexModel.setBound(iBound);
+//									}
+//								}
+//							}
+//							
+//							for (String arrayVar : info.getAccessedArrays()) {
+//								if(arrayVar.equals(refModel.getName())) {
+//									ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vars.get(v), refModel);
+//									refModel.addVar(indexModel);
+//
+//									IBound bound = info.getBound();
+//									if(bound != null && bound.getType() != null) {
+//										ArrayIndexBound iBound = handleBound(bound);
+//										indexModel.setBound(iBound);
+//									}
+//								}
+//							}
+//						}
+//						else
+//							System.err.println("info not found " + v + " " + getLineNumber());
+//					}
+//				}
 //			}
 //		}
-//		return iterators;
+//	}
+
+//	private ArrayIndexBound handleBound(IArrayIndexModel.IBound bound) {
+//		ASTParser parser = ASTParser.newParser(AST.JLS8);
+//		parser.setKind(ASTParser.K_EXPRESSION);
+//		parser.setSource(bound.getExpression().toCharArray());
+//
+//		ASTNode node = (ASTNode) parser.createAST(null);
+//
+//		List<IVariableModel> deps = new ArrayList<>();
+//		node.accept(new ASTVisitor() {
+//			@Override
+//			public boolean visit(SimpleName node) {
+//				VariableModel<?> var = vars.get(node.toString());
+//				if(var != null)
+//					deps.add(var);
+//				return true;
+//			}
+//		});
+//
+//		ArrayIndexBound iBound = new ArrayIndexBound(bound.getExpression(), bound.getType());
+//		
+//		return iBound;
 //	}
 
 
@@ -360,15 +418,18 @@ public class StackFrameModel extends DisplayUpdateObservable {
 
 	private String valueSpecialChars(IJavaValue value) {
 		try {
-			if(value.getReferenceTypeName().equals("char"))
+ 			if(value.getReferenceTypeName().equals("char"))
 				return "'" + value.getValueString() + "'";
 
 			if(value.getReferenceTypeName().equals(String.class.getName()))
 				return "\"" + value.getValueString() + "\"";
 
-			if(value instanceof IJavaObject)
-				return runtime.getObject((IJavaObject) value, false).toString();
-
+			if(value instanceof IJavaObject) { // TODO bug
+				if(((IJavaObject) value).isNull())
+					return "null";
+				else
+					return runtime.getObject((IJavaObject) value, false).toString();
+			}
 			return value.getValueString();
 		}
 		catch (DebugException e) {
@@ -377,14 +438,15 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		}
 	}
 
-	
+
 	public void setReturnValue(IJavaValue v) {
+		
 		this.returnValue = valueToString(v);
 		obsolete = true;
 		setChanged();
 		notifyObservers(Collections.emptyList());
 	}
-	
+
 	public String getInvocationExpression() {
 		if(isObsolete() && returnValue != null && !returnValue.equals("(void)"))
 			return invExpression + " = " + returnValue;
@@ -401,13 +463,13 @@ public class StackFrameModel extends DisplayUpdateObservable {
 	public void processException(String exceptionType, int line) {
 		this.exceptionType = exceptionType;
 
-//		Collection<JavaException> collection = codeAnalysis.lineExceptions.get(line);
-//		for(JavaException e : collection)
-//			if(e instanceof ArrayOutOfBounds) {
-//				ArrayOutOfBounds ae = (ArrayOutOfBounds) e;
-//				ArrayPrimitiveModel arrayModel = (ArrayPrimitiveModel) ((ReferenceModel) vars.get(ae.arrayName)).getModelTarget();
-//				arrayModel.setVarError(ae.arrayAccess);
-//			}
+		//		Collection<JavaException> collection = codeAnalysis.lineExceptions.get(line);
+		//		for(JavaException e : collection)
+		//			if(e instanceof ArrayOutOfBounds) {
+		//				ArrayOutOfBounds ae = (ArrayOutOfBounds) e;
+		//				ArrayPrimitiveModel arrayModel = (ArrayPrimitiveModel) ((ReferenceModel) vars.get(ae.arrayName)).getModelTarget();
+		//				arrayModel.setVarError(ae.arrayAccess);
+		//			}
 
 		setChanged();
 		notifyObservers(Collections.emptyList());
@@ -417,7 +479,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		return javaProject;
 	}
 
-	
+
 	public boolean isObsolete() {
 		return obsolete;
 	}
@@ -450,5 +512,9 @@ public class StackFrameModel extends DisplayUpdateObservable {
 
 	public int getStepLine() {
 		return stepLines.get(stepPointer);
+	}
+
+	public VariableModel<?> getVariable(String varName) {
+		return vars.get(varName);
 	}
 }

@@ -107,9 +107,8 @@ public class TagParser {
 	class CommentVisitor extends ASTVisitor {
 		public boolean visit(LineComment node) {
 			int start = node.getStartPosition();
-			int end = start + node.getLength();
 			int line = cunit.getLineNumber(start);
-			String comment = parser.getSourceFragment(start, end);
+			String comment = parser.getSourceFragment(start, node.getLength());
 			comment = comment.substring(comment.indexOf('/')+2).trim();
 			String[] tags = comment.split("\\s+");
 			

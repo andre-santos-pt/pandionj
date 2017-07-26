@@ -22,7 +22,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	private IJavaValue[] elements;
 	private int dimensions;
 	private String componentType;
-	private Map<String, IArrayIndexModel> varsRoles;
+//	private Map<String, IArrayIndexModel> varsRoles;
 
 	private String varError;
 
@@ -31,7 +31,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	
 	ArrayModel(IJavaArray array, RuntimeModel runtime) {
 		super(array, runtime);
-		varsRoles = new HashMap<>();
+//		varsRoles = new HashMap<>();
 		init(array);
 		initArray(array);
 	}
@@ -205,21 +205,25 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 //	protected abstract IFigure createArrayFigure();
 
 
-	public void addVar(IArrayIndexModel v) {
-//		assert v.getVariableRole() instanceof ArrayIterator;
-		if(!varsRoles.containsKey(v.getName())) {
-			varsRoles.put(v.getName(), v);
-			v.registerObserver((o,a) -> {
-				if(!v.isWithinScope()) {
-					varsRoles.remove(v.getName()); 
-					setChanged();
-					notifyObservers(v);
-				}
-			});
-			setChanged();
-			notifyObservers(v);
-		}
-	}
+//	public void addVar(IArrayIndexModel v) {
+////		assert v.getVariableRole() instanceof ArrayIterator;
+////		if(!varsRoles.containsKey(v.getName())) {
+//			varsRoles.put(v.getName(), v);
+//			v.registerObserver((o,a) -> {
+//				if(!v.isWithinScope()) {
+//					varsRoles.remove(v.getName()); 
+//					setChanged();
+//					notifyObservers(v);
+//				}
+//			});
+//			setChanged();
+//			notifyObservers(v);
+////		}
+//	}
+	
+//	public boolean hasVar(String varName) {
+//		return varsRoles.containsKey(varName);
+//	}
 
 	public void setVarError(String var) {
 		varError = var;
@@ -227,9 +231,9 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		notifyObservers(new RuntimeException(var));
 	}
 
-	public Collection<IArrayIndexModel> getIndexModels() {
-		return Collections.unmodifiableCollection(varsRoles.values());
-	}
+//	public Collection<IArrayIndexModel> getIndexModels() {
+//		return Collections.unmodifiableCollection(varsRoles.values());
+//	}
 
 	@Override
 	public boolean isMatrix() {

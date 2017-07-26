@@ -10,7 +10,7 @@ public interface IArrayIndexModel extends IVariableModel {
 	}
 	
 	interface IBound {
-		int getValue();
+		Integer getValue();
 		BoundType getType();
 		String getExpression();
 	}
@@ -21,5 +21,6 @@ public interface IArrayIndexModel extends IVariableModel {
 	
 	Direction getDirection();
 	
-	IBound getBound();	
+	IBound getBound();
+
 }

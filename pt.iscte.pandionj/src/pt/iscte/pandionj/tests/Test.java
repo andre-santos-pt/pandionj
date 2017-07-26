@@ -36,7 +36,7 @@ public class Test {
 		int sum = 0;
 		while(i <= jj && i != (jj+1)) {
 			--i;
-			sum = sum + v[i];
+			sum = sum + v[i-1];
 		}
 //		
 //		for(int j = 0, u=1; j < i; j++) { "ss".length(); } 

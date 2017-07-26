@@ -2,7 +2,9 @@ package pt.iscte.pandionj;
 
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -11,6 +13,7 @@ import org.eclipse.draw2d.AbstractConnectionAnchor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
@@ -27,10 +30,13 @@ import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.NodeProvider.Pointer;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
+import pt.iscte.pandionj.figures.ArrayPrimitiveFigure2;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.BaseFigure;
+import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.figures.NullFigure;
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.ReferenceFigure;
@@ -90,7 +96,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 				innerFig = arrayExtension.createFigure(aModel);
 				if(innerFig == null) {
 					if(model instanceof ArrayPrimitiveModel) {
-						innerFig = new ArrayPrimitiveFigure((ArrayPrimitiveModel) model);
+						innerFig = new ArrayPrimitiveFigure2((ArrayPrimitiveModel) model);
 					}
 					else if(model instanceof ArrayReferenceModel) {
 						innerFig = new ArrayReferenceFigure((ArrayReferenceModel) model);
@@ -209,6 +215,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 
 		IFigure sFig = ((BaseFigure) connection.getSource().getNodeFigure()).innerFig;
 
+		
 		if(sFig instanceof ArrayReferenceFigure) {
 			// TODO anchor
 			//			String refName = ((Pointer) element).refName;
@@ -217,10 +224,29 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		}
 		else if(sFig instanceof ArrayPrimitiveFigure) {
 			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
+		
 		}
 
-		// TODO repor
+		handleIllustration(connection.getSource(), connection.getDestination());
+
+			// TODO repor
 		//		fig.setVisible(pointer.source.isWithinScope() && pointer.target.isWithinScope());
+	}
+	
+	private void handleIllustration(GraphNode source, GraphNode target) {
+		if(source.getData() instanceof ReferenceModel && 
+			target.getData() instanceof ArrayModel &&
+			 ((BaseFigure) target.getNodeFigure()).innerFig instanceof ArrayPrimitiveFigure2) {
+			
+			ReferenceModel r = (ReferenceModel) source.getData();
+			
+			if(r.hasIndexVars()) {
+				ArrayPrimitiveFigure2 aFig =  (ArrayPrimitiveFigure2) ((BaseFigure) target.getNodeFigure()).innerFig;
+				IllustrationBorder b = new IllustrationBorder(r, aFig);
+				aFig.setBorder(b);
+			}
+		}
+		
 	}
 
 	enum Position {

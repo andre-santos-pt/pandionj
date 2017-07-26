@@ -34,7 +34,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	private Map<Long, EntityModel<?>> looseObjects;
 	private int countActive;
 	private boolean terminated;
-	
+
 	private int step;
 
 	public RuntimeModel() {
@@ -45,11 +45,11 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		terminated = false;
 		step = 0;
 	}
-	
+
 	public IJavaDebugTarget getDebugTarget() {
 		return (IJavaDebugTarget) launch.getDebugTarget();
 	}
-	
+
 	public void update(IJavaThread thread) {
 		if(launch != thread.getLaunch()) {
 			launch = thread.getLaunch();
@@ -60,9 +60,9 @@ public class RuntimeModel extends DisplayUpdateObservable {
 			terminated = false;
 			countActive = 0;
 		}
-		
+
 		terminated = false;
-	
+
 		// TODO ERRO disconnected : launch is the same??
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel && o.update(step))
@@ -75,30 +75,30 @@ public class RuntimeModel extends DisplayUpdateObservable {
 					}
 				});
 		}
-		
+
 		try {
 			handle(thread.getStackFrames());
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
-		
+
 		for(int i = 0; i < countActive; i++)
 			callStack.get(i).update();
-		
+
 		step++;
 		setChanged();
 		notifyObservers(step);
 	}
-	
+
 	private void handle(IStackFrame[] stackFrames) {
 		assert stackFrames != null;
 
 		// TODO erro?
-//		for(IStackFrame f : stackFrames) {
-//			if(!(f.getLaunch().getSourceLocator().getSourceElement(f) instanceof IFile)) {
-//				return 0;
-//			}
-//		}
+		//		for(IStackFrame f : stackFrames) {
+		//			if(!(f.getLaunch().getSourceLocator().getSourceElement(f) instanceof IFile)) {
+		//				return 0;
+		//			}
+		//		}
 
 		IStackFrame[] revStackFrames = reverse(stackFrames);
 		countActive = revStackFrames.length;
@@ -119,31 +119,31 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		}
 		notifyObservers();
 	}
-	
+
 	public void refresh() {
 		setChanged();
 		notifyObservers();
 	}
-	
+
 	private boolean isSubStack(IStackFrame[] stackFrames) {
 		if(stackFrames.length > callStack.size())
 			return false;
-		
+
 		for(int i = 0; i < stackFrames.length; i++)
 			if(stackFrames[i] != callStack.get(i).getStackFrame())
 				return false;
-		
+
 		return true;
 	}
-	
+
 	private boolean isStackIncrement(IStackFrame[] stackFrames) {
 		if(stackFrames.length < callStack.size())
 			return false;
-		
+
 		for(int i = 0; i < callStack.size(); i++)
 			if(stackFrames[i] != callStack.get(i).getStackFrame())
 				return false;
-		
+
 		return true;
 	}
 
@@ -180,7 +180,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		for(StackFrameModel s : callStack)
 			if(s.getStackFrame() == exceptionFrame)
 				return s;
-		
+
 		assert false;
 		return null;
 	}
@@ -190,7 +190,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		setChanged();
 		notifyObservers();
 	}
-	
+
 	public boolean isTerminated() {
 		return terminated;
 	}
@@ -198,8 +198,8 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	public int getRunningStep() {
 		return step;
 	}
-	
-	
+
+
 	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
 		assert !obj.isNull();
 		try {
@@ -237,66 +237,66 @@ public class RuntimeModel extends DisplayUpdateObservable {
 			return null;
 		}
 	}
-	
+
 	public Collection<EntityModel<?>> getLooseObjects() {
 		return Collections.unmodifiableCollection(looseObjects.values());
 	}
-	
-	
+
+
 	public void setReturnOnFrame(StackFrameModel current, IJavaValue returnValue) {
 		assert callStack.contains(current);
-		
-		int i = callStack.indexOf(current);
-		if(i + 1 < callStack.size()) {
-			callStack.get(i+1).setReturnValue(returnValue);
+		if(!returnValue.toString().equals("(void)")) {
+			int i = callStack.indexOf(current);
+			if(i + 1 < callStack.size())
+				callStack.get(i+1).setReturnValue(returnValue);
 		}
 	}
-	
-	
+
+
 	public void simulateGC() {
 		// TODO GC
-//		boolean removals = false;
-//		Iterator<Entry<Long, EntityModel<?>>> iterator = objects.entrySet().iterator();
-//		while(iterator.hasNext()) {
-//			Entry<Long, EntityModel<?>> e = iterator.next();
-//			if(!vars.containsValue(e.getValue())) {
-//				iterator.remove();
-//				removals = true;
-//			}
-//		}
-//		if(removals) {
-//			setChanged();
-//			notifyObservers(Collections.emptyList());
-//		}
+		//		boolean removals = false;
+		//		Iterator<Entry<Long, EntityModel<?>>> iterator = objects.entrySet().iterator();
+		//		while(iterator.hasNext()) {
+		//			Entry<Long, EntityModel<?>> e = iterator.next();
+		//			if(!vars.containsValue(e.getValue())) {
+		//				iterator.remove();
+		//				removals = true;
+		//			}
+		//		}
+		//		if(removals) {
+		//			setChanged();
+		//			notifyObservers(Collections.emptyList());
+		//		}
 
 	}
 
-//	public void simulateGC() {
-//		for(int i = 0; i < countActive; i++)
-//			callStack.get(i).simulateGC();
-//	}
-	
-	
-	
-//	public void setReturnValue(List<StackFrame> frames, Value returnValue) {
-//		if(frames.size() == countActive) {
-//			for(int i = 0; i < frames.size(); i++) {
-//				if(!sameLocation(frames.get(i).location(), callStack.get(countActive-1-i)))
-//					return;
-//			
-//			}
-//			callStack.get(countActive-1).setReturnValue(returnValue);
-//		}
-//	}
+	//	public void simulateGC() {
+	//		for(int i = 0; i < countActive; i++)
+	//			callStack.get(i).simulateGC();
+	//	}
 
-//	private boolean sameLocation(Location loc, StackFrameModel frame) {
-//		try {
-//			return loc.declaringType().name().equals(frame.getStackFrame().getDeclaringTypeName()) &&
-//					loc.lineNumber() == frame.getLineNumber();
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return false;
-//		}
-//	}
-	
+
+
+	//	public void setReturnValue(List<StackFrame> frames, Value returnValue) {
+	//		if(frames.size() == countActive) {
+	//			for(int i = 0; i < frames.size(); i++) {
+	//				if(!sameLocation(frames.get(i).location(), callStack.get(countActive-1-i)))
+	//					return;
+	//			
+	//			}
+	//			callStack.get(countActive-1).setReturnValue(returnValue);
+	//		}
+	//	}
+
+	//	private boolean sameLocation(Location loc, StackFrameModel frame) {
+	//		try {
+	//			return loc.declaringType().name().equals(frame.getStackFrame().getDeclaringTypeName()) &&
+	//					loc.lineNumber() == frame.getLineNumber();
+	//		} catch (DebugException e) {
+	//			e.printStackTrace();
+	//			return false;
+	//		}
+	//	}
+
 }

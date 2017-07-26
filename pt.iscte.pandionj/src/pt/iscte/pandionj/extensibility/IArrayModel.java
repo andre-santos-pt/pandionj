@@ -10,5 +10,5 @@ public interface IArrayModel extends IObservableModel {
 	boolean isMatrix();
 	boolean isDecimal();
 	IVariableModel getElementModel(int index);
-	Collection<IArrayIndexModel> getIndexModels();
+//	Collection<IArrayIndexModel> getIndexModels();
 }

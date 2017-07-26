@@ -183,6 +183,10 @@ public enum PrimitiveType {
 		
 		return false;
 	}
+	
+	public static boolean isPrimitiveSig(String signature) {
+		return isPrimitive(Signature.getSignatureSimpleName(signature));
+	}
 
 	
 	public static IJavaValue[] createValues(IMethod m, String[] values, IJavaDebugTarget debugger) throws DebugException {

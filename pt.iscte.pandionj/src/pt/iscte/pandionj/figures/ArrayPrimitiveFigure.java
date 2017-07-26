@@ -64,8 +64,8 @@ public class ArrayPrimitiveFigure extends Figure{
 		add(rightBound, boundConstraints);
 		
 		vars = new HashMap<>();
-		for(IArrayIndexModel v : model.getIndexModels())
-			addVariable(v);
+//		for(IArrayIndexModel v : model.getIndexModels())
+//			addVariable(v);
 
 		updateOutOfBoundsPositions();
 		setSize(getPreferredSize());

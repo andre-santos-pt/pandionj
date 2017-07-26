@@ -24,7 +24,7 @@ public class ArrayReferenceModel extends ArrayModel {
 			references = new ArrayList<>(array.getLength());
 			IVariable[] variables = array.getVariables();
 			for(int i = 0; i < variables.length; i++) {
-				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, getRuntimeModel());
+				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, null, getRuntimeModel());
 				references.add(referenceModel);
 			}
 		}

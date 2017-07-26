@@ -78,7 +78,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				if(!var.isStatic()) {
 					String name = var.getName();
 					if(var.getValue() instanceof IJavaObject) {
-						ReferenceModel refModel = new ReferenceModel(var, true, getRuntimeModel());
+						ReferenceModel refModel = new ReferenceModel(var, true, null, getRuntimeModel());
 						refModel.registerObserver(new Observer() {
 							public void update(Observable o, Object arg) {
 								setChanged();
@@ -94,7 +94,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 						references.put(name, refModel);
 					}
 					else {
-						ValueModel val = new ValueModel(var, true, getRuntimeModel(), null);
+						ValueModel val = new ValueModel(var, true, null, getRuntimeModel());
 						val.registerObserver(new Observer() {
 							public void update(Observable o, Object arg) {
 								setChanged();

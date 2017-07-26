@@ -53,12 +53,12 @@ public class PandionJView extends ViewPart {
 
 	private ScrolledComposite scroll; 
 	private Composite area;
-	
+
 	private StaticArea staticArea;
 	private StackView stackView;
-	
+
 	private InvocationArea invocationArea;
-	
+
 	private Label labelInit;
 	private StackLayout stackLayout;
 	private IContextService contextService;
@@ -66,7 +66,7 @@ public class PandionJView extends ViewPart {
 	private IToolBarManager toolBar;
 
 	private Map<String, Image> images; // TODO image manager
-	
+
 	public PandionJView() {
 		instance = this;
 		images = new HashMap<>();
@@ -83,17 +83,17 @@ public class PandionJView extends ViewPart {
 		createWidgets(parent);
 		model = new RuntimeModel();
 		stackView.setInput(model);
-		
+
 		debugEventListener = new DebugListener();
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
 
 		breakpointListener = new PandionJBreakpointListener();
 		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
-		
+
 		populateToolBar();
 	}
 
-	
+
 
 
 	@Override
@@ -107,7 +107,7 @@ public class PandionJView extends ViewPart {
 		FontManager.dispose();
 	}
 
-	
+
 	private void createWidgets(Composite parent) {
 		stackLayout = new StackLayout();
 		parent.setLayout(stackLayout);
@@ -155,7 +155,7 @@ public class PandionJView extends ViewPart {
 		scroll.setFocus();
 		contextService.activateContext(Constants.CONTEXT_ID); // TODO constants
 	}
-	
+
 	private class DebugListener implements IDebugEventSetListener {
 		public void handleDebugEvents(DebugEvent[] events) {
 			if(events.length > 0 && !model.isTerminated()) {
@@ -168,17 +168,17 @@ public class PandionJView extends ViewPart {
 							thread.resume();
 					});
 				}
-//				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
-//					breakpointListener.enableFilter();
-//				}
-//				else if(e.getKind() == DebugEvent.RESUME &&
-//						(
-//						e.getDetail() == DebugEvent.STEP_OVER || 
-//						e.getDetail() == DebugEvent.STEP_RETURN || 
-//						e.getDetail() == DebugEvent.CLIENT_REQUEST 
-//						))  {
-//					breakpointListener.disableFilter();
-//				}
+				//				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
+				//					breakpointListener.enableFilter();
+				//				}
+				//				else if(e.getKind() == DebugEvent.RESUME &&
+				//						(
+				//						e.getDetail() == DebugEvent.STEP_OVER || 
+				//						e.getDetail() == DebugEvent.STEP_RETURN || 
+				//						e.getDetail() == DebugEvent.CLIENT_REQUEST 
+				//						))  {
+				//					breakpointListener.disableFilter();
+				//				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
 					model.setTerminated();
 				}
@@ -218,10 +218,9 @@ public class PandionJView extends ViewPart {
 				scroll.getParent().layout();
 			});
 		}
-		
+
 		model.update(thread);
-		
-		if(!model.isEmpty()) {
+		if(!model.isEmpty() && !model.isTerminated()) {
 			StackFrameModel frame = model.getTopFrame();
 			staticArea.setInput(frame);
 			PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber());
@@ -248,25 +247,26 @@ public class PandionJView extends ViewPart {
 		}
 	}
 
-	
+
 	public void promptInvocation(IMethod method, InvocationAction action) {
 		stackLayout.topControl = invocationArea;
 		invocationArea.setMethod(method, action);
+//		invocationArea.requestLayout();
 		invocationArea.getParent().layout();
 		invocationArea.setFocus();
 	}
 
 
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	private void populateToolBar() {
 		toolBar = getViewSite().getActionBars().getToolBarManager();
 		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
-		
+
 		// TODO zoom all
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
@@ -275,7 +275,7 @@ public class PandionJView extends ViewPart {
 		addMenuBarItems();
 	}
 
-	
+
 	private void addMenuBarItems() {
 		IMenuManager menuManager = getViewSite().getActionBars().getMenuManager();
 		menuManager.add(new Action("highlight color") {
@@ -311,21 +311,25 @@ public class PandionJView extends ViewPart {
 		};
 		addToolbarAction(name, toggle, imageName, description, a);
 	}
-	
-	
+
+
 	public void evaluate(String expression, InvocationResult listener) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		StackFrameModel stackFrame = model.getTopFrame();
+
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());	
 		delegate.evaluateExpression(expression , stackFrame.getStackFrame(), new IWatchExpressionListener() {
-			
+
 			@Override
 			public void watchEvaluationFinished(IWatchExpressionResult result) {
-				System.out.println("EVAL: " + result.getValue());
+				listener.valueReturn(result.getValue());
+				System.out.println("? " + result.getValue());
 			}
 		});
-		
+
 	}
+
+
 
 	//	private IDebugContextListener debugUiListener;
 	//	debugUiListener = new DebugUIListener();

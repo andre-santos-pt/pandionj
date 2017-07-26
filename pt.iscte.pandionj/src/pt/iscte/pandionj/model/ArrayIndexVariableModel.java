@@ -12,7 +12,7 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 	private final IVariableModel model;
 	private final IVariableModel arrayRef;
 	
-	private IBound bound;
+	private ArrayIndexBound bound;
 	
 	private boolean illegalAccess;
 	
@@ -22,12 +22,27 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 		this.arrayRef = arrayRef;
 		bound = null;
 		illegalAccess = false;
-		model.registerObserver((o,a) -> {setChanged(); notifyObservers();});
+		model.registerObserver((o,a) -> fireChange());
 	}
 			
-	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, IBound bound) {
-		this(model, arrayRefName);
-		this.bound = bound;
+//	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, ArrayIndexBound bound) {
+//		this(model, arrayRefName);
+//		this.bound = bound;
+//		bound.registerObserver((o,a) -> fireChange());
+//	}
+	
+//	public boolean sameAs(ArrayIndexVariableModel v) {
+//		return model == v.model && arrayRef == v.arrayRef;
+//	}
+	
+	private void fireChange() {
+		setChanged();
+		notifyObservers();
+	}
+	
+	@Override
+	public String toString() {
+		return getName();
 	}
 	
 	public String getName() {
@@ -43,14 +58,19 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 		return i < 0 || i >= array.getLength();
 	}
 
-	public boolean isBounded() {
-		return bound != null;
-	}
+//	public boolean isBounded() {
+//		return bound != null;
+//	}
 
 	public IBound getBound() {
 		return bound;
 	}
-
+	
+	public void setBound(ArrayIndexBound bound) {
+		this.bound = bound;
+		bound.registerObserver((o,a) -> fireChange());
+	}
+	
 	public Direction getDirection() {
 		if(getVariableRole().isStepperForward())
 			return Direction.FORWARD;

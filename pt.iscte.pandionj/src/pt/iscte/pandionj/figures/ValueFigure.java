@@ -48,7 +48,7 @@ public class ValueFigure extends Figure {
 		add(valueLabel);
 
 		if(Role.FIXED_VALUE.equals(role))
-			setBackgroundColor(ColorConstants.lightGray);
+			valueLabel.setBackgroundColor(ColorConstants.lightGray);
 
 		setOpaque(false); 
 		model.registerDisplayObserver(new Observer() {

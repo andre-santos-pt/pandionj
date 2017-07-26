@@ -22,7 +22,7 @@ public class ArrayPrimitiveModel extends ArrayModel {
 		try {
 			values = new ArrayList<>(array.getLength());
 			for(int i = 0; i < array.getLength(); i++) {
-				ValueModel m = new ValueModel((IJavaVariable) array.getVariable(i), false, getRuntimeModel(), null);
+				ValueModel m = new ValueModel((IJavaVariable) array.getVariable(i), false, null, getRuntimeModel());
 				values.add(m);
 			}
 		} catch (DebugException e) {
