@@ -138,7 +138,7 @@ public class PandionJLayoutAlgorithm extends Observable implements LayoutAlgorit
 							obj.traverseSiblings(v, true);
 						}
 					}
-					else if(target instanceof ArrayReferenceModel && !((ArrayReferenceModel) target).hasWidgetExtension()) {
+					else if(target instanceof ArrayReferenceModel) { // && !((ArrayReferenceModel) target).hasWidgetExtension()) {
 						setLocation(targetE, e.getXInLayout() + e.getWidthInLayout() + Constants.NODE_SPACING, e.getYInLayout());
 
 						List<ReferenceModel> elements = ((ArrayReferenceModel) target).getModelElements();

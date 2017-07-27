@@ -1,10 +1,5 @@
 package pt.iscte.pandionj.model;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.jdt.debug.core.IJavaArray;
@@ -13,7 +8,6 @@ import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.Constants;
-import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 
@@ -22,18 +16,18 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	private IJavaValue[] elements;
 	private int dimensions;
 	private String componentType;
-//	private Map<String, IArrayIndexModel> varsRoles;
-
-	private String varError;
 
 	private IArrayWidgetExtension extension;
 
-	
 	ArrayModel(IJavaArray array, RuntimeModel runtime) {
 		super(array, runtime);
-//		varsRoles = new HashMap<>();
 		init(array);
-		initArray(array);
+		try {
+			int len = Math.min(array.getLength(), Constants.ARRAY_LENGTH_LIMIT);
+			initArray(array, len);
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override
@@ -53,7 +47,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	}
 
 
-	protected abstract void initArray(IJavaArray array);
+	protected abstract void initArray(IJavaArray array, int length);
 
 
 	public Object[] getValues() {
@@ -108,28 +102,29 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		return true;
 	}
 
-//	private static boolean diff2(IJavaValue[] a, IJavaValue[] b, int dim) {
-//		try {
-//			if(a.length == b.length) {
-//				for(int i = 0; i < a.length; i++) {
-//					if(!a[i].isNull() && !b[i].isNull() && a[i].equals(b[i])) {
-//						if(dim > 1 && diff2(((IJavaArray) a[i]).getValues(), ((IJavaArray) b[i]).getValues(), dim - 1))
-//							return true;
-//					}
-//					else if(!a[i].equals(b[i]))
-//						return true;
-//				}
-//				return false;
-//			}
-//		}
-//		catch(DebugException e) {
-//			e.printStackTrace();
-//		}
-//		return true;
-//	}
+	//	private static boolean diff2(IJavaValue[] a, IJavaValue[] b, int dim) {
+	//		try {
+	//			if(a.length == b.length) {
+	//				for(int i = 0; i < a.length; i++) {
+	//					if(!a[i].isNull() && !b[i].isNull() && a[i].equals(b[i])) {
+	//						if(dim > 1 && diff2(((IJavaArray) a[i]).getValues(), ((IJavaArray) b[i]).getValues(), dim - 1))
+	//							return true;
+	//					}
+	//					else if(!a[i].equals(b[i]))
+	//						return true;
+	//				}
+	//				return false;
+	//			}
+	//		}
+	//		catch(DebugException e) {
+	//			e.printStackTrace();
+	//		}
+	//		return true;
+	//	}
 
 	public final boolean update(int step) {
-		for(int i = 0; i < getLength(); i++)
+		int len = Math.min(getLength(), Constants.ARRAY_LENGTH_LIMIT);
+		for(int i = 0; i < len; i++)
 			if(updateInternal(i, step))
 				setChanged();
 
@@ -148,7 +143,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	}
 
 	abstract boolean updateInternal(int i, int step);
-	
+
 	public int getLength() {
 		return elements.length;
 	}
@@ -194,53 +189,11 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	}
 
 
-//	protected IFigure createInnerFigure() {
-//		IFigure fig = createExtensionFigure();
-//		if(fig == null)
-//			fig = createArrayFigure();
-//		return fig;
-//	}
-//
-//
-//	protected abstract IFigure createArrayFigure();
-
-
-//	public void addVar(IArrayIndexModel v) {
-////		assert v.getVariableRole() instanceof ArrayIterator;
-////		if(!varsRoles.containsKey(v.getName())) {
-//			varsRoles.put(v.getName(), v);
-//			v.registerObserver((o,a) -> {
-//				if(!v.isWithinScope()) {
-//					varsRoles.remove(v.getName()); 
-//					setChanged();
-//					notifyObservers(v);
-//				}
-//			});
-//			setChanged();
-//			notifyObservers(v);
-////		}
-//	}
-	
-//	public boolean hasVar(String varName) {
-//		return varsRoles.containsKey(varName);
-//	}
-
-	public void setVarError(String var) {
-		varError = var;
-		setChanged();
-		notifyObservers(new RuntimeException(var));
-	}
-
-//	public Collection<IArrayIndexModel> getIndexModels() {
-//		return Collections.unmodifiableCollection(varsRoles.values());
-//	}
-
 	@Override
 	public boolean isMatrix() {
 		if(getDimensions() != 2)
 			return false;
 
-		// TODO: with IJava elements
 		Object[] values = getValues();
 		for(Object o : values)
 			if(o == null)
@@ -265,7 +218,7 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		}
 	}
 
-	@Override // TODO elements / prev
+	@Override
 	public String toString() {
 		int lim = Math.min(Constants.ARRAY_LENGTH_LIMIT, elements.length);
 		String els = "{";
@@ -283,29 +236,4 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		els += "}";
 		return els;
 	}
-
-//	public Set<String> getTags() {
-//		Set<String> tags = new HashSet<String>();
-//		Collection<ReferenceModel> references = stackFrame.getReferencesTo(this);
-//		for(ReferenceModel r : references)
-//			tags.addAll(r.getTags());
-//		return tags;
-//		return Collections.emptySet(); // TODO repor TAGS
-//	}
-	
-	//	private static IJavaValue[] deepCopy(IJavaValue[] array, int dim) {
-	//		Object values = Array.newInstance(IJavaValue.class, dim);
-	////		IJavaValue[] values = new IJavaValue[array.length];
-	//		for(int i = 0; i < array.length; i++) {
-	//			if(dim == 1)
-	//				Array.set(values, i, array[i]);
-	////				values[i] = array[i];
-	//			else
-	//				Array.set(values, i, deepCopy(((IJavaArray) array[i]).getValues(), dim-1));
-	////				values[i] = deepCopy(((IJavaArray) array[i]).getValues(), dim-1);
-	//		}
-	//		
-	//		return values;
-	//	}
-
 }

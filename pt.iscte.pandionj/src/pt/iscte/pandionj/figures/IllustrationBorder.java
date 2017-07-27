@@ -42,7 +42,7 @@ public class IllustrationBorder implements Border {
 
 	public IllustrationBorder(ReferenceModel ref, ArrayPrimitiveFigure2 arrayFigure) {
 		this.arrayFigure = arrayFigure;
-		N = arrayFigure.getArrayLength();
+		N = arrayFigure.getNumberOfPositions();
 		leftBoundVisible = true;
 		rightBoundVisible = false;
 		vars = ref.getIndexVars();
@@ -74,7 +74,7 @@ public class IllustrationBorder implements Border {
 	@Override
 	public void paint(IFigure figure, Graphics g, Insets insets) {
 		//		g.drawRectangle(figure.getBounds().getShrinked(insets));
-
+		
 		drawOutOfBoundsPositions(figure, g);
 
 		Dimension dim = N == 0 ? new Dimension(10,10) : new Dimension(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
@@ -102,6 +102,7 @@ public class IllustrationBorder implements Border {
 
 				boolean right = i < boundVal;
 				from = getIndexLocation(i).getTranslated(pWidth - FigureUtilities.getTextWidth(text, font)/2, y);
+			
 				Point to = getIndexLocation(boundVal).getTranslated(pWidth + (right ? -ARROW_EDGE : ARROW_EDGE), y + pWidth);
 				g.drawText(text, from);
 				if(boundVal != i && ((right && i <= N - 1) || (!right && i >= 0))) {
@@ -131,6 +132,11 @@ public class IllustrationBorder implements Border {
 		}
 	}
 
+	private void setIllustrationStyle(Graphics g) {
+		g.setLineWidth(Constants.ILLUSTRATION_LINE_WIDTH);
+		g.setLineStyle(Graphics.LINE_SOLID);
+		g.setForegroundColor(Constants.Colors.ILLUSTRATION);
+	}
 
 	private boolean isOutOfBounds(int i) {
 		return i < 0 || i >= N;
@@ -163,16 +169,21 @@ public class IllustrationBorder implements Border {
 		// TODO right
 	}
 
+	
+	
 	private void drawArrow(Point from, Point to, int pWidth, boolean right, Graphics g) {
-		g.setLineStyle(Graphics.LINE_SOLID);
+		setIllustrationStyle(g);
+		g.setLineDashOffset(2.5f);
+		g.setLineStyle(Graphics.LINE_DASH);
 		Point arrowTo = to.getTranslated(right ? 0 : pWidth/2, 0);
 		g.drawLine(from.getTranslated(right ? pWidth : 0, pWidth), arrowTo);
 		Point a = arrowTo.getTranslated(right ? -ARROW_EDGE : ARROW_EDGE, -ARROW_EDGE);
+		g.setLineStyle(Graphics.LINE_SOLID);
 		g.drawLine(arrowTo, a);
 		a = a.getTranslated(0, ARROW_EDGE*2);
 		g.drawLine(arrowTo, a);
 	}
-
+	
 	// TODO open/close
 	private void drawBar(Graphics g, Integer boundVal, BoundType boundType, Direction direction) {
 		if(direction != Direction.NONE) {
@@ -181,10 +192,9 @@ public class IllustrationBorder implements Border {
 				direction == Direction.BACKWARD && boundType == BoundType.OPEN)
 				origin.translate(POS, 0);
 				
-			Point from = origin.getTranslated(-ARRAY_POSITION_SPACING-1, -BAR_HEIGHT);
-			Point to = origin.getTranslated(-ARRAY_POSITION_SPACING-1, BAR_HEIGHT);
-			g.setLineWidth(ARRAY_POSITION_SPACING);
-			g.setLineStyle(Graphics.LINE_DASH);
+			Point from = origin.getTranslated(-ARRAY_POSITION_SPACING/2, -BAR_HEIGHT);
+			Point to = origin.getTranslated(-ARRAY_POSITION_SPACING/2, BAR_HEIGHT);
+			setIllustrationStyle(g);
 			g.drawLine(from, to);
 		}
 	}

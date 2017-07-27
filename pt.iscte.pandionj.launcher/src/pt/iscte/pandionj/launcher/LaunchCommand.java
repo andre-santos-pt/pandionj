@@ -116,7 +116,9 @@ public class LaunchCommand extends AbstractHandler {
 						}
 					}
 					if(selectedMethod == null) {
-						MessageDialog.openError(Display.getDefault().getActiveShell(),"No selected method", "???");
+						MessageDialog.openError(Display.getDefault().getActiveShell(),
+								"Please select method",
+								"Place the cursor at a line of the body of a static method.");
 						return null;
 					}
 					else {
@@ -159,10 +161,10 @@ public class LaunchCommand extends AbstractHandler {
 
 		if(line != -1) {
 			// TODO run to line
-								Map<String, Object> attributes = new HashMap<String, Object>(4);
-								attributes.put(IBreakpoint.PERSISTED, Boolean.FALSE);
-								attributes.put("org.eclipse.jdt.debug.ui.run_to_line", Boolean.TRUE);
-								attributes.put("pandionj_gen", Boolean.TRUE); // ?
+			Map<String, Object> attributes = new HashMap<String, Object>(4);
+			attributes.put(IBreakpoint.PERSISTED, Boolean.FALSE);
+			attributes.put("org.eclipse.jdt.debug.ui.run_to_line", Boolean.TRUE);
+			attributes.put("pandionj_gen", Boolean.TRUE); // ?
 			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, attributes);
 			//					breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
 		}
@@ -172,7 +174,11 @@ public class LaunchCommand extends AbstractHandler {
 			URL resolve = FileLocator.resolve(find);
 			if(!mainMethod.exists()) {
 				// TODO bug Windows: "\" inicial
-				String args =  "-javaagent:\"" + resolve.getPath() + "=" + agentArgs + "\"";
+				String path = resolve.getPath();
+				if(Platform.getOS().compareTo(Platform.OS_WIN32) == 0)
+					path = path.substring(1);
+
+				String args =  "-javaagent:\"" + path + "=" + agentArgs + "\"";
 				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, args);
 			}
 		} catch (IOException e1) {

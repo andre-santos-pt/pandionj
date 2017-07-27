@@ -6,6 +6,7 @@ import java.util.Observer;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -20,33 +21,59 @@ class StaticArea extends Composite implements Observer {
 
 	private GraphViewerZoomable viewer;
 	private StackFrameModel model;
-	
+
 	StaticArea(Composite parent) {
 		super(parent, SWT.NONE);
 		setLayout(new FillLayout());
 		viewer = new GraphViewerZoomable(this, SWT.NONE); // TODO zoom
 		viewer.setContentProvider(new StaticNodeProvider());
-		viewer.setLayoutAlgorithm(new PandionJLayoutAlgorithm());
+		PandionJLayoutAlgorithm pandionJLayoutAlgorithm = new PandionJLayoutAlgorithm();
+		pandionJLayoutAlgorithm.addObserver(viewSizeObserver);
+		viewer.setLayoutAlgorithm(pandionJLayoutAlgorithm);
 		viewer.getGraphControl().setBackground(ColorConstants.white);
 	}
 
-//	@Override
-//	public Point computeSize(int wHint, int hHint) {
-//		return new Point(SWT.DEFAULT, Constants.STATIC_AREA_HEIGHT);
-//	}
+	private Observer viewSizeObserver = new Observer() {
+		public void update(Observable o, Object arg) {
+			PandionJUI.executeUpdate(() -> {
+//				if(viewer.getNodeElements().length == 0)
+//					setLayoutData(new GridData(Constants.MARGIN, Constants.MARGIN));
+//				else {
+					Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+					setLayoutData(new GridData(size.x, size.y));
+//				}
+				requestLayout();
+			});
+		}
+	};
+
+	//	@Override
+	//	public Point computeSize(int wHint, int hHint) {
+	//		return new Point(SWT.DEFAULT, Constants.STATIC_AREA_HEIGHT);
+	//	}
 
 	void setInput(StackFrameModel model) {
 		if(this.model != model) {
 			this.model = model;
-			boolean collapse = model.getStaticVariables().isEmpty();
+
 			PandionJUI.executeUpdate(() -> {
-				setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, !collapse));
-				getParent().layout();
-				viewer.setInput(model);
-				viewer.setLabelProvider(new FigureProvider(model));
-				viewer.applyLayout();
-			}
-			);
+				//				setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+				//				setLayoutData(new GridData(SWT.DEFAULT, 100));
+				//				getParent().layout();
+				if(!model.getRuntime().isTerminated()) {
+					viewer.setInput(model);
+					viewer.setLabelProvider(new FigureProvider(model));
+					viewer.applyLayout();
+//					if(viewer.getNodeElements().length == 0)
+//						setLayoutData(new GridData(Constants.MARGIN, Constants.MARGIN));
+//					else {
+						Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+						setLayoutData(new GridData(size.x, size.y));
+//					}
+				}
+
+				requestLayout();
+			});
 			// TODO if there are changes
 			model.registerDisplayObserver(this);
 		}
@@ -63,11 +90,14 @@ class StaticArea extends Composite implements Observer {
 		}
 	}
 
-	static class StaticNodeProvider implements IGraphEntityRelationshipContentProvider {
+	class StaticNodeProvider implements IGraphEntityRelationshipContentProvider {
 		@Override
 		public Object[] getElements(Object input) {
 			StackFrameModel model = (StackFrameModel) input;
-			return NodeProvider.getElementsInternal(model.getStaticVariables()).toArray();
+			if(model.getRuntime().isTerminated())
+				return NodeProvider.EMPTY;
+			else
+				return NodeProvider.getElementsInternal(model.getStaticVariables()).toArray();
 		}
 
 		@Override

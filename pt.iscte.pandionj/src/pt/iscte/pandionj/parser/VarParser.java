@@ -193,6 +193,7 @@ public class VarParser {
 		}
 
 
+		// TODO n += LITERAL?
 		@Override
 		public boolean visit(Assignment node) {
 			if(node.getLeftHandSide() instanceof SimpleName) {

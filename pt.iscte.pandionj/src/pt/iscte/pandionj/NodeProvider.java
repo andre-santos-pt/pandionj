@@ -22,7 +22,7 @@ import pt.iscte.pandionj.model.ValueModel.Role;
 import pt.iscte.pandionj.model.VariableModel;
 
 class NodeProvider implements IGraphEntityRelationshipContentProvider {
-	private static final Object[] EMPTY = new Object[0];
+	static final Object[] EMPTY = new Object[0];
 
 	private StackFrameModel model;
 
@@ -94,7 +94,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 					ret.add(new Pointer(field.getKey(), (ObjectModel) source, (EntityModel<?>) dest));
 			return ret.toArray();
 		}
-		else if(source instanceof ArrayReferenceModel && !((ArrayReferenceModel) source).hasWidgetExtension()) {
+		else if(source instanceof ArrayReferenceModel) { // && !((ArrayReferenceModel) source).hasWidgetExtension()) {
 			List<Pointer> ret = new ArrayList<>();
 			List<ReferenceModel> elements = ((ArrayReferenceModel) source).getModelElements();
 			for(int i = 0; i < elements.size(); i++)

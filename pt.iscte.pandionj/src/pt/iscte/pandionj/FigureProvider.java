@@ -109,7 +109,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 				innerFig = new ObjectFigure(oModel, extensionFigure, true);
 			}
 		}
-		assert innerFig != null;
+		assert innerFig != null : model;
 		BaseFigure base = new BaseFigure(innerFig);
 		return base;
 	}
@@ -183,7 +183,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 
 	@Override
 	public void selfStyleConnection(Object element, GraphConnection connection) {
-		PolylineConnection fig = (PolylineConnection) connection.getConnectionFigure();
+		PolylineConnection conn = (PolylineConnection) connection.getConnectionFigure();
 		Pointer pointer = (Pointer) element;
 
 		if(pointer.isNull()) {
@@ -195,7 +195,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
 			decoration.setOpaque(true);
-			fig.setTargetDecoration(decoration);	
+			conn.setTargetDecoration(decoration);	
 		}
 		else {
 			PolylineDecoration decoration = new PolylineDecoration();
@@ -207,24 +207,24 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
 			decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
 			decoration.setOpaque(true);
-			fig.setTargetDecoration(decoration);
+			conn.setTargetDecoration(decoration);
 
 			//			fig.setSourceAnchor(new PositionAnchor(connection.getSource().getNodeFigure(), Position.RIGHT));
 			//			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		}
 
 		IFigure sFig = ((BaseFigure) connection.getSource().getNodeFigure()).innerFig;
+		IFigure tFig = ((BaseFigure) connection.getDestination().getNodeFigure()).innerFig;
 
-		
 		if(sFig instanceof ArrayReferenceFigure) {
 			// TODO anchor
-			//			String refName = ((Pointer) element).refName;
-			//			refName = refName.substring(1, refName.length()-1);
-			//			fig.setSourceAnchor(((ArrayReferenceFigure) sFig).getAnchor(Integer.parseInt(refName)));
+			String refName = ((Pointer) element).refName;
+			refName = refName.substring(1, refName.length()-1);
+			conn.setSourceAnchor(((ArrayReferenceFigure) sFig).getAnchor(Integer.parseInt(refName)));
 		}
-		else if(sFig instanceof ArrayPrimitiveFigure) {
-			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		
+		if(tFig instanceof ArrayPrimitiveFigure2) {
+			conn.setTargetAnchor(new PositionAnchor(tFig, Position.LEFT));
 		}
 
 		handleIllustration(connection.getSource(), connection.getDestination());

@@ -8,7 +8,6 @@ import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 
-// TODO limit size?
 public class ArrayPrimitiveModel extends ArrayModel {
 
 	private List<ValueModel> values;
@@ -18,13 +17,16 @@ public class ArrayPrimitiveModel extends ArrayModel {
 	}
 
 	@Override
-	protected void initArray(IJavaArray array) {
+	protected void initArray(IJavaArray array, int length) {
 		try {
-			values = new ArrayList<>(array.getLength());
-			for(int i = 0; i < array.getLength(); i++) {
+			values = new ArrayList<>(length);
+			for(int i = 0; i < length - 1; i++) {
 				ValueModel m = new ValueModel((IJavaVariable) array.getVariable(i), false, null, getRuntimeModel());
 				values.add(m);
 			}
+			ValueModel m = new ValueModel((IJavaVariable) array.getVariable(array.getLength()-1), false, null, getRuntimeModel());
+			values.add(m);
+			
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
@@ -35,10 +37,12 @@ public class ArrayPrimitiveModel extends ArrayModel {
 	}
 	
 	boolean updateInternal(int i, int step) {
+		assert i >= 0 && i < values.size();
 		return values.get(i).update(step);
 	}
 	
 	public ValueModel getElementModel(int index) {
+		assert index >= 0 && index < values.size();
 		return values.get(index);
 	}
 	

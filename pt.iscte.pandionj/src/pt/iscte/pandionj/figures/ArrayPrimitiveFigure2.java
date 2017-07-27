@@ -7,7 +7,6 @@ import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Observable;
 
 import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ColorConstants;
@@ -37,26 +36,17 @@ public class ArrayPrimitiveFigure2 extends Figure{
 
 	public ArrayPrimitiveFigure2(IArrayModel model) {
 		this.model = model;
-		model.registerDisplayObserver((o, indexes) -> observerAction(o, indexes));
-		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT); // limit size
-		positions = new ArrayList<>(N);
-
-		setBackgroundColor(Constants.Colors.OBJECT);
+		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
+		positions = new ArrayList<>(N+1);
 
 		outerLayout = new GridLayout(1, false);
 		setLayoutManager(outerLayout);
 
+		setBackgroundColor(Constants.Colors.OBJECT);
 		positionsFig = createPositionsFig();
 		add(positionsFig);
 		setSize(getPreferredSize());
 	}
-
-	//	@Override
-	//	public Dimension getPreferredSize(int wHint, int hHint) { 
-	//		int varSpace = vars.size() * 30;
-	//		return super.getPreferredSize(wHint, hHint).expand(0, varSpace);
-	//		return new Dimension();
-	//	}
 
 	@Override
 	public void setBorder(Border border) {
@@ -64,38 +54,38 @@ public class ArrayPrimitiveFigure2 extends Figure{
 		setSize(border.getPreferredSize(this));
 	}
 	
-	public int getArrayLength() {
+	public int getNumberOfPositions() {
 		return N;
 	}
 
 	private RoundedRectangle createPositionsFig() {
 		RoundedRectangle fig = new RoundedRectangle();
-		arrayLayout = new GridLayout(Math.max(1, N), false);
+		arrayLayout = new GridLayout(Math.max(1, N+1), false);
 		arrayLayout.horizontalSpacing = ARRAY_POSITION_SPACING;
-		arrayLayout.marginHeight = ARRAY_POSITION_SPACING*2;
+		arrayLayout.verticalSpacing = 0;
+		arrayLayout.marginHeight = ARRAY_POSITION_SPACING;
+		
 		fig.setLayoutManager(arrayLayout);
 		fig.setCornerDimensions(OBJECT_CORNER);
 
-		Label lengthLabel = new Label("length = " + N);
+		Label lengthLabel = new Label("length = " + model.getLength());
 		fig.setToolTip(lengthLabel);
 		if(N == 0) {
 			fig.setPreferredSize(new Dimension(Constants.POSITION_WIDTH/2,Constants.POSITION_WIDTH));
 		}
-		else if(model.getLength() <= Constants.ARRAY_LENGTH_LIMIT) {
-			for(int i = 0; i < N; i++) {
+		else {
+			int len = Math.min(N, Constants.ARRAY_LENGTH_LIMIT);
+			for(int i = 0; i < len - 1; i++) {
 				Position p = new Position(i);
 				fig.add(p);
 				positions.add(p);
 			}
-		}else {
-			for(int i = 0; i < Constants.ARRAY_LENGTH_LIMIT - 2; i++) {
-				Position p = new Position(i);
-				fig.add(p);
-				positions.add(p);
+			if(model.getLength() > Constants.ARRAY_LENGTH_LIMIT) {
+				Position emptyPosition = new Position(null);
+				fig.add(emptyPosition);
 			}
-			Position emptyPosition = new Position(null);
-			fig.add(emptyPosition);
-			Position lastPosition = new Position(model.getLength() - 1);
+			
+			Position lastPosition = new Position(model.getLength()-1);
 			fig.add(lastPosition);
 			positions.add(lastPosition);
 		}
@@ -118,14 +108,15 @@ public class ArrayPrimitiveFigure2 extends Figure{
 			setLayoutManager(layout);
 
 			if(index != null) {
-				IVariableModel m = model.getElementModel(index); 
+				int last = Math.min(index, Constants.ARRAY_LENGTH_LIMIT-1);
+				IVariableModel m = model.getElementModel(last); 
 				valueLabel = new ValueLabel(m);
 				layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
 				add(valueLabel);
 			}else {
 				Label emptyLabel = new Label("...");
 				FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
-				IVariableModel measure = model.getElementModel(model.getLength() - 1);
+				IVariableModel measure = model.getElementModel(0);
 				setSize(measure.isDecimal() || measure.isBoolean() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
 				layout.setConstraint(emptyLabel, new GridData(width, POSITION_WIDTH));
 				add(emptyLabel);
@@ -156,23 +147,5 @@ public class ArrayPrimitiveFigure2 extends Figure{
 			translateToAbsolute(p);
 			return p;
 		}
-			
 	}
-	
-	private void observerAction(Observable o, Object arg) {
-		if(arg instanceof IndexOutOfBoundsException) {
-			System.out.println("Index fora");
-			//			updateOutOfBoundsPositions();
-			//			for(IArrayIndexModel v : vars.values())
-			//				if(isOutOfBounds(v.getCurrentIndex()))
-			//					if(v.getCurrentIndex() < 0)
-			//						leftBound.markError();
-			//					else
-			//						rightBound.markError();
-		}
-		//		else if(arg instanceof IArrayIndexModel) {
-		//			addVariable((IArrayIndexModel) arg); 
-		//		}
-	}
-
 }

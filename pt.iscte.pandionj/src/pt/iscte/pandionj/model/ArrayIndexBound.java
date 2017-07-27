@@ -8,7 +8,7 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 
-// TODO bug: expression update
+// TODO dandling refs
 class ArrayIndexBound extends DisplayUpdateObservable implements IArrayIndexModel.IBound {
 	String expression;
 	IArrayIndexModel.BoundType type;
@@ -23,7 +23,7 @@ class ArrayIndexBound extends DisplayUpdateObservable implements IArrayIndexMode
 		this.type = type;
 		this.value = expressionCache.get(expression);
 		eval();
-		runtime.registerObserver((o,a) -> eval());
+//		runtime.registerObserver((o,a) -> eval());
 	}
 
 	private void eval() {

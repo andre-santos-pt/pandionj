@@ -10,7 +10,6 @@ import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 
-// TODO: limit size?
 public class ArrayReferenceModel extends ArrayModel {
 	private List<ReferenceModel> references;
 
@@ -19,14 +18,17 @@ public class ArrayReferenceModel extends ArrayModel {
 	}
 
 	@Override
-	protected void initArray(IJavaArray array) {
+	protected void initArray(IJavaArray array, int length) {
 		try {
-			references = new ArrayList<>(array.getLength());
+			references = new ArrayList<>(length);
 			IVariable[] variables = array.getVariables();
-			for(int i = 0; i < variables.length; i++) {
+			for(int i = 0; i < length - 1; i++) {
 				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, null, getRuntimeModel());
 				references.add(referenceModel);
 			}
+			
+			ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[length-1], true, null, getRuntimeModel());
+			references.add(referenceModel);
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -35,7 +37,7 @@ public class ArrayReferenceModel extends ArrayModel {
 
 	@Override
 	boolean updateInternal(int index, int step) {
-		assert index >= 0 && index < getLength();
+		assert index >= 0 && index < references.size();
 		ReferenceModel refModel = references.get(index);
 		return refModel.update(step);
 	}
@@ -57,7 +59,7 @@ public class ArrayReferenceModel extends ArrayModel {
 
 	@Override
 	public VariableModel<?> getElementModel(int index) {
-		assert index >= 0 && index < getLength();
+		assert index >= 0 && index < references.size();
 		return references.get(index);
 	}
 }

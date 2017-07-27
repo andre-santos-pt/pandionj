@@ -23,6 +23,7 @@ import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
+import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
@@ -76,12 +77,10 @@ public class RuntimeModel extends DisplayUpdateObservable {
 				});
 		}
 
-		try {
+		PandionJView.getInstance().executeInternal(() -> {
 			handle(thread.getStackFrames());
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
-
+		});
+		
 		for(int i = 0; i < countActive; i++)
 			callStack.get(i).update();
 
@@ -125,6 +124,11 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		notifyObservers();
 	}
 
+	public boolean isPartiallyCommon(IStackFrame[] stackFrames) {
+		IStackFrame[] reverse = reverse(stackFrames);
+		return isSubStack(reverse) || isStackIncrement(reverse);
+	}
+	
 	private boolean isSubStack(IStackFrame[] stackFrames) {
 		if(stackFrames.length > callStack.size())
 			return false;
@@ -202,7 +206,8 @@ public class RuntimeModel extends DisplayUpdateObservable {
 
 	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
 		assert !obj.isNull();
-		try {
+		
+		return PandionJView.getInstance().executeInternal(() -> {
 			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType) {
@@ -231,11 +236,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 				setChanged();
 			}
 			return e;
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-			return null;
-		}
+		}, null);
 	}
 
 	public Collection<EntityModel<?>> getLooseObjects() {

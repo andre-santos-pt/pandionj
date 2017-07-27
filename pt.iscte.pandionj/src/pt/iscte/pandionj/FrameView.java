@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -29,6 +30,7 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
@@ -47,49 +49,40 @@ import pt.iscte.pandionj.model.VariableModel;
 
 class FrameView extends Composite {
 	GraphViewerZoomable viewer;
-	Composite compositeHeader;
-	Composite compositeViewer;
+//	Composite compositeHeader;
+//	Composite compositeViewer;
 	StackFrameModel model;
 	Label header;
-	GridData gridData;
+//	GridData gridData;
 	Slider slider;
 
-
-	public FrameView(Composite parent) {
+	
+	FrameView(Composite parent) {
 		super(parent, SWT.BORDER);
 		GridLayout layout = new GridLayout(1, false);
 		setLayout(layout);
 
-		compositeHeader = new Composite(this, SWT.NONE);
-		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-		compositeHeader.setLayout(new GridLayout(1, true));
+//		compositeHeader = new Composite(this, SWT.NONE);
+//		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+//		compositeHeader.setLayout(new GridLayout(1, true));
 
-		header = new Label(compositeHeader, SWT.BORDER);
+		header = new Label(this, SWT.BORDER);
 		header.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
 
-		
+//		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
+//		compositeViewer = new Composite(this, SWT.NONE);
+//		compositeViewer.setLayout(new FillLayout());
+//		compositeViewer.setLayoutData(gridData);
 
-		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-		compositeViewer = new Composite(this, SWT.NONE);
-		compositeViewer.setLayout(new GridLayout());
-		compositeViewer.setLayoutData(gridData);
-
-		viewer = new GraphViewerZoomable(compositeViewer, SWT.BORDER);
+		viewer = new GraphViewerZoomable(this, SWT.BORDER);
 		viewer.setContentProvider(new NodeProvider());
 		viewer.setConnectionStyle(ZestStyles.CONNECTIONS_DIRECTED);
 
-		viewer.getGraphControl().setLayoutData(new GridData(parent.getBounds().width - Constants.MARGIN, Constants.MARGIN));
+//		viewer.getGraphControl().setLayoutData(new GridData(parent.getBounds().width - Constants.MARGIN, Constants.MARGIN));
+		viewer.getGraphControl().setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		viewer.getGraphControl().setEnabled(true);
-		viewer.getGraphControl().setScrollBarVisibility(SWT.VERTICAL);
-		viewer.getGraphControl().setTouchEnabled(false);
-		viewer.getGraphControl().addGestureListener(new GestureListener() {
-			public void gesture(GestureEvent e) {
-				if(e.detail == SWT.GESTURE_MAGNIFY)
-					viewer.zoom(e.magnification);
-			}
-		});
 		viewer.addDoubleClickListener(new IDoubleClickListener() {
 
 			@Override
@@ -153,24 +146,23 @@ class FrameView extends Composite {
 		slider.setVisible(false);
 	}
 
-
-	public void setExpanded(boolean expanded) {
-		setLayoutData(new GridData(SWT.FILL, expanded ? SWT.FILL : SWT.DEFAULT, true, expanded));
-		gridData.exclude = !expanded;
-		compositeViewer.setVisible(expanded);
-		compositeViewer.requestLayout();
-	}
+	
+//	public void setExpanded(boolean expanded) {
+//		setLayoutData(new GridData(SWT.FILL, expanded ? SWT.FILL : SWT.DEFAULT, true, expanded));
+//		gridData.exclude = !expanded;
+//		compositeViewer.setVisible(expanded);
+//		compositeViewer.requestLayout();
+//	}
 
 	@Override
 	public void dispose() {
 		super.dispose();
 		model.unregisterObserver(stackObserver);
-		model.getRuntime().unregisterObserver(runtimeObserver);
 	}
 
-	public boolean isExpanded() {
-		return !gridData.exclude;
-	}
+//	public boolean isExpanded() {
+//		return !gridData.exclude;
+//	}
 
 	public void setZoom(double zoom) {
 		//		viewer.setZoom(zoom);
@@ -193,17 +185,21 @@ class FrameView extends Composite {
 		if(this.model != frameModel) {
 			this.model = frameModel;
 			this.model.registerDisplayObserver(stackObserver);
-			this.model.getRuntime().registerDisplayObserver(runtimeObserver);
 			String headerText = frameModel.getInvocationExpression();
 			header.setText(headerText);
 
 			PandionJLayoutAlgorithm layoutAlg = new PandionJLayoutAlgorithm();
-			layoutAlg.addObserver(viewSizeObserver);
+//			layoutAlg.addObserver(viewSizeObserver);
 			viewer.setLayoutAlgorithm(layoutAlg);
+			layoutAlg.addObserver((o,a) -> {
+				PandionJUI.executeUpdate(() -> {
+					Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+					viewer.getGraphControl().scrollToY(size.y);
+				});
+			});
+			
 
-			updateLook();
-
-			setExpanded(true);
+//			setExpanded(true);
 			slider.setMinimum(1);
 			slider.setMaximum(1);
 
@@ -211,6 +207,8 @@ class FrameView extends Composite {
 			viewer.setLabelProvider(new FigureProvider(frameModel));
 			viewer.applyLayout();
 		}
+		
+		updateLook();
 	}
 
 	private Observer viewSizeObserver = new Observer() {
@@ -219,9 +217,9 @@ class FrameView extends Composite {
 		public void update(Observable o, Object arg) {
 			PandionJUI.executeUpdate(() -> {
 				Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-				if(!size.equals(lastSize)) {
+				if(lastSize == null || size.y > lastSize.y) {
 					lastSize = size;
-					viewer.getGraphControl().setLayoutData(new GridData(getBounds().width - 20, size.y + Constants.MARGIN));
+					viewer.getGraphControl().setLayoutData(new GridData(getBounds().width - 20 + Constants.MARGIN, size.y + Constants.MARGIN));
 					viewer.getGraphControl().requestLayout();
 					viewer.getGraphControl().scrollToY(size.y);
 				}
@@ -229,38 +227,26 @@ class FrameView extends Composite {
 		}
 	};
 
-	private Observer runtimeObserver = new Observer() {
-		public void update(Observable o, Object arg) {
-//			updateLook();
-			//			RuntimeModel runtime = (RuntimeModel) o;
-			//			if(runtime.isTerminated())
-			//				runtime.unregisterObserver(runtimeObserver);
-			//			else {
-//			viewer.refresh();
-//			viewer.applyLayout();
-			//			}
-		}
-	};
 
 	private void updateLook() {
-		if(model.isObsolete()) {
-			setBackground(Constants.Colors.OBSOLETE);
-			//			setExpanded(false);
-		}
-		else if(model.isExecutionFrame()) {
+		if(model.isObsolete())
+			setObsolete();
+		else if(model.isExecutionFrame())
 			setBackground(Constants.Colors.INST_POINTER);
-			//			setExpanded(true);
-		}
 		else
 			setBackground(null);
 	}
+	
+	public void setObsolete() {
+		setBackground(Constants.Colors.OBSOLETE);
+	}
+
 
 	private Observer stackObserver = new Observer() {
 		public void update(Observable o, Object list) {
 			header.setText(model.getInvocationExpression());
 			if(model.isObsolete()) {
 				model.unregisterObserver(stackObserver);
-				model.getRuntime().unregisterObserver(runtimeObserver);
 			}
 			else {
 				@SuppressWarnings("unchecked")
@@ -280,6 +266,11 @@ class FrameView extends Composite {
 	};
 
 
+	
+	
+	
+	
+	
 
 
 
@@ -324,6 +315,8 @@ class FrameView extends Composite {
 		img2.dispose();
 		gc.dispose();
 	}
+
+
 
 
 }

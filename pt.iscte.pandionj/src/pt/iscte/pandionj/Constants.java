@@ -32,12 +32,14 @@ public interface Constants {
 	int POSITION_LINE_WIDTH = 1;
 	int INDEX_FONT_SIZE = 10;
 
-	int ARRAY_POSITION_SPACING = 2;
+	int ARRAY_POSITION_SPACING = 4;
 	int ARRAY_LINE_WIDTH = 1;
 
 	int ARRAY_LENGTH_LIMIT = 20;
 
+	int ILLUSTRATION_LINE_WIDTH = 2;
 
+	
 	int VAR_FONT_SIZE = 18;
 
 	interface Colors {
@@ -46,6 +48,8 @@ public interface Constants {
 		
 		Color ARRAY_POSITION = ColorConstants.white;
 
+		Color ILLUSTRATION = ColorConstants.blue;
+		
 		Color HIGHLIGHT = new Color(Display.getDefault(), 223, 234, 255);
 
 		Color INST_POINTER = new Color(Display.getDefault(), 198, 219, 174);
@@ -79,6 +83,8 @@ public interface Constants {
 	int COMBO_WIDTH = 75;
 
 	String CONTEXT_ID = "pt.iscte.pandionj.context";
+
+
 
 	
 

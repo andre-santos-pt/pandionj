@@ -27,6 +27,7 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -44,7 +45,7 @@ import pt.iscte.pandionj.model.StackFrameModel;
 public class PandionJView extends ViewPart { 
 	private static PandionJView instance;
 
-	private RuntimeModel model;
+	private RuntimeModel runtime;
 	private IStackFrame exceptionFrame;
 	private String exception;
 
@@ -65,11 +66,8 @@ public class PandionJView extends ViewPart {
 
 	private IToolBarManager toolBar;
 
-	private Map<String, Image> images; // TODO image manager
-
 	public PandionJView() {
 		instance = this;
-		images = new HashMap<>();
 	}
 
 	public static PandionJView getInstance() {
@@ -79,10 +77,7 @@ public class PandionJView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		contextService = (IContextService) PlatformUI.getWorkbench().getService(IContextService.class);
-
 		createWidgets(parent);
-		model = new RuntimeModel();
-		stackView.setInput(model);
 
 		debugEventListener = new DebugListener();
 		DebugPlugin.getDefault().addDebugEventListener(debugEventListener);
@@ -94,16 +89,11 @@ public class PandionJView extends ViewPart {
 	}
 
 
-
-
 	@Override
 	public void dispose() {
 		super.dispose();
 		DebugPlugin.getDefault().removeDebugEventListener(debugEventListener);
 		JDIDebugModel.removeJavaBreakpointListener(breakpointListener);
-		for(Image img : images.values())
-			img.dispose();
-
 		FontManager.dispose();
 	}
 
@@ -114,16 +104,14 @@ public class PandionJView extends ViewPart {
 		parent.setBackground(new Color(null, 255, 255, 255));
 
 		scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
-		area = new Composite(scroll, SWT.NONE);
-		area.setBackground(Constants.Colors.VIEW_BACKGROUND);
-
-		scroll.setContent(area);
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
 		scroll.setMinHeight(100);
 		scroll.setMinWidth(0);
 		scroll.setAlwaysShowScrollBars(true);
 
+		area = new Composite(scroll, SWT.NONE);
+		area.setBackground(Constants.Colors.VIEW_BACKGROUND);
 		GridLayout layout = new GridLayout(1, true);
 		layout.marginLeft = 0;
 		layout.marginRight = 0;
@@ -132,6 +120,7 @@ public class PandionJView extends ViewPart {
 		layout.horizontalSpacing = 1;
 		layout.verticalSpacing = 1;
 		area.setLayout(layout);
+		scroll.setContent(area);
 
 		Composite labelComposite = new Composite(parent, SWT.NONE);
 		labelComposite.setLayout(new GridLayout());
@@ -142,10 +131,11 @@ public class PandionJView extends ViewPart {
 		stackLayout.topControl = labelComposite;
 
 		staticArea = new StaticArea(area);
-		staticArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+//		staticArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		//		staticArea.setLayoutData(new GridData(SWT.DEFAULT, 200));
 
 		stackView = new StackView(area);
-		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
+		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		invocationArea = new InvocationArea(parent);
 	}
@@ -153,35 +143,27 @@ public class PandionJView extends ViewPart {
 	@Override
 	public void setFocus() {
 		scroll.setFocus();
-		contextService.activateContext(Constants.CONTEXT_ID); // TODO constants
+		contextService.activateContext(Constants.CONTEXT_ID);
 	}
+
+
 
 	private class DebugListener implements IDebugEventSetListener {
 		public void handleDebugEvents(DebugEvent[] events) {
-			if(events.length > 0 && !model.isTerminated()) {
+			if(events.length > 0 && runtime != null && !runtime.isTerminated()) {
 				DebugEvent e = events[0];
 				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 					IJavaThread thread = (IJavaThread) e.getSource();
 					executeInternal(() -> {
 						handleFrames(thread);
-						if(thread.getTopStackFrame().getLineNumber() == -1)
+						if(thread.getTopStackFrame().getLineNumber() == -1) // TODO null pointer?
 							thread.resume();
 					});
 				}
-				//				else if(e.getKind() == DebugEvent.RESUME && e.getDetail() == DebugEvent.STEP_INTO) {
-				//					breakpointListener.enableFilter();
-				//				}
-				//				else if(e.getKind() == DebugEvent.RESUME &&
-				//						(
-				//						e.getDetail() == DebugEvent.STEP_OVER || 
-				//						e.getDetail() == DebugEvent.STEP_RETURN || 
-				//						e.getDetail() == DebugEvent.CLIENT_REQUEST 
-				//						))  {
-				//					breakpointListener.disableFilter();
-				//				}
 				else if(e.getKind() == DebugEvent.TERMINATE) {
-					model.setTerminated();
+					runtime.setTerminated();
 				}
+				// TODO: STEP RETURN -> remove frame 
 			}
 		}
 	}
@@ -201,8 +183,8 @@ public class PandionJView extends ViewPart {
 			exception = exceptionBreakPoint.getExceptionTypeName();
 			exceptionFrame = thread.getTopStackFrame();
 			handleFrames(thread);
-			if(!model.isEmpty()) {
-				StackFrameModel frame = model.getFrame(exceptionFrame);
+			if(!runtime.isEmpty()) {
+				StackFrameModel frame = runtime.getFrame(exceptionFrame);
 				int line = exceptionFrame.getLineNumber();
 				frame.processException(exception, line);  
 			}
@@ -215,16 +197,25 @@ public class PandionJView extends ViewPart {
 		if(stackLayout.topControl != scroll) {
 			Display.getDefault().syncExec(() -> {
 				stackLayout.topControl = scroll;
-				scroll.getParent().layout();
+				scroll.requestLayout();
 			});
 		}
 
-		model.update(thread);
-		if(!model.isEmpty() && !model.isTerminated()) {
-			StackFrameModel frame = model.getTopFrame();
-			staticArea.setInput(frame);
-			PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber());
-		}
+		executeInternal(() -> {
+			// TODO avoid reload
+			if(runtime == null || !runtime.isPartiallyCommon(thread.getStackFrames())) {
+				runtime = new RuntimeModel();
+				stackView.setInput(runtime);
+			}
+
+			runtime.update(thread);
+
+			if(!runtime.isEmpty() && !runtime.isTerminated()) {
+				StackFrameModel frame = runtime.getTopFrame();
+				staticArea.setInput(frame);
+				PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber());
+			}
+		});
 	}
 
 
@@ -233,7 +224,7 @@ public class PandionJView extends ViewPart {
 			r.run();
 		}
 		catch(DebugException e) {
-			model.setTerminated();
+			runtime.setTerminated();
 		}
 	}
 
@@ -242,7 +233,7 @@ public class PandionJView extends ViewPart {
 			return r.run();
 		}
 		catch(DebugException e) {
-			model.setTerminated();
+			runtime.setTerminated();
 			return null;
 		}
 	}
@@ -251,7 +242,7 @@ public class PandionJView extends ViewPart {
 	public void promptInvocation(IMethod method, InvocationAction action) {
 		stackLayout.topControl = invocationArea;
 		invocationArea.setMethod(method, action);
-//		invocationArea.requestLayout();
+		//		invocationArea.requestLayout();
 		invocationArea.getParent().layout();
 		invocationArea.setFocus();
 	}
@@ -265,7 +256,7 @@ public class PandionJView extends ViewPart {
 
 	private void populateToolBar() {
 		toolBar = getViewSite().getActionBars().getToolBarManager();
-		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> model.simulateGC());
+		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> runtime.simulateGC());
 
 		// TODO zoom all
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
@@ -315,7 +306,7 @@ public class PandionJView extends ViewPart {
 
 	public void evaluate(String expression, InvocationResult listener) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-		StackFrameModel stackFrame = model.getTopFrame();
+		StackFrameModel stackFrame = runtime.getTopFrame();
 
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());	
 		delegate.evaluateExpression(expression , stackFrame.getStackFrame(), new IWatchExpressionListener() {

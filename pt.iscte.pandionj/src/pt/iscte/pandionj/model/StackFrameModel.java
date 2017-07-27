@@ -122,7 +122,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 	//	}
 
 	public void update() {
-		List<VariableModel<?>> newVars = handleVariables();
+		List<VariableModel<?>> newVars = handleVariables(); // TODO bug new variables int[][]
 		if(hasChanged()) {
 			step++;
 			stepPointer = step;
@@ -189,7 +189,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 				}
 			}
 
-//			handleArrayIterators2();
+			//			handleArrayIterators2();
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
@@ -211,7 +211,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		String varName = jv.getName();
 		IJavaValue value = (IJavaValue) jv.getValue();
 
-		if(vars.containsKey(varName) && vars.get(varName).variable == jv) {
+		if(vars.containsKey(varName) && vars.get(varName).variable == jv) { // TODO bug same name!
 			VariableModel<?> vModel = vars.get(varName);
 			boolean change = vModel.update(step);
 			if(change)
@@ -278,73 +278,73 @@ public class StackFrameModel extends DisplayUpdateObservable {
 	//	}
 
 
-//	private void handleArrayIterators2() throws DebugException {
-//		for (Entry<String, VariableModel<?>> e : vars.entrySet()) {
-//			if(e.getValue() instanceof ReferenceModel) {
-//				ReferenceModel refModel = (ReferenceModel) e.getValue();
-//				if(refModel.isPrimitiveArray() && !refModel.isNull()) {
-//					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getModelTarget();
-//
-//					for(String v : vars.keySet()) {
-//						VariableInfo info = varParser.locateVariable(v, getLineNumber());
-//						if(info != null) {
-//							for (String indexVar : info.getArrayAccessVariables()) {
-//								VariableModel<?> vi = vars.get(indexVar);
-//								if(vi != null) {
-//									ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vi, refModel);
-//									refModel.addVar(indexModel);
-//								
-//									IBound bound = info.getBound();
-//									if(bound != null && bound.getType() != null) {
-//										ArrayIndexBound iBound = handleBound(bound);
-//										indexModel.setBound(iBound);
-//									}
-//								}
-//							}
-//							
-//							for (String arrayVar : info.getAccessedArrays()) {
-//								if(arrayVar.equals(refModel.getName())) {
-//									ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vars.get(v), refModel);
-//									refModel.addVar(indexModel);
-//
-//									IBound bound = info.getBound();
-//									if(bound != null && bound.getType() != null) {
-//										ArrayIndexBound iBound = handleBound(bound);
-//										indexModel.setBound(iBound);
-//									}
-//								}
-//							}
-//						}
-//						else
-//							System.err.println("info not found " + v + " " + getLineNumber());
-//					}
-//				}
-//			}
-//		}
-//	}
+	//	private void handleArrayIterators2() throws DebugException {
+	//		for (Entry<String, VariableModel<?>> e : vars.entrySet()) {
+	//			if(e.getValue() instanceof ReferenceModel) {
+	//				ReferenceModel refModel = (ReferenceModel) e.getValue();
+	//				if(refModel.isPrimitiveArray() && !refModel.isNull()) {
+	//					ArrayPrimitiveModel array = (ArrayPrimitiveModel) refModel.getModelTarget();
+	//
+	//					for(String v : vars.keySet()) {
+	//						VariableInfo info = varParser.locateVariable(v, getLineNumber());
+	//						if(info != null) {
+	//							for (String indexVar : info.getArrayAccessVariables()) {
+	//								VariableModel<?> vi = vars.get(indexVar);
+	//								if(vi != null) {
+	//									ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vi, refModel);
+	//									refModel.addVar(indexModel);
+	//								
+	//									IBound bound = info.getBound();
+	//									if(bound != null && bound.getType() != null) {
+	//										ArrayIndexBound iBound = handleBound(bound);
+	//										indexModel.setBound(iBound);
+	//									}
+	//								}
+	//							}
+	//							
+	//							for (String arrayVar : info.getAccessedArrays()) {
+	//								if(arrayVar.equals(refModel.getName())) {
+	//									ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vars.get(v), refModel);
+	//									refModel.addVar(indexModel);
+	//
+	//									IBound bound = info.getBound();
+	//									if(bound != null && bound.getType() != null) {
+	//										ArrayIndexBound iBound = handleBound(bound);
+	//										indexModel.setBound(iBound);
+	//									}
+	//								}
+	//							}
+	//						}
+	//						else
+	//							System.err.println("info not found " + v + " " + getLineNumber());
+	//					}
+	//				}
+	//			}
+	//		}
+	//	}
 
-//	private ArrayIndexBound handleBound(IArrayIndexModel.IBound bound) {
-//		ASTParser parser = ASTParser.newParser(AST.JLS8);
-//		parser.setKind(ASTParser.K_EXPRESSION);
-//		parser.setSource(bound.getExpression().toCharArray());
-//
-//		ASTNode node = (ASTNode) parser.createAST(null);
-//
-//		List<IVariableModel> deps = new ArrayList<>();
-//		node.accept(new ASTVisitor() {
-//			@Override
-//			public boolean visit(SimpleName node) {
-//				VariableModel<?> var = vars.get(node.toString());
-//				if(var != null)
-//					deps.add(var);
-//				return true;
-//			}
-//		});
-//
-//		ArrayIndexBound iBound = new ArrayIndexBound(bound.getExpression(), bound.getType());
-//		
-//		return iBound;
-//	}
+	//	private ArrayIndexBound handleBound(IArrayIndexModel.IBound bound) {
+	//		ASTParser parser = ASTParser.newParser(AST.JLS8);
+	//		parser.setKind(ASTParser.K_EXPRESSION);
+	//		parser.setSource(bound.getExpression().toCharArray());
+	//
+	//		ASTNode node = (ASTNode) parser.createAST(null);
+	//
+	//		List<IVariableModel> deps = new ArrayList<>();
+	//		node.accept(new ASTVisitor() {
+	//			@Override
+	//			public boolean visit(SimpleName node) {
+	//				VariableModel<?> var = vars.get(node.toString());
+	//				if(var != null)
+	//					deps.add(var);
+	//				return true;
+	//			}
+	//		});
+	//
+	//		ArrayIndexBound iBound = new ArrayIndexBound(bound.getExpression(), bound.getType());
+	//		
+	//		return iBound;
+	//	}
 
 
 
@@ -374,8 +374,12 @@ public class StackFrameModel extends DisplayUpdateObservable {
 			int nArgs = frame.getArgumentTypeNames().size();
 			List<String> args = new ArrayList<>(localVariables.length);
 			for(int i = 0; i < localVariables.length && i < nArgs ; i++) {
-				IJavaValue value = (IJavaValue) localVariables[i].getValue();
-				args.add(valueToString(value));
+				if(PrimitiveType.isPrimitive(localVariables[i].getReferenceTypeName())) {
+					IJavaValue value = (IJavaValue) localVariables[i].getValue();
+					args.add(valueToString(value));
+				}
+				else
+					args.add(localVariables[i].getName());
 			}
 
 			if(frame.isStaticInitializer())
@@ -418,7 +422,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 
 	private String valueSpecialChars(IJavaValue value) {
 		try {
- 			if(value.getReferenceTypeName().equals("char"))
+			if(value.getReferenceTypeName().equals("char"))
 				return "'" + value.getValueString() + "'";
 
 			if(value.getReferenceTypeName().equals(String.class.getName()))
@@ -440,7 +444,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 
 
 	public void setReturnValue(IJavaValue v) {
-		
+
 		this.returnValue = valueToString(v);
 		obsolete = true;
 		setChanged();

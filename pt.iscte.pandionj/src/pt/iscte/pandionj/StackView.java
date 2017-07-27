@@ -28,12 +28,17 @@ class StackView extends Composite {
 	void setInput(RuntimeModel model) {
 		assert model != null;
 		this.model = model;
-		model.registerDisplayObserver((o,a) -> updateFrames(model.getFilteredStackPath()));
+		model.registerDisplayObserver((o,a) -> {
+			if(model.isTerminated()) {
+				for(FrameView v : frameViews)
+					v.setObsolete();
+			}
+			else
+				updateFrames(model.getFilteredStackPath());
+		});
 	}
 
 	private void updateFrames(List<StackFrameModel> stackPath) {
-		if(model.isTerminated())
-			return;
 		int diff = stackPath.size() - frameViews.size();
 
 		while(diff > 0) {
