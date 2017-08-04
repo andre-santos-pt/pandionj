@@ -51,7 +51,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 		Iterator<ModelElement<?>> it = elements.iterator();
 		while(it.hasNext()) {
 			VariableModel<?> v = (VariableModel<?>) it.next();
-			if((v instanceof ValueModel && ((ValueModel) v).getRole() == Role.ARRAY_ITERATOR))
+			if(v instanceof ValueModel && ((ValueModel) v).getRole().isArrayAccessor())
 				it.remove();
 		}
 		
@@ -91,7 +91,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 			List<Pointer> ret = new ArrayList<>();
 			for(Entry<String, ReferenceModel> field : pointers.entrySet()) 
 				if(dest.equals(field.getValue().getModelTarget()))
-					ret.add(new Pointer(field.getKey(), (ObjectModel) source, (EntityModel<?>) dest));
+					ret.add(new Pointer(field.getValue(), (ObjectModel) source, (EntityModel<?>) dest));
 			return ret.toArray();
 		}
 		else if(source instanceof ArrayReferenceModel) { // && !((ArrayReferenceModel) source).hasWidgetExtension()) {
@@ -99,7 +99,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 			List<ReferenceModel> elements = ((ArrayReferenceModel) source).getModelElements();
 			for(int i = 0; i < elements.size(); i++)
 				if(dest.equals(elements.get(i).getModelTarget()))
-					ret.add(new Pointer("[" + Integer.toString(i) + "]", (ModelElement<?>) source, (EntityModel<?>) dest));
+					ret.add(new Pointer(elements.get(i), (ModelElement<?>) source, (EntityModel<?>) dest));
 			return ret.toArray();
 		}
 		else
@@ -108,16 +108,16 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 
 
 	static class Pointer {
-		final String refName;
+		final ReferenceModel reference;
 		final ModelElement<?> source;
 		final EntityModel<?> target;
 
 		public Pointer(ModelElement<?> source, EntityModel<?> target) {
-			this("", source, target);
+			this(null, source, target);
 		}
 
-		public Pointer(String refName, ModelElement<?> source, EntityModel<?> target) {
-			this.refName = refName;
+		public Pointer(ReferenceModel reference, ModelElement<?> source, EntityModel<?> target) {
+			this.reference = reference;
 			this.source = source;
 			this.target = target;
 		}
@@ -132,7 +132,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 		}
 
 		public boolean isTopLevel() {
-			return refName == null;
+			return reference == null;
 		}
 	}
 }

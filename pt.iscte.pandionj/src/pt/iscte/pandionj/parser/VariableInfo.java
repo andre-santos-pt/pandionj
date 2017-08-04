@@ -9,6 +9,7 @@ import java.util.Set;
 
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
 import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
 
 public class VariableInfo {
@@ -16,27 +17,36 @@ public class VariableInfo {
 	private final boolean isParam;
 	private List<VariableOperation> operations;
 	private BlockInfo declarationBlock;
+//	private List<String> arrayFixedIndexes;
 
 	public VariableInfo(String name, boolean isParam, BlockInfo declarationBlock) {
 		this.name = name;
 		this.isParam = isParam;
 		operations = new ArrayList<>(5);
 		this.declarationBlock = declarationBlock;
+//		arrayFixedIndexes = Collections.emptyList();
 	}
 
 	@Override
 	public String toString() {
 		List<String> accessedArrays = getAccessedArrays();
+		Set<String> accessedArraysFixed = getArrayFixedVariables();
+		
 		return name + (isParam ? "* " : " ") + 
 				(isFixedValue() ? "CONSTANT " : "") +
 				(isGatherer() ? "GATHERER " : "") + 
-				(!accessedArrays.isEmpty() ? "ARRAY_INDEX " : "") + 
+				(!accessedArrays.isEmpty() ? "ARRAY_INDEX " + accessedArrays : "") + 
+				(!accessedArraysFixed.isEmpty() ? "FIXED_ARRAY_INDEX " + accessedArraysFixed : "") +
 				(isMostWantedHolder() ? "HOLDER " : "") +
 				operations;
 	}
 
 	public String getName() {
 		return name;
+	}
+
+	public BlockInfo getDeclarationBlock() {
+		return declarationBlock;
 	}
 
 	public boolean isParam() {
@@ -47,6 +57,10 @@ public class VariableInfo {
 		operations.add(op);
 	}
 
+	public void addOperation(VariableOperation.Type t, Object ... params) {
+		operations.add(new VariableOperation(name, t, params));
+	}
+	
 	public List<VariableOperation> getOperations() {
 		return Collections.unmodifiableList(operations);
 	}
@@ -115,15 +129,35 @@ public class VariableInfo {
 	}
 
 	public Set<String> getArrayAccessVariables() {
-		Set<String> list = new LinkedHashSet<>();
+		Set<String> set = new LinkedHashSet<>();
 		for(VariableOperation op : operations)
 			if(op.getType() == VariableOperation.Type.ACCESS) {
 				String exp = op.getParam(0).toString();
 				if(exp.matches("[_a-zA-Z]([_a-zA-Z0-9])*"))
-					list.add(exp);
+					set.add(exp);
 			}
-		return list;
+		return set;
 	}
+
+//	public void setFixedArrayIndex(List<String> arraysRefs) {
+//		this.arrayFixedIndexes = new ArrayList<>(arraysRefs);		
+//	}
+	
+	public Set<String> getArrayFixedVariables() {
+		Set<String> set = new LinkedHashSet<>();
+		if(isFixedValue()) {
+			declarationBlock.accept(new BlockInfoVisitor() {
+				public void visit(VariableInfo v) {
+					IBound bound = v.getBound();
+					String exp = bound == null ? null : bound.getExpression();
+					if(v.isArrayIndex() && name.equals(v.getInitVariable()) || name.equals(exp))
+						set.addAll(v.getAccessedArrays());
+				}
+			});
+		}
+		return set;
+	}
+
 
 	private boolean isStepper(VariableOperation.Type t) {
 		boolean found = false;
@@ -142,6 +176,18 @@ public class VariableInfo {
 
 	public boolean isStepperBackward() {
 		return isStepper(VariableOperation.Type.DEC);
+	}
+
+//	public boolean isFixedArrayIndex(String arrayRef) {
+//		return arrayFixedIndexes.contains(arrayRef);
+//	}
+
+	public String getInitVariable() {
+		for(VariableOperation op : operations)
+			if(op.getType() == VariableOperation.Type.INIT)
+				return op.getParam(0).toString();
+
+		return null;
 	}
 
 	public boolean isBounded() {
@@ -222,5 +268,6 @@ public class VariableInfo {
 			return true;
 		}
 	}
+
 
 }

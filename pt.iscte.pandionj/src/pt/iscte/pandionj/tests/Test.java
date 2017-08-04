@@ -6,6 +6,7 @@ class T {
 	
 }
 
+
 public class Test {
 	int max(int[] v) {
 		int max = 0;
@@ -62,13 +63,20 @@ public class Test {
 //		}
 	}
 
-	void swap(int[] v, int i, int j) { 
+	static void swap(int[] v, int i, int j) { 
 		int t = v[i];
 		v[i] = t;
 		v[j] = t;
 	}
 	
-
+	static int sumInterval(int[] v, int a, int b) {
+		swap(v, a, b);
+		int sum = 0;
+		for(int i = a; i <= b; i++)
+			sum += v[i];
+		return sum;
+	}
+	
 	public static void main(String[] args) {
 
 		VarParser parser = new VarParser("src/pt/iscte/pandionj/tests/Test.java");

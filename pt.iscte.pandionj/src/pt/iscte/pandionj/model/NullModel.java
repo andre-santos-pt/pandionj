@@ -19,11 +19,6 @@ public class NullModel extends EntityModel<IJavaObject> {
 	}
 
 	@Override
-	public boolean hasWidgetExtension() {
-		return false;
-	}
-
-	@Override
 	public void setStep(int step) {
 
 	}

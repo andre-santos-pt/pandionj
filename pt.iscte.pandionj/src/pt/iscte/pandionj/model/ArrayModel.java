@@ -17,8 +17,6 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 	private int dimensions;
 	private String componentType;
 
-	private IArrayWidgetExtension extension;
-
 	ArrayModel(IJavaArray array, RuntimeModel runtime) {
 		super(array, runtime);
 		init(array);
@@ -28,11 +26,6 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public boolean hasWidgetExtension() {
-		return extension != IArrayWidgetExtension.NULL_EXTENSION;
 	}
 
 	private void init(IJavaArray array) {

@@ -64,7 +64,6 @@ public class RuntimeModel extends DisplayUpdateObservable {
 
 		terminated = false;
 
-		// TODO ERRO disconnected : launch is the same??
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel && o.update(step))
 				setChanged();
@@ -271,33 +270,4 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		//		}
 
 	}
-
-	//	public void simulateGC() {
-	//		for(int i = 0; i < countActive; i++)
-	//			callStack.get(i).simulateGC();
-	//	}
-
-
-
-	//	public void setReturnValue(List<StackFrame> frames, Value returnValue) {
-	//		if(frames.size() == countActive) {
-	//			for(int i = 0; i < frames.size(); i++) {
-	//				if(!sameLocation(frames.get(i).location(), callStack.get(countActive-1-i)))
-	//					return;
-	//			
-	//			}
-	//			callStack.get(countActive-1).setReturnValue(returnValue);
-	//		}
-	//	}
-
-	//	private boolean sameLocation(Location loc, StackFrameModel frame) {
-	//		try {
-	//			return loc.declaringType().name().equals(frame.getStackFrame().getDeclaringTypeName()) &&
-	//					loc.lineNumber() == frame.getLineNumber();
-	//		} catch (DebugException e) {
-	//			e.printStackTrace();
-	//			return false;
-	//		}
-	//	}
-
 }

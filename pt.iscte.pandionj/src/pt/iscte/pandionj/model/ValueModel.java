@@ -17,8 +17,14 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 		ARRAY_ITERATOR {
 			public String toString() { return "Array Index Iterator";}
 		},
+		FIXED_ARRAY_INDEX {
+			public String toString() { return "Fixed Array Index";}
+		},
 		GATHERER {
 			public String toString() { return "Gatherer";}
+		},
+		STEPPER {
+			public String toString() { return "Stepper";}
 		},
 		MOST_WANTED_HOLDER {
 			public String toString() { return "Most-Wanted Holder";}
@@ -28,12 +34,18 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 		};
 		
 		static Role matchRole(VariableInfo v) {
-			if(v == null)								return NONE;
-			else if(v.isFixedValue()) 					return FIXED_VALUE;
-			else if(v.isGatherer())						return GATHERER;
-			else if(!v.getAccessedArrays().isEmpty())	return ARRAY_ITERATOR;
-			else if(v.isMostWantedHolder())				return MOST_WANTED_HOLDER;
-			else											return NONE;
+			if(v == null)											return NONE;
+			else if(!v.getArrayFixedVariables().isEmpty())			return FIXED_ARRAY_INDEX;
+			else if(v.isFixedValue()) 								return FIXED_VALUE;
+			else if(v.isGatherer())									return GATHERER;
+			else if(!v.getAccessedArrays().isEmpty())				return ARRAY_ITERATOR;
+			else if(v.isStepperBackward() || v.isStepperForward())	return STEPPER;
+			else if(v.isMostWantedHolder())							return MOST_WANTED_HOLDER;
+			else														return NONE;
+		}
+		
+		public boolean isArrayAccessor() {
+			return this == ARRAY_ITERATOR || this == FIXED_ARRAY_INDEX; 
 		}
 	}
 	

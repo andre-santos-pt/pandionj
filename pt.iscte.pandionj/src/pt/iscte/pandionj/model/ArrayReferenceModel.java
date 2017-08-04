@@ -9,6 +9,10 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import pt.iscte.pandionj.parser.BlockInfo;
+import pt.iscte.pandionj.parser.VariableInfo;
+import pt.iscte.pandionj.parser.VariableOperation;
+
 
 public class ArrayReferenceModel extends ArrayModel {
 	private List<ReferenceModel> references;
@@ -22,17 +26,23 @@ public class ArrayReferenceModel extends ArrayModel {
 		try {
 			references = new ArrayList<>(length);
 			IVariable[] variables = array.getVariables();
-			for(int i = 0; i < length - 1; i++) {
-				ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[i], true, null, getRuntimeModel());
-				references.add(referenceModel);
-			}
+			for(int i = 0; i < length - 1; i++)
+				handlePosition((IJavaVariable) variables[i]);
 			
-			ReferenceModel referenceModel = new ReferenceModel((IJavaVariable) variables[length-1], true, null, getRuntimeModel());
-			references.add(referenceModel);
+			if(length > 0)
+				handlePosition((IJavaVariable) variables[length-1]);
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void handlePosition(IJavaVariable var) {
+		VariableInfo info = new VariableInfo("", false, BlockInfo.NONE);
+		info.addOperation(new VariableOperation("", VariableOperation.Type.ACCESS, "j", 0)); // TODO hard coded
+		
+		ReferenceModel referenceModel = new ReferenceModel(var, true, info, getRuntimeModel());
+		references.add(referenceModel);
 	}
 
 	@Override

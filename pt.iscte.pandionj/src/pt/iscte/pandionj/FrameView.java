@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
-import org.eclipse.draw2d.FigureCanvas;
 import org.eclipse.jface.viewers.DoubleClickEvent;
 import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
@@ -14,8 +13,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.GestureEvent;
-import org.eclipse.swt.events.GestureListener;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.PaintEvent;
@@ -30,7 +27,6 @@ import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
@@ -49,11 +45,8 @@ import pt.iscte.pandionj.model.VariableModel;
 
 class FrameView extends Composite {
 	GraphViewerZoomable viewer;
-//	Composite compositeHeader;
-//	Composite compositeViewer;
 	StackFrameModel model;
 	Label header;
-//	GridData gridData;
 	Slider slider;
 
 	
@@ -62,19 +55,10 @@ class FrameView extends Composite {
 		GridLayout layout = new GridLayout(1, false);
 		setLayout(layout);
 
-//		compositeHeader = new Composite(this, SWT.NONE);
-//		compositeHeader.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
-//		compositeHeader.setLayout(new GridLayout(1, true));
-
 		header = new Label(this, SWT.BORDER);
 		header.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 
 		FontManager.setFont(header, Constants.MESSAGE_FONT_SIZE);
-
-//		gridData = new GridData(SWT.FILL, SWT.FILL, true, true);
-//		compositeViewer = new Composite(this, SWT.NONE);
-//		compositeViewer.setLayout(new FillLayout());
-//		compositeViewer.setLayoutData(gridData);
 
 		viewer = new GraphViewerZoomable(this, SWT.BORDER);
 		viewer.setContentProvider(new NodeProvider());
@@ -191,12 +175,14 @@ class FrameView extends Composite {
 			PandionJLayoutAlgorithm layoutAlg = new PandionJLayoutAlgorithm();
 //			layoutAlg.addObserver(viewSizeObserver);
 			viewer.setLayoutAlgorithm(layoutAlg);
-			layoutAlg.addObserver((o,a) -> {
-				PandionJUI.executeUpdate(() -> {
-					Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
-					viewer.getGraphControl().scrollToY(size.y);
-				});
-			});
+			
+			// TODO repor
+//			layoutAlg.addObserver((o,a) -> {
+//				PandionJUI.executeUpdate(() -> {
+//					Point size = viewer.getGraphControl().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+//					viewer.getGraphControl().scrollToY(size.y);
+//				});
+//			});
 			
 
 //			setExpanded(true);

@@ -138,6 +138,7 @@ public class PandionJView extends ViewPart {
 		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		invocationArea = new InvocationArea(parent);
+		setPartName("");
 	}
 
 	@Override

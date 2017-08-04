@@ -122,19 +122,19 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			tags.addAll(r.getTags());
 		return tags;
 	}
-	
-//	protected IFigure createExtensionFigure(ObjectModel model) {
-////		if(model.hasAttributeTags()) {
-////			extension = ExtensionManager.createTagExtension(model);
-////		}
-////		else if(extension == null) {
-//			extension = ExtensionManager.getObjectExtension(model).createFigure(model);
-////		}
-//		
-//		return extension.createFigure(this);
-//	}
-	
-	
+
+	//	protected IFigure createExtensionFigure(ObjectModel model) {
+	////		if(model.hasAttributeTags()) {
+	////			extension = ExtensionManager.createTagExtension(model);
+	////		}
+	////		else if(extension == null) {
+	//			extension = ExtensionManager.getObjectExtension(model).createFigure(model);
+	////		}
+	//		
+	//		return extension.createFigure(this);
+	//	}
+
+
 
 	@Override
 	public String getText(Object e) {
@@ -150,8 +150,12 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 
 	@Override
 	public IFigure getTooltip(Object entity) {
-		if(entity instanceof Pointer)
-			return new Label(((Pointer) entity).refName);
+		if(entity instanceof Pointer) {
+			if(((Pointer) entity).isTopLevel())
+				return new Label("");
+			else
+				return new Label(((Pointer) entity).reference.getName());
+		}
 		else
 			return new Label(entity.toString());
 	}
@@ -213,40 +217,46 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			//			fig.setTargetAnchor(new PositionAnchor(connection.getDestination().getNodeFigure(), Position.LEFT));
 		}
 
-		IFigure sFig = ((BaseFigure) connection.getSource().getNodeFigure()).innerFig;
-		IFigure tFig = ((BaseFigure) connection.getDestination().getNodeFigure()).innerFig;
+		IFigure sFig = ((BaseFigure) connection.getSource().getNodeFigure()).getInnerFigure();
+		IFigure tFig = ((BaseFigure) connection.getDestination().getNodeFigure()).getInnerFigure();
 
 		if(sFig instanceof ArrayReferenceFigure) {
-			// TODO anchor
-			String refName = ((Pointer) element).refName;
+			String refName = ((Pointer) element).reference.getName();
 			refName = refName.substring(1, refName.length()-1);
 			conn.setSourceAnchor(((ArrayReferenceFigure) sFig).getAnchor(Integer.parseInt(refName)));
 		}
-		
-		if(tFig instanceof ArrayPrimitiveFigure2) {
-			conn.setTargetAnchor(new PositionAnchor(tFig, Position.LEFT));
+
+		if(tFig instanceof ArrayPrimitiveFigure2 || tFig instanceof ArrayReferenceFigure) {
+			conn.setTargetAnchor(new PositionAnchor(tFig, Position.TOPLEFT));
 		}
+		
+		
 
-		handleIllustration(connection.getSource(), connection.getDestination());
+		handleIllustration(connection.getSource(), sFig, connection.getDestination(), tFig, pointer.reference);
 
-			// TODO repor
+		// TODO repor
 		//		fig.setVisible(pointer.source.isWithinScope() && pointer.target.isWithinScope());
 	}
-	
-	private void handleIllustration(GraphNode source, GraphNode target) {
+
+	private void handleIllustration(GraphNode source, IFigure sourceFig, GraphNode target, IFigure targetFig, ReferenceModel reference) {
 		if(source.getData() instanceof ReferenceModel && 
-			target.getData() instanceof ArrayModel &&
-			 ((BaseFigure) target.getNodeFigure()).innerFig instanceof ArrayPrimitiveFigure2) {
-			
+				target.getData() instanceof ArrayModel &&
+				targetFig instanceof ArrayPrimitiveFigure2) {
+
 			ReferenceModel r = (ReferenceModel) source.getData();
-			
+
 			if(r.hasIndexVars()) {
-				ArrayPrimitiveFigure2 aFig =  (ArrayPrimitiveFigure2) ((BaseFigure) target.getNodeFigure()).innerFig;
-				IllustrationBorder b = new IllustrationBorder(r, aFig);
-				aFig.setBorder(b);
+				IllustrationBorder b = new IllustrationBorder(r, (ArrayPrimitiveFigure2) targetFig);
+				targetFig.setBorder(b);
 			}
 		}
-		
+		else if(source.getData() instanceof ArrayReferenceModel && 
+				target.getData() instanceof ArrayPrimitiveModel) {
+
+			ArrayReferenceModel array = (ArrayReferenceModel) source.getData();
+			targetFig.setBorder(new IllustrationBorder(reference, (ArrayPrimitiveFigure2) targetFig));
+		}
+
 	}
 
 	enum Position {
@@ -272,6 +282,12 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 			@Override
 			Point getPoint(Rectangle r) {
 				return new Point(r.x, r.y + r.height/2);
+			}
+		},
+		TOPLEFT {
+			@Override
+			Point getPoint(Rectangle r) {
+				return new Point(r.x, r.y + r.height/4);
 			}
 		};
 

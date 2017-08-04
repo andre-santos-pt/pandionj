@@ -8,7 +8,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MarginBorder;
 
 public final class BaseFigure extends Figure {
-	public final IFigure innerFig;
+	private final IFigure innerFig;
 	
 	public BaseFigure(IFigure innerFig) {
 		assert innerFig != null;
@@ -18,5 +18,9 @@ public final class BaseFigure extends Figure {
 		setOpaque(false);
 		add(innerFig);
 		setSize(-1,-1);
+	}
+	
+	public IFigure getInnerFigure() {
+		return innerFig;
 	}
 }

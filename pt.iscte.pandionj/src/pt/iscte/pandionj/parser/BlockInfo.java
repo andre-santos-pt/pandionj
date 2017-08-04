@@ -23,19 +23,20 @@ public class BlockInfo {
 	private final BlockInfo parent;
 
 	private String id;
-	
+
 	private List<BlockInfo> children = new ArrayList<>(5);
 	private Map<String, VariableInfo> vars = new LinkedHashMap<>(5);
 	private List<VariableOperation> operationRecord = new ArrayList<>();
 
-	
+	public static final BlockInfo NONE = new BlockInfo(null, 0, 0, Type.OTHER); 
+
 	public BlockInfo(BlockInfo parent, int start, int end, Type type) {
 		this.parent = parent;
 		lineStart = start;
 		lineEnd = end;
 		if(parent != null)
 			parent.addChild(this);
-		
+
 		this.type = type;
 	}
 
@@ -46,6 +47,15 @@ public class BlockInfo {
 	public String getId() {
 		return id == null ? type.name() : id + (type == Type.METHOD ? "()" : "");
 	}
+	
+	public int getNumberOfParams() {
+		int c = 0;
+		for(VariableInfo v : vars.values())
+			if(v.isParam())
+				c++;
+		return c;
+	}
+	
 	public BlockInfo getParent() {
 		return parent;
 	}
@@ -54,23 +64,64 @@ public class BlockInfo {
 		return type.isLoop();
 	}
 
-	
+
 	private void addChild(BlockInfo b) {
 		children.add(b);
 	}
+	
+	public BlockInfo getMethod(String id, int nParams) {
+		class MethodFinder implements BlockInfoVisitor {
+			BlockInfo method;
+			public boolean visit(BlockInfo b) {
+				if(id.equals(b.id) && b.getNumberOfParams() == nParams) {
+					if(method != null) // TODO not unique name/nparams
+						;
+					else
+						method = b;
+				}
+				return false;
+			}
+		}
+		MethodFinder methodFinder = new MethodFinder();
+		accept(methodFinder);
+		return methodFinder.method;
+	}
+
+	public BlockInfo getRoot() {
+		BlockInfo b = this;
+		while(b.parent != null)
+			b = b.parent;
+		
+		return b;
+	}
 
 	public interface BlockInfoVisitor {
-		default boolean visit(BlockInfo b) { return true; };
-		default void endVisit(BlockInfo b) { };
+		default boolean visit(BlockInfo b) { return true; }
+		default void endVisit(BlockInfo b) { }
+		default void visit(VariableInfo var) { }
+//		default void endVisit(VariableInfo var) { };
 	}
-	
+
 	public void accept(BlockInfoVisitor v) {
 		if(v.visit(this)) {
-			for(BlockInfo c : children)
+			for(VariableInfo var : vars.values())
+				v.visit(var);
+			for(BlockInfo c : children) {
 				c.accept(v);
+				
+			}
 		}
 		v.endVisit(this);
 	}
+
+//	public void acceptUpwards(BlockInfoVisitor v) {
+//		if(v.visit(this)) {
+//			for(VariableInfo var : vars.values())
+//				v.visit(var);
+//			if(parent != null)
+//				parent.accept(v);
+//		}
+//	}
 	
 	public void print() {
 		accept(new BlockInfoVisitor() {
@@ -79,19 +130,21 @@ public class BlockInfo {
 			public boolean visit(BlockInfo b) {
 				tabs(depth);
 				System.out.println(lineStart+"-"+lineEnd+ " " + b.getId() + " {");
-				for(VariableInfo v : b.vars.values()) {
-					tabs(depth);
-					System.out.println("\t" + v.toString());
-				}
 				depth++;
 				return true;
 			}
-			
+
 			@Override
 			public void endVisit(BlockInfo b) {
 				depth--;
 				tabs(depth);
 				System.out.println("}\n");
+			}
+
+			@Override
+			public void visit(VariableInfo var) {
+				tabs(depth);
+				System.out.println(var.toString());
 			}
 			
 			private void tabs(int n) {
@@ -114,22 +167,24 @@ public class BlockInfo {
 		s += "}\n";
 		return s;
 	}
-	
+
 	@Override
 	public String toString() {
 		return lineStart+"-"+lineEnd+ " " + getId();
 	}
 
-	public void addVar(String var, boolean param) {
-		vars.put(var, new VariableInfo(var, param, this));
+	public VariableInfo addVar(String var, boolean param) {
+		VariableInfo varInfo = new VariableInfo(var, param, this);
+		vars.put(var, varInfo);
+		return varInfo;
 	}
 
 	private boolean inScope(int line) {
 		return line >= lineStart && line <= lineEnd;
 	}
-	
-	
-	private VariableInfo getVariable(String name) {
+
+
+	public VariableInfo getVariable(String name) {
 		BlockInfo b = this;
 		while(b != null) {
 			VariableInfo v = b.vars.get(name);
@@ -139,8 +194,8 @@ public class BlockInfo {
 		}
 		return null;
 	}
-	
-	
+
+
 	public void addOperation(VariableOperation op) {
 		VariableInfo var = getVariable(op.getVarName());
 		if(var == null)
@@ -194,7 +249,8 @@ public class BlockInfo {
 	}
 
 
-//	public Collection<VariableInfo> getVars() {
-//		return vars.values();
-//	}
+
+	//	public Collection<VariableInfo> getVars() {
+	//		return vars.values();
+	//	}
 }

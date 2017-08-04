@@ -5,15 +5,21 @@ import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
 
+import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
@@ -47,8 +53,13 @@ public class ValueFigure extends Figure {
 
 		add(valueLabel);
 
-		if(Role.FIXED_VALUE.equals(role))
-			valueLabel.setBackgroundColor(ColorConstants.lightGray);
+		if(Role.FIXED_VALUE.equals(role)) {
+			valueLabel.setBorder(new LineBorder(Constants.Colors.CONSTANT, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
+			valueLabel.setForegroundColor(Constants.Colors.CONSTANT);
+			nameLabel.setForegroundColor(Constants.Colors.CONSTANT);
+		}
+
+//			valueLabel.setBackgroundColor(ColorConstants.lightGray);
 
 		setOpaque(false); 
 		model.registerDisplayObserver(new Observer() {
@@ -96,6 +107,9 @@ public class ValueFigure extends Figure {
 			extraFigure = new Figure();
 			extraFigure.setLayoutManager(new FlowLayout());
 			add(extraFigure);
+		}
+		else if(Role.STEPPER.equals(role)) {
+			setBorder(new ArrowBorder()); // TODO stepper arrow
 		}
 	}
 
@@ -157,5 +171,34 @@ public class ValueFigure extends Figure {
 		public Dimension getPreferredSize(int wHint, int hHint) {
 			return new Dimension(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH/2);
 		}
+	}
+	
+	private class ArrowBorder implements Border {
+
+		@Override
+		public Insets getInsets(IFigure figure) {
+			return new Insets(0, 0, 0, 3);
+		}
+
+		@Override
+		public Dimension getPreferredSize(IFigure figure) {
+			return new Dimension();
+		}
+
+		@Override
+		public boolean isOpaque() {
+			return false;
+		}
+
+		@Override
+		public void paint(IFigure figure, Graphics graphics, Insets insets) {
+			graphics.setLineStyle(SWT.LINE_DOT);
+			graphics.setForegroundColor(Constants.Colors.ILLUSTRATION);
+			Rectangle r = figure.getBounds();
+			Point from = r.getLocation().getTranslated(r.width-1, 3);
+			Point to = from.getTranslated(0, r.height-10);
+			IllustrationBorder.drawArrow(graphics, from, to);
+		}
+		
 	}
 }

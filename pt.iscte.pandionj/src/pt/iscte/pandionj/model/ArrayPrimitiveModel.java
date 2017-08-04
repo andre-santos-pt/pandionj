@@ -20,16 +20,20 @@ public class ArrayPrimitiveModel extends ArrayModel {
 	protected void initArray(IJavaArray array, int length) {
 		try {
 			values = new ArrayList<>(length);
-			for(int i = 0; i < length - 1; i++) {
-				ValueModel m = new ValueModel((IJavaVariable) array.getVariable(i), false, null, getRuntimeModel());
-				values.add(m);
-			}
-			ValueModel m = new ValueModel((IJavaVariable) array.getVariable(array.getLength()-1), false, null, getRuntimeModel());
-			values.add(m);
+			for(int i = 0; i < length - 1; i++)
+				handlePosition((IJavaVariable) array.getVariable(i));
+
+			if(length > 0)
+				handlePosition((IJavaVariable) array.getVariable(length-1));
 			
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private void handlePosition(IJavaVariable var) throws DebugException {
+		ValueModel m = new ValueModel(var, false, null, getRuntimeModel());
+		values.add(m);
 	}
 	
 	public boolean isDecimal() {

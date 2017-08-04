@@ -16,6 +16,4 @@ public abstract class EntityModel<T extends IJavaObject> extends ModelElement<T>
 	public T getContent() {
 		return entity;
 	}
-
-	public abstract boolean hasWidgetExtension();
 }

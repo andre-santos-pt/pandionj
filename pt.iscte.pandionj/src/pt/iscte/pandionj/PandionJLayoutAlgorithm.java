@@ -147,13 +147,14 @@ public class PandionJLayoutAlgorithm extends Observable implements LayoutAlgorit
 						for(ReferenceModel r : elements) {
 							LayoutEntity ent = map.get(r.getModelTarget());
 							if(ent != null) {
-								yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING;
 								GraphNode n = (GraphNode) targetE.getGraphData();
-								IFigure iFig = ((BaseFigure) n.getNodeFigure()).innerFig;
+								IFigure iFig = ((BaseFigure) n.getNodeFigure()).getInnerFigure();
 								if(iFig instanceof ArrayReferenceFigure) {
-									Point location = ((ArrayReferenceFigure) iFig).getAnchor(i++).getLocation(null);								
-									ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, targetE.getYInLayout()+ location.y);
+//									Point location = ((ArrayReferenceFigure) iFig).getAnchor(i++).getLocation(null);								
+//									ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, targetE.getYInLayout()+ location.y);
+									ent.setLocationInLayout(targetE.getXInLayout() + Constants.NODE_SPACING, yy);
 								}
+								yy += ent.getHeightInLayout() + Constants.OBJECT_PADDING/2;
 							}
 						}
 					}

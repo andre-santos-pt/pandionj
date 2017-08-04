@@ -48,7 +48,7 @@ public interface Constants {
 		
 		Color ARRAY_POSITION = ColorConstants.white;
 
-		Color ILLUSTRATION = ColorConstants.blue;
+		Color ILLUSTRATION = ColorConstants.black;
 		
 		Color HIGHLIGHT = new Color(Display.getDefault(), 223, 234, 255);
 
@@ -62,6 +62,7 @@ public interface Constants {
 		Color OBSOLETE = new Color(Display.getDefault(), 150, 150, 150);
 		
 		Color[] ROLE_VARS = { ColorConstants.darkBlue, ColorConstants.darkGreen, ColorConstants.orange};
+		Color CONSTANT = ColorConstants.gray;
 
 		static Color getVarColor(int i) {
 			assert i >= 0;

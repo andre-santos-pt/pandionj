@@ -17,6 +17,7 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
@@ -34,6 +35,8 @@ public class ArrayPrimitiveFigure2 extends Figure{
 	private GridLayout arrayLayout;
 	private RoundedRectangle positionsFig;
 
+	private GridData positionLayout;
+	
 	public ArrayPrimitiveFigure2(IArrayModel model) {
 		this.model = model;
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
@@ -46,6 +49,12 @@ public class ArrayPrimitiveFigure2 extends Figure{
 		positionsFig = createPositionsFig();
 		add(positionsFig);
 		setSize(getPreferredSize());
+		
+		int width = POSITION_WIDTH;
+		if(model.isDecimal())
+			width *= 2;
+
+		positionLayout = new GridData(width, POSITION_WIDTH+20);
 	}
 
 	@Override
@@ -71,7 +80,11 @@ public class ArrayPrimitiveFigure2 extends Figure{
 		Label lengthLabel = new Label("length = " + model.getLength());
 		fig.setToolTip(lengthLabel);
 		if(N == 0) {
-			fig.setPreferredSize(new Dimension(Constants.POSITION_WIDTH/2,Constants.POSITION_WIDTH));
+//			fig.setPreferredSize(new Dimension(Constants.POSITION_WIDTH/2,Constants.POSITION_WIDTH));
+			Label empty = new Label("");
+			GridData layoutData = new GridData(POSITION_WIDTH/2, POSITION_WIDTH+20);
+			arrayLayout.setConstraint(empty, layoutData);
+			fig.add(empty);
 		}
 		else {
 			int len = Math.min(N, Constants.ARRAY_LENGTH_LIMIT);
@@ -131,21 +144,19 @@ public class ArrayPrimitiveFigure2 extends Figure{
 		}
 	}
 
-	Point getFirstPositionLocation() {
-		return getPositionLocation(0);
+	Rectangle getFirstPositionBounds() {
+		return getPositionBounds(0);
 	}
 	
-	Point getLastPositionLocation() {
-		return getPositionLocation(positions.size()-1);
+	Rectangle getLastPositionBounds() {
+		return getPositionBounds(positions.size()-1);
 	}
 	
-	Point getPositionLocation(int i) {
-		if(i < 0 || i >= positions.size())
-			return null;
-		else {
-			Point p = positions.get(i).getLocation();
-			translateToAbsolute(p);
-			return p;
-		}
+	Rectangle getPositionBounds(int i) {
+		Rectangle r = getBounds();
+		if(i >= 0 && i < positions.size())
+			r = positions.get(i).getBounds();
+		translateToAbsolute(r);
+		return r;
 	}
 }

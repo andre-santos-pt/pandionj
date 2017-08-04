@@ -37,6 +37,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
+import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
 import pt.iscte.pandionj.parser.VariableOperation.Type;
 
 
@@ -57,8 +58,23 @@ public class VarParser {
 	public void run() {
 		visitor = new MethodVisitor();
 		parser.parse(visitor);
+//		if(visitor.current != null)
+//			visitor.current.accept(new PostRolesVisitor());
 	}
 
+//	static class PostRolesVisitor implements BlockInfoVisitor {
+//		@Override
+//		public void visit(VariableInfo var) {
+//			if(var.isFixedValue()) {
+//				var.getDeclarationBlock().accept(new BlockInfoVisitor() {
+//					public void visit(VariableInfo v) {
+//						if(v.isArrayIndex() && var.getName().equals(v.getInitVariable()))
+//							var.setFixedArrayIndex(v.getAccessedArrays());
+//					}
+//				});
+//			}
+//		}
+//	}
 
 	public String toText() {
 		assert visitor != null;
@@ -111,6 +127,8 @@ public class VarParser {
 				return BlockInfo.Type.OTHER;
 		}
 
+
+
 		@Override
 		public boolean visit(TypeDeclaration node) {
 			BlockInfo block = createBlock(node);
@@ -129,8 +147,7 @@ public class VarParser {
 		@Override
 		public boolean visit(FieldDeclaration node) {
 			for(Object o : node.fragments()) {
-				VariableDeclarationFragment frag = (VariableDeclarationFragment) o;
-				current.addVar(frag.getName().toString(), false);
+				handleVarDeclaration((VariableDeclarationFragment) o);
 			}
 			return true;
 		}
@@ -175,21 +192,28 @@ public class VarParser {
 
 		@Override
 		public boolean visit(VariableDeclarationExpression node) {
-			for(Object var : node.fragments()) {
-				VariableDeclarationFragment frag = (VariableDeclarationFragment) var;
-				current.addVar(frag.getName().toString(), false);
-			}
+			for(Object var : node.fragments())
+				handleVarDeclaration((VariableDeclarationFragment) var);
 			return true;
 		}
 
 
 		@Override
 		public boolean visit(VariableDeclarationStatement node) {
-			for(Object var : node.fragments()) {
-				VariableDeclarationFragment frag = (VariableDeclarationFragment) var;
-				current.addVar(frag.getName().toString(), false);
-			}
+			for(Object var : node.fragments())
+				handleVarDeclaration((VariableDeclarationFragment) var);
 			return true;
+		}
+
+		private void handleVarDeclaration(VariableDeclarationFragment var) {
+			String varName = var.getName().getIdentifier();
+			VariableInfo varInfo = current.addVar(varName, false);
+			Expression init = var.getInitializer();
+			if(init instanceof SimpleName) {
+				String initVar = ((SimpleName) init).getIdentifier();
+				varInfo.addOperation(new VariableOperation(varName, VariableOperation.Type.INIT, initVar));
+			}
+
 		}
 
 
@@ -271,47 +295,13 @@ public class VarParser {
 			return true;
 		}
 
-		private void handleCondition(Expression expression) {
-			Set<String> incVars = current.getOperations(VariableOperation.Type.INC, VariableOperation.Type.DEC);
-
-			if(expression instanceof InfixExpression) {
-				InfixExpression exp = (InfixExpression) expression;
-
-				if(exp.getLeftOperand() instanceof SimpleName) {
-					String var = exp.getLeftOperand().toString();
-					if(incVars.contains(var)) {
-						SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
-						exp.getRightOperand().accept(v);
-						if(v.vars.size() == 1) {
-							String varName = v.vars.get(0);
-							VariableOperation op = new VariableOperation(var, VariableOperation.Type.BOUNDED, varName);
-							current.addOperation(op);
-						}
-					}
-				}
-
-				if(exp.getRightOperand() instanceof SimpleName) {
-					String var = exp.getRightOperand().toString();
-					if(incVars.contains(var)) {
-						SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
-						exp.getLeftOperand().accept(v);
-						if(v.vars.size() == 1) {
-							String varName = v.vars.get(0);
-							VariableOperation op = new VariableOperation(var, VariableOperation.Type.BOUNDED, varName);
-							current.addOperation(op);
-						}
-					}
-				}
-			}
-		}
-
+		
 		private void checkBounds(Expression exp) {
 			exp.accept(new BoundVisitor());
 		}
 
 		class BoundVisitor extends ASTVisitor {
 			public boolean visit(InfixExpression exp) {
-				System.err.println(exp);
 				Operator op = exp.getOperator();
 				if(isCompareOperator(op)) {
 					String leftExp = exp.getLeftOperand().toString();
@@ -388,7 +378,6 @@ public class VarParser {
 		@Override
 		public void endVisit(WhileStatement node) {
 			checkBounds(node.getExpression());
-			//			handleCondition(node.getExpression());
 			current = current.getParent();
 		}
 
@@ -400,7 +389,6 @@ public class VarParser {
 
 		@Override
 		public void endVisit(ForStatement node) {
-//			handleCondition(node.getExpression());
 			checkBounds(node.getExpression());
 
 			current = current.getParent();
@@ -431,18 +419,17 @@ public class VarParser {
 				}
 				class NoInvocationVisitor extends ASTVisitor {
 					boolean ok = true;
-					@Override
 					public boolean visit(MethodInvocation node) {
 						ok = false;
 						return false;
 					}
 				};
-				
+
 				//TODO: 2 dim
 				NoInvocationVisitor v = new NoInvocationVisitor();
 				node.getIndex().accept(v);
 				if(v.ok) {
-					VariableOperation op = new VariableOperation(node.getArray().toString(), VariableOperation.Type.ACCESS, node.getIndex(), dim);
+					VariableOperation op = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, node.getIndex(), dim);
 					current.addOperation(op);
 				}
 				//				SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
@@ -476,10 +463,20 @@ public class VarParser {
 
 		@Override
 		public boolean visit(MethodInvocation node) {
-			IMethodBinding method = node.resolveMethodBinding();
-			if(method == null)
-				return true;
-			ITypeBinding[] parameterTypes = method.getParameterTypes();
+			System.out.println("INV: " + node.getName() + " " + node.arguments());
+			List arguments = node.arguments();
+			for(int i = 0; i < arguments.size(); i++) {
+				Object arg = arguments.get(i);
+				if(arg instanceof SimpleName) {
+					VariableInfo varInfo = current.getVariable(arg.toString());
+					if(varInfo != null)
+						varInfo.addOperation(VariableOperation.Type.PARAM, node.getName().toString(), i);
+				}
+			}
+//			IMethodBinding method = node.resolveMethodBinding();
+//			if(method == null)
+//				return true;
+//			ITypeBinding[] parameterTypes = method.getParameterTypes();
 			return super.visit(node);
 		}
 

@@ -23,7 +23,9 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
+import pt.iscte.pandionj.parser.BlockInfo;
 import pt.iscte.pandionj.parser.VariableInfo;
+import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
 
 public class ReferenceModel extends VariableModel<IJavaObject> {
 	private NullModel nullModel;
@@ -107,35 +109,17 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 		return info;
 	}
 
-//	public void addVar(ArrayIndexVariableModel v) {
-//		ArrayIndexVariableModel i = varsRoles.get(v.getName());
-//		if(i == null || !i.sameAs(v)) {
-//			System.out.println("add var " + v);
-//			varsRoles.put(v.getName(), v);
-//			v.registerObserver((o,a) -> {
-//				if(!v.isWithinScope()) {
-//					varsRoles.remove(v.getName()); 
-//					setChanged();
-//					notifyObservers(v);
-//				}
-//			});
-//			setChanged();
-//			notifyObservers(v);
-//		}
-//	}
-	
 	public boolean hasIndexVars() {
 		return !info.getArrayAccessVariables().isEmpty();
 	}
 	
 	public Collection<IArrayIndexModel> getIndexVars() {
-		StackFrameModel stackFrame = getStackFrame();
-		assert stackFrame != null;
+		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		
 		List<IArrayIndexModel> list = new ArrayList<>(3);
 		for (String indexVar : info.getArrayAccessVariables()) {
 			VariableModel<?> vi = stackFrame.getVariable(indexVar);
-			if(vi != null) {
+			if(vi != null && !vi.getVariableRole().isFixedValue()) {
 				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vi, this);
 				IBound bound = vi.getVariableRole().getBound();
 				if(bound != null && bound.getType() != null) {
@@ -147,25 +131,32 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 		}
 		return list;
 	}
+
+	public Collection<IArrayIndexModel> getFixedIndexes() {
+		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
+		List<IArrayIndexModel> list = new ArrayList<>(3);
+		
+		for (String indexVar : info.getArrayAccessVariables()) {
+			VariableModel<?> vi = stackFrame.getVariable(indexVar);
+			if(vi != null && vi.getVariableRole().isFixedValue()) {
+				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vi, this);
+				list.add(indexModel);
+			}
+		}
+		BlockInfo root = info.getDeclarationBlock().getRoot();
+		root.accept(new BlockInfo.BlockInfoVisitor() {
+			@Override
+			public void visit(VariableInfo var) {
+				if(var.getArrayFixedVariables().contains(getName()) && info.getDeclarationBlock().getVariable(var.getName()) == var) {
+					VariableModel<?> vi = stackFrame.getVariable(var.getName());
+					if(vi != null)
+						list.add(new ArrayIndexVariableModel(vi, ReferenceModel.this));
+				}
+			}
+		});
+		return list;
+	}
 	
-//	private ArrayIndexBound handleBound(IArrayIndexModel.IBound bound, StackFrameModel stackFrame) {
-//		ASTParser parser = ASTParser.newParser(AST.JLS8);
-//		parser.setKind(ASTParser.K_EXPRESSION);
-//		parser.setSource(bound.getExpression().toCharArray());
-//
-//		ASTNode node = (ASTNode) parser.createAST(null);
-//		List<IVariableModel> deps = new ArrayList<>();
-//		node.accept(new ASTVisitor() {
-//			@Override
-//			public boolean visit(SimpleName node) {
-//				VariableModel<?> var = stackFrame.getVariable(node.toString());
-//				if(var != null)
-//					deps.add(var);
-//				return true;
-//			}
-//		});
-//
-//		ArrayIndexBound iBound = new ArrayIndexBound(bound.getExpression(), bound.getType());
-//		return iBound;
-//	}
+	
+	
 }

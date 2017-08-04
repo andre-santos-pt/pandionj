@@ -14,7 +14,8 @@ public class VariableOperation {
 		BOUNDED(1), 
 		SUBS,
 		ACC(1),
-		IN_ASSIGN(1);
+		INIT(1),
+		PARAM(2);
 
 		private int nParams;
 
