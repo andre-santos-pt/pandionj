@@ -15,7 +15,6 @@ public class XYPlot implements IArrayWidgetExtension {
 	}
 	@Override
 	public IFigure createFigure(IArrayModel e) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 }

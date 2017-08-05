@@ -26,6 +26,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -199,13 +200,6 @@ public class ArrayPrimitiveFigure extends Figure{
 		rightBound.setVisible(upperOff);
 	}
 
-	// TODO
-//	private void removeVariable(IVariableModel varModel) {
-//		vars.remove(varModel.getName());
-//		PandionJUI.executeUpdate(() -> repaint());
-//	}
-
-
 	private void observerAction(Observable o, Object arg) {
 		if(arg instanceof IndexOutOfBoundsException) {
 			System.out.println("Index fora");
@@ -262,8 +256,8 @@ public class ArrayPrimitiveFigure extends Figure{
 			}else {
 				graphics.drawText(v.getName(), getIndexLocation(v.getCurrentIndex()).getTranslated(0, y));
 				y += pWidth;
-				if(v.getDirection() != IArrayIndexModel.Direction.NONE) {
-					boolean right = v.getDirection() == IArrayIndexModel.Direction.FORWARD;
+				if(v.getDirection() != Direction.NONE) {
+					boolean right = v.getDirection() == Direction.FORWARD;
 					Point origin = getIndexLocation(i).getTranslated(0, y + pWidth);
 					from = right ?  origin : origin.getTranslated(pWidth, 0);
 					Point to = right ? origin.getTranslated(pWidth, 0) : origin;

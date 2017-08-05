@@ -32,6 +32,7 @@ import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.tests.mock.MockArray;
 import pt.iscte.pandionj.tests.mock.MockArrayIndex;
 import pt.iscte.pandionj.tests.mock.MockVariable;
+import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.*;
 

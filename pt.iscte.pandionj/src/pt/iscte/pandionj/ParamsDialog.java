@@ -73,7 +73,6 @@ public class ParamsDialog {
 							if(pType.equals(float.class.getName())) Float.parseFloat(val);
 							if(pType.equals(double.class.getName())) Double.parseDouble(val);
 
-							// TODO arrays, null, refs
 						}
 						catch(RuntimeException e) {
 							return false;

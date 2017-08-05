@@ -7,6 +7,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
+import pt.iscte.pandionj.extensibility.Direction;
+import pt.iscte.pandionj.extensibility.GathererType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
@@ -14,17 +16,19 @@ import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
 
 public class VariableInfo {
 	private final String name;
-	private final boolean isParam;
+	private final int paramIndex;
 	private List<VariableOperation> operations;
 	private BlockInfo declarationBlock;
-//	private List<String> arrayFixedIndexes;
 
-	public VariableInfo(String name, boolean isParam, BlockInfo declarationBlock) {
+	public VariableInfo(String name, BlockInfo declarationBlock, int paramIndex) {
 		this.name = name;
-		this.isParam = isParam;
+		this.paramIndex = paramIndex;
 		operations = new ArrayList<>(5);
 		this.declarationBlock = declarationBlock;
-//		arrayFixedIndexes = Collections.emptyList();
+	}
+	
+	public VariableInfo(String name, BlockInfo declarationBlock) {
+		this(name, declarationBlock, -1);
 	}
 
 	@Override
@@ -32,7 +36,7 @@ public class VariableInfo {
 		List<String> accessedArrays = getAccessedArrays();
 		Set<String> accessedArraysFixed = getArrayFixedVariables();
 		
-		return name + (isParam ? "* " : " ") + 
+		return name + (isParam() ? "* " : " ") + 
 				(isFixedValue() ? "CONSTANT " : "") +
 				(isGatherer() ? "GATHERER " : "") + 
 				(!accessedArrays.isEmpty() ? "ARRAY_INDEX " + accessedArrays : "") + 
@@ -50,7 +54,7 @@ public class VariableInfo {
 	}
 
 	public boolean isParam() {
-		return isParam;
+		return paramIndex != -1;
 	}
 
 	public void addOperation(VariableOperation op) {
@@ -85,24 +89,28 @@ public class VariableInfo {
 		return hasAcc && !hasMod;
 	}
 
-	public enum GathererType {
-		SUM, PROD, UNDEFINED;
-	}
+//	public enum GathererType {
+//		SUM, MINUS, PROD, UNDEFINED;
+//	}
 
 	public GathererType getGathererType() {
 		assert isGatherer();
 		int sum = 0;
+		int minus = 0;
 		int prod = 0;
 		for(VariableOperation op : operations)
 			if(op.getType() == VariableOperation.Type.ACC)
-				switch((String) op.getParam(0)) {
-				case "sum": sum++; break;
-				case "prod": prod++; break;
+				switch((GathererType) op.getParam(0)) {
+				case SUM: sum++; break;
+				case MINUS: minus++; break;
+				case PROD: prod++; break;
 				}
 
-		if(sum > 0 && prod == 0)
+		if(sum > 0 && minus + prod == 0)
 			return GathererType.SUM;
-		else if(prod > 0 && sum == 0)
+		else if(minus > 0 && sum + prod == 0)
+			return GathererType.MINUS;
+		else if(prod > 0 && sum + minus == 0)
 			return GathererType.PROD;
 		else
 			return GathererType.UNDEFINED;
@@ -113,9 +121,17 @@ public class VariableInfo {
 		for(VariableOperation op : operations)
 			if(op.getType() == VariableOperation.Type.INDEX)
 				arrayAccess = true;
+//			else if(op.getType() == VariableOperation.Type.PARAM) {
+//				String methodName = op.getParam(0).toString();
+//				int totalParams = Integer.parseInt(op.getParam(1).toString());
+//				int paramIndex = Integer.parseInt(op.getParam(2).toString());
+//				BlockInfo m = declarationBlock.getRoot().getUniqueMethod(methodName, totalParams);
+//				if(m != null && m.getParam(paramIndex).isArrayIndex())
+//					arrayAccess = true;
+//			}
 			else if(op.isModifier() && !op.isStepper())
 				return false;
-
+		
 		return arrayAccess;
 	}
 
@@ -130,12 +146,22 @@ public class VariableInfo {
 
 	public Set<String> getArrayAccessVariables() {
 		Set<String> set = new LinkedHashSet<>();
-		for(VariableOperation op : operations)
+		for(VariableOperation op : operations) {
 			if(op.getType() == VariableOperation.Type.ACCESS) {
 				String exp = op.getParam(0).toString();
 				if(exp.matches("[_a-zA-Z]([_a-zA-Z0-9])*"))
 					set.add(exp);
 			}
+//			else if(op.getType() == VariableOperation.Type.PARAM) {
+//				String methodName = op.getParam(0).toString();
+//				int totalParams = Integer.parseInt(op.getParam(1).toString());
+//				int paramIndex = Integer.parseInt(op.getParam(2).toString());
+//				BlockInfo m = declarationBlock.getRoot().getUniqueMethod(methodName, totalParams);
+//				if(m != null) {
+//					VariableInfo param = m.getParam(paramIndex);
+//				}
+//			}
+		}
 		return set;
 	}
 
@@ -177,7 +203,14 @@ public class VariableInfo {
 	public boolean isStepperBackward() {
 		return isStepper(VariableOperation.Type.DEC);
 	}
+	
+	public Direction getDirection() {
+		if(isStepperForward())			return Direction.FORWARD;
+		else if(isStepperBackward())		return Direction.BACKWARD;
+		else								return Direction.NONE;			
+	}
 
+	
 //	public boolean isFixedArrayIndex(String arrayRef) {
 //		return arrayFixedIndexes.contains(arrayRef);
 //	}
@@ -268,6 +301,9 @@ public class VariableInfo {
 			return true;
 		}
 	}
+
+	
+	
 
 
 }

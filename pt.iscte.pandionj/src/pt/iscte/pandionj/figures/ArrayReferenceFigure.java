@@ -81,20 +81,8 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 				positions.add(p);
 			}
 		}
-		
-		
 		Label lengthLabel = new Label("length = " + N);
 		setToolTip(lengthLabel);
-
-		
-//		for(ReferenceModel r : model.getModelElements())
-//			r.registerDisplayObserver(new Observer() {
-//				@Override
-//				public void update(Observable o, Object arg) {
-//					// TODO Auto-generated method stub
-//					System.out.println("update");
-//				}
-//			});
 	}
 	
 
@@ -129,11 +117,6 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 		layout.horizontalSpacing = Constants.ARRAY_POSITION_SPACING;
 		positionsFig.setLayoutManager(layout);
 		repaint();
-	}
-
-	@Override
-	public void paintFigure(final Graphics graphics) {	
-			// TODO
 	}
 
 

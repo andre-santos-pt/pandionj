@@ -82,12 +82,8 @@ public class VariableOperation {
 	public boolean isStepper() {
 		return type.isStepper();
 	}
-	
-	
 
 	public Object getParam(int index) {
 		return index < paramValues.size() ? paramValues.get(index) : null;
 	}
-
-
 }

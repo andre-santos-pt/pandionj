@@ -122,7 +122,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 	//	}
 
 	public void update() {
-		List<VariableModel<?>> newVars = handleVariables(); // TODO bug new variables int[][]
+		List<VariableModel<?>> newVars = handleVariables(); // FIXME bug new variables int[][]
 		if(hasChanged()) {
 			step++;
 			stepPointer = step;
@@ -211,7 +211,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 		String varName = jv.getName();
 		IJavaValue value = (IJavaValue) jv.getValue();
 
-		if(vars.containsKey(varName) && vars.get(varName).variable == jv) { // TODO bug same name!
+		if(vars.containsKey(varName) && vars.get(varName).variable == jv) { // FIXME bug same name!
 			VariableModel<?> vModel = vars.get(varName);
 			boolean change = vModel.update(step);
 			if(change)
@@ -428,7 +428,7 @@ public class StackFrameModel extends DisplayUpdateObservable {
 			if(value.getReferenceTypeName().equals(String.class.getName()))
 				return "\"" + value.getValueString() + "\"";
 
-			if(value instanceof IJavaObject) { // TODO bug
+			if(value instanceof IJavaObject) { // FIXME bug
 				if(((IJavaObject) value).isNull())
 					return "null";
 				else

@@ -110,7 +110,7 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 	}
 
 	public boolean hasIndexVars() {
-		return !info.getArrayAccessVariables().isEmpty();
+		return info != null && !info.getArrayAccessVariables().isEmpty();
 	}
 	
 	public Collection<IArrayIndexModel> getIndexVars() {

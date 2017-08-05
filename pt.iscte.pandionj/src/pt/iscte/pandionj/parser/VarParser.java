@@ -36,6 +36,7 @@ import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 import org.eclipse.jdt.core.dom.WhileStatement;
 
+import pt.iscte.pandionj.extensibility.GathererType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
 import pt.iscte.pandionj.parser.VariableOperation.Type;
@@ -58,23 +59,23 @@ public class VarParser {
 	public void run() {
 		visitor = new MethodVisitor();
 		parser.parse(visitor);
-//		if(visitor.current != null)
-//			visitor.current.accept(new PostRolesVisitor());
+		//		if(visitor.current != null)
+		//			visitor.current.accept(new PostRolesVisitor());
 	}
 
-//	static class PostRolesVisitor implements BlockInfoVisitor {
-//		@Override
-//		public void visit(VariableInfo var) {
-//			if(var.isFixedValue()) {
-//				var.getDeclarationBlock().accept(new BlockInfoVisitor() {
-//					public void visit(VariableInfo v) {
-//						if(v.isArrayIndex() && var.getName().equals(v.getInitVariable()))
-//							var.setFixedArrayIndex(v.getAccessedArrays());
-//					}
-//				});
-//			}
-//		}
-//	}
+	//	static class PostRolesVisitor implements BlockInfoVisitor {
+	//		@Override
+	//		public void visit(VariableInfo var) {
+	//			if(var.isFixedValue()) {
+	//				var.getDeclarationBlock().accept(new BlockInfoVisitor() {
+	//					public void visit(VariableInfo v) {
+	//						if(v.isArrayIndex() && var.getName().equals(v.getInitVariable()))
+	//							var.setFixedArrayIndex(v.getAccessedArrays());
+	//					}
+	//				});
+	//			}
+	//		}
+	//	}
 
 	public String toText() {
 		assert visitor != null;
@@ -182,9 +183,10 @@ public class VarParser {
 
 		private void handleMethodParams(MethodDeclaration node) {
 			current.setId(node.getName().toString());
-			for(Object p : node.parameters()) {
-				SingleVariableDeclaration var = (SingleVariableDeclaration) p;
-				current.addVar(var.getName().getIdentifier(), true);
+			List<?> parameters = node.parameters();
+			for(int i = 0; i < parameters.size(); i++) {
+				SingleVariableDeclaration var = (SingleVariableDeclaration) parameters.get(i);
+				current.addVar(var.getName().getIdentifier(), i);
 			}
 		}
 
@@ -207,7 +209,7 @@ public class VarParser {
 
 		private void handleVarDeclaration(VariableDeclarationFragment var) {
 			String varName = var.getName().getIdentifier();
-			VariableInfo varInfo = current.addVar(varName, false);
+			VariableInfo varInfo = current.addVar(varName);
 			Expression init = var.getInitializer();
 			if(init instanceof SimpleName) {
 				String initVar = ((SimpleName) init).getIdentifier();
@@ -217,7 +219,6 @@ public class VarParser {
 		}
 
 
-		// TODO n += LITERAL?
 		@Override
 		public boolean visit(Assignment node) {
 			if(node.getLeftHandSide() instanceof SimpleName) {
@@ -226,11 +227,11 @@ public class VarParser {
 
 				if(node.getOperator() == Assignment.Operator.PLUS_ASSIGN && node.getRightHandSide() instanceof NumberLiteral || 
 						isAcumulationAssign(node, InfixExpression.Operator.PLUS, (e) -> e instanceof NumberLiteral))
-					op = VariableOperation.Type.INC;
+					op = Type.INC;
 
 				else if(node.getOperator() == Assignment.Operator.MINUS_ASSIGN && node.getRightHandSide() instanceof NumberLiteral ||
 						isAcumulationAssign(node, InfixExpression.Operator.MINUS, (e) -> e instanceof NumberLiteral))
-					op = VariableOperation.Type.DEC;
+					op = Type.DEC;
 
 				if(op != null)
 					current.addOperation(new VariableOperation(varName, op));
@@ -238,18 +239,21 @@ public class VarParser {
 					op = Type.SUBS;
 					Object[] params = new Object[0];
 					if(node.getOperator() == Assignment.Operator.PLUS_ASSIGN ||
-							isAcumulationAssign(node, InfixExpression.Operator.PLUS, (e) -> !(e instanceof NumberLiteral)) || 
-							node.getOperator() == Assignment.Operator.MINUS_ASSIGN ||
-							isAcumulationAssign(node, InfixExpression.Operator.MINUS, (e) -> !(e instanceof NumberLiteral))) {
+							isAcumulationAssign(node, InfixExpression.Operator.PLUS, (e) -> true)) {
 						op = Type.ACC;
-						params = new Object[] {"sum"};
+						params = new Object[] {GathererType.SUM};
+					}
+					else if(node.getOperator() == Assignment.Operator.MINUS_ASSIGN ||
+							isAcumulationAssign(node, InfixExpression.Operator.MINUS, (e) -> true)) {
+						op = Type.ACC;
+						params = new Object[] {GathererType.MINUS};
 					}
 					else if(node.getOperator() == Assignment.Operator.TIMES_ASSIGN ||
-							isAcumulationAssign(node, InfixExpression.Operator.TIMES, (e) -> !(e instanceof NumberLiteral)) || 
-							node.getOperator() == Assignment.Operator.DIVIDE_ASSIGN ||
-							isAcumulationAssign(node, InfixExpression.Operator.DIVIDE, (e) -> !(e instanceof NumberLiteral))) {
+							isAcumulationAssign(node, InfixExpression.Operator.TIMES, (e) -> true)) {
+						//							node.getOperator() == Assignment.Operator.DIVIDE_ASSIGN ||
+						//							isAcumulationAssign(node, InfixExpression.Operator.DIVIDE, (e) -> true)) {
 						op = Type.ACC;
-						params = new Object[] {"prod"};
+						params = new Object[] {GathererType.PROD};
 					}
 
 					current.addOperation(new VariableOperation(varName, op, params));
@@ -295,7 +299,7 @@ public class VarParser {
 			return true;
 		}
 
-		
+
 		private void checkBounds(Expression exp) {
 			exp.accept(new BoundVisitor());
 		}
@@ -405,40 +409,78 @@ public class VarParser {
 			current = current.getParent();
 		}
 
+		private boolean isIncDecExpression(Expression exp) {
+			return exp instanceof PostfixExpression ||
+					exp instanceof PrefixExpression &&
+					(((PrefixExpression) exp).getOperator() == PrefixExpression.Operator.INCREMENT ||
+					((PrefixExpression) exp).getOperator() == PrefixExpression.Operator.DECREMENT);
+		}
 
-
-		// TODO pre and postfix i++
 		@Override
 		public boolean visit(ArrayAccess node) {
 			if(node.getArray() instanceof SimpleName || node.getArray() instanceof ArrayAccess) {
 				String arrayRef = arrayRef(node);
 				int dim = indexDepth(node);
-				if(node.getIndex() instanceof SimpleName) {
-					VariableOperation op = new VariableOperation(node.getIndex().toString(), VariableOperation.Type.INDEX, arrayRef, dim);
+				Expression indexExp = node.getIndex();
+				if(indexExp instanceof SimpleName) {
+					VariableOperation op = new VariableOperation(indexExp.toString(), VariableOperation.Type.INDEX, arrayRef, dim);
 					current.addOperation(op);
+
+					VariableOperation opA = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, node.getIndex(), dim);
+					current.addOperation(opA);
 				}
-				class NoInvocationVisitor extends ASTVisitor {
+				else if(indexExp instanceof PostfixExpression) {
+					Expression operand = ((PostfixExpression) indexExp).getOperand();
+					if(operand instanceof SimpleName) {
+						VariableOperation op = new VariableOperation(operand.toString(), VariableOperation.Type.INDEX, arrayRef, dim);
+						current.addOperation(op);
+
+						VariableOperation opA = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, operand, dim);
+						current.addOperation(opA);
+					}
+				}
+				else if(indexExp instanceof PrefixExpression) {
+					Expression operand = ((PrefixExpression) indexExp).getOperand();
+					if(operand instanceof SimpleName) {
+						VariableOperation op = new VariableOperation(operand.toString(), VariableOperation.Type.INDEX, arrayRef, dim);
+						current.addOperation(op);
+						
+						VariableOperation opA = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, operand, dim);
+						current.addOperation(opA);
+					}
+				}
+				class NoModifierVisitor extends ASTVisitor {
 					boolean ok = true;
 					public boolean visit(MethodInvocation node) {
 						ok = false;
 						return false;
 					}
+
+					@Override
+					public boolean visit(PostfixExpression node) {
+						ok = false;
+						return false;
+					}
+
+					@Override
+					public boolean visit(PrefixExpression node) {
+						if(node.getOperator() == PrefixExpression.Operator.INCREMENT ||
+								node.getOperator() == PrefixExpression.Operator.DECREMENT)
+							ok = false;
+						return true;
+					}
 				};
 
-				//TODO: 2 dim
-				NoInvocationVisitor v = new NoInvocationVisitor();
-				node.getIndex().accept(v);
-				if(v.ok) {
-					VariableOperation op = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, node.getIndex(), dim);
-					current.addOperation(op);
+				if(!(node.getIndex() instanceof SimpleName) && 
+						!(node.getIndex() instanceof PostfixExpression) &&
+						!(node.getIndex() instanceof PrefixExpression)) {
+					NoModifierVisitor v = new NoModifierVisitor();
+					node.getIndex().accept(v);
+					if(v.ok) {
+						VariableOperation op = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, node.getIndex(), dim);
+						current.addOperation(op);
+					}
 				}
-				//				SearchSimpleVarVisitor v = new SearchSimpleVarVisitor();
-				//				node.getIndex().accept(v);
-				//				for(String varName : v.vars) {
-				//					int dim = indexDepth(node);
-				//					VariableOperation op = new VariableOperation(varName, VariableOperation.Type.INDEX, arrayRef, dim);
-				//					current.addOperation(op);
-				//				}
 			}
 			return true;
 		}
@@ -463,21 +505,16 @@ public class VarParser {
 
 		@Override
 		public boolean visit(MethodInvocation node) {
-			System.out.println("INV: " + node.getName() + " " + node.arguments());
-			List arguments = node.arguments();
+			List<?> arguments = node.arguments();
 			for(int i = 0; i < arguments.size(); i++) {
 				Object arg = arguments.get(i);
 				if(arg instanceof SimpleName) {
 					VariableInfo varInfo = current.getVariable(arg.toString());
 					if(varInfo != null)
-						varInfo.addOperation(VariableOperation.Type.PARAM, node.getName().toString(), i);
+						varInfo.addOperation(VariableOperation.Type.PARAM, node.getName().toString(), arguments.size(), i);
 				}
 			}
-//			IMethodBinding method = node.resolveMethodBinding();
-//			if(method == null)
-//				return true;
-//			ITypeBinding[] parameterTypes = method.getParameterTypes();
-			return super.visit(node);
+			return true;
 		}
 
 		//		private void handleFor(ForStatement forStatement) {

@@ -96,6 +96,7 @@ class FrameView extends Composite {
 				//				getParent().layout();
 			}
 		});
+		
 		// TODO CTRL +-
 		//		viewer.getGraphControl().addKeyListener(new KeyListener() {
 		//			

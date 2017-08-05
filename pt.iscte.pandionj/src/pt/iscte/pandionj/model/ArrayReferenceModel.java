@@ -38,8 +38,9 @@ public class ArrayReferenceModel extends ArrayModel {
 	}
 
 	private void handlePosition(IJavaVariable var) {
-		VariableInfo info = new VariableInfo("", false, BlockInfo.NONE);
-		info.addOperation(new VariableOperation("", VariableOperation.Type.ACCESS, "j", 0)); // TODO hard coded
+		VariableInfo info = new VariableInfo("", BlockInfo.NONE);
+		// TODO hard coded
+//		info.addOperation(new VariableOperation("", VariableOperation.Type.ACCESS, "j", 0)); 
 		
 		ReferenceModel referenceModel = new ReferenceModel(var, true, info, getRuntimeModel());
 		references.add(referenceModel);

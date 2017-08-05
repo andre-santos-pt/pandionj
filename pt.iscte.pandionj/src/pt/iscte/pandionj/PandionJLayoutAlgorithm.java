@@ -58,7 +58,7 @@ public class PandionJLayoutAlgorithm extends Observable implements LayoutAlgorit
 			if(!map.containsKey(element)) {
 				map.put(element, e);
 				
-				// TODO atualizar
+				// TODO atualizar?
 				if(element instanceof ReferenceModel)
 					element.registerObserver((o,a) -> dirty.add(e));
 

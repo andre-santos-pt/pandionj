@@ -3,6 +3,7 @@ package pt.iscte.pandionj.model;
 import java.util.Collection;
 import java.util.List;
 
+import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;

@@ -16,6 +16,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -24,9 +25,9 @@ import org.eclipse.swt.widgets.Composite;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.PrimitiveType;
 
-//TODO always validate before invocation
-// TODO value cache
 public class StaticInvocationWidget extends Composite {
+	private static final Color ERROR_BOX = new Color(null, 200, 0, 0);
+	
 	private String methodName;
 	private IMethod method;
 	private Combo[] paramBoxes; 
@@ -56,8 +57,7 @@ public class StaticInvocationWidget extends Composite {
 				FontManager.setFont(comma, Constants.MESSAGE_FONT_SIZE);
 				comma.setText(", ");
 			}
-
-			String pType = Signature.toString(parameterTypes[i]);
+			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
 			Combo combo = new Combo(this, SWT.DROP_DOWN);
 			combo.setToolTipText(pType);
 			FontManager.setFont(combo, Constants.MESSAGE_FONT_SIZE);
@@ -74,7 +74,7 @@ public class StaticInvocationWidget extends Composite {
 			int ii = i;
 			combo.addFocusListener(new FocusAdapter() {
 				public void focusLost(FocusEvent e) {
-					combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
+					combo.setBackground(valid(combo, pType) ? null : ERROR_BOX);
 				}
 			});
 			combo.addKeyListener(new KeyAdapter() {
@@ -128,7 +128,6 @@ public class StaticInvocationWidget extends Composite {
 	private void addCombovalues(Combo combo, String paramType) {
 		if(!PrimitiveType.isPrimitiveSig(paramType)) {
 			int i = combo.getSelectionIndex();
-//			String sel = i == -1 ? null : combo.getItem(i);
 			String sel = combo.getText();
 			combo.removeAll();
 			IType owner = (IType) method.getParent();
@@ -158,9 +157,10 @@ public class StaticInvocationWidget extends Composite {
 
 	// TODO review bugs
 	private boolean allValid() {
+		String[] parameterTypes = method.getParameterTypes();
 		boolean allValid = true;
 		for(int i = 0; i < paramBoxes.length; i++) {
-			boolean v = valid(paramBoxes[i], Signature.getSignatureSimpleName(method.getParameterTypes()[i]));
+			boolean v = valid(paramBoxes[i], Signature.getSignatureSimpleName(parameterTypes[i]));
 			paramBoxes[i].setBackground(v ? null : Constants.Colors.ERROR);
 			if(!v)
 				allValid = false;
@@ -197,12 +197,12 @@ public class StaticInvocationWidget extends Composite {
 		if(pType.equals(short.class.getName())) 		return "0";
 		if(pType.equals(int.class.getName()))		return "0";
 		if(pType.equals(long.class.getName())) 		return "0";
-		if(pType.equals(float.class.getName())) 		return "0.0";
+		if(pType.equals(float.class.getName())) 		return "0.0f";
 		if(pType.equals(double.class.getName())) 	return "0.0";
 		if(pType.equals(char.class.getName())) 		return "'a'";
 		if(pType.equals(boolean.class.getName())) 	return "false";
 
-		if(pType.equals(String.class.getName())) 	return "\"\"";
+		if(pType.equals(String.class.getSimpleName())) 	return "\"\"";
 
 		return "null";
 	}
@@ -217,12 +217,29 @@ public class StaticInvocationWidget extends Composite {
 
 	public String getInvocationExpression() {
 		String[] values = getValues();
-
+		String[] parameterTypes = method.getParameterTypes();
+		
 		for(int i = 0; i < values.length; i++)
 			if(!contains(paramBoxes[i].getItems(), values[i]))
 				paramBoxes[i].add(values[i]);
+		
+		for(int i = 0; i < values.length; i++) {
+			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
+			values[i] = convertForTypedInvocation(values[i], pType);
+		}
 
 		return methodName + "(" + String.join(",", values) + ")";
+	}
+
+	private String convertForTypedInvocation(String val, String pType) {
+		if(pType.matches("byte|short|long"))
+			return "(" + pType + ")" + val;
+		if(pType.equals(float.class.getName()) && !val.endsWith("f"))
+			return val + "f";
+		else if(pType.equals(double.class.getName()) && val.indexOf('.') == -1)
+			return val + ".0";
+		else
+			return val;
 	}
 
 

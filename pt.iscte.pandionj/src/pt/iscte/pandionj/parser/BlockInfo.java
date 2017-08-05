@@ -24,8 +24,8 @@ public class BlockInfo {
 
 	private String id;
 
-	private List<BlockInfo> children = new ArrayList<>(5);
-	private Map<String, VariableInfo> vars = new LinkedHashMap<>(5);
+	private List<BlockInfo> children = new ArrayList<>();
+	private List<VariableInfo> vars = new ArrayList<>();
 	private List<VariableOperation> operationRecord = new ArrayList<>();
 
 	public static final BlockInfo NONE = new BlockInfo(null, 0, 0, Type.OTHER); 
@@ -50,10 +50,17 @@ public class BlockInfo {
 	
 	public int getNumberOfParams() {
 		int c = 0;
-		for(VariableInfo v : vars.values())
+		for(VariableInfo v : vars)
 			if(v.isParam())
 				c++;
+			else
+				break;
 		return c;
+	}
+	
+	public VariableInfo getParam(int index) {
+		assert index >= 0 && index < getNumberOfParams();
+		return vars.get(index);
 	}
 	
 	public BlockInfo getParent() {
@@ -69,13 +76,15 @@ public class BlockInfo {
 		children.add(b);
 	}
 	
-	public BlockInfo getMethod(String id, int nParams) {
+	public BlockInfo getUniqueMethod(String id, int nParams) {
 		class MethodFinder implements BlockInfoVisitor {
-			BlockInfo method;
+			BlockInfo method = null;
+			boolean unique = true;
+			
 			public boolean visit(BlockInfo b) {
 				if(id.equals(b.id) && b.getNumberOfParams() == nParams) {
-					if(method != null) // TODO not unique name/nparams
-						;
+					if(method != null) 
+						unique = false;
 					else
 						method = b;
 				}
@@ -84,7 +93,7 @@ public class BlockInfo {
 		}
 		MethodFinder methodFinder = new MethodFinder();
 		accept(methodFinder);
-		return methodFinder.method;
+		return methodFinder.unique ? methodFinder.method : null;
 	}
 
 	public BlockInfo getRoot() {
@@ -104,12 +113,10 @@ public class BlockInfo {
 
 	public void accept(BlockInfoVisitor v) {
 		if(v.visit(this)) {
-			for(VariableInfo var : vars.values())
+			for(VariableInfo var : vars)
 				v.visit(var);
-			for(BlockInfo c : children) {
+			for(BlockInfo c : children)
 				c.accept(v);
-				
-			}
 		}
 		v.endVisit(this);
 	}
@@ -155,7 +162,7 @@ public class BlockInfo {
 	}
 	public String toText() {
 		String s = lineStart+"-"+lineEnd+ " " + getId() + " {\n";
-		for(VariableInfo v : vars.values())
+		for(VariableInfo v : vars)
 			s	 += "\t" + v.toString() + "\n";
 
 		for(BlockInfo b : children) {
@@ -173,9 +180,12 @@ public class BlockInfo {
 		return lineStart+"-"+lineEnd+ " " + getId();
 	}
 
-	public VariableInfo addVar(String var, boolean param) {
-		VariableInfo varInfo = new VariableInfo(var, param, this);
-		vars.put(var, varInfo);
+	public VariableInfo addVar(String var) {
+		return addVar(var, -1);
+	}
+	public VariableInfo addVar(String var, int paramIndex) {
+		VariableInfo varInfo = new VariableInfo(var, this, paramIndex);
+		vars.add(varInfo);
 		return varInfo;
 	}
 
@@ -183,11 +193,18 @@ public class BlockInfo {
 		return line >= lineStart && line <= lineEnd;
 	}
 
-
+	private VariableInfo findVarByName(String name) {
+		for(VariableInfo v : vars)
+			if(v.getName().equals(name))
+				return v;
+		
+		return null;
+	}
+	
 	public VariableInfo getVariable(String name) {
 		BlockInfo b = this;
 		while(b != null) {
-			VariableInfo v = b.vars.get(name);
+			VariableInfo v = b.findVarByName(name);
 			if(v != null)
 				return v;
 			b = b.parent;
@@ -247,10 +264,4 @@ public class BlockInfo {
 	public boolean contains(VariableOperation op) {
 		return operationRecord.contains(op);
 	}
-
-
-
-	//	public Collection<VariableInfo> getVars() {
-	//		return vars.values();
-	//	}
 }

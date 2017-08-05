@@ -15,8 +15,6 @@ import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.StackFrameModel;
 
-
-// TODO adjust size
 class StaticArea extends Composite implements Observer {
 
 	private GraphViewerZoomable viewer;
@@ -25,7 +23,7 @@ class StaticArea extends Composite implements Observer {
 	StaticArea(Composite parent) {
 		super(parent, SWT.NONE);
 		setLayout(new FillLayout());
-		viewer = new GraphViewerZoomable(this, SWT.NONE); // TODO zoom
+		viewer = new GraphViewerZoomable(this, SWT.NONE);
 		viewer.setContentProvider(new StaticNodeProvider());
 		PandionJLayoutAlgorithm pandionJLayoutAlgorithm = new PandionJLayoutAlgorithm();
 		pandionJLayoutAlgorithm.addObserver(viewSizeObserver);
@@ -74,7 +72,6 @@ class StaticArea extends Composite implements Observer {
 
 				requestLayout();
 			});
-			// TODO if there are changes
 			model.registerDisplayObserver(this);
 		}
 	}

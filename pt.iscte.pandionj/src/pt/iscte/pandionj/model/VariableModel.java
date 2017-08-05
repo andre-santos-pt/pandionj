@@ -94,7 +94,7 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean update(int step) {
-		try { // TODO ObjectCollectedException
+		try { // TODO ObjectCollectedException?
 			StepValue current = history.get(history.size()-1);
 			boolean equals = variable.getValue().equals(current.value);
 			if(!equals) {
@@ -158,7 +158,7 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 		return history.get(stepPointer).value;
 	}
 
-	public String getCurrentValue() { // TODO: convert to normal type?
+	public String getCurrentValue() {
 		return history.get(stepPointer).value.toString();
 	}
 

@@ -1,6 +1,8 @@
 package pt.iscte.pandionj.figures;
 
 
+import static pt.iscte.pandionj.Constants.ARROW_EDGE;
+
 import java.util.List;
 import java.util.Observable;
 import java.util.Observer;
@@ -15,6 +17,7 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Point;
@@ -24,6 +27,7 @@ import org.eclipse.swt.SWT;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.PrimitiveType;
 import pt.iscte.pandionj.model.ValueModel.Role;
@@ -59,7 +63,7 @@ public class ValueFigure extends Figure {
 			nameLabel.setForegroundColor(Constants.Colors.CONSTANT);
 		}
 
-//			valueLabel.setBackgroundColor(ColorConstants.lightGray);
+		//			valueLabel.setBackgroundColor(ColorConstants.lightGray);
 
 		setOpaque(false); 
 		model.registerDisplayObserver(new Observer() {
@@ -80,10 +84,16 @@ public class ValueFigure extends Figure {
 			}
 
 			private String parcels() {
-				switch(model.getVariableRole().getGathererType()) {
-				case SUM: return sumParcels();
-				case PROD: return "?"; // TODO product parcels
-				default: return "";
+				if(model.getHistory().size() <= 1) {
+					return "";
+				}
+				else {
+					switch(model.getVariableRole().getGathererType()) {
+					case SUM: return sumParcels();
+					case MINUS: return minusParcels();
+					case PROD: return prodParcels();
+					default: return "";
+					}
 				}
 			}
 		});
@@ -109,54 +119,81 @@ public class ValueFigure extends Figure {
 			add(extraFigure);
 		}
 		else if(Role.STEPPER.equals(role)) {
-			setBorder(new ArrowBorder()); // TODO stepper arrow
+			setBorder(new ArrowBorder(model.getVariableRole().getDirection()));
 		}
 	}
 
 
-	// TODO: prodParcels
 	private String sumParcels() {
 		List<String> history = model.getHistory();
-		if(history.size() == 1)
-			return "";
+		assert !history.isEmpty();
 
 		PrimitiveType pType = PrimitiveType.match(model.getTypeName());
 
-		// TODO
 		Object v = pType.getValue(history.get(0));
-		String parcels = v.toString();
+		StringBuffer parcels = new StringBuffer(v.toString());
 		for(int i = 1; i < history.size(); i++) {
 			Object x = pType.getValue(history.get(i));
-			if(pType.equals(PrimitiveType.BYTE))			parcels += " + " + ((Byte) 		x - (Byte) v);
-			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 		x - (Short) v);
-			else if(pType.equals(PrimitiveType.INT)) 	parcels += " + " + ((Integer) 	x - (Integer) v);
-			else if(pType.equals(PrimitiveType.LONG))	parcels += " + " + ((Long) 		x - (Long) v);
-			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 		x - (Float) v);
-			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
+			if(pType.equals(PrimitiveType.BYTE))			parcels.append(" + " + ((Byte) 		x - (Byte) v));
+			else if(pType.equals(PrimitiveType.SHORT))	parcels.append(" + " + ((Short) 		x - (Short) v));
+			else if(pType.equals(PrimitiveType.INT)) 	parcels.append(" + " + ((Integer) 	x - (Integer) v));
+			else if(pType.equals(PrimitiveType.LONG))	parcels.append(" + " + ((Long) 		x - (Long) v));
+			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append(" + " + ((Float) 		x - (Float) v));
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append(" + " + ((Double) 	x - (Double) v));
 			v = x;
 		}
-
-//		Object v = pType.getValue(history.get(0));
-//		String parcels = v.toString();
-//		for(int i = 1; i < history.size(); i++) {
-//			Object x = pType.getValue(history.get(i));
-//			if(pType.equals(PrimitiveType.BYTE))			parcels += " + " + ((Byte) 		x - (Byte) v);
-//			else if(pType.equals(PrimitiveType.SHORT))	parcels += " + " + ((Short) 		x - (Short) v);
-//			else if(pType.equals(PrimitiveType.INT)) 	parcels += " + " + ((Integer) 	x - (Integer) v);
-//			else if(pType.equals(PrimitiveType.LONG))	parcels += " + " + ((Long) 		x - (Long) v);
-//			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels += " + " + ((Float) 		x - (Float) v);
-//			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels += " + " + ((Double) 	x - (Double) v);
-//			v = x;
-//		}
-		return "(" + parcels + ")";
+		return "(" + parcels.toString() + ")";
 	}
 
+
+	private String minusParcels() {
+		List<String> history = model.getHistory();
+		assert !history.isEmpty();
+
+		PrimitiveType pType = PrimitiveType.match(model.getTypeName());
+
+		Object v = pType.getValue(history.get(0));
+		StringBuffer parcels = new StringBuffer(v.toString());
+		for(int i = 1; i < history.size(); i++) {
+			Object x = pType.getValue(history.get(i));
+			if(pType.equals(PrimitiveType.BYTE))			parcels.append(" - " + ((Byte) 		v - (Byte) x));
+			else if(pType.equals(PrimitiveType.SHORT))	parcels.append(" - " + ((Short) 		v - (Short) x));
+			else if(pType.equals(PrimitiveType.INT)) 	parcels.append(" - " + ((Integer) 	v - (Integer) x));
+			else if(pType.equals(PrimitiveType.LONG))	parcels.append(" - " + ((Long) 		v - (Long) x));
+			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append(" - " + ((Float) 		v - (Float) x));
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append(" - " + ((Double) 	v - (Double) x));
+			v = x;
+		}
+		return "(" + parcels.toString() + ")";
+	}
+	
+	private String prodParcels() {
+		List<String> history = model.getHistory();
+		assert !history.isEmpty();
+
+		PrimitiveType pType = PrimitiveType.match(model.getTypeName());
+
+		Object v = pType.getValue(history.get(0));
+		StringBuffer parcels = new StringBuffer(v.toString());
+		for(int i = 1; i < history.size(); i++) {
+			Object x = pType.getValue(history.get(i));
+			if(pType.equals(PrimitiveType.BYTE))			parcels.append(" x " + ((Byte) 		x / (Byte) v));
+			else if(pType.equals(PrimitiveType.SHORT))	parcels.append(" x " + ((Short) 		x / (Short) v));
+			else if(pType.equals(PrimitiveType.INT)) 	parcels.append(" x " + ((Integer) 	x / (Integer) v));
+			else if(pType.equals(PrimitiveType.LONG))	parcels.append(" x " + ((Long) 		x / (Long) v));
+			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append(" x " + ((Float) 		x / (Float) v));
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append(" x " + ((Double) 	x / (Double) v));
+			v = x;
+		}
+		return "(" + parcels.toString() + ")";
+	}
 
 	private class HistoryLabel extends Label {
 		public HistoryLabel(String val) {
 			super(val);
 			FontManager.setFont(this, Constants.VAR_FONT_SIZE);
 			setForegroundColor(ColorConstants.gray);
+			// TODO text align center
 		}
 
 		@Override
@@ -169,12 +206,16 @@ public class ValueFigure extends Figure {
 
 		@Override
 		public Dimension getPreferredSize(int wHint, int hHint) {
-			return new Dimension(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH/2);
+			return new Dimension(valueLabel.getSize().width, Constants.POSITION_WIDTH/2);
 		}
 	}
-	
-	private class ArrowBorder implements Border {
 
+	private class ArrowBorder implements Border {
+		Direction direction;
+
+		ArrowBorder(Direction direction) {
+			this.direction = direction;
+		}
 		@Override
 		public Insets getInsets(IFigure figure) {
 			return new Insets(0, 0, 0, 3);
@@ -195,10 +236,24 @@ public class ValueFigure extends Figure {
 			graphics.setLineStyle(SWT.LINE_DOT);
 			graphics.setForegroundColor(Constants.Colors.ILLUSTRATION);
 			Rectangle r = figure.getBounds();
-			Point from = r.getLocation().getTranslated(r.width-1, 3);
-			Point to = from.getTranslated(0, r.height-10);
-			IllustrationBorder.drawArrow(graphics, from, to);
+			Point from = r.getLocation().getTranslated(r.width-6, 10);
+			Point to = from.getTranslated(0, Constants.POSITION_WIDTH / 2);
+			if(direction == Direction.FORWARD) {
+				Point t = from;
+				from = to;
+				to = t;
+			}
+			drawArrow(graphics, from, to); 
 		}
-		
+
+		private void drawArrow(Graphics g, Point from, Point to) {
+			g.setLineStyle(Graphics.LINE_SOLID);
+			g.drawLine(from, to);
+
+			int yy = from.y < to.y ? -ARROW_EDGE : ARROW_EDGE;
+			g.drawLine(to, to.getTranslated(-ARROW_EDGE, yy));
+			g.drawLine(to, to.getTranslated(ARROW_EDGE, yy));
+		}
+
 	}
 }

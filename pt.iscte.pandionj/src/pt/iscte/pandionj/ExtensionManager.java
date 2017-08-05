@@ -116,31 +116,20 @@ public class ExtensionManager {
 			
 			compositeFig = new Figure();
 			compositeFig.setLayoutManager(new FlowLayout());
-			for (Entry<String, Collection<String>> e : tags.asMap().entrySet()) {
+			for (Entry<String, Collection<String>> e : tags.asMap().entrySet())
 				addChildFigures(m, e.getKey());
-//				String attName = e.getKey();
-//				for(String tag : e.getValue()) {
-//					IArrayWidgetExtension ext = arrayExtensions.get(tag);
-//					if(ext != null) {
-//						IFigure f = ext.createFigure(m.getArray(attName)); // TODO check if array
-//						f.setToolTip(new Label(attName));
-//						figs.put(e.getKey(), f);
-//						compositeFig.add(f);
-//					}
-//				}
-			}
 			
 			compositeFig.setBackgroundColor(ColorConstants.blue);
 			return compositeFig;
 		}
 
-		// TODO BUG: field values on null / undefined fields
+		// FIXME field values on null / undefined fields
 		private void addChildFigures(IObjectModel m, String attName) {
 			for (String tag : tags.get(attName)) {
 				IArrayWidgetExtension ext = arrayExtensions.get(tag);
 				if(ext != null) {
 					IArrayModel array = m.getArray(attName);
-					IFigure f = array == null ? new NullFigure() : ext.createFigure(array);// TODO check if array
+					IFigure f = array == null ? new NullFigure() : ext.createFigure(array);
 					f.setToolTip(new Label(attName));
 					figs.put(attName, f);
 					compositeFig.add(f);

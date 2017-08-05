@@ -91,13 +91,6 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	private void handle(IStackFrame[] stackFrames) {
 		assert stackFrames != null;
 
-		// TODO erro?
-		//		for(IStackFrame f : stackFrames) {
-		//			if(!(f.getLaunch().getSourceLocator().getSourceElement(f) instanceof IFile)) {
-		//				return 0;
-		//			}
-		//		}
-
 		IStackFrame[] revStackFrames = reverse(stackFrames);
 		countActive = revStackFrames.length;
 		if(isSubStack(revStackFrames)) {

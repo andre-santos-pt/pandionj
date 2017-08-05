@@ -127,7 +127,7 @@ public class LaunchCommand extends AbstractHandler {
 
 								@Override
 								public void invoke(String expression) {
-									String args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\"").replaceAll("\'", "\\\\\'");
+									String args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\""); //.replaceAll("\'", "\\\\\'");
 									try {
 										launch(file, lineFinal, firstType, args, mainMethod);
 									} catch (CoreException e) {
@@ -173,7 +173,7 @@ public class LaunchCommand extends AbstractHandler {
 			URL find = FileLocator.find(bundle, new Path("lib/agent.jar"), null);
 			URL resolve = FileLocator.resolve(find);
 			if(!mainMethod.exists()) {
-				// TODO bug Windows: "\" inicial
+				// FIXME bug Windows: "\" inicial
 				String path = resolve.getPath();
 				if(Platform.getOS().compareTo(Platform.OS_WIN32) == 0)
 					path = path.substring(1);

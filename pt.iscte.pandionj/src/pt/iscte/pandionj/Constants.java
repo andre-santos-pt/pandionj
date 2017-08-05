@@ -8,7 +8,14 @@ import org.eclipse.swt.widgets.Display;
 
 public interface Constants {
 	String PLUGIN_ID = Constants.class.getPackage().getName();
-
+	String CONTEXT_ID = PLUGIN_ID + ".context";
+	String IMAGE_FOLDER = "images";
+	
+	int ARRAY_LENGTH_LIMIT = 20;
+	int STACK_LIMIT = 10; // TODO stack limit
+	
+	
+	
 	int MESSAGE_FONT_SIZE = 16;
 
 	int ARROW_EDGE = 4;
@@ -35,7 +42,7 @@ public interface Constants {
 	int ARRAY_POSITION_SPACING = 4;
 	int ARRAY_LINE_WIDTH = 1;
 
-	int ARRAY_LENGTH_LIMIT = 20;
+	
 
 	int ILLUSTRATION_LINE_WIDTH = 2;
 
@@ -57,12 +64,11 @@ public interface Constants {
 		Color SELECT = new Color(Display.getDefault(), 0, 0, 200);
 
 		Color VIEW_BACKGROUND = ColorConstants.white;
-
 		Color ERROR = ColorConstants.red;
 		Color OBSOLETE = new Color(Display.getDefault(), 150, 150, 150);
 		
 		Color[] ROLE_VARS = { ColorConstants.darkBlue, ColorConstants.darkGreen, ColorConstants.orange};
-		Color CONSTANT = ColorConstants.gray;
+		Color CONSTANT = new Color(null, 160, 160, 160);
 
 		static Color getVarColor(int i) {
 			assert i >= 0;
@@ -70,31 +76,22 @@ public interface Constants {
 		}
 	}
 	
+	interface Messages {
+		String START = "This view will be populated once the execution of the Java debugger hits a breakpoint.";
+		String TRASH = "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.";
+
+	}
 	
-	String START_MESSAGE = "This view will be populated once the execution of the Java debugger hits a breakpoint.";
 
-	String IMAGE_FOLDER = "images";
+	
 
-	int STACK_LIMIT = 10; // TODO stack limit
 
-	int STATIC_AREA_HEIGHT = 100;
 
 	int COMBO_STRING_WIDTH = 200;
 
 	int COMBO_WIDTH = 75;
 
-	String CONTEXT_ID = "pt.iscte.pandionj.context";
-
-
-
 	
-
-	
-
-	// TODO FONT FLYWEIGHT
-	//	static void SET_FONT(Figure fig, int size) {
-	//		fig.setFont(new Font(Display.getDefault(), FONT_FACE, size, SWT.NONE));
-	//	}
 
 	static GridLayout getOneColGridLayout() {
 		GridLayout layout = new GridLayout(1, false);
@@ -107,7 +104,6 @@ public interface Constants {
 
 
 	static final String TRASH_ICON = "trash.gif";
-	static final String TRASH_MESSAGE = "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.";
-
+	
 
 }

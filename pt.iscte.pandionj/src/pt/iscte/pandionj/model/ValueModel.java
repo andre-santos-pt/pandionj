@@ -80,11 +80,11 @@ public class ValueModel extends VariableModel<IJavaPrimitiveValue> {
 	}
 
 	public boolean isDecimal() {
-		return getTypeName().matches("float|double"); // TODO Float/Double??
+		return getTypeName().matches("float|double");
 	}
 
 	public boolean isBoolean() {
-		return getTypeName().equals("boolean"); // TODO Boolean?
+		return getTypeName().equals("boolean");
 	}
 	
 	public Role getRole() {

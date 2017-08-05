@@ -3,6 +3,7 @@ package pt.iscte.pandionj.tests.mock;
 import java.util.Collection;
 import java.util.List;
 
+import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;

@@ -85,7 +85,7 @@ public class PandionJView extends ViewPart {
 		breakpointListener = new PandionJBreakpointListener();
 		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
 
-		populateToolBar();
+//		populateToolBar();
 	}
 
 
@@ -126,7 +126,7 @@ public class PandionJView extends ViewPart {
 		labelComposite.setLayout(new GridLayout());
 		labelInit = new Label(labelComposite, SWT.WRAP);
 		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);
-		labelInit.setText(Constants.START_MESSAGE);
+		labelInit.setText(Constants.Messages.START);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		stackLayout.topControl = labelComposite;
 
@@ -138,7 +138,6 @@ public class PandionJView extends ViewPart {
 		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		invocationArea = new InvocationArea(parent);
-		setPartName("");
 	}
 
 	@Override
@@ -157,7 +156,8 @@ public class PandionJView extends ViewPart {
 					IJavaThread thread = (IJavaThread) e.getSource();
 					executeInternal(() -> {
 						handleFrames(thread);
-						if(thread.getTopStackFrame().getLineNumber() == -1) // TODO null pointer?
+						IStackFrame f = thread.getTopStackFrame();
+						if(f != null && f.getLineNumber() == -1)
 							thread.resume();
 					});
 				}
@@ -257,9 +257,8 @@ public class PandionJView extends ViewPart {
 
 	private void populateToolBar() {
 		toolBar = getViewSite().getActionBars().getToolBarManager();
-		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.TRASH_MESSAGE, () -> runtime.simulateGC());
+		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.Messages.TRASH, () -> runtime.simulateGC());
 
-		// TODO zoom all
 		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
 		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
