@@ -1,8 +1,6 @@
 package pt.iscte.pandionj;
 
-import java.util.HashMap;
-import java.util.Map;
-
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -24,10 +22,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -138,8 +134,12 @@ public class PandionJView extends ViewPart {
 		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		invocationArea = new InvocationArea(parent);
+		setTitleToolTip(getVersion());
 	}
 
+	static String getVersion() {
+		return "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
+	}
 	@Override
 	public void setFocus() {
 		scroll.setFocus();

@@ -17,8 +17,6 @@ import org.eclipse.jdt.core.dom.EnhancedForStatement;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ForStatement;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IfStatement;
 import org.eclipse.jdt.core.dom.InfixExpression;
 import org.eclipse.jdt.core.dom.InfixExpression.Operator;
@@ -38,7 +36,6 @@ import org.eclipse.jdt.core.dom.WhileStatement;
 
 import pt.iscte.pandionj.extensibility.GathererType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
-import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
 import pt.iscte.pandionj.parser.VariableOperation.Type;
 
 

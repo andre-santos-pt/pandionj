@@ -1,29 +1,30 @@
 package pt.iscte.pandionj.tests.mock;
 
-import java.util.Collection;
 import java.util.List;
 
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockArrayIndex extends DisplayUpdateObservable implements IArrayIndexModel {
-	private final IVariableModel variable;
-	private final IVariableModel arrayReference;
+	private final IValueModel variable;
+	private final IReferenceModel arrayReference;
 	private final Direction direction;
 	
 	private IBound bound;
 	
-	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, Direction direction) {
+	public MockArrayIndex(IValueModel variable, IReferenceModel arrayReference, Direction direction) {
 		this.variable = variable;
 		this.arrayReference = arrayReference;
 		this.direction = direction;
 		variable.registerObserver((o,a) -> {setChanged(); notifyObservers();});
 	}
 
-	public MockArrayIndex(IVariableModel variable, IVariableModel arrayReference, Direction direction, IBound bound) {
+	public MockArrayIndex(IValueModel variable, IReferenceModel arrayReference, Direction direction, IBound bound) {
 		this(variable, arrayReference, direction);
 		this.bound = bound;
 	}
@@ -94,7 +95,12 @@ public class MockArrayIndex extends DisplayUpdateObservable implements IArrayInd
 	}
 
 	@Override
-	public Collection<String> getTags() {
-		return variable.getTags();
+	public Role getRole() {
+		return Role.ARRAY_ITERATOR;
+	}
+
+	@Override
+	public boolean isStatic() {
+		return variable.isStatic();
 	}
 }

@@ -1,23 +1,24 @@
 package pt.iscte.pandionj.model;
 
-import java.util.Collection;
 import java.util.List;
 
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class ArrayIndexVariableModel extends DisplayUpdateObservable implements IArrayIndexModel {
-	private final IVariableModel model;
-	private final IVariableModel arrayRef;
+	private final IValueModel model;
+	private final IReferenceModel arrayRef;
 	
 	private ArrayIndexBound bound;
 	
 	private boolean illegalAccess;
 	
-	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRef) {
+	public ArrayIndexVariableModel(IValueModel model, IReferenceModel arrayRef) {
 		assert model != null;
 		this.model = model;
 		this.arrayRef = arrayRef;
@@ -26,16 +27,6 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 		model.registerObserver((o,a) -> fireChange());
 	}
 			
-//	public ArrayIndexVariableModel(IVariableModel model, IVariableModel arrayRefName, ArrayIndexBound bound) {
-//		this(model, arrayRefName);
-//		this.bound = bound;
-//		bound.registerObserver((o,a) -> fireChange());
-//	}
-	
-//	public boolean sameAs(ArrayIndexVariableModel v) {
-//		return model == v.model && arrayRef == v.arrayRef;
-//	}
-	
 	private void fireChange() {
 		setChanged();
 		notifyObservers();
@@ -130,12 +121,17 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 	}
 
 	@Override
-	public Collection<String> getTags() {
-		return model.getTags();
+	public IVariableModel getArrayReference() {
+		return arrayRef;
 	}
 
 	@Override
-	public IVariableModel getArrayReference() {
-		return arrayRef;
+	public Role getRole() {
+		return Role.ARRAY_ITERATOR;
+	}
+
+	@Override
+	public boolean isStatic() {
+		return model.isStatic();
 	}
 }

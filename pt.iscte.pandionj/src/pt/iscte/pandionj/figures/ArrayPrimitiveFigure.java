@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Observable;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FigureUtilities;
@@ -24,16 +25,17 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
+
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
-import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
 
-public class ArrayPrimitiveFigure extends Figure{
+public class ArrayPrimitiveFigure extends PandionJFigure {
 	private static final GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
-	private final IArrayModel model; // array being displayed
+	private final IArrayModel<IValueModel> model; // array being displayed
 	private final int N; // array length
 	private List<Position> positions; // existing array positions
 	private Map<String, IArrayIndexModel> vars; // variables (roles) associated with the array
@@ -44,7 +46,8 @@ public class ArrayPrimitiveFigure extends Figure{
 	private PositionOutBounds leftBound; 
 	private PositionOutBounds rightBound;
 
-	public ArrayPrimitiveFigure(IArrayModel model) {
+	public ArrayPrimitiveFigure(IArrayModel<IValueModel> model) {
+		super(model);
 		this.model = model;
 		model.registerDisplayObserver((o, indexes) -> observerAction(o, indexes));
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT); // limit size
@@ -129,14 +132,14 @@ public class ArrayPrimitiveFigure extends Figure{
 			setLayoutManager(layout);
 
 			if(index != null) {
-				IVariableModel m = model.getElementModel(index); 
+				IValueModel m = model.getElementModel(index); 
 				valueLabel = new ValueLabel(m);
 				layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
 				add(valueLabel);
 			}else {
 				Label emptyLabel = new Label("...");
 				FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
-				IVariableModel measure = model.getElementModel(model.getLength() - 1);
+				IValueModel measure = model.getElementModel(model.getLength() - 1);
 				setSize(measure.isDecimal() || measure.isBoolean() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
 				layout.setConstraint(emptyLabel, new GridData(width, POSITION_WIDTH));
 				add(emptyLabel);

@@ -2,9 +2,7 @@ package pt.iscte.pandionj;
 
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
@@ -13,7 +11,6 @@ import org.eclipse.draw2d.AbstractConnectionAnchor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
@@ -30,9 +27,15 @@ import org.eclipse.zest.core.widgets.GraphNode;
 import org.eclipse.zest.core.widgets.ZestStyles;
 
 import pt.iscte.pandionj.NodeProvider.Pointer;
-import pt.iscte.pandionj.extensibility.IArrayIndexModel;
+import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
-import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
+import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObjectModel;
+import pt.iscte.pandionj.extensibility.IObservableModel;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure2;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.BaseFigure;
@@ -44,20 +47,14 @@ import pt.iscte.pandionj.figures.ValueFigure;
 import pt.iscte.pandionj.model.ArrayModel;
 import pt.iscte.pandionj.model.ArrayPrimitiveModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
-import pt.iscte.pandionj.model.EntityModel;
-import pt.iscte.pandionj.model.ModelElement;
-import pt.iscte.pandionj.model.NullModel;
-import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.model.ReferenceModel;
-import pt.iscte.pandionj.model.StackFrameModel;
-import pt.iscte.pandionj.model.ValueModel;
 
-class FigureProvider extends LabelProvider implements IFigureProvider, IConnectionStyleProvider, ISelfStyleProvider {
-	private Map<ModelElement<?>, IFigure> figCache = new WeakHashMap<>();
+public class FigureProvider extends LabelProvider implements IFigureProvider, IConnectionStyleProvider, ISelfStyleProvider {
+	private Map<IObservableModel, IFigure> figCache = new WeakHashMap<>();
 
-	private StackFrameModel stackFrame;
+	private IStackFrameModel stackFrame;
 
-	public FigureProvider(StackFrameModel stackFrame) {
+	public FigureProvider(IStackFrameModel stackFrame) {
 		this.stackFrame = stackFrame;
 	}
 
@@ -65,7 +62,7 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	public IFigure getFigure(Object element) {
 		IFigure fig = figCache.get(element);
 		if(fig == null) {
-			ModelElement<?> model = (ModelElement<?>) element;
+			IObservableModel model = (IObservableModel) element;
 			//			fig = model.createFigure();
 			fig = createFigure(model);
 			figCache.put(model, fig);
@@ -73,40 +70,40 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		return fig;		
 	}
 
-	private IFigure createFigure(ModelElement<?> model) {
+	private IFigure createFigure(IObservableModel model) {
 		IFigure innerFig = null;
 
-		if(model instanceof ValueModel) {
-			ValueModel vModel = (ValueModel) model;
-			innerFig = new ValueFigure(vModel, vModel.getRole());
+		if(model instanceof IValueModel) {
+			innerFig = new ValueFigure((IValueModel) model);
 		}
-		else if(model instanceof ReferenceModel) {
-			ReferenceModel rModel = (ReferenceModel) model;
-			innerFig = new ReferenceFigure(rModel);
+		else if(model instanceof IReferenceModel) {
+			innerFig = new ReferenceFigure((IReferenceModel) model);
 		}
-		else if(model instanceof NullModel) {
-			innerFig = new NullFigure();
-		}
-		else { // entities
-			Set<String> tags = getEntityTags((EntityModel<?>) model);
+		else if(model instanceof IEntityModel) {
+			IEntityModel entity = (IEntityModel) model;
+			if(entity.isNull())
+				innerFig = new NullFigure(entity);
+			else {
+				Set<String> tags = getEntityTags(entity);
 
-			if(model instanceof ArrayModel) {
-				ArrayModel aModel = (ArrayModel) model;
-				IArrayWidgetExtension arrayExtension = ExtensionManager.getArrayExtension(aModel, tags);
-				innerFig = arrayExtension.createFigure(aModel);
-				if(innerFig == null) {
-					if(model instanceof ArrayPrimitiveModel) {
-						innerFig = new ArrayPrimitiveFigure2((ArrayPrimitiveModel) model);
-					}
-					else if(model instanceof ArrayReferenceModel) {
-						innerFig = new ArrayReferenceFigure((ArrayReferenceModel) model);
+				if(model instanceof IArrayModel) {
+					IArrayModel aModel = (IArrayModel) model;
+					IArrayWidgetExtension arrayExtension = ExtensionManager.getArrayExtension(aModel, tags);
+					innerFig = arrayExtension.createFigure(aModel);
+					if(innerFig == null) {
+						if(aModel.isPrimitive()) {
+							innerFig = new ArrayPrimitiveFigure2(aModel);
+						}
+						else {
+							innerFig = new ArrayReferenceFigure(aModel);
+						}
 					}
 				}
-			}
-			else if(model instanceof ObjectModel) {
-				ObjectModel oModel = (ObjectModel) model; 
-				IFigure extensionFigure = ExtensionManager.getObjectExtension(oModel).createFigure(oModel);
-				innerFig = new ObjectFigure(oModel, extensionFigure, true);
+				else if(model instanceof IObjectModel) {
+					IObjectModel oModel = (IObjectModel) model; 
+					IFigure extensionFigure = ExtensionManager.getObjectExtension(oModel).createFigure(oModel);
+					innerFig = new ObjectFigure(oModel, extensionFigure, true);
+				}
 			}
 		}
 		assert innerFig != null : model;
@@ -115,10 +112,9 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 	}
 
 
-	private Set<String> getEntityTags(EntityModel<?> e) {
+	private Set<String> getEntityTags(IEntityModel e) {
 		Set<String> tags = new HashSet<String>();
-		Collection<ReferenceModel> references = stackFrame.getReferencesTo(e);
-		for(ReferenceModel r : references)
+		for(IReferenceModel r : stackFrame.getReferencesTo(e))
 			tags.addAll(r.getTags());
 		return tags;
 	}
@@ -229,8 +225,8 @@ class FigureProvider extends LabelProvider implements IFigureProvider, IConnecti
 		if(tFig instanceof ArrayPrimitiveFigure2 || tFig instanceof ArrayReferenceFigure) {
 			conn.setTargetAnchor(new PositionAnchor(tFig, Position.TOPLEFT));
 		}
-		
-		
+
+
 
 		handleIllustration(connection.getSource(), sFig, connection.getDestination(), tFig, pointer.reference);
 

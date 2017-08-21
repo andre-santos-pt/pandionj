@@ -17,7 +17,6 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.PositionConstants;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Point;
@@ -28,23 +27,28 @@ import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.extensibility.Direction;
-import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.extensibility.IVariableModel.Role;
 import pt.iscte.pandionj.model.PrimitiveType;
-import pt.iscte.pandionj.model.ValueModel.Role;
 
-public class ValueFigure extends Figure {
+public class ValueFigure extends PandionJFigure<IValueModel> {
 	private ValueLabel valueLabel;
-	private IVariableModel model;
+	private IValueModel model;
 	private Figure extraFigure;
+	private GridLayout layout;
 
-	public ValueFigure(IVariableModel model, Role role) {
+	public ValueFigure(IValueModel model) {
+		super(model);
 		this.model = model;
-
-		GridLayout layout = new GridLayout(3, false);
+		Role role = model.getRole();
+		
+		layout = new GridLayout(3, false);
 		setLayoutManager(layout);
 
 		Label nameLabel = new Label(model.getName());
-		nameLabel.setToolTip(new Label(role.toString()));
+		if(role != null)
+			nameLabel.setToolTip(new Label(role.toString()));
+		
 		if(model.isInstance())
 			FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE, Style.BOLD);
 		else
@@ -62,8 +66,6 @@ public class ValueFigure extends Figure {
 			valueLabel.setForegroundColor(Constants.Colors.CONSTANT);
 			nameLabel.setForegroundColor(Constants.Colors.CONSTANT);
 		}
-
-		//			valueLabel.setBackgroundColor(ColorConstants.lightGray);
 
 		setOpaque(false); 
 		model.registerDisplayObserver(new Observer() {
@@ -122,7 +124,6 @@ public class ValueFigure extends Figure {
 			setBorder(new ArrowBorder(model.getVariableRole().getDirection()));
 		}
 	}
-
 
 	private String sumParcels() {
 		List<String> history = model.getHistory();

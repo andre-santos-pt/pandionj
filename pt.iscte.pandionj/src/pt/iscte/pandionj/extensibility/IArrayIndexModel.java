@@ -1,6 +1,6 @@
 package pt.iscte.pandionj.extensibility;
 
-public interface IArrayIndexModel extends IVariableModel {
+public interface IArrayIndexModel extends IValueModel {
 	enum BoundType {
 		OPEN, CLOSE;
 	}

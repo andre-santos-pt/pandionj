@@ -1,7 +1,5 @@
 package pt.iscte.pandionj.tests;
 
-import java.util.Collections;
-
 import org.eclipse.draw2d.ActionEvent;
 import org.eclipse.draw2d.ActionListener;
 import org.eclipse.draw2d.Border;
@@ -24,9 +22,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
-import pt.iscte.pandionj.figures.IllustrationBorder;
-
-public class Snippet {
+public class TestBOrder {
 	public static void main(String[] args) {
 		Shell shell = new Shell(new Display());
 		shell.setSize(1200, 500);

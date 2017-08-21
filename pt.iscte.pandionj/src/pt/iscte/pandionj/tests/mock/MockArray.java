@@ -1,30 +1,32 @@
 package pt.iscte.pandionj.tests.mock;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
-import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 
 public class MockArray extends DisplayUpdateObservable implements IArrayModel {
 	final String type;
-	final List<MockVariable> values;
+	final List<MockValue> values;
 	final List<MockArrayIndex> variableRoles;
 
 	public MockArray(String type, Object ... values) {
 		this.type = type;
 		this.values = new ArrayList<>();
 		for(int i = 0; i < values.length; i++) {
-			MockVariable var = new MockVariable(type, null, null, values[i]);
+			MockValue var = new MockValue(type, null, null, values[i], false);
 			this.values.add(var);
 		}
 		variableRoles = new ArrayList<>();
 	}
 
+	@Override
+	public boolean isNull() {
+		return false;
+	}
+	
 	@Override
 	public boolean isMatrix() {
 		return false;

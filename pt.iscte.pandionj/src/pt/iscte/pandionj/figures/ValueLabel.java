@@ -7,13 +7,13 @@ import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
 
 class ValueLabel extends Label {
-	IVariableModel model;
+	IValueModel model;
 	boolean dirty;
 
-	ValueLabel(IVariableModel model) {
+	ValueLabel(IValueModel model) {
 		this.model = model;
 		setOpaque(true);
 		FontManager.setFont(this, Constants.VALUE_FONT_SIZE);

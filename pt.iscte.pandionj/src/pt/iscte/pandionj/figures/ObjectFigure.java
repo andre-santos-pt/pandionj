@@ -28,36 +28,40 @@ import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
 
-public class ObjectFigure extends RoundedRectangle {
-	private IObjectModel model;
+public class ObjectFigure extends PandionJFigure<IObjectModel> {
+//	private IObjectModel model;
 	private Map<String, Label> fieldLabels;
 	private Label headerLabel;
-
+	private RoundedRectangle fig;
+	
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure, boolean addMethods) {
+		super(model);
 		assert extensionFigure != null;
-		this.model = model;
+//		this.model = model;
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;
 		layout.verticalSpacing = 0;
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 
-		setLayoutManager(layout);
-		setCornerDimensions(new Dimension(10, 10));
-		setLayoutManager(layout);
-		setBorder(new MarginBorder(Constants.OBJECT_PADDING));
-		setBackgroundColor(Constants.Colors.OBJECT);
+		fig = new RoundedRectangle();
+		fig.setLayoutManager(layout);
+		fig.setCornerDimensions(new Dimension(10, 10));
+		fig.setLayoutManager(layout);
+		fig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
+		fig.setBackgroundColor(Constants.Colors.OBJECT);
 
 
 		fieldLabels = new HashMap<String, Label>();
-		add(extensionFigure);
+		fig.add(extensionFigure);
 
-		setToolTip(new Label(model.getTypeName()));
+		fig.setToolTip(new Label(model.getTypeName()));
 
 		if(addMethods)
 			addMethods(model);
 
-		setPreferredSize(getPreferredSize().expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
+		add(fig);
+//		setPreferredSize(fig.getPreferredSize().expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
 	}
 
 
@@ -162,7 +166,7 @@ public class ObjectFigure extends RoundedRectangle {
 				}
 			});
 			methodFig.add(but);
-			add(methodFig);
+			fig.add(methodFig);
 		}
 	}
 

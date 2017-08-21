@@ -1,31 +1,26 @@
 package pt.iscte.pandionj.tests.mock;
 
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public class MockVariable extends DisplayUpdateObservable implements IVariableModel {
+public class MockValue extends DisplayUpdateObservable implements IValueModel {
 	final String type;
 	final String name;
-	final VariableInfo role;
-	final List<String> tags;
+	final Role role;
 	Object value;
+	final boolean isStatic;
 
-
-	public MockVariable(String type, String name, VariableInfo role, Object value, String ... tags) {
+	public MockValue(String type, String name, Role role, Object value, boolean isStatic) {
 		this.type = type;
 		this.name = name;
 		this.role = role;
 		this.value = value;
-		this.tags = new ArrayList<>();
-		for(String t : tags)
-			this.tags.add(t);
+		this.isStatic = isStatic;
 	}
 
 	@Override
@@ -62,16 +57,22 @@ public class MockVariable extends DisplayUpdateObservable implements IVariableMo
 	}
 	@Override
 	public VariableInfo getVariableRole() {
-		return role;
-	}
-	@Override
-	public Collection<String> getTags() {
-		return Collections.unmodifiableCollection(tags);
+		return null;
 	}
 
 	public void set(Object o) {
 		value = o;
 		setChanged();
 		notifyObservers();
+	}
+
+	@Override
+	public Role getRole() {
+		return role;
+	}
+
+	@Override
+	public boolean isStatic() {
+		return isStatic;
 	}
 }

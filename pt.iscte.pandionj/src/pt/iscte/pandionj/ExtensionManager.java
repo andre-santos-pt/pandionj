@@ -34,8 +34,6 @@ import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.figures.NullFigure;
-import pt.iscte.pandionj.model.ArrayModel;
-import pt.iscte.pandionj.model.ObjectModel;
 
 public class ExtensionManager {
 
@@ -59,7 +57,7 @@ public class ExtensionManager {
 	
 	
 	// TODO composite extension? (as TagExtension?)
-	public static IArrayWidgetExtension getArrayExtension(ArrayModel m, Set<String> tags) {
+	public static IArrayWidgetExtension getArrayExtension(IArrayModel m, Set<String> tags) {
 		for (String tag : tags) {
 			IArrayWidgetExtension ext = arrayExtensions.get(tag);
 			if(ext != null && ext.accept(m))
@@ -69,7 +67,7 @@ public class ExtensionManager {
 	}
 
 
-	public static IObjectWidgetExtension getObjectExtension(ObjectModel m) {
+	public static IObjectWidgetExtension getObjectExtension(IObjectModel m) {
 		if(m.hasAttributeTags())
 			return new TagExtension(m.getAttributeTags());
 		
@@ -129,7 +127,7 @@ public class ExtensionManager {
 				IArrayWidgetExtension ext = arrayExtensions.get(tag);
 				if(ext != null) {
 					IArrayModel array = m.getArray(attName);
-					IFigure f = array == null ? new NullFigure() : ext.createFigure(array);
+					IFigure f = array == null ? new NullFigure(null) : ext.createFigure(array);
 					f.setToolTip(new Label(attName));
 					figs.put(attName, f);
 					compositeFig.add(f);

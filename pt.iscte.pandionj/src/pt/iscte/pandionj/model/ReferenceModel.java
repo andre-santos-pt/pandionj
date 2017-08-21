@@ -6,13 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
@@ -20,14 +14,15 @@ import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
+import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
 import pt.iscte.pandionj.parser.BlockInfo;
 import pt.iscte.pandionj.parser.VariableInfo;
-import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
 
-public class ReferenceModel extends VariableModel<IJavaObject> {
+public class ReferenceModel extends VariableModel<IJavaObject> implements IReferenceModel {
 	private NullModel nullModel;
 	private boolean isPrimitiveArray;
 	private Collection<String> tags;
@@ -42,10 +37,10 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 		init(variable);
 	}
 
-	ReferenceModel(IJavaVariable var, boolean isInstance, VariableInfo info, RuntimeModel runtime) {
-		super(var, isInstance, runtime);
+	ReferenceModel(IJavaVariable variable, boolean isInstance, VariableInfo info, RuntimeModel runtime) {
+		super(variable, isInstance, runtime);
 		this.info = info;
-		init(var);
+		init(variable);
 	}
 
 	private void init(IJavaVariable var) {
@@ -118,9 +113,9 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 		
 		List<IArrayIndexModel> list = new ArrayList<>(3);
 		for (String indexVar : info.getArrayAccessVariables()) {
-			VariableModel<?> vi = stackFrame.getVariable(indexVar);
-			if(vi != null && !vi.getVariableRole().isFixedValue()) {
-				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vi, this);
+			IVariableModel vi = stackFrame.getStackVariable(indexVar);
+			if(vi instanceof IValueModel && !vi.getVariableRole().isFixedValue()) {
+				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel((IValueModel) vi, this);
 				IBound bound = vi.getVariableRole().getBound();
 				if(bound != null && bound.getType() != null) {
 					ArrayIndexBound iBound = new ArrayIndexBound(bound.getExpression(), bound.getType(), getRuntimeModel() );
@@ -137,9 +132,9 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 		List<IArrayIndexModel> list = new ArrayList<>(3);
 		
 		for (String indexVar : info.getArrayAccessVariables()) {
-			VariableModel<?> vi = stackFrame.getVariable(indexVar);
-			if(vi != null && vi.getVariableRole().isFixedValue()) {
-				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel(vi, this);
+			IVariableModel vi = stackFrame.getStackVariable(indexVar);
+			if(vi instanceof IValueModel && vi.getVariableRole().isFixedValue()) {
+				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel((IValueModel) vi, this);
 				list.add(indexModel);
 			}
 		}
@@ -148,14 +143,21 @@ public class ReferenceModel extends VariableModel<IJavaObject> {
 			@Override
 			public void visit(VariableInfo var) {
 				if(var.getArrayFixedVariables().contains(getName()) && info.getDeclarationBlock().getVariable(var.getName()) == var) {
-					VariableModel<?> vi = stackFrame.getVariable(var.getName());
-					if(vi != null)
-						list.add(new ArrayIndexVariableModel(vi, ReferenceModel.this));
+					IVariableModel vi = stackFrame.getStackVariable(var.getName());
+					if(vi instanceof IValueModel)
+						list.add(new ArrayIndexVariableModel((IValueModel) vi, ReferenceModel.this));
 				}
 			}
 		});
 		return list;
 	}
+
+	@Override
+	public Role getRole() {
+		return null;
+	}
+
+	
 	
 	
 	

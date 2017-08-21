@@ -1,0 +1,31 @@
+package pt.iscte.pandionj.figures;
+
+import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
+
+import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.GridLayout;
+import org.eclipse.draw2d.MarginBorder;
+
+import pt.iscte.pandionj.extensibility.IObservableModel;
+
+public class PandionJFigure<T extends IObservableModel> extends Figure {
+	protected final T model;
+	
+	public PandionJFigure(T model) {
+		assert model != null;
+		this.model = model;
+		setBorder(new MarginBorder(OBJECT_PADDING));
+		setLayoutManager(new GridLayout());
+	}
+	
+	public T getModel() {
+		return model;
+	}
+	
+//	@Override
+//	public Dimension getPreferredSize(int wHint, int hHint) {
+//		return super.getPreferredSize(wHint, hHint).getExpanded(OBJECT_PADDING*2, OBJECT_PADDING*2);
+//	}
+	
+	
+}

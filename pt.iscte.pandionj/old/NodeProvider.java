@@ -10,6 +10,9 @@ import java.util.Map.Entry;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.zest.core.viewers.IGraphEntityRelationshipContentProvider;
 
+import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObservableModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.ArrayReferenceModel;
 import pt.iscte.pandionj.model.EntityModel;
 import pt.iscte.pandionj.model.ModelElement;
@@ -18,7 +21,6 @@ import pt.iscte.pandionj.model.ObjectModel;
 import pt.iscte.pandionj.model.ReferenceModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 import pt.iscte.pandionj.model.ValueModel;
-import pt.iscte.pandionj.model.ValueModel.Role;
 import pt.iscte.pandionj.model.VariableModel;
 
 class NodeProvider implements IGraphEntityRelationshipContentProvider {
@@ -41,14 +43,14 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 		if(model == null)
 			return EMPTY;
 		
-		List<ModelElement<?>> elements = getElementsInternal(model.getInstanceVariables());
+		List<IObservableModel> elements = getElementsInternal(model.getInstanceVariables());
 		elements.addAll(model.getRuntime().getLooseObjects());
 		return elements.toArray();
 	}
 
-	static List<ModelElement<?>> getElementsInternal(Collection<VariableModel<?>> variables) {
-		List<ModelElement<?>> elements = new ArrayList<>(variables);
-		Iterator<ModelElement<?>> it = elements.iterator();
+	static List<IObservableModel> getElementsInternal(Collection<IVariableModel> variables) {
+		List<IObservableModel> elements = new ArrayList<>(variables);
+		Iterator<IObservableModel> it = elements.iterator();
 		while(it.hasNext()) {
 			VariableModel<?> v = (VariableModel<?>) it.next();
 			if(v instanceof ValueModel && ((ValueModel) v).getRole().isArrayAccessor())
@@ -58,7 +60,7 @@ class NodeProvider implements IGraphEntityRelationshipContentProvider {
 		for(ModelElement<?> e : elements.toArray(new ModelElement[elements.size()])) {
 			if(e instanceof ReferenceModel) {
 				ReferenceModel r = (ReferenceModel) e;
-				EntityModel<?> t = r.getModelTarget();
+				IEntityModel t = r.getModelTarget();
 				if(t instanceof ObjectModel && r.getTags().isEmpty()) {
 					((ObjectModel) t).traverseSiblings((o,p,i,d,f) -> elements.add(o), true);
 				}

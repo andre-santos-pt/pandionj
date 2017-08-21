@@ -24,7 +24,7 @@ import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
-import pt.iscte.pandionj.model.ReferenceModel;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
 
 public class IllustrationBorder implements Border {
 
@@ -47,7 +47,7 @@ public class IllustrationBorder implements Border {
 //	private final Dimension POSITION_DIM;
 
 
-	public IllustrationBorder(ReferenceModel ref, ArrayPrimitiveFigure2 arrayFigure) {
+	public IllustrationBorder(IReferenceModel ref, ArrayPrimitiveFigure2 arrayFigure) {
 		this.arrayFigure = arrayFigure;
 		N = arrayFigure.getNumberOfPositions();
 		leftBoundVisible = true;

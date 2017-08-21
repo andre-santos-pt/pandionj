@@ -9,9 +9,8 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
-import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 
-public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArrayModel {
+public abstract class ArrayModel<T> extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 	private IJavaValue[] elements;
 	private int dimensions;
@@ -168,6 +167,11 @@ public abstract class ArrayModel extends EntityModel<IJavaArray> implements IArr
 		return componentType;
 	}
 
+	@Override
+	public boolean isNull() {
+		return false;
+	}
+	
 	static String getComponentType(IJavaArray array) {
 		try {
 			IJavaType t = array.getJavaType();

@@ -2,7 +2,11 @@ package pt.iscte.pandionj.extensibility;
 
 import java.util.List;
 
-public interface IObjectModel extends IObservableModel {
+import org.eclipse.jdt.core.IType;
+
+import com.google.common.collect.Multimap;
+
+public interface IObjectModel extends IEntityModel {
 	String getTypeName();
 	IArrayModel getArray(String fieldName);
 	String getStringValue();
@@ -23,5 +27,8 @@ public interface IObjectModel extends IObservableModel {
 	
 	
 	List<IVisibleMethod> getVisibleMethods();
+	boolean hasAttributeTags();
+	Multimap<String, String> getAttributeTags();
+	IType getType();
 	
 }

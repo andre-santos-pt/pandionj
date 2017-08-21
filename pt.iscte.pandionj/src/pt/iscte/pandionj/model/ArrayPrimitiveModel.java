@@ -7,8 +7,10 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import pt.iscte.pandionj.extensibility.IValueModel;
 
-public class ArrayPrimitiveModel extends ArrayModel {
+
+public class ArrayPrimitiveModel extends ArrayModel<IValueModel> {
 
 	private List<ValueModel> values;
 	

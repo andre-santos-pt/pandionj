@@ -1,6 +1,5 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
 import static pt.iscte.pandionj.Constants.getOneColGridLayout;
 import static pt.iscte.pandionj.Constants.Colors.OBJECT;
 
@@ -18,7 +17,6 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
@@ -26,23 +24,23 @@ import org.eclipse.swt.SWT;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.model.ArrayIndexVariableModel;
 
 //TODO limit size (to Constants.ARRAY_LENGTH_LIMIT)
-public class ArrayReferenceFigure extends RoundedRectangle {
+public class ArrayReferenceFigure extends PandionJFigure<IArrayModel<IReferenceModel>> {
 	private final int N;
 	private int lowerOffSet;
 	private List<Position> positions;
 	private Map<String, ArrayIndexVariableModel> vars;
 
 	private GridLayout layout;
-	private IArrayModel model;
 
 	private Figure positionsFig;
 
 	
-	public ArrayReferenceFigure(IArrayModel model) {
-		this.model = model;
+	public ArrayReferenceFigure(IArrayModel<IReferenceModel> model) {
+		super(model);
 		N = model.getLength();
 		lowerOffSet = 0;
 
@@ -56,7 +54,7 @@ public class ArrayReferenceFigure extends RoundedRectangle {
 		layout2.horizontalSpacing = Constants.ARRAY_POSITION_SPACING;
 		layout2.marginWidth = 0;
 		
-		setCornerDimensions(OBJECT_CORNER);
+//		setCornerDimensions(OBJECT_CORNER);
 		setBackgroundColor(OBJECT);
 		setOpaque(false);
 		

@@ -22,4 +22,9 @@ public class NullModel extends EntityModel<IJavaObject> {
 	public void setStep(int step) {
 
 	}
+	
+	@Override
+	public boolean isNull() {
+		return true;
+	}
 }

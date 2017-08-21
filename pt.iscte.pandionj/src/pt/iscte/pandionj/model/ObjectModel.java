@@ -46,6 +46,7 @@ import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
@@ -127,6 +128,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	public String getTypeName() {
 		return jType.getFullyQualifiedName();
+	}
+	
+	@Override
+	public boolean isNull() {
+		return false;
 	}
 	
 	public boolean includeMethod(IMethod method) {
@@ -528,7 +534,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
-		Collection<ReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
+		Collection<IReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
 		if(!referencesTo.isEmpty()) {
 			String exp = referencesTo.iterator().next().getName() + "." + methodName + "(" + String.join(", ", args) + ")";
 			

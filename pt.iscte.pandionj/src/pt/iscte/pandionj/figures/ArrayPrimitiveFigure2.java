@@ -15,19 +15,17 @@ import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.RoundedRectangle;
-import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
-import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.IValueModel;
 
-public class ArrayPrimitiveFigure2 extends Figure{
+public class ArrayPrimitiveFigure2 extends PandionJFigure<IArrayModel<IValueModel>> {
 	private static final GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
-	private final IArrayModel model; // array being displayed
+//	private final IArrayModel<IValueModel> model; // array being displayed
 	private final int N; // array length
 	private List<Position> positions; // existing array positions
 
@@ -37,8 +35,9 @@ public class ArrayPrimitiveFigure2 extends Figure{
 
 	private GridData positionLayout;
 	
-	public ArrayPrimitiveFigure2(IArrayModel model) {
-		this.model = model;
+	public ArrayPrimitiveFigure2(IArrayModel<IValueModel> model) {
+		super(model);
+//		this.model = model;
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
 		positions = new ArrayList<>(N+1);
 
@@ -122,14 +121,14 @@ public class ArrayPrimitiveFigure2 extends Figure{
 
 			if(index != null) {
 				int last = Math.min(index, Constants.ARRAY_LENGTH_LIMIT-1);
-				IVariableModel m = model.getElementModel(last); 
+				IValueModel m = model.getElementModel(last); 
 				valueLabel = new ValueLabel(m);
 				layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
 				add(valueLabel);
 			}else {
 				Label emptyLabel = new Label("...");
 				FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
-				IVariableModel measure = model.getElementModel(0);
+				IValueModel measure = model.getElementModel(0);
 				setSize(measure.isDecimal() || measure.isBoolean() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
 				layout.setConstraint(emptyLabel, new GridData(width, POSITION_WIDTH));
 				add(emptyLabel);

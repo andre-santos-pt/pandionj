@@ -2,16 +2,12 @@ package pt.iscte.pandionj.extensibility;
 
 
 import java.net.URL;
-import java.util.Collection;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.IExpressionManager;
-import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
@@ -27,9 +23,6 @@ import org.osgi.framework.Bundle;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.PandionJView;
-import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
-import pt.iscte.pandionj.model.ReferenceModel;
-import pt.iscte.pandionj.model.StackFrameModel;
 
 public interface PandionJUI {
 

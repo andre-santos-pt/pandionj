@@ -65,7 +65,7 @@ public interface Constants {
 
 		Color VIEW_BACKGROUND = ColorConstants.white;
 		Color ERROR = ColorConstants.red;
-		Color OBSOLETE = new Color(Display.getDefault(), 150, 150, 150);
+		Color OBSOLETE = new Color(Display.getDefault(), 200, 200, 200);
 		
 		Color[] ROLE_VARS = { ColorConstants.darkBlue, ColorConstants.darkGreen, ColorConstants.orange};
 		Color CONSTANT = new Color(null, 160, 160, 160);
@@ -79,7 +79,6 @@ public interface Constants {
 	interface Messages {
 		String START = "This view will be populated once the execution of the Java debugger hits a breakpoint.";
 		String TRASH = "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.";
-
 	}
 	
 

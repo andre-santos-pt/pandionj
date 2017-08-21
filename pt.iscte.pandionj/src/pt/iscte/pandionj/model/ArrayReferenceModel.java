@@ -9,12 +9,12 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.parser.BlockInfo;
 import pt.iscte.pandionj.parser.VariableInfo;
-import pt.iscte.pandionj.parser.VariableOperation;
 
 
-public class ArrayReferenceModel extends ArrayModel {
+public class ArrayReferenceModel extends ArrayModel<IReferenceModel> { // TODO T
 	private List<ReferenceModel> references;
 
 	public ArrayReferenceModel(IJavaArray array, RuntimeModel runtime) {
@@ -69,7 +69,7 @@ public class ArrayReferenceModel extends ArrayModel {
 	}
 
 	@Override
-	public VariableModel<?> getElementModel(int index) {
+	public IReferenceModel getElementModel(int index) {
 		assert index >= 0 && index < references.size();
 		return references.get(index);
 	}
