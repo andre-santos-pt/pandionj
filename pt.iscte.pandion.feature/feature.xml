@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <feature
-      id="pt.iscte.pandion.feature"
+      id="pt.iscte.pandionj.feature"
       label="PandionJ"
       version="0.1">
 
@@ -16,6 +16,24 @@
       [Enter License Description here.]
    </license>
 
+   <requires>
+      <import plugin="org.eclipse.ui"/>
+      <import plugin="org.eclipse.core.runtime"/>
+      <import plugin="org.eclipse.jdt.core" version="3.10.0" match="greaterOrEqual"/>
+      <import plugin="com.google.guava" version="15.0.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.debug.ui" version="3.11.201" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jdt.debug" version="3.10.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.ide" version="3.12.1" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.jdt.launching" version="3.8.100" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui.workbench.texteditor"/>
+      <import plugin="org.eclipse.text"/>
+      <import plugin="org.eclipse.draw2d" version="3.10.100" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.ui" version="3.108.0" match="greaterOrEqual"/>
+      <import plugin="org.eclipse.debug.core"/>
+      <import plugin="org.eclipse.jface.text" version="3.11.1" match="greaterOrEqual"/>
+      <import plugin="pt.iscte.pandionj" version="0.1.0" match="greaterOrEqual"/>
+   </requires>
+
    <plugin
          id="pt.iscte.pandionj"
          download-size="0"
@@ -28,19 +46,5 @@
          download-size="0"
          install-size="0"
          version="0.0.0"/>
-
-   <plugin
-         id="org.eclipse.zest.core"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.eclipse.zest.layouts"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
 
 </feature>

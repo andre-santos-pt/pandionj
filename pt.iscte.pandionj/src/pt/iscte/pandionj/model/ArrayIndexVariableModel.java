@@ -2,6 +2,8 @@ package pt.iscte.pandionj.model;
 
 import java.util.List;
 
+import org.eclipse.jdt.debug.core.IJavaVariable;
+
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
@@ -10,7 +12,10 @@ import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public class ArrayIndexVariableModel extends DisplayUpdateObservable implements IArrayIndexModel {
+public class ArrayIndexVariableModel
+extends DisplayUpdateObservable<Object> 
+implements IArrayIndexModel {
+
 	private final IValueModel model;
 	private final IReferenceModel arrayRef;
 	
@@ -110,10 +115,10 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 		return model.isInstance();
 	}
 
-	@Override
-	public boolean isWithinScope() {
-		return model.isWithinScope();
-	}
+//	@Override
+//	public boolean isWithinScope() {
+//		return model.isWithinScope();
+//	}
 
 	@Override
 	public VariableInfo getVariableRole() {
@@ -133,5 +138,25 @@ public class ArrayIndexVariableModel extends DisplayUpdateObservable implements 
 	@Override
 	public boolean isStatic() {
 		return model.isStatic();
+	}
+
+	@Override
+	public void setOutOfScope() {
+		model.setOutOfScope();
+	}
+
+	@Override
+	public boolean update(int step) {
+		return model.update(step);
+	}
+
+	@Override
+	public IJavaVariable getJavaVariable() {
+		return model.getJavaVariable();
+	}
+
+	@Override
+	public void setStep(int stepPointer) {
+		model.setStep(stepPointer);
 	}
 }

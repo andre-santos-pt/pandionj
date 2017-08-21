@@ -27,6 +27,7 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure2;
+import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.tests.mock.MockArray;
 import pt.iscte.pandionj.tests.mock.MockArrayIndex;
 import pt.iscte.pandionj.tests.mock.MockReference;
@@ -69,7 +70,7 @@ public class TestFigure {
 
 	private static void createDiagram(IFigure root) {
 		// Array com iteradores
-		MockArray array = new MockArray("int", 1,2,3,4,5);
+		MockArray array = new MockArray("Integer", 1,2,3,4,5);
 		//		MockVariable var = new MockVariable("int[]", "v", null, array);
 		MockReference ref = new MockReference("int[]", "v", array, false);
 		
@@ -88,7 +89,7 @@ public class TestFigure {
 		vars.add(ii1);
 		vars.add(ii2);
 
-		ArrayPrimitiveFigure2 fig = new ArrayPrimitiveFigure2(array);
+		ArrayReferenceFigure fig = new ArrayReferenceFigure(array);
 		fig.setLocation(new Point(100, 100));
 
 		root.add(fig);

@@ -9,7 +9,7 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.extensibility.IVariableModel;
 
-public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T> implements IVariableModel {
+public abstract class VariableModel<T extends IJavaValue, O> extends ModelElement<T,O> implements IVariableModel<O> {
 
 	protected final IJavaVariable variable;
 	private StackFrameModel stackFrame;  // optional (if owned by variable)
@@ -78,12 +78,12 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 		return stackFrame;
 	}
 
-	public boolean isWithinScope() {
-		if(stackFrame == null)
-			return true;
-		else
-			return stepInit <= stackFrame.getStepPointer() && stackFrame.getStepPointer() <= scopeEnd;
-	}
+//	public boolean isWithinScope() {
+//		if(stackFrame == null)
+//			return true;
+//		else
+//			return stepInit <= stackFrame.getStepPointer() && stackFrame.getStepPointer() <= scopeEnd;
+//	}
 	
 	public void setOutOfScope() {
 		this.scopeEnd = getRuntimeModel().getRunningStep();
@@ -169,5 +169,8 @@ public abstract class VariableModel<T extends IJavaValue> extends ModelElement<T
 		return hist;
 	}
 	
-	
+	@Override
+	public IJavaVariable getJavaVariable() {
+		return variable;
+	}
 }

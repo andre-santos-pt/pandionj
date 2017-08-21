@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 import org.eclipse.draw2d.ColorConstants;
@@ -34,6 +32,8 @@ import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.figures.NullFigure;
+import pt.iscte.pandionj.tests.Observable2;
+import pt.iscte.pandionj.tests.Observer2;
 
 public class ExtensionManager {
 
@@ -98,9 +98,9 @@ public class ExtensionManager {
 		@Override
 		public IFigure createFigure(IObjectModel m) {
 			// TODO observe ref change
-			m.registerDisplayObserver(new Observer() {
+			m.registerDisplayObserver(new Observer2() {
 				@Override
-				public void update(Observable o, Object arg) {
+				public void update(Observable2 o, Object arg) {
 					String attName = (String) arg;
 					if(figs.containsKey(attName)) {
 						for (IFigure f : figs.get(attName))

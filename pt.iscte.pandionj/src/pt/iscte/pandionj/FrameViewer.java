@@ -2,8 +2,6 @@ package pt.iscte.pandionj;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.function.Predicate;
 
 import org.eclipse.draw2d.ChopboxAnchor;
@@ -14,6 +12,7 @@ import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
+import org.eclipse.draw2d.ScalableLayeredPane;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -28,21 +27,26 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
+import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObservableModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure2;
+import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.figures.PandionJFigure;
-import pt.iscte.pandionj.model.StackFrameModel.StackEvent;
+import pt.iscte.pandionj.figures.PositionAnchor;
+import pt.iscte.pandionj.tests.Observable2;
+import pt.iscte.pandionj.tests.Observer2;
 
 public class FrameViewer extends Composite {
 	private static final int GAP = 150;
 	
 	private FigureProvider2 figProvider;
-	private IFigure rootFigure;
+	private ScalableLayeredPane pane;
 	private LightweightSystem lws;
 	private int y;
 	private XYLayout xyLayout;
@@ -61,7 +65,7 @@ public class FrameViewer extends Composite {
 		parent.addListener(SWT.Resize, new Listener() {
 			@Override
 			public void handleEvent(Event event) {
-				Dimension dim = rootFigure.getPreferredSize();
+				Dimension dim = pane.getPreferredSize();
 				scroll.setMinWidth(dim.width);
 				scroll.setMinHeight(dim.height);
 			}
@@ -73,43 +77,27 @@ public class FrameViewer extends Composite {
 		canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
 		scroll.setContent(canvas);
 
-		rootFigure = new Figure();
+		pane = new ScalableLayeredPane();
 		xyLayout = new XYLayout();
-		rootFigure.setLayoutManager(xyLayout);
-		rootFigure.setSize(400, 400);
+		pane.setLayoutManager(xyLayout);
 		lws = new LightweightSystem(canvas);
-		lws.setContents(rootFigure);
+		lws.setContents(pane);
 
+		pane.setScale(1.2);
+		
+		
 		y = Constants.MARGIN;
 	}
 
-//	private class Area extends Figure {
-//
-//		@Override
-//		public Dimension getPreferredSize(int wHint, int hHint) {
-//			int maxW = Constants.MARGIN;
-//			int maxH = Constants.MARGIN;
-//
-//			for (Object object : getChildren()) {
-//				Rectangle r = ((IFigure) object).getBounds();
-//				if(r.x > maxW)
-//					maxW = r.x;
-//				if(r.y > maxH)
-//					maxH = r.y;
-//			}
-//			return xyLayout.getPreferredSize(rootFigure, wHint, hHint);
-//			//			return xyLayout.getPreferredSize(rootFigure, SWT.DEFAULT, SWT.DEFAULT).getExpanded(Constants.MARGIN*2, Constants.MARGIN);
-//		}
-//	}
-
-
 
 	public void setModel(IStackFrameModel frame, Predicate<IVariableModel> accept) {
-		for(Object child : new ArrayList<>(rootFigure.getChildren()))
-			rootFigure.remove((IFigure) child);
+		for(Object child : new ArrayList<>(pane.getChildren()))
+			pane.remove((IFigure) child);
 
-		rootFigure.repaint();
-
+//		rootFigure.repaint();
+		xyLayout.setConstraint(pane, new GridData(GAP, GAP));
+		xyLayout.layout(pane);
+		
 		y = Constants.MARGIN;
 
 		figProvider = new FigureProvider2(frame);
@@ -123,9 +111,9 @@ public class FrameViewer extends Composite {
 	}
 
 	private void addFrameObserver(IStackFrameModel frame, Predicate<IVariableModel> accept) {
-		frame.registerDisplayObserver(new Observer() {
+		frame.registerDisplayObserver(new Observer2<StackEvent>() {
 			@Override
-			public void update(Observable o, Object arg) {
+			public void update(Observable2<StackEvent> o, StackEvent arg) {
 				StackEvent event = (StackEvent) arg;
 
 				if(event != null) {
@@ -135,7 +123,7 @@ public class FrameViewer extends Composite {
 					else if(event.type == StackEvent.Type.VARIABLE_OUT_OF_SCOPE) {
 						PandionJFigure<?> toRemove = null; 
 
-						for (Object object : rootFigure.getChildren()) {
+						for (Object object : pane.getChildren()) {
 							if(object instanceof PandionJFigure) {
 								IObservableModel model = ((PandionJFigure<?>) object).getModel();
 								if(event.variable == model)
@@ -145,9 +133,9 @@ public class FrameViewer extends Composite {
 						if(toRemove != null) {
 							Rectangle rect = (Rectangle) xyLayout.getConstraint(toRemove);
 							int diff = rect.height + Constants.OBJECT_PADDING;
-							rootFigure.remove(toRemove);
+							pane.remove(toRemove);
 							y -= diff;
-							for (Object object : rootFigure.getChildren()) {
+							for (Object object : pane.getChildren()) {
 								if(object instanceof PandionJFigure) {
 									Rectangle r = (Rectangle) xyLayout.getConstraint((IFigure)object);
 									if(r.y > rect.y) {
@@ -161,7 +149,7 @@ public class FrameViewer extends Composite {
 					
 					for (IVariableModel v : frame.getStackVariables()) {
 						if(accept.test(v) && v instanceof IReferenceModel && ((IReferenceModel) v).hasIndexVars()) {
-							for (Object object : rootFigure.getChildren()) {
+							for (Object object : pane.getChildren()) {
 								if(object instanceof PandionJFigure) {
 									IObservableModel model = ((PandionJFigure<?>) object).getModel();
 									if(((IReferenceModel) v).getModelTarget() == model)
@@ -189,16 +177,21 @@ public class FrameViewer extends Composite {
 	}
 	
 	private void updateSize() {
-		Dimension dim = rootFigure.getPreferredSize();
-		setLayoutData(new GridData(dim.width, dim.height));
-		xyLayout.layout(rootFigure);
-//		requestLayout();
+		GridData prevData = (GridData) getLayoutData();
+		if(prevData == null)
+			prevData = new GridData(GAP, GAP);
+		Dimension dim = pane.getPreferredSize().expand(Constants.MARGIN, Constants.MARGIN);
+		setLayoutData(new GridData(
+				Math.max(prevData.widthHint, dim.width), 
+				Math.max(prevData.heightHint, dim.height)));
+//		System.out.println("PREF " + dim);
+		xyLayout.layout(pane);
 	}
 
 	private void add(IVariableModel v) {
 		PandionJFigure<?> figure = figProvider.getFigure(v);
 		figure.setLocation(new Point(Constants.MARGIN, y));
-		rootFigure.add(figure);
+		pane.add(figure);
 		xyLayout.setConstraint(figure, new Rectangle(new Point(Constants.MARGIN, y), figure.getPreferredSize()));
 		int h = figure.getPreferredSize().height;
 
@@ -206,37 +199,20 @@ public class FrameViewer extends Composite {
 			IReferenceModel ref = (IReferenceModel) v;
 			IEntityModel target = ref.getModelTarget();
 			PandionJFigure<?> targetFig = figProvider.getFigure(target);
-			addEntityFigure(ref, figure, targetFig, new Point(GAP, figure.getLocation().y));
-			PolylineConnection pointer = new PolylineConnection();
-			pointer.setSourceAnchor(new ChopboxAnchor(figure));
-			pointer.setTargetAnchor(new ChopboxAnchor(targetFig));
-			if(target.isNull())
-				addNullDecoration(pointer);
-			else
-				addArrowDecoration(pointer);
-			
-			rootFigure.add(pointer);
+			addEntityFigure(ref, targetFig, new Point(GAP, figure.getLocation().y));
+			addPointer(figure, ref, target, targetFig);
 
-			v.registerDisplayObserver(new Observer() {
-
-				@Override
-				public void update(Observable o, Object arg) {
-					IEntityModel target = ref.getModelTarget();
-					PandionJFigure<?> targetFig = figProvider.getFigure(target);
-					if(!containsChild(rootFigure, targetFig)) {
-						addEntityFigure(ref, figure, targetFig, new Point(GAP, y));
-						y += targetFig.getPreferredSize().height + Constants.OBJECT_PADDING;
-						updateSize();
-					}
-					
-					pointer.setTargetAnchor(new ChopboxAnchor(targetFig));
-					if(target.isNull())
-						addNullDecoration(pointer);
-					else
-						addArrowDecoration(pointer);
+			if(target instanceof IArrayModel && ((IArrayModel<?>) target).isReferenceType() && targetFig instanceof ArrayReferenceFigure) {
+				IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
+				for(int i = 0; i < a.getLength(); i++) {
+					IReferenceModel e = a.getElementModel(i);
+					IEntityModel eTarget = e.getModelTarget();
+					PandionJFigure<?> eTargetFig = figProvider.getFigure(eTarget);
+					addEntityFigure(e, eTargetFig, new Point(GAP*2, figure.getLocation().y * (i+1)));
+					addPointer2D((ArrayReferenceFigure) targetFig, e, i, eTarget, eTargetFig);
 				}
-			});
-
+			}
+			
 			int th = targetFig.getPreferredSize().height;
 			if(th > h)
 				h = th;
@@ -253,8 +229,54 @@ public class FrameViewer extends Composite {
 		y += h + Constants.OBJECT_PADDING;
 	}
 
-	private void addEntityFigure(IReferenceModel ref, PandionJFigure<?> figure, PandionJFigure<?> targetFig, Point location) {
-		rootFigure.add(targetFig);
+	private void addPointer(PandionJFigure<?> figure, IReferenceModel ref, IEntityModel target,
+			PandionJFigure<?> targetFig) {
+		PolylineConnection pointer = new PolylineConnection();
+		pointer.setSourceAnchor(new ChopboxAnchor(figure));
+		pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
+		setPointerDecoration(target, pointer);
+		addPointerObserver(ref, pointer);
+		pane.add(pointer);
+	}
+
+	private void addPointer2D(ArrayReferenceFigure figure, IReferenceModel ref, int index, IEntityModel target,
+			PandionJFigure<?> targetFig) {
+		PolylineConnection pointer = new PolylineConnection();
+		pointer.setSourceAnchor(figure.getAnchor(index));
+		pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
+		setPointerDecoration(target, pointer);
+		addPointerObserver(ref, pointer);
+		pane.add(pointer);
+	}
+
+	
+	private void setPointerDecoration(IEntityModel target, PolylineConnection pointer) {
+		if(target.isNull())
+			addNullDecoration(pointer);
+		else
+			addArrowDecoration(pointer);
+	}
+
+	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
+		ref.registerDisplayObserver(new Observer2<IEntityModel>() {
+			@Override
+			public void update(Observable2<IEntityModel> o, IEntityModel arg) {
+				IEntityModel target = ref.getModelTarget();
+				PandionJFigure<?> targetFig = figProvider.getFigure(target);
+				if(!containsChild(pane, targetFig)) {
+					addEntityFigure(ref, targetFig, new Point(GAP, y));
+					y += targetFig.getPreferredSize().height + Constants.OBJECT_PADDING;
+					updateSize();
+				}
+				
+				pointer.setTargetAnchor(new ChopboxAnchor(targetFig));
+				setPointerDecoration(target, pointer);
+			}
+		});
+	}
+
+	private void addEntityFigure(IReferenceModel ref, PandionJFigure<?> targetFig, Point location) {
+		pane.add(targetFig);
 		handleIllustration(ref, targetFig);
 		xyLayout.setConstraint(targetFig, new Rectangle(location, targetFig.getPreferredSize()));
 	}

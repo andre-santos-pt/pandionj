@@ -1,8 +1,10 @@
 package pt.iscte.pandionj.extensibility;
 
+import org.eclipse.jdt.debug.core.IJavaVariable;
+
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public interface IVariableModel extends IObservableModel {
+public interface IVariableModel<O> extends IObservableModel<O> {
 	public enum Role {
 		FIXED_VALUE {
 			public String toString() { return "Fixed Value";}
@@ -37,11 +39,15 @@ public interface IVariableModel extends IObservableModel {
 	
 	boolean isInstance();
 
-	boolean isWithinScope();
+//	boolean isWithinScope();
 	
 	Role getRole();
 	
 	VariableInfo getVariableRole();
 	
 	boolean isStatic();
+	void setOutOfScope();
+	boolean update(int step);
+	IJavaVariable getJavaVariable();
+	void setStep(int stepPointer);
 }

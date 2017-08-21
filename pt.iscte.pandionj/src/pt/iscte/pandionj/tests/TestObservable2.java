@@ -7,15 +7,13 @@ public class TestObservable2 {
 	}
 	
 	static class A extends Observable2<String> {
-
-
 		void set() {
 			setChanged();
 			notifyObservers("?");
 		}
 	}
 
-	static class B implements Observable<Integer>{
+	static class B {
 		Observable2<Integer> obs = new Observable2<>(); 
 
 		void set() {

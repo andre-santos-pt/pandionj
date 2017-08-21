@@ -1,9 +1,9 @@
 package pt.iscte.pandionj.extensibility;
 
-import java.util.Observer;
+import pt.iscte.pandionj.tests.Observer2;
 
-public interface IObservableModel {
-	default void registerObserver(Observer o) { }
-	default void registerDisplayObserver(Observer o) { }
-	default void unregisterObserver(Observer o) { }
+public interface IObservableModel<T> {
+	default void registerObserver(Observer2<T> o) { }
+	default void registerDisplayObserver(Observer2<T> o) { }
+	default void unregisterObserver(Observer2<T> o) { }
 }

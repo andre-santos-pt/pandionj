@@ -57,4 +57,6 @@ public class Observable2<A> {
 	public int countObservers() {
 		return obs.size();
 	}
+	
+	
 }

@@ -10,7 +10,11 @@ public interface IArrayModel<T> extends IEntityModel {
 	boolean isMatrix();
 	boolean isDecimal();
 	T getElementModel(int index);
-	default boolean isPrimitive() {
+	default boolean isPrimitiveType() {
 		return getDimensions() == 1 && PrimitiveType.isPrimitive(getComponentType());
+	}
+	
+	default boolean isReferenceType() {
+		return getDimensions() > 1 || !PrimitiveType.isPrimitive(getComponentType());
 	}
 }

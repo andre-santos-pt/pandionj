@@ -1,5 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Name: Java Launcher (PandionJ)
 Bundle-SymbolicName: pt.iscte.pandionj.launcher;singleton:=true
 Bundle-Version: 0.1
@@ -36,3 +37,4 @@ Require-Bundle: org.eclipse.core.runtime,
  pt.iscte.pandionj;bundle-version="0.1.0"
 Bundle-Activator: pt.iscte.pandionj.launcher.Activator
 Bundle-ActivationPolicy: lazy
+Eclipse-BundleShape: dir

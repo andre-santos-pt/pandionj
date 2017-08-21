@@ -14,7 +14,7 @@ import pt.iscte.pandionj.parser.BlockInfo;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 
-public class ArrayReferenceModel extends ArrayModel<IReferenceModel> { // TODO T
+public class ArrayReferenceModel extends ArrayModel<IReferenceModel> {
 	private List<ReferenceModel> references;
 
 	public ArrayReferenceModel(IJavaArray array, RuntimeModel runtime) {
@@ -39,9 +39,6 @@ public class ArrayReferenceModel extends ArrayModel<IReferenceModel> { // TODO T
 
 	private void handlePosition(IJavaVariable var) {
 		VariableInfo info = new VariableInfo("", BlockInfo.NONE);
-		// TODO hard coded
-//		info.addOperation(new VariableOperation("", VariableOperation.Type.ACCESS, "j", 0)); 
-		
 		ReferenceModel referenceModel = new ReferenceModel(var, true, info, getRuntimeModel());
 		references.add(referenceModel);
 	}

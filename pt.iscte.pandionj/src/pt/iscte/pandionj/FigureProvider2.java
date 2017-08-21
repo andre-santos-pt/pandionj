@@ -28,7 +28,7 @@ import pt.iscte.pandionj.figures.ReferenceFigure;
 import pt.iscte.pandionj.figures.ValueFigure;
 
 public class FigureProvider2  {
-	private Map<IObservableModel, PandionJFigure<?>> figCache = new WeakHashMap<>();
+	private Map<IObservableModel<?>, PandionJFigure<?>> figCache = new WeakHashMap<>();
 
 	private IStackFrameModel stackFrame;
 
@@ -39,7 +39,7 @@ public class FigureProvider2  {
 	public PandionJFigure<?> getFigure(Object element) {
 		PandionJFigure<?> fig = figCache.get(element);
 		if(fig == null) {
-			IObservableModel model = (IObservableModel) element;
+			IObservableModel<?> model = (IObservableModel<?>) element;
 			//			fig = model.createFigure();
 			fig = createFigure(model);
 			figCache.put(model, fig);
@@ -47,45 +47,47 @@ public class FigureProvider2  {
 		return fig;		
 	}
 
-	private PandionJFigure<?> createFigure(IObservableModel model) {
-		PandionJFigure<?> innerFig = null;
+	private PandionJFigure<?> createFigure(IObservableModel<?> model) {
+		PandionJFigure<?> fig = null;
 		
 		if(model instanceof IValueModel) {
-			innerFig = new ValueFigure((IValueModel) model);
+			fig = new ValueFigure((IValueModel) model);
 		}
 		else if(model instanceof IReferenceModel) {
-			innerFig = new ReferenceFigure((IReferenceModel) model);
+			fig = new ReferenceFigure((IReferenceModel) model);
 		}
 		else if(model instanceof IEntityModel) {
 			IEntityModel entity = (IEntityModel) model;
 			if(entity.isNull())
-				innerFig = new NullFigure(entity);
+				fig = new NullFigure(entity);
 			else {
 				Set<String> tags = getEntityTags(entity);
 
 				if(model instanceof IArrayModel) {
 					IArrayModel aModel = (IArrayModel) model;
 					IArrayWidgetExtension arrayExtension = ExtensionManager.getArrayExtension(aModel, tags);
-//					innerFig = arrayExtension.createFigure(aModel); // TODO repor
-					if(innerFig == null) {
-						if(aModel.isPrimitive()) {
-							innerFig = new ArrayPrimitiveFigure2(aModel);
+					IFigure extFig = arrayExtension.createFigure(aModel);
+					if(extFig == null) {
+						if(aModel.isPrimitiveType()) {
+							fig = new ArrayPrimitiveFigure2(aModel);
 						}
 						else {
-							innerFig = new ArrayReferenceFigure(aModel);
+							fig = new ArrayReferenceFigure(aModel);
 						}
+					}
+					else {
+						fig = new PandionJFigure.Extension(extFig, model);
 					}
 				}
 				else if(model instanceof IObjectModel) {
 					IObjectModel oModel = (IObjectModel) model; 
 					IFigure extensionFigure = ExtensionManager.getObjectExtension(oModel).createFigure(oModel);
-					innerFig = new ObjectFigure(oModel, extensionFigure, true);
+					fig = new ObjectFigure(oModel, extensionFigure, true);
 				}
 			}
 		}
-		assert innerFig != null : model;
-//		BaseFigure base = new BaseFigure(innerFig);
-		return innerFig;
+		assert fig != null : model;
+		return fig;
 	}
 
 
@@ -177,58 +179,4 @@ public class FigureProvider2  {
 //	}
 //	} 
 
-	enum Position {
-		TOP {
-			@Override
-			Point getPoint(Rectangle r) {
-				return new Point(r.x + r.width/2, r.y);
-			}
-		},
-		RIGHT {
-			@Override
-			Point getPoint(Rectangle r) {
-				return new Point(r.x + r.width, r.y + r.height/2);
-			}
-		},
-		BOTTOM {
-			@Override
-			Point getPoint(Rectangle r) {
-				return new Point(r.x + r.width/2, r.y + r.height);
-			}
-		},
-		LEFT {
-			@Override
-			Point getPoint(Rectangle r) {
-				return new Point(r.x, r.y + r.height/2);
-			}
-		},
-		TOPLEFT {
-			@Override
-			Point getPoint(Rectangle r) {
-				return new Point(r.x, r.y + r.height/4);
-			}
-		};
-
-		abstract Point getPoint(org.eclipse.draw2d.geometry.Rectangle r);
-	}
-
-	private class PositionAnchor extends AbstractConnectionAnchor {
-
-		private Position position;
-
-		public PositionAnchor(IFigure fig, Position position) {
-			super(fig);
-			this.position = position;
-		}
-
-		@Override
-		public Point getLocation(Point reference) {
-			org.eclipse.draw2d.geometry.Rectangle r =  org.eclipse.draw2d.geometry.Rectangle.SINGLETON;
-			r.setBounds(getOwner().getBounds());
-			r.translate(0, 0);
-			r.resize(1, 1);
-			getOwner().translateToAbsolute(r);
-			return position.getPoint(r);
-		}
-	}
 }

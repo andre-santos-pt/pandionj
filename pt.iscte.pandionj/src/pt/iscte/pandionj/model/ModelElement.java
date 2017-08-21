@@ -2,7 +2,7 @@ package pt.iscte.pandionj.model;
 
 import org.eclipse.jdt.debug.core.IJavaValue;
 
-public abstract class ModelElement<T extends IJavaValue> extends DisplayUpdateObservable {
+public abstract class ModelElement<T extends IJavaValue,O> extends DisplayUpdateObservable<O> {
 	private RuntimeModel runtime;
 	
 	public ModelElement(RuntimeModel runtime) {

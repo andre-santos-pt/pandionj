@@ -11,27 +11,27 @@
       <command
             defaultHandler="pt.iscte.pandionj.launcher.StepIntoCommand"
             id="pt.iscte.pandionj.launcher.stepinto"
-            name="Step into (debugger)">
+            name="Step into">
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.StepOverCommand"
             id="pt.iscte.pandionj.launcher.stepover"
-            name="Step over (debugger)">
+            name="Step over">
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.StepReturnCommand"
             id="pt.iscte.pandionj.launcher.stepreturn"
-            name="Step return (debugger)">
+            name="Step return">
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.ResumeCommand"
             id="pt.iscte.pandionj.launcher.resume"
-            name="Resume (debugger)">
+            name="Resume">
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.TerminateCommand"
             id="pt.iscte.pandionj.launcher.terminate"
-            name="Terminate (debugger)">
+            name="Terminate">
       </command>
    </extension>
    <extension

@@ -7,7 +7,10 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 
-public class MockArray extends DisplayUpdateObservable implements IArrayModel {
+public class MockArray
+extends DisplayUpdateObservable<Object>
+implements IArrayModel {
+
 	final String type;
 	final List<MockValue> values;
 	final List<MockArrayIndex> variableRoles;

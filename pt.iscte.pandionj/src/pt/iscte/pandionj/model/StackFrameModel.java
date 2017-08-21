@@ -31,11 +31,11 @@ import pt.iscte.pandionj.parser.VariableInfo;
 
 
 
-public class StackFrameModel extends DisplayUpdateObservable implements IStackFrameModel {
+public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.StackEvent> implements IStackFrameModel {
 	private RuntimeModel runtime;
 	private IJavaStackFrame frame;
-	private Map<String, VariableModel<?>> stackVars;
-	private Map<String, VariableModel<?>> staticVars;
+	private Map<String, IVariableModel<?>> stackVars;
+	private Map<String, IVariableModel<?>> staticVars;
 
 	private IFile srcFile;
 	private VarParser varParser;
@@ -129,11 +129,10 @@ public class StackFrameModel extends DisplayUpdateObservable implements IStackFr
 	}
 
 	private void handleVariables() {
-//		List<VariableModel<?>> newVars = new ArrayList<>();
 		try {
-			Iterator<Entry<String, VariableModel<?>>> iterator = stackVars.entrySet().iterator();
+			Iterator<Entry<String, IVariableModel<?>>> iterator = stackVars.entrySet().iterator();
 			while(iterator.hasNext()) {
-				Entry<String, VariableModel<?>> e = iterator.next();
+				Entry<String, IVariableModel<?>> e = iterator.next();
 				String varName = e.getKey();
 				boolean contains = false;
 				for(IVariable v : frame.getVariables()) {
@@ -184,17 +183,17 @@ public class StackFrameModel extends DisplayUpdateObservable implements IStackFr
 		String varName = jv.getName();
 		IJavaValue value = (IJavaValue) jv.getValue();
 
-		Map<String, VariableModel<?>> map = jv.isStatic() ? staticVars : stackVars;
+		Map<String, IVariableModel<?>> map = jv.isStatic() ? staticVars : stackVars;
 
-		if(map.containsKey(varName) && map.get(varName).variable == jv) { // FIXME bug same name!
-			VariableModel<?> vModel = map.get(varName);
+		if(map.containsKey(varName) && map.get(varName).getJavaVariable() == jv) {
+			IVariableModel<?> vModel = map.get(varName);
 			vModel.update(step);
 		}
 		else {
 			VariableInfo info = varParser.locateVariable(varName, frame.getLineNumber());
 			System.err.println(varName + ": " + info);
 
-			VariableModel<?> newVar = null;
+			IVariableModel<?> newVar = null;
 
 			if(value instanceof IJavaObject) {
 				ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
@@ -216,14 +215,18 @@ public class StackFrameModel extends DisplayUpdateObservable implements IStackFr
 	}
 
 
-	// only in stack vars
 	public Collection<IReferenceModel> getReferencesTo(IEntityModel object) {
 		List<IReferenceModel> refs = new ArrayList<>(3);
-		for (ModelElement<?> e : stackVars.values()) {
+		findReferences(staticVars, object, refs);
+		findReferences(stackVars, object, refs);
+		return refs;
+	}
+
+	private static void findReferences(Map<String, IVariableModel<?>> map, IEntityModel object, List<IReferenceModel> refs) {
+		for (IVariableModel<?> e : map.values()) {
 			if(e instanceof ReferenceModel && ((ReferenceModel) e).getModelTarget().equals(object))
 				refs.add((ReferenceModel) e);
 		}
-		return refs;
 	}
 
 
@@ -366,10 +369,10 @@ public class StackFrameModel extends DisplayUpdateObservable implements IStackFr
 	public void setStep(int step) {
 		if(step != stepPointer) {
 			stepPointer = step;
-			for(VariableModel<?> var : stackVars.values())
+			for(IVariableModel<?> var : stackVars.values())
 				var.setStep(stepPointer);
 
-			for(VariableModel<?> var : stackVars.values())
+			for(IVariableModel<?> var : stackVars.values())
 				var.setStep(stepPointer);
 		}
 		setChanged();
@@ -396,17 +399,6 @@ public class StackFrameModel extends DisplayUpdateObservable implements IStackFr
 		return vars;
 	}
 	
-	public static class StackEvent {
-		public enum Type {
-			NEW_VARIABLE, VARIABLE_OUT_OF_SCOPE;
-		}
-		public final Type type;
-		public final IVariableModel variable;
-
-		StackEvent(Type type, IVariableModel variable) {
-			this.type = type;
-			this.variable = variable;
-		}
-	}
+	
 	
 }

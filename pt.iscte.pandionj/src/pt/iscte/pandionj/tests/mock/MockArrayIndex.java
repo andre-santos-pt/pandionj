@@ -2,6 +2,8 @@ package pt.iscte.pandionj.tests.mock;
 
 import java.util.List;
 
+import org.eclipse.jdt.debug.core.IJavaVariable;
+
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
@@ -10,7 +12,10 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public class MockArrayIndex extends DisplayUpdateObservable implements IArrayIndexModel {
+public class MockArrayIndex
+extends DisplayUpdateObservable<Object>
+implements IArrayIndexModel {
+	
 	private final IValueModel variable;
 	private final IReferenceModel arrayReference;
 	private final Direction direction;
@@ -84,10 +89,10 @@ public class MockArrayIndex extends DisplayUpdateObservable implements IArrayInd
 		return variable.isInstance();
 	}
 
-	@Override
-	public boolean isWithinScope() {
-		return variable.isWithinScope();
-	}
+//	@Override
+//	public boolean isWithinScope() {
+//		return variable.isWithinScope();
+//	}
 
 	@Override
 	public VariableInfo getVariableRole() {
@@ -102,5 +107,25 @@ public class MockArrayIndex extends DisplayUpdateObservable implements IArrayInd
 	@Override
 	public boolean isStatic() {
 		return variable.isStatic();
+	}
+
+	@Override
+	public void setOutOfScope() {
+		
+	}
+
+	@Override
+	public boolean update(int step) {
+		return false;
+	}
+
+	@Override
+	public IJavaVariable getJavaVariable() {
+		return null;
+	}
+
+	@Override
+	public void setStep(int stepPointer) {
+		
 	}
 }

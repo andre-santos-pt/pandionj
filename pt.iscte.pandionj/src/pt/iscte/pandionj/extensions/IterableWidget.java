@@ -1,8 +1,6 @@
 package pt.iscte.pandionj.extensions;
 
 import java.util.Collection;
-import java.util.Observable;
-import java.util.Observer;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
@@ -11,6 +9,8 @@ import org.eclipse.jdt.core.JavaModelException;
 
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.tests.Observable2;
+import pt.iscte.pandionj.tests.Observer2;
 
 public class IterableWidget implements IObjectWidgetExtension {
 
@@ -31,9 +31,9 @@ public class IterableWidget implements IObjectWidgetExtension {
 	@Override
 	public IFigure createFigure(IObjectModel e) {
 		Label label = new Label();
-		e.registerDisplayObserver(new Observer() {
+		e.registerDisplayObserver(new Observer2() {
 			@Override
-			public void update(Observable o, Object arg) {
+			public void update(Observable2 o, Object arg) {
 				eval(e, label);
 			}
 		});

@@ -7,7 +7,9 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public class ValueModel extends VariableModel<IJavaPrimitiveValue> implements IValueModel {
+public class ValueModel
+extends VariableModel<IJavaPrimitiveValue, Object> 
+implements IValueModel {
 	
 	private Role role;
 	private VariableInfo var;

@@ -1,6 +1,6 @@
 package pt.iscte.pandionj.extensibility;
 
-public interface IEntityModel extends IObservableModel {
+public interface IEntityModel extends IObservableModel<Object> {
 
 	boolean isNull();
 }

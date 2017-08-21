@@ -1,8 +1,5 @@
 package pt.iscte.pandionj.extensions;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.Graphics;
@@ -13,6 +10,8 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensions.GrayscaleImageWidget.ImageFig;
+import pt.iscte.pandionj.tests.Observable2;
+import pt.iscte.pandionj.tests.Observer2;
 
 public class ImageAguia implements IObjectWidgetExtension {
 
@@ -25,9 +24,9 @@ public class ImageAguia implements IObjectWidgetExtension {
 	public IFigure createFigure(IObjectModel m) {
 		IArrayModel array = m.getArray("data");
 		ImageFig imageFig = new GrayscaleImageWidget.ImageFig(array);
-		m.registerDisplayObserver(new Observer() {
+		m.registerDisplayObserver(new Observer2() {
 			@Override
-			public void update(Observable o, Object arg) {
+			public void update(Observable2 o, Object arg) {
 				if(arg.equals("data"))
 					imageFig.updateModel(m.getArray("data"));
 			}
@@ -45,18 +44,18 @@ public class ImageAguia implements IObjectWidgetExtension {
 			setSize(((Object[])array.getValues()[0]).length, array.getLength());
 			setOpaque(true);
 			setBackgroundColor(ColorConstants.green);
-			array.registerDisplayObserver(new Observer() {
+			array.registerDisplayObserver(new Observer2() {
 				
 				@Override
-				public void update(Observable o, Object arg) {
+				public void update(Observable2 o, Object arg) {
 					System.out.println("!!! -  TODO interaction with object");
 				}
 			});
 			
-			m.registerDisplayObserver(new Observer() {
+			m.registerDisplayObserver(new Observer2() {
 				
 				@Override
-				public void update(Observable o, Object arg) {
+				public void update(Observable2 o, Object arg) {
 					if(arg.equals("height"))
 						setSize(getSize().width, m.getInt("height"));
 				}

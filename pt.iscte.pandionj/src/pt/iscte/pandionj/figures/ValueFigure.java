@@ -4,8 +4,6 @@ package pt.iscte.pandionj.figures;
 import static pt.iscte.pandionj.Constants.ARROW_EDGE;
 
 import java.util.List;
-import java.util.Observable;
-import java.util.Observer;
 
 import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ColorConstants;
@@ -30,6 +28,8 @@ import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
 import pt.iscte.pandionj.model.PrimitiveType;
+import pt.iscte.pandionj.tests.Observable2;
+import pt.iscte.pandionj.tests.Observer2;
 
 public class ValueFigure extends PandionJFigure<IValueModel> {
 	private ValueLabel valueLabel;
@@ -46,6 +46,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		setLayoutManager(layout);
 
 		Label nameLabel = new Label(model.getName());
+		add(nameLabel);
 		if(role != null)
 			nameLabel.setToolTip(new Label(role.toString()));
 		
@@ -53,12 +54,11 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE, Style.BOLD);
 		else
 			FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
-		add(nameLabel);
 
 		valueLabel = new ValueLabel(model);
 		Dimension size = valueLabel.getSize();
 		layout.setConstraint(valueLabel, new GridData(size.width, size.height));
-
+	
 		add(valueLabel);
 
 		if(Role.FIXED_VALUE.equals(role)) {
@@ -67,15 +67,21 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			nameLabel.setForegroundColor(Constants.Colors.CONSTANT);
 		}
 
-		setOpaque(false); 
-		model.registerDisplayObserver(new Observer() {
+//		setOpaque(false); 
+		model.registerDisplayObserver(new Observer2() {
+			
 			@Override
-			public void update(Observable o, Object arg) {
-				setVisible(model.isWithinScope());
+			public void update(Observable2 o, Object arg) {
+				System.out.println("F update");
+//				setVisible(model.isWithinScope());
 				if(isVisible()) {
-					if(Role.GATHERER.equals(role))
-						((Label) extraFigure).setText(parcels());
-
+					if(Role.GATHERER.equals(role)) {
+						String parcels = parcels();
+						((Label) extraFigure).setText(parcels);
+//						Dimension dim = FigureUtilities.getTextExtents(parcels, extraFigure.getFont());
+//						layout.setConstraint(extraFigure, new GridData(dim.width, dim.height));
+//						layout.layout(ValueFigure.this);
+					}
 					else if(Role.MOST_WANTED_HOLDER.equals(role)) {
 						List<String> history = model.getHistory();
 						String val = history.get(history.size()-2);
@@ -195,6 +201,8 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			FontManager.setFont(this, Constants.VAR_FONT_SIZE);
 			setForegroundColor(ColorConstants.gray);
 			// TODO text align center
+//			setLabelAlignment(PositionConstants.CENTER);
+			
 		}
 
 		@Override

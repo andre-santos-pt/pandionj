@@ -1,30 +1,49 @@
 package pt.iscte.pandionj.model;
 
-import java.util.Observable;
-import java.util.Observer;
-
 import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.extensibility.IObservableModel;
+import pt.iscte.pandionj.tests.Observable2;
+import pt.iscte.pandionj.tests.Observer2;
 
-public class DisplayUpdateObservable extends Observable implements IObservableModel {
-
-	public void registerObserver(Observer o) {
-		addObserver(o);
+public class DisplayUpdateObservable<T> implements IObservableModel<T> {
+	
+	private Observable2<T> obs = new Observable2<>();
+	
+	public void registerObserver(Observer2<T> o) {
+		obs.addObserver(o);
 	}
 
-	public void registerDisplayObserver(Observer obs) {
-		addObserver(new Observer() {
-			public void update(Observable o, Object arg) {
+	public void registerDisplayObserver(Observer2<T> o) {
+		obs.addObserver(new Observer2<T>() {
+			public void update(Observable2<T> observable, T arg) {
 				Display.getDefault().asyncExec(() -> {
-					obs.update(o, arg);
+					o.update(observable, arg);
 				});
 			}
 		});
 	}
 	
-	public void unregisterObserver(Observer o) {
-		deleteObserver(o);
+	public void unregisterObserver(Observer2<T> o) {
+		obs.deleteObserver(o);
 	}
+	
+	public void setChanged() {
+		obs.setChanged();
+	}
+	
+	public boolean hasChanged() {
+		return obs.hasChanged();
+	}
+	
+	public void notifyObservers() {
+		obs.notifyObservers();
+	}
+	
+	public void notifyObservers(T arg) {
+		obs.notifyObservers(arg);
+	}
+	
+	
 
 }

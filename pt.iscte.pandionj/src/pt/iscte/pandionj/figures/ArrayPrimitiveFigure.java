@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
@@ -32,6 +31,7 @@ import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.tests.Observable2;
 
 public class ArrayPrimitiveFigure extends PandionJFigure {
 	private static final GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
@@ -203,7 +203,7 @@ public class ArrayPrimitiveFigure extends PandionJFigure {
 		rightBound.setVisible(upperOff);
 	}
 
-	private void observerAction(Observable o, Object arg) {
+	private void observerAction(Observable2 o, Object arg) {
 		if(arg instanceof IndexOutOfBoundsException) {
 			System.out.println("Index fora");
 			updateOutOfBoundsPositions();

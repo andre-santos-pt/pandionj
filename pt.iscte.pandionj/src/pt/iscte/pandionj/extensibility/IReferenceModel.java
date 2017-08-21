@@ -2,7 +2,7 @@ package pt.iscte.pandionj.extensibility;
 
 import java.util.Collection;
 
-public interface IReferenceModel extends IVariableModel {
+public interface IReferenceModel extends IVariableModel<IEntityModel> {
 	IEntityModel getModelTarget();
 	boolean hasIndexVars();
 	Collection<IArrayIndexModel> getIndexVars();

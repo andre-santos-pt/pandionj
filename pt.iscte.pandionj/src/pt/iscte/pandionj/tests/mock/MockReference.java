@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.eclipse.jdt.debug.core.IJavaVariable;
+
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
@@ -41,10 +43,10 @@ public class MockReference implements IReferenceModel {
 		return false;
 	}
 
-	@Override
-	public boolean isWithinScope() {
-		return true;
-	}
+//	@Override
+//	public boolean isWithinScope() {
+//		return true;
+//	}
 
 	@Override
 	public Role getRole() {
@@ -84,6 +86,26 @@ public class MockReference implements IReferenceModel {
 	@Override
 	public boolean isStatic() {
 		return isStatic;
+	}
+
+	@Override
+	public void setOutOfScope() {
+		
+	}
+
+	@Override
+	public boolean update(int step) {
+		return false;
+	}
+
+	@Override
+	public IJavaVariable getJavaVariable() {
+		return null;
+	}
+
+	@Override
+	public void setStep(int stepPointer) {
+		
 	}
 
 }

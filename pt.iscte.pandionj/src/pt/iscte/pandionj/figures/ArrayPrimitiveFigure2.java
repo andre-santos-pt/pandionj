@@ -44,7 +44,7 @@ public class ArrayPrimitiveFigure2 extends PandionJFigure<IArrayModel<IValueMode
 		outerLayout = new GridLayout(1, false);
 		setLayoutManager(outerLayout);
 
-		setBackgroundColor(Constants.Colors.OBJECT);
+	
 		positionsFig = createPositionsFig();
 		add(positionsFig);
 		setSize(getPreferredSize());
@@ -68,6 +68,7 @@ public class ArrayPrimitiveFigure2 extends PandionJFigure<IArrayModel<IValueMode
 
 	private RoundedRectangle createPositionsFig() {
 		RoundedRectangle fig = new RoundedRectangle();
+		fig.setBackgroundColor(Constants.Colors.OBJECT);
 		arrayLayout = new GridLayout(Math.max(1, N+1), false);
 		arrayLayout.horizontalSpacing = ARRAY_POSITION_SPACING;
 		arrayLayout.verticalSpacing = 0;

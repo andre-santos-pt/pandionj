@@ -15,6 +15,7 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
+import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -22,7 +23,7 @@ import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.parser.BlockInfo;
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public class ReferenceModel extends VariableModel<IJavaObject> implements IReferenceModel {
+public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> implements IReferenceModel {
 	private NullModel nullModel;
 	private boolean isPrimitiveArray;
 	private Collection<String> tags;
