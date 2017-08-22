@@ -2,9 +2,6 @@ package pt.iscte.pandionj.launcher;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -21,8 +18,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IInitializer;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
@@ -31,7 +28,6 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
-import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
@@ -100,44 +96,54 @@ public class LaunchCommand extends AbstractHandler {
 				final String agentArgs = firstType.getFullyQualifiedName().replace('.', '/');
 
 				IMethod mainMethod = firstType.getMethod("main", new String[] {"[QString;"});
-				//				if(!mainMethod.exists())
-				//					mainMethod = firstType.getMethod("main", new String[0]);
 
 				if(mainMethod.exists()) {
 					launch(file, line, firstType, agentArgs, mainMethod);
 				}
 				else {
-					IMethod selectedMethod = null;
-					for (IMethod m : firstType.getMethods()) {
-						ISourceRange sourceRange = m.getSourceRange();
-						if(Modifier.isStatic(m.getFlags()) && offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength()) {							
-							selectedMethod = m;
+					boolean launchInit = false;
+					for (IInitializer init : firstType.getInitializers()) {
+						ISourceRange sourceRange = init.getSourceRange();
+						if(offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength()) {							
+							launch(file, line, firstType, "", mainMethod);
+							launchInit = true;
 							break;
 						}
 					}
-					if(selectedMethod == null) {
-						MessageDialog.openError(Display.getDefault().getActiveShell(),
-								"Please select method",
-								"Place the cursor at a line of the body of a static method.");
-						return null;
-					}
-					else {
-						if(selectedMethod.getParameterTypes().length != 0) {
-							PandionJUI.promptInvocation(selectedMethod, new InvocationAction() {
 
-								@Override
-								public void invoke(String expression) {
-									String args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\""); //.replaceAll("\'", "\\\\\'");
-									try {
-										launch(file, lineFinal, firstType, args, mainMethod);
-									} catch (CoreException e) {
-										e.printStackTrace();
+					if(!launchInit) {
+						IMethod selectedMethod = null;
+						for (IMethod m : firstType.getMethods()) {
+							ISourceRange sourceRange = m.getSourceRange();
+							if(Modifier.isStatic(m.getFlags()) && offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength()) {							
+								selectedMethod = m;
+								break;
+							}
+						}
+						if(selectedMethod == null) {
+							MessageDialog.openError(Display.getDefault().getActiveShell(),
+									"Please select method",
+									"Place the cursor at a line of the body of a static method.");
+							return null;
+						}
+						else {
+							if(selectedMethod.getParameterTypes().length != 0) {
+								PandionJUI.promptInvocation(selectedMethod, new InvocationAction() {
+
+									@Override
+									public void invoke(String expression) {
+										String args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\""); //.replaceAll("\'", "\\\\\'");
+										try {
+											launch(file, lineFinal, firstType, args, mainMethod);
+										} catch (CoreException e) {
+											e.printStackTrace();
+										}
 									}
-								}
-							});
-						} 
-						else
-							launch(file, line, firstType, agentArgs + ";" + selectedMethod.getElementName() + "()", mainMethod);
+								});
+							} 
+							else
+								launch(file, line, firstType, agentArgs + ";" + selectedMethod.getElementName() + "()", mainMethod);
+						}
 					}
 				}
 			}
@@ -159,16 +165,16 @@ public class LaunchCommand extends AbstractHandler {
 		if(breakPoint != null)
 			breakPoint.delete();
 
-		if(line != -1) {
-			// TODO run to line
-			Map<String, Object> attributes = new HashMap<String, Object>(4);
-			attributes.put(IBreakpoint.PERSISTED, Boolean.FALSE);
-			attributes.put("org.eclipse.jdt.debug.ui.run_to_line", Boolean.TRUE);
-			attributes.put("pandionj_gen", Boolean.TRUE); // ?
-			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, attributes);
-			//					breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
-		}
-		try {
+		//		if(line != -1) {
+		// TODO run to line
+		//			Map<String, Object> attributes = new HashMap<String, Object>(4);
+		//			attributes.put(IBreakpoint.PERSISTED, Boolean.FALSE);
+		//			attributes.put("org.eclipse.jdt.debug.ui.run_to_line", Boolean.TRUE);
+		//			attributes.put("pandionj_gen", Boolean.TRUE); // ?
+		//			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
+		//		}
+
+		try {	
 			Bundle bundle = Platform.getBundle(LaunchCommand.class.getPackage().getName());
 			URL find = FileLocator.find(bundle, new Path("lib/agent.jar"), null);
 			URL resolve = FileLocator.resolve(find);

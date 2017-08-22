@@ -40,7 +40,6 @@ class ArrayIndexBound extends DisplayUpdateObservable implements IArrayIndexMode
 						expressionCache.put(expression, value);
 						setChanged(); 
 						notifyObservers(value);
-						System.out.println(expression + " => " + newVal);
 					}
 				}
 				catch(NumberFormatException e) {

@@ -46,8 +46,6 @@ import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
-import pt.iscte.pandionj.tests.Observable2;
-import pt.iscte.pandionj.tests.Observer2;
 
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 	private Map<String, ValueModel> values;
@@ -80,8 +78,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 					String name = var.getName();
 					if(var.getValue() instanceof IJavaObject) {
 						ReferenceModel refModel = new ReferenceModel(var, true, null, getRuntimeModel());
-						refModel.registerObserver(new Observer2() {
-							public void update(Observable2 o, Object arg) {
+						refModel.registerObserver(new ModelObserver() {
+							public void update(ObserverContainer o, Object arg) {
 								setChanged();
 								notifyObservers(name);
 							}
@@ -96,8 +94,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 					}
 					else {
 						ValueModel val = new ValueModel(var, true, null, getRuntimeModel());
-						val.registerObserver(new Observer2() {
-							public void update(Observable2 o, Object arg) {
+						val.registerObserver(new ModelObserver() {
+							public void update(ObserverContainer o, Object arg) {
 								setChanged();
 								notifyObservers(name);
 							}

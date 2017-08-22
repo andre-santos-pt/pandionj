@@ -28,29 +28,29 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 
 public class IllustrationBorder implements Border {
 
-//	private static final Insets EMPTY = new Insets(0, Constants.POSITION_WIDTH, EXTRA, Constants.POSITION_WIDTH);
 	private static final int BAR_HEIGHT = 100;
 
 	private static final int EXTRA = 20;
 	
-	private final ArrayPrimitiveFigure2 arrayFigure;
-
-	private final Collection<IArrayIndexModel> vars;
+	private final AbstractArrayFigure<?> arrayFigure;
 	private final int N;
+	private final boolean horizontal;
+	
+	private final Collection<IArrayIndexModel> vars;
 
 	private final Collection<IArrayIndexModel> fixedVars;
 	
 	private boolean leftBoundVisible;
 	private boolean rightBoundVisible;
 
-//	private final int POS;
-//	private final Dimension POSITION_DIM;
+	private final Rectangle positionBounds;
+	
 
-
-	public IllustrationBorder(IReferenceModel ref, ArrayPrimitiveFigure2 arrayFigure) {
+	public IllustrationBorder(IReferenceModel ref, AbstractArrayFigure<?> arrayFigure) {
 		this.arrayFigure = arrayFigure;
 		N = arrayFigure.getNumberOfPositions();
-		leftBoundVisible = true;
+		horizontal = arrayFigure instanceof ArrayPrimitiveFigure;
+		leftBoundVisible = false;
 		rightBoundVisible = false;
 		vars = ref.getIndexVars();
 
@@ -59,27 +59,17 @@ public class IllustrationBorder implements Border {
 
 		fixedVars = ref.getFixedIndexes();
 		
-//		int w = arrayFigure.getPositionBounds(0).width;
-//		POS = w + Constants.ARRAY_POSITION_SPACING;
-//		POSITION_DIM = new Dimension(w, Constants.POSITION_WIDTH);
+		positionBounds = arrayFigure.getPositionBounds(0);
 	}
 
 
 	@Override
 	public Insets getInsets(IFigure figure) {
-//		return new Insets(0, POSITION_DIM.width, EXTRA, POSITION_DIM.width);
 		return new Insets(0, Constants.POSITION_WIDTH, EXTRA, Constants.POSITION_WIDTH);
 	}
 
 	@Override
 	public Dimension getPreferredSize(IFigure figure) {
-//		int w = 0;
-//		if(leftBoundVisible)
-//			w += POSITION_DIM.width + ARRAY_POSITION_SPACING;
-//		if(rightBoundVisible)
-//			w += POSITION_DIM.width + ARRAY_POSITION_SPACING;
-		
-//		return figure.getSize().getExpanded(w, EXTRA);
 		return new Dimension();
 	}
 
@@ -90,14 +80,14 @@ public class IllustrationBorder implements Border {
 
 	@Override
 	public void paint(IFigure figure, Graphics g, Insets insets) {
-		int w = arrayFigure.getPositionBounds(0).width;
-		int POS = w + Constants.ARRAY_POSITION_SPACING;
-		Dimension POSITION_DIM = new Dimension(w, Constants.POSITION_WIDTH);
+		
+		final int POS = positionBounds.width + Constants.ARRAY_POSITION_SPACING;
+		final Dimension POSITION_DIM = new Dimension(positionBounds.width, Constants.POSITION_WIDTH);
 		
 		drawOutOfBoundsPositions(figure, g, POS, POSITION_DIM);
 
-		int pWidth = POSITION_DIM.width;
-		int y = ARRAY_POSITION_SPACING + POSITION_DIM.height + EXTRA;
+		final int pWidth = POSITION_DIM.width;
+		final int y = ARRAY_POSITION_SPACING + POSITION_DIM.height + EXTRA;
 
 		Font font = FontManager.getFont(Constants.VAR_FONT_SIZE-4);
 		g.setFont(font);
@@ -126,7 +116,7 @@ public class IllustrationBorder implements Border {
 				varName += "=" + i;
 
 			int textWidth = FigureUtilities.getTextWidth(varName, font);
-			Point from = getIndexLocation(i, POS).getTranslated(pWidth/2 - textWidth/2, y);
+			Point from = getIndexLocation(i, POS).getTranslated(textWidth/2, 0);
 
 			g.drawText(varName, from);
 			drawHistory(g, v);
@@ -146,7 +136,7 @@ public class IllustrationBorder implements Border {
 				if(boundVal != i && directionOK) {
 					int space = v.getDirection() == Direction.FORWARD ? ARRAY_POSITION_SPACING : -ARRAY_POSITION_SPACING;
 					Point arrowFrom = from.getTranslated(textWidth/2 + space, EXTRA);
-					Point to = new Point(getIndexLocation(boundVal, POS).x + pWidth/2, arrowFrom.y);
+					Point to = new Point(getIndexLocation(boundVal, POS).x, arrowFrom.y);
 					drawArrow(g, arrowFrom, to);
 				}
 				
@@ -191,20 +181,29 @@ public class IllustrationBorder implements Border {
 	}
 
 	private Point getIndexLocation(int index, int POS) {
-		if(N == 0)
-			return arrayFigure.getLocation();
-		else if(index < 0)
-			return arrayFigure.getPositionBounds(0).getLocation().getTranslated(-POS, 0);
+		Point p = null;
+		if(index < 0)
+			p = arrayFigure.getPositionBounds(0).getLocation()
+					.getTranslated(horizontal ? -POS : 0, horizontal ? 0 : -POS);
 		else if(index >= N)
-			return arrayFigure.getPositionBounds(N-1).getLocation().getTranslated(POS, 0);
+			p = arrayFigure.getPositionBounds(N-1).getLocation()
+					.getTranslated(horizontal ? POS : 0,  horizontal ? 0 : POS);
 		else
-			return arrayFigure.getPositionBounds(index).getLocation();
+			p = arrayFigure.getPositionBounds(index).getLocation();
+		
+		if(horizontal) {
+			p.translate(positionBounds.width/2, positionBounds.height + Constants.ARRAY_POSITION_SPACING);
+		}
+		else {
+			p.translate(-Constants.ARRAY_POSITION_SPACING, positionBounds.height/2);
+		}
+		return p;
 	}
 
 
 	private void drawOutOfBoundsPositions(IFigure figure, Graphics g, int POS, Dimension POSITION_DIM) {
 		if(leftBoundVisible) {		
-			Point p1 = arrayFigure.getFirstPositionBounds().getLocation();
+			Point p1 = arrayFigure.getPositionBounds(0).getLocation();
 			Point p2 = arrayFigure.getLocation();
 			Point p = new Point(p2.x-POS, p1.y);
 			//			getTranslated(-(POS + Constants.ARRAY_POSITION_SPACING*2, 0);
@@ -214,7 +213,12 @@ public class IllustrationBorder implements Border {
 			g.setLineStyle(Graphics.LINE_DASH);
 			g.drawRectangle(new Rectangle(p, POSITION_DIM));
 		}
-		// TODO out of bound positions
+		
+		if(rightBoundVisible) {
+			// TODO out of bound positions
+			
+		}
+		
 	}
 
 
@@ -232,9 +236,13 @@ public class IllustrationBorder implements Border {
 	private void drawBar(Graphics g, Integer boundVal, IBound bound, Direction direction, int POS) {
 		if(direction != Direction.NONE) {
 			Point origin = getIndexLocation(boundVal, POS);
+			int w = -(positionBounds.width/2);
+			
 			if(direction == Direction.FORWARD && bound.getType() == BoundType.CLOSE ||
 					direction == Direction.BACKWARD && bound.getType() == BoundType.OPEN)
-				origin.translate(POS, 0);
+				w = -w;
+			
+			origin.translate(w, 0);
 
 			Point from = origin.getTranslated(-ARRAY_POSITION_SPACING/2, -BAR_HEIGHT);
 			Point to = origin.getTranslated(-ARRAY_POSITION_SPACING/2, BAR_HEIGHT);

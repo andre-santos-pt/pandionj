@@ -34,19 +34,19 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.figures.ArrayPrimitiveFigure2;
+import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.figures.PandionJFigure;
 import pt.iscte.pandionj.figures.PositionAnchor;
-import pt.iscte.pandionj.tests.Observable2;
-import pt.iscte.pandionj.tests.Observer2;
+import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.model.ObserverContainer;
 
 public class FrameViewer extends Composite {
 	private static final int GAP = 150;
 	
-	private FigureProvider2 figProvider;
-	private ScalableLayeredPane pane;
+	private FigureProvider figProvider;
+	private IFigure pane;
 	private LightweightSystem lws;
 	private int y;
 	private XYLayout xyLayout;
@@ -77,13 +77,13 @@ public class FrameViewer extends Composite {
 		canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
 		scroll.setContent(canvas);
 
-		pane = new ScalableLayeredPane();
+		pane = new Figure();
 		xyLayout = new XYLayout();
 		pane.setLayoutManager(xyLayout);
 		lws = new LightweightSystem(canvas);
 		lws.setContents(pane);
 
-		pane.setScale(1.2);
+//		pane.setScale(1.2);
 		
 		
 		y = Constants.MARGIN;
@@ -100,7 +100,7 @@ public class FrameViewer extends Composite {
 		
 		y = Constants.MARGIN;
 
-		figProvider = new FigureProvider2(frame);
+		figProvider = new FigureProvider(frame);
 		Collection<IVariableModel> variables = frame.getAllVariables();
 		for(IVariableModel v : variables) 
 			if(accept.test(v))
@@ -111,11 +111,9 @@ public class FrameViewer extends Composite {
 	}
 
 	private void addFrameObserver(IStackFrameModel frame, Predicate<IVariableModel> accept) {
-		frame.registerDisplayObserver(new Observer2<StackEvent>() {
+		frame.registerDisplayObserver(new ModelObserver<StackEvent>() {
 			@Override
-			public void update(Observable2<StackEvent> o, StackEvent arg) {
-				StackEvent event = (StackEvent) arg;
-
+			public void update(ObserverContainer<StackEvent> o, StackEvent event) {
 				if(event != null) {
 					if(event.type == StackEvent.Type.NEW_VARIABLE && accept.test(event.variable)) {
 						add(event.variable);
@@ -188,6 +186,7 @@ public class FrameViewer extends Composite {
 		xyLayout.layout(pane);
 	}
 
+	// TODO fixed values on top row
 	private void add(IVariableModel v) {
 		PandionJFigure<?> figure = figProvider.getFigure(v);
 		figure.setLocation(new Point(Constants.MARGIN, y));
@@ -258,9 +257,9 @@ public class FrameViewer extends Composite {
 	}
 
 	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
-		ref.registerDisplayObserver(new Observer2<IEntityModel>() {
+		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
 			@Override
-			public void update(Observable2<IEntityModel> o, IEntityModel arg) {
+			public void update(ObserverContainer<IEntityModel> o, IEntityModel arg) {
 				IEntityModel target = ref.getModelTarget();
 				PandionJFigure<?> targetFig = figProvider.getFigure(target);
 				if(!containsChild(pane, targetFig)) {
@@ -290,8 +289,8 @@ public class FrameViewer extends Composite {
 	}
 
 	private void handleIllustration(IReferenceModel reference, IFigure targetFig) {
-		if(targetFig instanceof ArrayPrimitiveFigure2 &&  reference.hasIndexVars()) {
-			IllustrationBorder b = new IllustrationBorder(reference, (ArrayPrimitiveFigure2) targetFig);
+		if(targetFig instanceof ArrayPrimitiveFigure &&  reference.hasIndexVars()) {
+			IllustrationBorder b = new IllustrationBorder(reference, (ArrayPrimitiveFigure) targetFig);
 			targetFig.setBorder(b);
 		}
 	} 

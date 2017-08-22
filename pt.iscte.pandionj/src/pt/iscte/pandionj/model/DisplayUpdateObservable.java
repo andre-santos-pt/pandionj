@@ -3,20 +3,18 @@ package pt.iscte.pandionj.model;
 import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.extensibility.IObservableModel;
-import pt.iscte.pandionj.tests.Observable2;
-import pt.iscte.pandionj.tests.Observer2;
 
 public class DisplayUpdateObservable<T> implements IObservableModel<T> {
 	
-	private Observable2<T> obs = new Observable2<>();
+	private ObserverContainer<T> obs = new ObserverContainer<>();
 	
-	public void registerObserver(Observer2<T> o) {
+	public void registerObserver(ModelObserver<T> o) {
 		obs.addObserver(o);
 	}
 
-	public void registerDisplayObserver(Observer2<T> o) {
-		obs.addObserver(new Observer2<T>() {
-			public void update(Observable2<T> observable, T arg) {
+	public void registerDisplayObserver(ModelObserver<T> o) {
+		obs.addObserver(new ModelObserver<T>() {
+			public void update(ObserverContainer<T> observable, T arg) {
 				Display.getDefault().asyncExec(() -> {
 					o.update(observable, arg);
 				});
@@ -24,7 +22,7 @@ public class DisplayUpdateObservable<T> implements IObservableModel<T> {
 		});
 	}
 	
-	public void unregisterObserver(Observer2<T> o) {
+	public void unregisterObserver(ModelObserver<T> o) {
 		obs.deleteObserver(o);
 	}
 	

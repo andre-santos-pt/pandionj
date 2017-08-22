@@ -13,7 +13,7 @@ import pt.iscte.pandionj.model.StackFrameModel;
 
 class StackView extends Composite {
 	double zoom;
-	List<FrameView2> frameViews;
+	List<FrameView> frameViews;
 	RuntimeModel model;
 
 	StackView(Composite parent) {
@@ -29,7 +29,7 @@ class StackView extends Composite {
 		this.model = model;
 		model.registerDisplayObserver((o,a) -> {
 			if(model.isTerminated()) {
-				for(FrameView2 v : frameViews)
+				for(FrameView v : frameViews)
 					v.setObsolete();
 			}
 			else
@@ -41,7 +41,7 @@ class StackView extends Composite {
 		int diff = stackPath.size() - frameViews.size();
 
 		while(diff > 0) {
-			FrameView2 view = new FrameView2(this);
+			FrameView view = new FrameView(this);
 //			view.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 			frameViews.add(view);
 			diff--;
@@ -61,13 +61,13 @@ class StackView extends Composite {
 
 	public void zoomIn() {
 		zoom *= 1.05;
-		for(FrameView2 frame : frameViews)
+		for(FrameView frame : frameViews)
 			frame.setZoom(zoom);
 	}
 
 	public void zoomOut() {
 		zoom *= .95;
-		for(FrameView2 frame : frameViews)
+		for(FrameView frame : frameViews)
 			frame.setZoom(zoom);
 	}
 

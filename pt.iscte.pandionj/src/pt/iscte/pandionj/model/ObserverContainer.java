@@ -1,18 +1,18 @@
-package pt.iscte.pandionj.tests;
+package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Observable2<A> {
-	private final List<Observer2<A>> obs;
+public class ObserverContainer<A> {
+	private final List<ModelObserver<A>> obs;
 	private boolean changed;
 
-	public Observable2() {
+	public ObserverContainer() {
 		obs = new ArrayList<>();
 		changed = false;
 	}
 
-	public void addObserver(Observer2<A> o) {
+	public void addObserver(ModelObserver<A> o) {
 		if (o == null)
 			throw new NullPointerException();
 		if (!obs.contains(o)) {
@@ -20,7 +20,7 @@ public class Observable2<A> {
 		}
 	}
 
-	public void deleteObserver(Observer2<A> o) {
+	public void deleteObserver(ModelObserver<A> o) {
 		obs.remove(o);
 	}
 
@@ -32,7 +32,7 @@ public class Observable2<A> {
 		if (!changed)
 			return;
 
-		for(Observer2<A> o : obs)
+		for(ModelObserver<A> o : obs)
 			o.update(this, arg);
 
 		clearChanged();

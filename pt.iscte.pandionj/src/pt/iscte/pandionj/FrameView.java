@@ -28,13 +28,13 @@ import org.eclipse.swt.widgets.Slider;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.StackFrameModel;
 
-class FrameView2 extends Composite {
+class FrameView extends Composite {
 	FrameViewer viewer;
 	StackFrameModel model;
 	Label header;
 	Slider slider;
 	
-	FrameView2(Composite parent) {
+	FrameView(Composite parent) {
 		super(parent, SWT.BORDER);
 		GridLayout layout = new GridLayout();
 		setLayout(layout);

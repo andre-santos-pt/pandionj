@@ -10,8 +10,8 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensions.GrayscaleImageWidget.ImageFig;
-import pt.iscte.pandionj.tests.Observable2;
-import pt.iscte.pandionj.tests.Observer2;
+import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.model.ObserverContainer;
 
 public class ImageAguia implements IObjectWidgetExtension {
 
@@ -24,9 +24,9 @@ public class ImageAguia implements IObjectWidgetExtension {
 	public IFigure createFigure(IObjectModel m) {
 		IArrayModel array = m.getArray("data");
 		ImageFig imageFig = new GrayscaleImageWidget.ImageFig(array);
-		m.registerDisplayObserver(new Observer2() {
+		m.registerDisplayObserver(new ModelObserver() {
 			@Override
-			public void update(Observable2 o, Object arg) {
+			public void update(ObserverContainer o, Object arg) {
 				if(arg.equals("data"))
 					imageFig.updateModel(m.getArray("data"));
 			}
@@ -44,18 +44,18 @@ public class ImageAguia implements IObjectWidgetExtension {
 			setSize(((Object[])array.getValues()[0]).length, array.getLength());
 			setOpaque(true);
 			setBackgroundColor(ColorConstants.green);
-			array.registerDisplayObserver(new Observer2() {
+			array.registerDisplayObserver(new ModelObserver() {
 				
 				@Override
-				public void update(Observable2 o, Object arg) {
+				public void update(ObserverContainer o, Object arg) {
 					System.out.println("!!! -  TODO interaction with object");
 				}
 			});
 			
-			m.registerDisplayObserver(new Observer2() {
+			m.registerDisplayObserver(new ModelObserver() {
 				
 				@Override
-				public void update(Observable2 o, Object arg) {
+				public void update(ObserverContainer o, Object arg) {
 					if(arg.equals("height"))
 						setSize(getSize().width, m.getInt("height"));
 				}

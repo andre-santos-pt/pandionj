@@ -9,8 +9,8 @@ import org.eclipse.jdt.core.JavaModelException;
 import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
-import pt.iscte.pandionj.tests.Observable2;
-import pt.iscte.pandionj.tests.Observer2;
+import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.model.ObserverContainer;
 
 public class ColorAguia implements IObjectWidgetExtension {
 
@@ -32,10 +32,10 @@ public class ColorAguia implements IObjectWidgetExtension {
 		Label label = new Label("?");
 		label.setBackgroundColor(ColorConstants.blue);
 		label.setOpaque(true);
-		m.registerDisplayObserver(new Observer2() {
+		m.registerDisplayObserver(new ModelObserver() {
 			
 			@Override
-			public void update(Observable2 o, Object arg) {
+			public void update(ObserverContainer o, Object arg) {
 				label.setBackgroundColor(ColorManager.getColor(m.getInt("r"), m.getInt("g"), m.getInt("b")));
 			}
 		});

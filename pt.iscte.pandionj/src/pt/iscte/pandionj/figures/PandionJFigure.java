@@ -2,13 +2,10 @@ package pt.iscte.pandionj.figures;
 
 import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
 
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MarginBorder;
-import org.eclipse.draw2d.geometry.Dimension;
 
 import pt.iscte.pandionj.extensibility.IObservableModel;
 

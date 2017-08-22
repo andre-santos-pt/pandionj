@@ -32,8 +32,8 @@ import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.figures.NullFigure;
-import pt.iscte.pandionj.tests.Observable2;
-import pt.iscte.pandionj.tests.Observer2;
+import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.model.ObserverContainer;
 
 public class ExtensionManager {
 
@@ -98,9 +98,9 @@ public class ExtensionManager {
 		@Override
 		public IFigure createFigure(IObjectModel m) {
 			// TODO observe ref change
-			m.registerDisplayObserver(new Observer2() {
+			m.registerDisplayObserver(new ModelObserver() {
 				@Override
-				public void update(Observable2 o, Object arg) {
+				public void update(ObserverContainer o, Object arg) {
 					String attName = (String) arg;
 					if(figs.containsKey(attName)) {
 						for (IFigure f : figs.get(attName))

@@ -26,7 +26,7 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
-import pt.iscte.pandionj.figures.ArrayPrimitiveFigure2;
+import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.tests.mock.MockArray;
 import pt.iscte.pandionj.tests.mock.MockArrayIndex;

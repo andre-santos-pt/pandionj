@@ -27,9 +27,9 @@ import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
+import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.model.ObserverContainer;
 import pt.iscte.pandionj.model.PrimitiveType;
-import pt.iscte.pandionj.tests.Observable2;
-import pt.iscte.pandionj.tests.Observer2;
 
 public class ValueFigure extends PandionJFigure<IValueModel> {
 	private ValueLabel valueLabel;
@@ -68,10 +68,10 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		}
 
 //		setOpaque(false); 
-		model.registerDisplayObserver(new Observer2() {
+		model.registerDisplayObserver(new ModelObserver() {
 			
 			@Override
-			public void update(Observable2 o, Object arg) {
+			public void update(ObserverContainer o, Object arg) {
 				System.out.println("F update");
 //				setVisible(model.isWithinScope());
 				if(isVisible()) {

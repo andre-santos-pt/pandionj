@@ -18,8 +18,8 @@ import org.eclipse.swt.widgets.Display;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
-import pt.iscte.pandionj.tests.Observable2;
-import pt.iscte.pandionj.tests.Observer2;
+import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.model.ObserverContainer;
 
 
 public class GrayscaleImageWidget implements IArrayWidgetExtension {
@@ -63,7 +63,7 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 	}
 
 
-	public static class ImageFig extends Figure implements Observer2 {
+	public static class ImageFig extends Figure implements ModelObserver {
 		IArrayModel model;
 		Object[] array;
 		boolean valid;
@@ -86,7 +86,7 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 			update(null, model.getValues());
 		}
 
-		public void update(Observable2 o, Object arg) {
+		public void update(ObserverContainer o, Object arg) {
 			array = (Object[]) arg;
 			valid = internalAccept(array);
 			if(valid) {
