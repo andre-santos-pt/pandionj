@@ -12,7 +12,6 @@ import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
-import org.eclipse.draw2d.ScalableLayeredPane;
 import org.eclipse.draw2d.XYLayout;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
@@ -40,7 +39,6 @@ import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.figures.PandionJFigure;
 import pt.iscte.pandionj.figures.PositionAnchor;
 import pt.iscte.pandionj.model.ModelObserver;
-import pt.iscte.pandionj.model.ObserverContainer;
 
 public class FrameViewer extends Composite {
 	private static final int GAP = 150;
@@ -113,7 +111,7 @@ public class FrameViewer extends Composite {
 	private void addFrameObserver(IStackFrameModel frame, Predicate<IVariableModel> accept) {
 		frame.registerDisplayObserver(new ModelObserver<StackEvent>() {
 			@Override
-			public void update(ObserverContainer<StackEvent> o, StackEvent event) {
+			public void update(StackEvent event) {
 				if(event != null) {
 					if(event.type == StackEvent.Type.NEW_VARIABLE && accept.test(event.variable)) {
 						add(event.variable);
@@ -217,7 +215,7 @@ public class FrameViewer extends Composite {
 				h = th;
 		}
 		else { // ValueFigure
-			v.registerDisplayObserver((o,a) -> {
+			v.registerDisplayObserver((a) -> {
 				Rectangle r = (Rectangle) xyLayout.getConstraint(figure);
 				if(r != null) {
 					xyLayout.setConstraint(figure, new Rectangle(r.getLocation(), figure.getPreferredSize()));
@@ -259,7 +257,7 @@ public class FrameViewer extends Composite {
 	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
 		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
 			@Override
-			public void update(ObserverContainer<IEntityModel> o, IEntityModel arg) {
+			public void update(IEntityModel arg) {
 				IEntityModel target = ref.getModelTarget();
 				PandionJFigure<?> targetFig = figProvider.getFigure(target);
 				if(!containsChild(pane, targetFig)) {

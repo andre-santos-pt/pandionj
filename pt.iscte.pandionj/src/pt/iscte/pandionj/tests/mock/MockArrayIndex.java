@@ -26,7 +26,7 @@ implements IArrayIndexModel {
 		this.variable = variable;
 		this.arrayReference = arrayReference;
 		this.direction = direction;
-		variable.registerObserver((o,a) -> {setChanged(); notifyObservers();});
+		variable.registerObserver((a) -> {setChanged(); notifyObservers();});
 	}
 
 	public MockArrayIndex(IValueModel variable, IReferenceModel arrayReference, Direction direction, IBound bound) {

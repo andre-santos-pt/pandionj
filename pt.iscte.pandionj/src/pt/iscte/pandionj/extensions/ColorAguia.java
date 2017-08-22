@@ -10,7 +10,6 @@ import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.model.ModelObserver;
-import pt.iscte.pandionj.model.ObserverContainer;
 
 public class ColorAguia implements IObjectWidgetExtension {
 
@@ -35,7 +34,7 @@ public class ColorAguia implements IObjectWidgetExtension {
 		m.registerDisplayObserver(new ModelObserver() {
 			
 			@Override
-			public void update(ObserverContainer o, Object arg) {
+			public void update(Object arg) {
 				label.setBackgroundColor(ColorManager.getColor(m.getInt("r"), m.getInt("g"), m.getInt("b")));
 			}
 		});

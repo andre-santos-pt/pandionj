@@ -79,7 +79,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 					if(var.getValue() instanceof IJavaObject) {
 						ReferenceModel refModel = new ReferenceModel(var, true, null, getRuntimeModel());
 						refModel.registerObserver(new ModelObserver() {
-							public void update(ObserverContainer o, Object arg) {
+							public void update(Object arg) {
 								setChanged();
 								notifyObservers(name);
 							}
@@ -95,7 +95,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 					else {
 						ValueModel val = new ValueModel(var, true, null, getRuntimeModel());
 						val.registerObserver(new ModelObserver() {
-							public void update(ObserverContainer o, Object arg) {
+							public void update(Object arg) {
 								setChanged();
 								notifyObservers(name);
 							}

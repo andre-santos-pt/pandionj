@@ -10,7 +10,6 @@ import org.eclipse.jdt.core.JavaModelException;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.model.ModelObserver;
-import pt.iscte.pandionj.model.ObserverContainer;
 
 public class IterableWidget implements IObjectWidgetExtension {
 
@@ -33,7 +32,7 @@ public class IterableWidget implements IObjectWidgetExtension {
 		Label label = new Label();
 		e.registerDisplayObserver(new ModelObserver() {
 			@Override
-			public void update(ObserverContainer o, Object arg) {
+			public void update(Object arg) {
 				eval(e, label);
 			}
 		});

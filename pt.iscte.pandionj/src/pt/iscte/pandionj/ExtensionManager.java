@@ -33,7 +33,6 @@ import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.figures.NullFigure;
 import pt.iscte.pandionj.model.ModelObserver;
-import pt.iscte.pandionj.model.ObserverContainer;
 
 public class ExtensionManager {
 
@@ -100,7 +99,7 @@ public class ExtensionManager {
 			// TODO observe ref change
 			m.registerDisplayObserver(new ModelObserver() {
 				@Override
-				public void update(ObserverContainer o, Object arg) {
+				public void update(Object arg) {
 					String attName = (String) arg;
 					if(figs.containsKey(attName)) {
 						for (IFigure f : figs.get(attName))

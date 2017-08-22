@@ -55,7 +55,7 @@ public class IllustrationBorder implements Border {
 		vars = ref.getIndexVars();
 
 		for(IArrayIndexModel v : vars)
-			v.registerDisplayObserver((o,a) -> arrayFigure.repaint());
+			v.registerDisplayObserver((a) -> arrayFigure.repaint());
 
 		fixedVars = ref.getFixedIndexes();
 		

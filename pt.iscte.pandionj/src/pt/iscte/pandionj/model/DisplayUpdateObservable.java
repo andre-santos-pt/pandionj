@@ -14,9 +14,9 @@ public class DisplayUpdateObservable<T> implements IObservableModel<T> {
 
 	public void registerDisplayObserver(ModelObserver<T> o) {
 		obs.addObserver(new ModelObserver<T>() {
-			public void update(ObserverContainer<T> observable, T arg) {
+			public void update(T arg) {
 				Display.getDefault().asyncExec(() -> {
-					o.update(observable, arg);
+					o.update(arg);
 				});
 			}
 		});

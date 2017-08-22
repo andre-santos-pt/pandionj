@@ -29,7 +29,7 @@ implements IArrayIndexModel {
 		this.arrayRef = arrayRef;
 		bound = null;
 		illegalAccess = false;
-		model.registerObserver((o,a) -> fireChange());
+		model.registerObserver((a) -> fireChange());
 	}
 			
 	private void fireChange() {
@@ -65,7 +65,7 @@ implements IArrayIndexModel {
 	
 	public void setBound(ArrayIndexBound bound) {
 		this.bound = bound;
-		bound.registerObserver((o,a) -> fireChange());
+		bound.registerObserver((a) -> fireChange());
 	}
 	
 	public Direction getDirection() {

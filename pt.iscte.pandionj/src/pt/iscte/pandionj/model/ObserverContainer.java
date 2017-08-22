@@ -3,7 +3,7 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ObserverContainer<A> {
+class ObserverContainer<A> {
 	private final List<ModelObserver<A>> obs;
 	private boolean changed;
 
@@ -33,7 +33,7 @@ public class ObserverContainer<A> {
 			return;
 
 		for(ModelObserver<A> o : obs)
-			o.update(this, arg);
+			o.update(arg);
 
 		clearChanged();
 	}

@@ -28,7 +28,6 @@ import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
 import pt.iscte.pandionj.model.ModelObserver;
-import pt.iscte.pandionj.model.ObserverContainer;
 import pt.iscte.pandionj.model.PrimitiveType;
 
 public class ValueFigure extends PandionJFigure<IValueModel> {
@@ -71,8 +70,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		model.registerDisplayObserver(new ModelObserver() {
 			
 			@Override
-			public void update(ObserverContainer o, Object arg) {
-				System.out.println("F update");
+			public void update(Object arg) {
 //				setVisible(model.isWithinScope());
 				if(isVisible()) {
 					if(Role.GATHERER.equals(role)) {

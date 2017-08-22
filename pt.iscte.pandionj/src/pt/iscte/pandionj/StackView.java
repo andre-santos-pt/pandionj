@@ -27,7 +27,7 @@ class StackView extends Composite {
 	void setInput(RuntimeModel model) {
 		assert model != null;
 		this.model = model;
-		model.registerDisplayObserver((o,a) -> {
+		model.registerDisplayObserver((a) -> {
 			if(model.isTerminated()) {
 				for(FrameView v : frameViews)
 					v.setObsolete();

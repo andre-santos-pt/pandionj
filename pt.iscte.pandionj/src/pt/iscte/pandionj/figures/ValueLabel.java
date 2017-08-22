@@ -21,7 +21,7 @@ class ValueLabel extends Label {
 		setBackgroundColor(ColorConstants.white);
 		setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 		updateValue();
-		model.registerDisplayObserver((o,a) -> updateValue());
+		model.registerDisplayObserver((a) -> updateValue());
 		dirty = false;
 	}
 

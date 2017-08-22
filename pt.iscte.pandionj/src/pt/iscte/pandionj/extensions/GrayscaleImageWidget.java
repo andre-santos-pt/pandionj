@@ -19,7 +19,6 @@ import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.model.ModelObserver;
-import pt.iscte.pandionj.model.ObserverContainer;
 
 
 public class GrayscaleImageWidget implements IArrayWidgetExtension {
@@ -83,10 +82,10 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 			this.model = model;
 			this.model.registerDisplayObserver(this);
 			
-			update(null, model.getValues());
+			update(model.getValues());
 		}
 
-		public void update(ObserverContainer o, Object arg) {
+		public void update(Object arg) {
 			array = (Object[]) arg;
 			valid = internalAccept(array);
 			if(valid) {
