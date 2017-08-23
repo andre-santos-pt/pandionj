@@ -3,15 +3,15 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.jdt.internal.core.index.Index;
 
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
@@ -26,11 +26,8 @@ import pt.iscte.pandionj.parser.VariableInfo;
 public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> implements IReferenceModel {
 	private NullModel nullModel;
 	private boolean isPrimitiveArray;
-	private Collection<String> tags;
-
-	private Map<String, ArrayIndexVariableModel> varsRoles;
-
 	private VariableInfo info;
+	private Collection<String> tags;
 	
 	ReferenceModel(IJavaVariable variable, boolean isInstance, VariableInfo info, StackFrameModel stackFrame) {
 		super(variable, isInstance, stackFrame);
@@ -51,8 +48,6 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 					var.getValue() instanceof IJavaArray &&
 					!(((IJavaArrayType) var.getJavaType()).getComponentType() instanceof IJavaReferenceType); 
 		});
-
-		varsRoles = new LinkedHashMap<>();
 	}
 
 	public EntityModel<?> getModelTarget() {
@@ -60,7 +55,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 		if(target == null || target.isNull())
 			return getNullInstance();
 		else {
-			EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject(target, false);
+			EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject(target, false, this);
 			return object == null ? getNullInstance() : object;
 		}
 	}
@@ -86,7 +81,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	}
 
 	public void setTags(Collection<String> tags) {
-		if(!tags.isEmpty()) {
+		if(tags.isEmpty()) {
 			this.tags = new ArrayList<String>(tags.size());
 			this.tags.addAll(tags);
 		}
@@ -100,21 +95,34 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 		return !tags.isEmpty();
 	}
 
+	public void setVariableRole(VariableInfo info) {
+		this.info = info;
+	}
+	
 	@Override
 	public VariableInfo getVariableRole() {
 		return info;
 	}
 
 	public boolean hasIndexVars() {
-		return info != null && !info.getArrayAccessVariables().isEmpty();
+		// info != null && !info.getArrayAccessVariables((i,v)->false).isEmpty();
+		return !getIndexVars().isEmpty();
 	}
 	
 	public Collection<IArrayIndexModel> getIndexVars() {
+		if(info == null)
+			return Collections.emptyList();
+		
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		
 		List<IArrayIndexModel> list = new ArrayList<>(3);
-		for (String indexVar : info.getArrayAccessVariables()) {
-			IVariableModel vi = stackFrame.getStackVariable(indexVar);
+		Set<String> vars = info.getArrayAccessVariables((i,v)-> {
+			IVariableModel<?> vi = stackFrame.getStackVariable(v);
+			return vi instanceof IValueModel && ((IValueModel) vi).getCurrentValue().equals(i);
+		});
+		
+		for (String indexVar : vars) {
+			IVariableModel<?> vi = stackFrame.getStackVariable(indexVar);
 			if(vi instanceof IValueModel && !vi.getVariableRole().isFixedValue()) {
 				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel((IValueModel) vi, this);
 				IBound bound = vi.getVariableRole().getBound();
@@ -124,6 +132,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 				}
 				list.add(indexModel);
 			}
+			
 		}
 		return list;
 	}
@@ -132,8 +141,8 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		List<IArrayIndexModel> list = new ArrayList<>(3);
 		
-		for (String indexVar : info.getArrayAccessVariables()) {
-			IVariableModel vi = stackFrame.getStackVariable(indexVar);
+		for (String indexVar : info.getArrayAccessVariables((i,v)->false)) {
+			IVariableModel<?> vi = stackFrame.getStackVariable(indexVar);
 			if(vi instanceof IValueModel && vi.getVariableRole().isFixedValue()) {
 				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel((IValueModel) vi, this);
 				list.add(indexModel);
@@ -144,7 +153,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 			@Override
 			public void visit(VariableInfo var) {
 				if(var.getArrayFixedVariables().contains(getName()) && info.getDeclarationBlock().getVariable(var.getName()) == var) {
-					IVariableModel vi = stackFrame.getStackVariable(var.getName());
+					IVariableModel<?> vi = stackFrame.getStackVariable(var.getName());
 					if(vi instanceof IValueModel)
 						list.add(new ArrayIndexVariableModel((IValueModel) vi, ReferenceModel.this));
 				}
@@ -155,11 +164,6 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 
 	@Override
 	public Role getRole() {
-		return null;
+		return Role.NONE;
 	}
-
-	
-	
-	
-	
 }

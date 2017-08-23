@@ -406,12 +406,12 @@ public class VarParser {
 			current = current.getParent();
 		}
 
-		private boolean isIncDecExpression(Expression exp) {
-			return exp instanceof PostfixExpression ||
-					exp instanceof PrefixExpression &&
-					(((PrefixExpression) exp).getOperator() == PrefixExpression.Operator.INCREMENT ||
-					((PrefixExpression) exp).getOperator() == PrefixExpression.Operator.DECREMENT);
-		}
+		//		private boolean isIncDecExpression(Expression exp) {
+		//			return exp instanceof PostfixExpression ||
+		//					exp instanceof PrefixExpression &&
+		//					(((PrefixExpression) exp).getOperator() == PrefixExpression.Operator.INCREMENT ||
+		//					((PrefixExpression) exp).getOperator() == PrefixExpression.Operator.DECREMENT);
+		//		}
 
 		@Override
 		public boolean visit(ArrayAccess node) {
@@ -423,8 +423,12 @@ public class VarParser {
 					VariableOperation op = new VariableOperation(indexExp.toString(), VariableOperation.Type.INDEX, arrayRef, dim);
 					current.addOperation(op);
 
-					VariableOperation opA = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, node.getIndex(), dim);
-					current.addOperation(opA);
+					// TODO other cases accesses
+					Object[] accessExpressions = accessExpressions(node);
+					if(accessExpressions != null) {
+						VariableOperation opA = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, accessExpressions);
+						current.addOperation(opA);
+					}
 				}
 				else if(indexExp instanceof PostfixExpression) {
 					Expression operand = ((PostfixExpression) indexExp).getOperand();
@@ -441,11 +445,13 @@ public class VarParser {
 					if(operand instanceof SimpleName) {
 						VariableOperation op = new VariableOperation(operand.toString(), VariableOperation.Type.INDEX, arrayRef, dim);
 						current.addOperation(op);
-						
+
 						VariableOperation opA = new VariableOperation(arrayRef, VariableOperation.Type.ACCESS, operand, dim);
 						current.addOperation(opA);
 					}
 				}
+
+
 				class NoModifierVisitor extends ASTVisitor {
 					boolean ok = true;
 					public boolean visit(MethodInvocation node) {
@@ -468,6 +474,7 @@ public class VarParser {
 					}
 				};
 
+				// for other expressions (non modifier)
 				if(!(node.getIndex() instanceof SimpleName) && 
 						!(node.getIndex() instanceof PostfixExpression) &&
 						!(node.getIndex() instanceof PrefixExpression)) {
@@ -500,6 +507,24 @@ public class VarParser {
 			return i;
 		}
 
+		private Object[] accessExpressions(ArrayAccess node) {
+			Object[] exp = new Object[indexDepth(node)+1];
+			ArrayAccess a = node;
+			int i = exp.length-1;
+			do {
+				Expression indexExp = a.getIndex();
+				if(!(indexExp instanceof SimpleName)) // TODO no modifiers
+					return null;
+
+				exp[i] = indexExp.toString();
+				Expression temp = a.getArray();
+				a = temp instanceof ArrayAccess ? (ArrayAccess) temp : null;
+				i--;			
+			}
+			while(i >= 0);
+			return exp;
+		}
+
 		@Override
 		public boolean visit(MethodInvocation node) {
 			List<?> arguments = node.arguments();
@@ -513,97 +538,9 @@ public class VarParser {
 			}
 			return true;
 		}
-
-		//		private void handleFor(ForStatement forStatement) {
-		//			for(Object init : forStatement.initializers()) {
-		//				VariableDeclarationExpression exp = (VariableDeclarationExpression) init;
-		//				for(Object frag : exp.fragments()) {
-		//					String varName = ((VariableDeclarationFragment) frag).getName().toString();
-		//					current.addVar(varName);
-		//				}
-		//			}
-		//
-		//			for(Object up : forStatement.updaters()) {
-		//				if(up instanceof PostfixExpression) {
-		//					PostfixExpression post = (PostfixExpression) up;
-		//					if(post.getOperand() instanceof SimpleName) {
-		//						String varName = post.getOperand().toString();
-		//						if(post.getOperator() == PostfixExpression.Operator.INCREMENT)
-		//							current.addOperation(new VariableOperation(varName, VariableOperation.Type.INC));
-		//						else if(post.getOperator() == PostfixExpression.Operator.DECREMENT)
-		//							current.addOperation(new VariableOperation(varName, VariableOperation.Type.DEC));
-		//					}
-		//
-		//				}
-		//			}
-		//		}
-
-
-		//		class ProgressVisitor extends ASTVisitor {
-		//			Set<String> vars = new HashSet<>();
-		//
-		//			@Override
-		//			public boolean visit(PostfixExpression node) {
-		//				if(node.getOperand() instanceof SimpleName) {
-		//					String varName = node.getOperand().toString(); 
-		//					VariableOperation op = null;
-		//					if(node.getOperator() == PostfixExpression.Operator.INCREMENT)
-		//						op = new VariableOperation(varName, VariableOperation.Type.INC);
-		//
-		//					else if(node.getOperator() == PostfixExpression.Operator.DECREMENT)
-		//						op = new VariableOperation(varName, VariableOperation.Type.DEC);
-		//
-		//					if(op != null)
-		//						current.addOperation(op);
-		//				}
-		//				return true;
-		//
-		//			}
-		//
-		//			@Override
-		//			public boolean visit(Assignment node) {
-		//				VariableOperation.Type op = null;
-		//				if(node.getOperator() == Assignment.Operator.PLUS_ASSIGN && node.getRightHandSide() instanceof NumberLiteral || 
-		//						node.getOperator() == Assignment.Operator.ASSIGN && isAcumulationLiteral(node, InfixExpression.Operator.PLUS))
-		//					op = VariableOperation.Type.INC;
-		//
-		//				else if(node.getOperator() == Assignment.Operator.MINUS_ASSIGN && node.getRightHandSide() instanceof NumberLiteral ||
-		//						node.getOperator() == Assignment.Operator.ASSIGN && isAcumulationLiteral(node, InfixExpression.Operator.PLUS))
-		//					op = VariableOperation.Type.DEC;
-		//
-		//				if(op != null) {
-		//					String varName = node.getLeftHandSide().toString(); 
-		//					vars.add(varName);
-		//					current.addOperation(new VariableOperation(varName, op));
-		//				}
-		//				return true;
-		//			}
-		//
-		//			
-		//		}
-
-		//		@Override
-		//		public boolean visit(ExpressionStatement node) {
-		//			ASTNode parent = node.getParent();
-		//			if(parent instanceof ForStatement) {
-		//				
-		//			}
-		//			return true;
-		//		}
-
-
-
-
-
-
-
-
-
-
-
-
-
 	}
+
+
 
 	private static boolean isAcumulationAssign(Assignment assignment, InfixExpression.Operator op, Predicate<Expression> acceptExpression) {
 		if(!(
@@ -634,8 +571,4 @@ public class VarParser {
 		for(BlockInfo b : visitor.roots)
 			b.print();
 	}
-
-
-
-
 }

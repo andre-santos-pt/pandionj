@@ -3,6 +3,7 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IVariable;
@@ -12,13 +13,22 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.parser.BlockInfo;
 import pt.iscte.pandionj.parser.VariableInfo;
+import pt.iscte.pandionj.parser.VariableOperation;
 
 
 public class ArrayReferenceModel extends ArrayModel<IReferenceModel> {
-	private List<ReferenceModel> references;
-
-	public ArrayReferenceModel(IJavaArray array, RuntimeModel runtime) {
+	private List<IReferenceModel> references;
+	
+	public ArrayReferenceModel(IJavaArray array, RuntimeModel runtime, IReferenceModel sourceReference) {
 		super(array, runtime);
+		if(sourceReference != null) {
+			VariableInfo info = sourceReference.getVariableRole();
+			for(IReferenceModel ref : references) {
+				VariableInfo copy = info.convertToArrayAccessDim(ref);
+				System.out.println(ref.getName() + " ??? " + copy);
+				ref.setVariableRole(copy);
+			}
+		}
 	}
 
 	@Override
@@ -38,25 +48,26 @@ public class ArrayReferenceModel extends ArrayModel<IReferenceModel> {
 	}
 
 	private void handlePosition(IJavaVariable var) {
-		VariableInfo info = new VariableInfo("", BlockInfo.NONE);
-		ReferenceModel referenceModel = new ReferenceModel(var, true, info, getRuntimeModel());
+//		VariableInfo info = new VariableInfo("", BlockInfo.NONE);
+//		info.addOperation(new VariableOperation("", VariableOperation.Type.ACCESS, "j","i")); // TODO hardcoded 
+		ReferenceModel referenceModel = new ReferenceModel(var, true, null, getRuntimeModel());
 		references.add(referenceModel);
 	}
 
 	@Override
 	boolean updateInternal(int index, int step) {
 		assert index >= 0 && index < references.size();
-		ReferenceModel refModel = references.get(index);
+		IReferenceModel refModel = references.get(index);
 		return refModel.update(step);
 	}
 
-	public List<ReferenceModel> getModelElements() {
+	public List<IReferenceModel> getModelElements() {
 		return Collections.unmodifiableList(references);
 	}
 	
 	@Override
 	public void setStep(int stepPointer) {
-		for(ReferenceModel ref : references)
+		for(IReferenceModel ref : references)
 			ref.setStep(stepPointer);
 	}
 

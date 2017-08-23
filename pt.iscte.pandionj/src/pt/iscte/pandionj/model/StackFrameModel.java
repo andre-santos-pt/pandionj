@@ -199,7 +199,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 				ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
 				Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
 				refElement.setTags(tags);
-
 				newVar = refElement;
 			}
 			else {
@@ -294,7 +293,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 				if(((IJavaObject) value).isNull())
 					return "null";
 				else
-					return runtime.getObject((IJavaObject) value, false).toString();
+					return runtime.getObject((IJavaObject) value, false, null).toString();
 			}
 			return value.getValueString();
 		}
@@ -388,12 +387,12 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 
 	@Override
-	public Collection<IVariableModel> getStackVariables() {
+	public Collection<IVariableModel<?>> getStackVariables() {
 		return Collections.unmodifiableCollection(stackVars.values());
 	}
 	
-	public Collection<IVariableModel> getAllVariables() {
-		ArrayList<IVariableModel> vars = new ArrayList<>();
+	public Collection<IVariableModel<?>> getAllVariables() {
+		ArrayList<IVariableModel<?>> vars = new ArrayList<>();
 		vars.addAll(staticVars.values());
 		vars.addAll(stackVars.values());
 		return vars;

@@ -33,6 +33,7 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.figures.AbstractArrayFigure;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.IllustrationBorder;
@@ -42,7 +43,7 @@ import pt.iscte.pandionj.model.ModelObserver;
 
 public class FrameViewer extends Composite {
 	private static final int GAP = 150;
-	
+
 	private FigureProvider figProvider;
 	private IFigure pane;
 	private LightweightSystem lws;
@@ -52,13 +53,14 @@ public class FrameViewer extends Composite {
 	public FrameViewer(Composite parent) {
 		super(parent, SWT.NONE);
 		setLayout(new FillLayout());
+		setBackground(ColorConstants.white);
 
 		ScrolledComposite scroll = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL);
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
 		scroll.setMinWidth(0);
 		scroll.setMinHeight(100);
-		scroll.setAlwaysShowScrollBars(true);
+		//		scroll.setAlwaysShowScrollBars(true);
 
 		parent.addListener(SWT.Resize, new Listener() {
 			@Override
@@ -81,26 +83,24 @@ public class FrameViewer extends Composite {
 		lws = new LightweightSystem(canvas);
 		lws.setContents(pane);
 
-//		pane.setScale(1.2);
-		
-		
+		//		pane.setScale(1.2);
 		y = Constants.MARGIN;
 	}
 
 
 	public void setModel(IStackFrameModel frame, Predicate<IVariableModel> accept) {
-		for(Object child : new ArrayList<>(pane.getChildren()))
+		for(Object child : new ArrayList<Object>(pane.getChildren()))
 			pane.remove((IFigure) child);
 
-//		rootFigure.repaint();
+		//		rootFigure.repaint();
 		xyLayout.setConstraint(pane, new GridData(GAP, GAP));
 		xyLayout.layout(pane);
-		
+
 		y = Constants.MARGIN;
 
 		figProvider = new FigureProvider(frame);
-		Collection<IVariableModel> variables = frame.getAllVariables();
-		for(IVariableModel v : variables) 
+		Collection<IVariableModel<?>> variables = frame.getAllVariables();
+		for(IVariableModel<?> v : variables) 
 			if(accept.test(v))
 				add(v);
 
@@ -121,7 +121,7 @@ public class FrameViewer extends Composite {
 
 						for (Object object : pane.getChildren()) {
 							if(object instanceof PandionJFigure) {
-								IObservableModel model = ((PandionJFigure<?>) object).getModel();
+								IObservableModel<?> model = ((PandionJFigure<?>) object).getModel();
 								if(event.variable == model)
 									toRemove = (PandionJFigure<?>) object;
 							}
@@ -142,36 +142,42 @@ public class FrameViewer extends Composite {
 							}
 						}
 					}
-					
-					for (IVariableModel v : frame.getStackVariables()) {
+
+					for (IVariableModel<?> v : frame.getStackVariables()) {
 						if(accept.test(v) && v instanceof IReferenceModel && ((IReferenceModel) v).hasIndexVars()) {
-							for (Object object : pane.getChildren()) {
-								if(object instanceof PandionJFigure) {
-									IObservableModel model = ((PandionJFigure<?>) object).getModel();
-									if(((IReferenceModel) v).getModelTarget() == model)
-										handleIllustration((IReferenceModel) v, (PandionJFigure<?>) object);								
+							IReferenceModel ref = (IReferenceModel) v;
+							IEntityModel target = ref.getModelTarget();
+							updateIllustration(ref);
+							if(target instanceof IArrayModel && ((IArrayModel) target).isReferenceType()) {
+								IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
+								for(int i = 0; i < a.getLength(); i++) {
+									IReferenceModel e = a.getElementModel(i);
+									updateIllustration(e);
 								}
 							}
 						}
 					}
 					updateSize();
-					
 				}
-				
-				
+			}
 
-//				for (Object f : rootFigure.getChildren()) {
-//					IFigure fig = (IFigure) f;
-//					Rectangle r = (Rectangle) xyLayout.getConstraint(fig);
-//					if(r != null)
-//						xyLayout.setConstraint(fig, new Rectangle(r.getLocation(), fig.getPreferredSize()));
-//				}
-
-				
+			private void updateIllustration(IReferenceModel v) {
+				IEntityModel target = v.getModelTarget();
+				for (Object object : pane.getChildren()) {
+					if(object instanceof PandionJFigure) {
+						PandionJFigure<?> fig = (PandionJFigure<?>) object;
+						IObservableModel<?> model = ((PandionJFigure<?>) object).getModel();
+						if(target == model)
+							if(handleIllustration(v, (PandionJFigure<?>) object)) {
+								xyLayout.setConstraint(fig, new Rectangle(fig.getBounds().getLocation(), fig.getPreferredSize()));
+								xyLayout.layout(pane);
+							}
+					}
+				}
 			}
 		});
 	}
-	
+
 	private void updateSize() {
 		GridData prevData = (GridData) getLayoutData();
 		if(prevData == null)
@@ -180,12 +186,11 @@ public class FrameViewer extends Composite {
 		setLayoutData(new GridData(
 				Math.max(prevData.widthHint, dim.width), 
 				Math.max(prevData.heightHint, dim.height)));
-//		System.out.println("PREF " + dim);
 		xyLayout.layout(pane);
 	}
 
 	// TODO fixed values on top row
-	private void add(IVariableModel v) {
+	private void add(IVariableModel<?> v) {
 		PandionJFigure<?> figure = figProvider.getFigure(v);
 		figure.setLocation(new Point(Constants.MARGIN, y));
 		pane.add(figure);
@@ -201,15 +206,14 @@ public class FrameViewer extends Composite {
 
 			if(target instanceof IArrayModel && ((IArrayModel<?>) target).isReferenceType() && targetFig instanceof ArrayReferenceFigure) {
 				IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
-				for(int i = 0; i < a.getLength(); i++) {
-					IReferenceModel e = a.getElementModel(i);
-					IEntityModel eTarget = e.getModelTarget();
-					PandionJFigure<?> eTargetFig = figProvider.getFigure(eTarget);
-					addEntityFigure(e, eTargetFig, new Point(GAP*2, figure.getLocation().y * (i+1)));
-					addPointer2D((ArrayReferenceFigure) targetFig, e, i, eTarget, eTargetFig);
+				int len = Math.min(a.getLength(), Constants.ARRAY_LENGTH_LIMIT);
+				for(int i = 0; i < len-1; i++) {
+					add2dElement(figure, targetFig, a, i);
 				}
+
+				add2dElement(figure, targetFig, a, len-1);
 			}
-			
+
 			int th = targetFig.getPreferredSize().height;
 			if(th > h)
 				h = th;
@@ -224,6 +228,16 @@ public class FrameViewer extends Composite {
 			});
 		}
 		y += h + Constants.OBJECT_PADDING;
+	}
+
+
+	private void add2dElement(PandionJFigure<?> figure, PandionJFigure<?> targetFig, IArrayModel<IReferenceModel> a,
+			int i) {
+		IReferenceModel e = a.getElementModel(i);
+		IEntityModel eTarget = e.getModelTarget();
+		PandionJFigure<?> eTargetFig = figProvider.getFigure(eTarget);
+		addEntityFigure(e, eTargetFig, new Point(GAP*2, figure.getLocation().y * (i+1)));
+		addPointer2D((ArrayReferenceFigure) targetFig, e, i, eTarget, eTargetFig);
 	}
 
 	private void addPointer(PandionJFigure<?> figure, IReferenceModel ref, IEntityModel target,
@@ -246,7 +260,7 @@ public class FrameViewer extends Composite {
 		pane.add(pointer);
 	}
 
-	
+
 	private void setPointerDecoration(IEntityModel target, PolylineConnection pointer) {
 		if(target.isNull())
 			addNullDecoration(pointer);
@@ -259,13 +273,13 @@ public class FrameViewer extends Composite {
 			@Override
 			public void update(IEntityModel arg) {
 				IEntityModel target = ref.getModelTarget();
+				Point prevLoc = pointer.getTargetAnchor().getOwner().getBounds().getLocation();
 				PandionJFigure<?> targetFig = figProvider.getFigure(target);
 				if(!containsChild(pane, targetFig)) {
-					addEntityFigure(ref, targetFig, new Point(GAP, y));
+					addEntityFigure(ref, targetFig, prevLoc);
 					y += targetFig.getPreferredSize().height + Constants.OBJECT_PADDING;
 					updateSize();
 				}
-				
 				pointer.setTargetAnchor(new ChopboxAnchor(targetFig));
 				setPointerDecoration(target, pointer);
 			}
@@ -286,13 +300,19 @@ public class FrameViewer extends Composite {
 		return false;
 	}
 
-	private void handleIllustration(IReferenceModel reference, IFigure targetFig) {
-		if(targetFig instanceof ArrayPrimitiveFigure &&  reference.hasIndexVars()) {
-			IllustrationBorder b = new IllustrationBorder(reference, (ArrayPrimitiveFigure) targetFig);
-			targetFig.setBorder(b);
+	private boolean handleIllustration(IReferenceModel reference, IFigure targetFig) {
+		if(targetFig instanceof AbstractArrayFigure) {
+			if(reference.hasIndexVars()) {
+				IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig);
+				targetFig.setBorder(b);
+				return true;
+			}
+			else
+				targetFig.setBorder(null);
 		}
+		return false;
 	} 
-	
+
 	private void addArrowDecoration(PolylineConnection pointer) {
 		PolylineDecoration decoration = new PolylineDecoration();
 		PointList points = new PointList();
@@ -318,5 +338,5 @@ public class FrameViewer extends Composite {
 		pointer.setTargetDecoration(decoration);	
 	}
 
-	
+
 }

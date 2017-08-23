@@ -159,4 +159,9 @@ implements IArrayIndexModel {
 	public void setStep(int stepPointer) {
 		model.setStep(stepPointer);
 	}
+
+	@Override
+	public void setVariableRole(VariableInfo info) {
+		
+	}
 }

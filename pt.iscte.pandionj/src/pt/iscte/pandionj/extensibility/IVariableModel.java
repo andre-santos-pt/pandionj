@@ -50,4 +50,5 @@ public interface IVariableModel<O> extends IObservableModel<O> {
 	boolean update(int step);
 	IJavaVariable getJavaVariable();
 	void setStep(int stepPointer);
+	void setVariableRole(VariableInfo info);
 }

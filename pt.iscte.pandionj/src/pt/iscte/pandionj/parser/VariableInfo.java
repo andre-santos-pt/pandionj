@@ -2,16 +2,20 @@ package pt.iscte.pandionj.parser;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.BiPredicate;
 
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.GathererType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.parser.BlockInfo.BlockInfoVisitor;
+import pt.iscte.pandionj.parser.VariableOperation.Type;
 
 public class VariableInfo {
 	private final String name;
@@ -30,6 +34,13 @@ public class VariableInfo {
 		this(name, declarationBlock, -1);
 	}
 
+	public VariableInfo copy() {
+		VariableInfo copy = new VariableInfo(name, declarationBlock, paramIndex);
+		for(VariableOperation o : operations)
+			copy.addOperation(o.copy());
+		return copy;
+	}
+	
 	@Override
 	public String toString() {
 		List<String> accessedArrays = getAccessedArrays();
@@ -67,7 +78,34 @@ public class VariableInfo {
 	public List<VariableOperation> getOperations() {
 		return Collections.unmodifiableList(operations);
 	}
+	
+	public void removeOneArrayAccessDim() {
+		Iterator<VariableOperation> it = operations.iterator();
+		while(it.hasNext()) {
+			VariableOperation op = it.next();
+			if(op.getType() == Type.ACCESS) {
+				op.removeParam(0);
+				if(op.getTotalParams() == 0)
+					it.remove();
+			}
+		}
+	}
 
+	public VariableInfo convertToArrayAccessDim(IReferenceModel ref) {
+		VariableInfo conv = new VariableInfo(name, declarationBlock, paramIndex);
+		Iterator<VariableOperation> it = operations.iterator();
+		while(it.hasNext()) {
+			VariableOperation op = it.next();
+			if(op.getType() == Type.ACCESS) {
+				if(op.getTotalParams() > 1)
+					conv.addOperation(op.toAccessDim(ref));
+			}
+			else
+				conv.addOperation(op.copy());
+		}
+		return conv;
+	}
+	
 	public boolean isFixedValue() {
 		for(VariableOperation op : operations)
 			if(op.isModifier())
@@ -88,10 +126,6 @@ public class VariableInfo {
 		return hasAcc && !hasMod;
 	}
 
-//	public enum GathererType {
-//		SUM, MINUS, PROD, UNDEFINED;
-//	}
-
 	public GathererType getGathererType() {
 		assert isGatherer();
 		int sum = 0;
@@ -103,6 +137,7 @@ public class VariableInfo {
 				case SUM: sum++; break;
 				case MINUS: minus++; break;
 				case PROD: prod++; break;
+				case UNDEFINED:
 				}
 
 		if(sum > 0 && minus + prod == 0)
@@ -143,12 +178,17 @@ public class VariableInfo {
 		return list;
 	}
 
-	public Set<String> getArrayAccessVariables() {
+	public Set<String> getArrayAccessVariables(BiPredicate<String, String> pred) {
 		Set<String> set = new LinkedHashSet<>();
 		for(VariableOperation op : operations) {
 			if(op.getType() == VariableOperation.Type.ACCESS) {
 				String exp = op.getParam(0).toString();
 				if(exp.matches("[_a-zA-Z]([_a-zA-Z0-9])*"))
+					set.add(exp);
+			}
+			else if(op.getType() == VariableOperation.Type.ACCESS_DIM) {
+				String exp = op.getParam(2).toString();
+				if(exp.matches("[_a-zA-Z]([_a-zA-Z0-9])*") && pred.test(op.getParam(0).toString(), op.getParam(1).toString()))
 					set.add(exp);
 			}
 //			else if(op.getType() == VariableOperation.Type.PARAM) {
@@ -160,6 +200,18 @@ public class VariableInfo {
 //					VariableInfo param = m.getParam(paramIndex);
 //				}
 //			}
+		}
+		return set;
+	}
+	
+	public Set<String> getArrayAccessDimVariables() {
+		Set<String> set = new LinkedHashSet<>();
+		for(VariableOperation op : operations) {
+			if(op.getType() == VariableOperation.Type.ACCESS_DIM) {
+				String exp = op.getParam(2).toString();
+				if(exp.matches("[_a-zA-Z]([_a-zA-Z0-9])*"))
+					set.add(exp);
+			}
 		}
 		return set;
 	}

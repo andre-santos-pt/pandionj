@@ -44,7 +44,6 @@ public class ExtensionManager {
 		arrayExtensions.put("image", new GrayscaleImageWidget());
 		arrayExtensions.put("hist", new HistogramWidget());
 		
-		
 		objectExtensions = new ArrayList<>();
 		objectExtensions.add(new NumberWidget());
 		objectExtensions.add(new StringWidget());
@@ -56,7 +55,7 @@ public class ExtensionManager {
 	
 	
 	// TODO composite extension? (as TagExtension?)
-	public static IArrayWidgetExtension getArrayExtension(IArrayModel m, Set<String> tags) {
+	public static IArrayWidgetExtension getArrayExtension(IArrayModel<?> m, Set<String> tags) {
 		for (String tag : tags) {
 			IArrayWidgetExtension ext = arrayExtensions.get(tag);
 			if(ext != null && ext.accept(m))

@@ -7,14 +7,16 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 
 public class ArrayPrimitiveModel extends ArrayModel<IValueModel> {
 
 	private List<ValueModel> values;
 	
-	public ArrayPrimitiveModel(IJavaArray array, RuntimeModel runtime) {
+	public ArrayPrimitiveModel(IJavaArray array, RuntimeModel runtime, IReferenceModel sourceReference) {
 		super(array, runtime);
 	}
 

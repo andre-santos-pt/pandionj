@@ -23,6 +23,7 @@ import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.PandionJView;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
@@ -195,7 +196,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	}
 
 
-	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose) {
+	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose, IReferenceModel model) {
 		assert !obj.isNull();
 		
 		return PandionJView.getInstance().executeInternal(() -> {
@@ -204,9 +205,9 @@ public class RuntimeModel extends DisplayUpdateObservable {
 				if(obj.getJavaType() instanceof IJavaArrayType) {
 					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
 					if(componentType instanceof IJavaReferenceType)
-						e = new ArrayReferenceModel((IJavaArray) obj, this);
+						e = new ArrayReferenceModel((IJavaArray) obj, this, model);
 					else
-						e = new ArrayPrimitiveModel((IJavaArray) obj, this);
+						e = new ArrayPrimitiveModel((IJavaArray) obj, this, model);
 				}
 				else {
 					IType type = null;

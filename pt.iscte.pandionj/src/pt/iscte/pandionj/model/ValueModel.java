@@ -12,7 +12,7 @@ extends VariableModel<IJavaPrimitiveValue, Object>
 implements IValueModel {
 	
 	private Role role;
-	private VariableInfo var;
+	private VariableInfo info;
 	
 	public ValueModel(IJavaVariable variable, boolean isInstance, VariableInfo var, StackFrameModel stackFrame) throws DebugException {
 		super(variable, isInstance, stackFrame);
@@ -26,7 +26,7 @@ implements IValueModel {
 	}
 
 	private void init(VariableInfo var) {
-		this.var = var;
+		this.info = var;
 		role = matchRole(var);
 	}
 	
@@ -66,6 +66,11 @@ implements IValueModel {
 
 	@Override
 	public VariableInfo getVariableRole() {
-		return var;
+		return info;
+	}
+
+	@Override
+	public void setVariableRole(VariableInfo info) {
+		this.info = info;		
 	}
 }

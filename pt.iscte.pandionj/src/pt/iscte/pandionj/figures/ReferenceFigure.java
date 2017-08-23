@@ -18,27 +18,10 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		else
 			FontManager.setFont(label, Constants.VAR_FONT_SIZE);
 		
-//		model.registerDisplayObserver(new Observer() {
-//			public void update(Observable o, Object arg) {
-//				if(model.getModelTarget() instanceof NullModel)
-//					setToolTip(new Label("null"));
-//				else
-//					setToolTip(null);
-//			}
-//		});
-		
 		Collection<String> tags = model.getTags();
 		if(!tags.isEmpty())
 			label.setToolTip(new Label("tags: " + tags.toString()));
 		
 		add(label);
-		
-		// TODO repor com RuntimeModel
-//		model.getStackFrame().registerDisplayObserver(new Observer() {
-//			@Override
-//			public void update(Observable o, Object arg) {
-//				setVisible(model.isWithinScope());
-//			}
-//		});
 	}
 }

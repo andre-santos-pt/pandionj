@@ -553,7 +553,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			if(ret != null) {
 				if(ret instanceof IJavaObject) {
 			
-				EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject((IJavaObject) ret, true);
+				EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject((IJavaObject) ret, true, null);
 					System.out.println(ret + " == " + object);
 				}
 				else

@@ -33,7 +33,7 @@ public interface Constants {
 	int OBJECT_HEADER_FONT_SIZE = 14;
 
 
-	int VALUE_FONT_SIZE = 20;
+	int VALUE_FONT_SIZE = 16;
 	String FONT_FACE = "Monospace";
 
 	int POSITION_LINE_WIDTH = 1;
@@ -50,10 +50,10 @@ public interface Constants {
 	int VAR_FONT_SIZE = 18;
 
 	interface Colors {
-		Color OBJECT = new Color(Display.getDefault(), 240, 240, 240);
+		Color OBJECT = new Color(Display.getDefault(), 225, 225, 225);
 		Color OBJECT_HEADER_FONT = new Color(Display.getDefault(), 128, 128, 128);
 		
-		Color ARRAY_POSITION = ColorConstants.white;
+		Color VARIABLE_BOX = new Color(Display.getDefault(), 245, 245, 245);
 
 		Color ILLUSTRATION = ColorConstants.black;
 		

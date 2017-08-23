@@ -8,7 +8,7 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 
-// TODO dandling refs
+// TODO dangling refs
 class ArrayIndexBound extends DisplayUpdateObservable implements IArrayIndexModel.IBound {
 	String expression;
 	IArrayIndexModel.BoundType type;

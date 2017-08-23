@@ -108,4 +108,9 @@ public class MockReference implements IReferenceModel {
 		
 	}
 
+	@Override
+	public void setVariableRole(VariableInfo info) {
+		
+	}
+
 }

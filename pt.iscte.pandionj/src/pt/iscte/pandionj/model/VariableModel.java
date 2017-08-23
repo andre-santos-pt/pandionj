@@ -9,7 +9,9 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.extensibility.IVariableModel;
 
-public abstract class VariableModel<T extends IJavaValue, O> extends ModelElement<T,O> implements IVariableModel<O> {
+public abstract class VariableModel<T extends IJavaValue, O>
+extends ModelElement<T,O> 
+implements IVariableModel<O> {
 
 	protected final IJavaVariable variable;
 	private StackFrameModel stackFrame;  // optional (if owned by variable)

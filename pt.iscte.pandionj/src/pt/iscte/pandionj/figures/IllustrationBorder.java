@@ -53,10 +53,10 @@ public class IllustrationBorder implements Border {
 		leftBoundVisible = false;
 		rightBoundVisible = false;
 		vars = ref.getIndexVars();
-
 		for(IArrayIndexModel v : vars)
 			v.registerDisplayObserver((a) -> arrayFigure.repaint());
 
+		
 		fixedVars = ref.getFixedIndexes();
 		
 		positionBounds = arrayFigure.getPositionBounds(0);
