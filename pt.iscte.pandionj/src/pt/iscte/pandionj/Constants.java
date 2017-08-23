@@ -11,7 +11,7 @@ public interface Constants {
 	String CONTEXT_ID = PLUGIN_ID + ".context";
 	String IMAGE_FOLDER = "images";
 	
-	int ARRAY_LENGTH_LIMIT = 20;
+	int ARRAY_LENGTH_LIMIT = 10;
 	int STACK_LIMIT = 10; // TODO stack limit
 	
 	

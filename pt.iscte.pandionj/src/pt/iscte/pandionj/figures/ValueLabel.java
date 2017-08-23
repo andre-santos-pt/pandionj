@@ -24,6 +24,15 @@ class ValueLabel extends Label {
 		model.registerDisplayObserver((a) -> updateValue());
 		dirty = false;
 	}
+	
+	ValueLabel(String fixedValue){
+		setText(fixedValue);
+		setOpaque(true);
+		FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
+		setSize(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
+		setBackgroundColor(ColorConstants.white);
+		setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
+	}
 
 	private void updateValue() {
 		String textValue = model.getCurrentValue();

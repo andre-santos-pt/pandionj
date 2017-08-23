@@ -4,10 +4,8 @@ import static pt.iscte.pandionj.Constants.ARRAY_POSITION_SPACING;
 import static pt.iscte.pandionj.Constants.INDEX_FONT_SIZE;
 import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
@@ -17,7 +15,6 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
-
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
@@ -28,37 +25,24 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 	private final int N; // array length
 	private List<Position> positions; // existing array positions
 
-	private GridLayout outerLayout;
 	private GridLayout arrayLayout;
 	private RoundedRectangle positionsFig;
-
-	private GridData positionLayout;
 	
 	public ArrayPrimitiveFigure(IArrayModel<IValueModel> model) {
 		super(model);
-//		this.model = model;
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
-		positions = new ArrayList<>(N+1);
-
-		outerLayout = new GridLayout(1, false);
-		setLayoutManager(outerLayout);
-
+		positions = new ArrayList<>(N);
 	
 		positionsFig = createPositionsFig();
 		add(positionsFig);
 		setSize(getPreferredSize());
-		
-		int width = POSITION_WIDTH;
-		if(model.isDecimal())
-			width *= 2;
-
-		positionLayout = new GridData(width, POSITION_WIDTH+20);
 	}
 
 	@Override
 	public void setBorder(Border border) {
 		super.setBorder(border);
-		setSize(border.getPreferredSize(this));
+		if(border != null)
+			setSize(border.getPreferredSize(this));
 	}
 	
 	public int getNumberOfPositions() {
@@ -68,7 +52,7 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 	private RoundedRectangle createPositionsFig() {
 		RoundedRectangle fig = new RoundedRectangle();
 		fig.setBackgroundColor(Constants.Colors.OBJECT);
-		arrayLayout = new GridLayout(Math.max(1, N+1), false);
+		arrayLayout = new GridLayout(Math.min(Math.max(1, N+1),Constants.ARRAY_LENGTH_LIMIT), true);
 		arrayLayout.horizontalSpacing = ARRAY_POSITION_SPACING;
 		arrayLayout.verticalSpacing = 0;
 		arrayLayout.marginHeight = ARRAY_POSITION_SPACING;
@@ -76,10 +60,8 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 		fig.setLayoutManager(arrayLayout);
 		fig.setCornerDimensions(OBJECT_CORNER);
 
-		Label lengthLabel = new Label("length = " + model.getLength());
-		fig.setToolTip(lengthLabel);
+		fig.setToolTip(new Label("length = " + model.getLength()));
 		if(N == 0) {
-//			fig.setPreferredSize(new Dimension(Constants.POSITION_WIDTH/2,Constants.POSITION_WIDTH));
 			Label empty = new Label("");
 			GridData layoutData = new GridData(POSITION_WIDTH/2, POSITION_WIDTH+20);
 			arrayLayout.setConstraint(empty, layoutData);
@@ -95,6 +77,7 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 			if(model.getLength() > Constants.ARRAY_LENGTH_LIMIT) {
 				Position emptyPosition = new Position(null);
 				fig.add(emptyPosition);
+				positions.add(emptyPosition);
 			}
 			
 			Position lastPosition = new Position(model.getLength()-1);
@@ -120,18 +103,14 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 			setLayoutManager(layout);
 
 			if(index != null) {
-				int last = Math.min(index, Constants.ARRAY_LENGTH_LIMIT-1);
-				IValueModel m = model.getElementModel(last); 
+				IValueModel m = model.getElementModel(index); 
 				valueLabel = new ValueLabel(m);
 				layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
 				add(valueLabel);
 			}else {
-				Label emptyLabel = new Label("...");
-				FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
-				IValueModel measure = model.getElementModel(0);
-				setSize(measure.isDecimal() || measure.isBoolean() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
-				layout.setConstraint(emptyLabel, new GridData(width, POSITION_WIDTH));
-				add(emptyLabel);
+				valueLabel = new ValueLabel("...");
+				layout.setConstraint(valueLabel, new GridData(width, POSITION_WIDTH));
+				add(valueLabel);
 			}
 
 			indexLabel = new Label(index == null ? "..." : Integer.toString(index));
@@ -143,10 +122,20 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 		}
 	}
 
+	// TODO testar
 	public Rectangle getPositionBounds(int i) {
 		Rectangle r = getBounds();
-		if(i >= 0 && i < positions.size())
-			r = positions.get(i).getBounds();
+		if(i >= 0 && i < model.getLength()){
+			if(i < positions.size() - 2){
+				r = positions.get(i).getBounds();
+			}else if( i == model.getLength() - 1){
+				r = positions.get(positions.size() - 1).getBounds();
+			}else{
+				r = positions.get(positions.size() - 2).getBounds();
+			}
+		}
+//		if(i >= 0 && i < positions.size())
+//			r = positions.get(i).getBounds();
 		translateToAbsolute(r);
 		return r;
 	}
