@@ -2,6 +2,7 @@ package pt.iscte.pandionj;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.function.Predicate;
 
 import org.eclipse.draw2d.ChopboxAnchor;
@@ -150,10 +151,8 @@ public class FrameViewer extends Composite {
 							updateIllustration(ref);
 							if(target instanceof IArrayModel && ((IArrayModel) target).isReferenceType()) {
 								IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
-								for(int i = 0; i < a.getLength(); i++) {
-									IReferenceModel e = a.getElementModel(i);
+								for (IReferenceModel e : a.getModelElements())
 									updateIllustration(e);
-								}
 							}
 						}
 					}
@@ -206,12 +205,20 @@ public class FrameViewer extends Composite {
 
 			if(target instanceof IArrayModel && ((IArrayModel<?>) target).isReferenceType() && targetFig instanceof ArrayReferenceFigure) {
 				IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
-				int len = Math.min(a.getLength(), Constants.ARRAY_LENGTH_LIMIT);
-				for(int i = 0; i < len-1; i++) {
-					add2dElement(figure, targetFig, a, i);
+				
+				Iterator<Integer> it = a.getValidModelIndexes();
+				while(it.hasNext()) {
+					Integer next = it.next();
+					System.out.println(next);
+					add2dElement(figure, targetFig, a, next);
 				}
-
-				add2dElement(figure, targetFig, a, len-1);
+				
+//				int len = Math.min(a.getLength(), Constants.ARRAY_LENGTH_LIMIT);
+//				for(int i = 0; i < len-1; i++) {
+//					add2dElement(figure, targetFig, a, i);
+//				}
+				// if...
+//				add2dElement(figure, targetFig, a, len-1);
 			}
 
 			int th = targetFig.getPreferredSize().height;

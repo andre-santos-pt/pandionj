@@ -10,11 +10,8 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		super(model);
 	}
 
-	public int getNumberOfPositions() {
-		return getModel().getLength();
-	}
-
 	public abstract Rectangle getPositionBounds(int i);
 
+	
 	
 }

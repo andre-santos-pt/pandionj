@@ -5,6 +5,7 @@ import static pt.iscte.pandionj.Constants.OBJECT_CORNER;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import org.eclipse.draw2d.AbstractConnectionAnchor;
 import org.eclipse.draw2d.ColorConstants;
@@ -27,15 +28,19 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 	private List<Position> positions;
 	private RoundedRectangle positionsFig;
 
+	private List<Anchor> anchors;
+	
 
 	public ArrayReferenceFigure(IArrayModel<IReferenceModel> model) {
 		super(model);
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
 		positions = new ArrayList<>(N);
-
-
 		positionsFig = createPositionsFig();
 		add(positionsFig);
+		
+		anchors = new ArrayList<>(positions.size());
+		for(Position p : positions)
+			anchors.add(new Anchor(this, p));
 	}
 
 	
@@ -59,37 +64,55 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 			fig.add(empty);
 		}
 		else {
-			int len = Math.min(N, Constants.ARRAY_LENGTH_LIMIT);
-			for(int i = 0; i < len - 1; i++) {
+			Iterator<Integer> it = model.getValidModelIndexes();
+			while(it.hasNext()) {
+				Integer i = it.next();
+				if(!it.hasNext() && model.getLength() > Constants.ARRAY_LENGTH_LIMIT) {
+					Position emptyPosition = new Position(null);
+					fig.add(emptyPosition);
+				}
 				Position p = new Position(i);
 				fig.add(p);
 				positions.add(p);
 			}
-			if(model.getLength() > Constants.ARRAY_LENGTH_LIMIT) {
-				Position emptyPosition = new Position(null);
-				fig.add(emptyPosition);
-			}
 			
-			Position lastPosition = new Position(model.getLength() - 1);
-			fig.add(lastPosition);
-			positions.add(lastPosition);
+//			int len = Math.min(N, Constants.ARRAY_LENGTH_LIMIT);
+//			for(int i = 0; i < len - 1; i++) {
+//				Position p = new Position(i);
+//				fig.add(p);
+//				positions.add(p);
+//			}
+//			if(model.getLength() > Constants.ARRAY_LENGTH_LIMIT) {
+//				Position emptyPosition = new Position(null);
+//				fig.add(emptyPosition);
+//			}
+//			
+//			Position lastPosition = new Position(model.getLength() - 1);
+//			fig.add(lastPosition);
+//			positions.add(lastPosition);
 		}
 		return fig;
 	}
 	
 
-	public AbstractConnectionAnchor getAnchor(int positionIndex) {
-		return positions.get(positionIndex).anchor;
+	public int convertToPositionFigureIndex(int i) {
+		assert getModel().isValidModelIndex(i);
+		int len = getModel().getLength();
+		return len > 0 && i == len-1 ? positions.size()-1 : i;
+	}
+	
+	public AbstractConnectionAnchor getAnchor(int modelIndex) {
+		assert getModel().isValidModelIndex(modelIndex);
+		return anchors.get(convertToPositionFigureIndex(modelIndex));
 	}
 
+	
+	
 	private class Position extends Figure {
 		private ValueLabel valueLabel;
 		private Label indexLabel;
-		private Anchor anchor;
 
 		public Position(Integer index) {
-			anchor = new Anchor(ArrayReferenceFigure.this);
-
 			GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
 			GridData layoutData = new GridData(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH*2);
 			GridLayout layout = new GridLayout(1, false);
@@ -119,18 +142,7 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 			else return Integer.toString(index);
 		}
 
-		private class Anchor extends AbstractConnectionAnchor {
-			public Anchor(IFigure fig) {
-				super(fig);
-			}
-
-			@Override
-			public Point getLocation(Point reference) {
-				Rectangle r = Position.this.getBounds();
-				getOwner().translateToAbsolute(r);
-				return Position.this.getLocation().translate(r.width/2, r.height/2);
-			}
-		}
+		
 	}
 
 	@Override
@@ -140,6 +152,22 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 			r = positions.get(i).getBounds();
 		translateToAbsolute(r);
 		return r;
+	}
+	
+	private static class Anchor extends AbstractConnectionAnchor {
+		Position position;
+		
+		public Anchor(IFigure fig, Position p) {
+			super(fig);
+			position = p;
+		}
+
+		@Override
+		public Point getLocation(Point reference) {
+			Rectangle r = position.getBounds();
+			getOwner().translateToAbsolute(r);
+			return position.getLocation().translate(r.width/2, r.height/2);
+		}
 	}
 
 }

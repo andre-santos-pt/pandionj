@@ -1,6 +1,7 @@
 package pt.iscte.pandionj.tests.mock;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
@@ -81,8 +82,22 @@ implements IArrayModel {
 		}
 	}
 
-//	@Override
-//	public Collection<IArrayIndexModel> getIndexModels() {
-//		return Collections.unmodifiableList(variableRoles);
-//	}
+	@Override
+	public Iterator getValidModelIndexes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public List getModelElements() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isValidModelIndex(int i) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 }

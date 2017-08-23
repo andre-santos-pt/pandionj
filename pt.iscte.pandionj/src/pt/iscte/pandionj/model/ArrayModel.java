@@ -2,6 +2,7 @@ package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.debug.core.DebugException;
@@ -61,6 +62,32 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			return null;
 		}
 	}
+	
+	public Iterator<Integer> getValidModelIndexes() {
+		return new Iterator<Integer>() {
+			int i = 0;
+			@Override
+			public boolean hasNext() {
+				return isValidModelIndex(i);
+			}
+			
+			@Override
+			public Integer next() {
+				int r = i;
+				i++;
+				if(i == elementsModel.size() - 1)
+					i = getLength()-1;
+				return r;
+			}
+		};
+	}
+	
+	@Override
+	public boolean isValidModelIndex(int i) {
+		return i >= 0 && i < elementsModel.size() - 1 || getLength() > 0 && i == getLength()-1;
+	}
+	
+
 	
 	@Override
 	public void setStep(int stepPointer) {

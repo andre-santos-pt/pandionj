@@ -48,7 +48,7 @@ public class IllustrationBorder implements Border {
 
 	public IllustrationBorder(IReferenceModel ref, AbstractArrayFigure<?> arrayFigure) {
 		this.arrayFigure = arrayFigure;
-		N = arrayFigure.getNumberOfPositions();
+		N = arrayFigure.getModel().getLength();
 		horizontal = arrayFigure instanceof ArrayPrimitiveFigure;
 		leftBoundVisible = false;
 		rightBoundVisible = false;
