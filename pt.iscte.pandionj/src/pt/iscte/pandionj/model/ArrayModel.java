@@ -1,47 +1,73 @@
 package pt.iscte.pandionj.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
+import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 
-public abstract class ArrayModel<T> extends EntityModel<IJavaArray> implements IArrayModel<T> {
+public abstract class ArrayModel<T extends IVariableModel<?>> 
+extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 	private IJavaValue[] elements;
 	private int dimensions;
 	private String componentType;
-
+	private List<T> elementsModel;
+	
 	ArrayModel(IJavaArray array, RuntimeModel runtime) {
 		super(array, runtime);
-		init(array);
 		try {
 			int len = Math.min(array.getLength(), Constants.ARRAY_LENGTH_LIMIT);
-			initArray(array, len);
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private void init(IJavaArray array) {
-		try {
+			elementsModel = new ArrayList<T>(len);
 			elements = array.getValues();
+			dimensions = getDimensions(array);
+			componentType = getComponentType(array);
+			prev = getValues();
+			initArray(array, len);
+
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
-		dimensions = getDimensions(array);
-		componentType = getComponentType(array);
-		prev = getValues();
 	}
 
+	private void initArray(IJavaArray array, int length) throws DebugException {
+		for(int i = 0; i < length - 1; i++)
+			elementsModel.add(createElement((IJavaVariable) array.getVariable(i)));
 
-	protected abstract void initArray(IJavaArray array, int length);
+		if(length > 0)
+			elementsModel.add(createElement((IJavaVariable) array.getVariable(array.getLength()-1)));
+	}
 
+	abstract T createElement(IJavaVariable var) throws DebugException;
 
+	public T getElementModel(int index) {
+		if(index >= 0 && index < elementsModel.size()-1)
+			return elementsModel.get(index);
+		else if(getLength() > 0 && index == getLength()-1)
+			return elementsModel.get(elementsModel.size()-1);
+		else {
+			assert false;
+			return null;
+		}
+	}
+	
+	@Override
+	public void setStep(int stepPointer) {
+		for(T val : elementsModel)
+			val.setStep(stepPointer);
+	}
+	
 	public Object[] getValues() {
 		return getValues(getContent());
 	}
@@ -115,10 +141,14 @@ public abstract class ArrayModel<T> extends EntityModel<IJavaArray> implements I
 	//	}
 
 	public final boolean update(int step) {
-		int len = Math.min(getLength(), Constants.ARRAY_LENGTH_LIMIT);
-		for(int i = 0; i < len; i++)
-			if(updateInternal(i, step))
+		for(T e : elementsModel)
+			if(e.update(step))
 				setChanged();
+		
+//		int len = Math.min(getLength(), Constants.ARRAY_LENGTH_LIMIT);
+//		for(int i = 0; i < len; i++)	
+//			if(updateInternal(i, step))
+//				setChanged();
 
 		if(!hasChanged() && getDimensions() > 1) {
 			Object[] newValues = getValues(getContent());
@@ -134,7 +164,7 @@ public abstract class ArrayModel<T> extends EntityModel<IJavaArray> implements I
 		return hasChanged;
 	}
 
-	abstract boolean updateInternal(int i, int step);
+//	abstract boolean updateInternal(int i, int step);
 
 	public int getLength() {
 		return elements.length;
@@ -213,6 +243,10 @@ public abstract class ArrayModel<T> extends EntityModel<IJavaArray> implements I
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	public List<T> getModelElements() {
+		return Collections.unmodifiableList(elementsModel);
 	}
 
 	@Override
