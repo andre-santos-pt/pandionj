@@ -35,7 +35,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	private RuntimeModel runtime;
 	private IJavaStackFrame frame;
 	private Map<String, IVariableModel<?>> stackVars;
-	private Map<String, IVariableModel<?>> staticVars;
+	//	private Map<String, IVariableModel<?>> staticVars;
 
 	private IFile srcFile;
 	private VarParser varParser;
@@ -53,14 +53,17 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	private int lastLine;
 
-	public StackFrameModel(RuntimeModel runtime, IJavaStackFrame frame) {
-		assert runtime != null && frame != null;
+	private StaticRefsContainer staticRefs;
+
+	public StackFrameModel(RuntimeModel runtime, IJavaStackFrame frame, StaticRefsContainer staticRefs) {
+		assert runtime != null && frame != null && staticRefs != null;
 		this.runtime = runtime;
 		this.frame = frame;
+		this.staticRefs = staticRefs;
 
 		stackVars = new LinkedHashMap<>();
-		staticVars = new LinkedHashMap<>();
-		
+		//		staticVars = new LinkedHashMap<>();
+
 		Object sourceElement = frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		if(sourceElement instanceof IFile) {
 			srcFile = (IFile) frame.getLaunch().getSourceLocator().getSourceElement(frame);
@@ -108,16 +111,16 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	public void update() {
 		handleVariables(); // FIXME bug new variables int[][]
-//		if(hasChanged()) {
-			step++;
-			stepPointer = step;
-			stepLines.put(step, lastLine);
+		//		if(hasChanged()) {
+		step++;
+		stepPointer = step;
+		stepLines.put(step, lastLine);
 
-			try {
-				lastLine = frame.getLineNumber();
-			} catch (DebugException e) {
-				e.printStackTrace();
-			}
+		try {
+			lastLine = frame.getLineNumber();
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
 	}
 
 
@@ -130,37 +133,18 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	private void handleVariables() {
 		try {
-			Iterator<Entry<String, IVariableModel<?>>> iterator = stackVars.entrySet().iterator();
-			while(iterator.hasNext()) {
-				Entry<String, IVariableModel<?>> e = iterator.next();
-				String varName = e.getKey();
-				boolean contains = false;
-				for(IVariable v : frame.getVariables()) {
-					if(v.getName().equals(varName))
-						contains = true;
-					else if(v.getName().equals("this")) {
-						for (IVariable iv : v.getValue().getVariables())
-							if(iv.getName().equals(varName))
-								contains = true;
-					}
-				}
-				if(!contains) {
-					e.getValue().setOutOfScope();
-					iterator.remove();
-					setChanged();
-					notifyObservers(new StackEvent(StackEvent.Type.VARIABLE_OUT_OF_SCOPE, e.getValue()));
-				}
-			}
+			handleOutOfScopeVars();
 
 			for(IVariable v : frame.getVariables()) {
 				IJavaVariable jv = (IJavaVariable) v;
 				String varName = v.getName();
-
 				if(varName.equals("this")) {
-					for (IVariable iv : jv.getValue().getVariables())
-						if(!((IJavaVariable) iv).isSynthetic() && !((IJavaVariable) iv).isStatic()) {
-							handleVar((IJavaVariable) iv, true);
+					for (IVariable iv : jv.getValue().getVariables()) {
+						IJavaVariable att = (IJavaVariable) iv;
+						if(!att.isSynthetic() && !att.isStatic()) {
+							handleVar(att, true);
 						}
+					}
 				}
 
 				else if(!jv.isSynthetic()) {
@@ -170,6 +154,30 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		}
 		catch(DebugException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void handleOutOfScopeVars() throws DebugException {
+		Iterator<Entry<String, IVariableModel<?>>> iterator = stackVars.entrySet().iterator();
+		while(iterator.hasNext()) {
+			Entry<String, IVariableModel<?>> e = iterator.next();
+			String varName = e.getKey();
+			boolean contains = false;
+			for(IVariable v : frame.getVariables()) {
+				if(v.getName().equals(varName))
+					contains = true;
+				else if(v.getName().equals("this")) {
+					for (IVariable iv : v.getValue().getVariables())
+						if(iv.getName().equals(varName))
+							contains = true;
+				}
+			}
+			if(!contains) {
+				e.getValue().setOutOfScope();
+				iterator.remove();
+				setChanged();
+				notifyObservers(new StackEvent(StackEvent.Type.VARIABLE_OUT_OF_SCOPE, e.getValue()));
+			}
 		}
 	}
 
@@ -183,40 +191,54 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		String varName = jv.getName();
 		IJavaValue value = (IJavaValue) jv.getValue();
 
-		Map<String, IVariableModel<?>> map = jv.isStatic() ? staticVars : stackVars;
+		//		Map<String, IVariableModel<?>> map = jv.isStatic() ? staticVars : stackVars;
 
-		if(map.containsKey(varName) && map.get(varName).getJavaVariable() == jv) {
-			IVariableModel<?> vModel = map.get(varName);
-			vModel.update(step);
+		if(jv.isStatic()) {
+			if(!staticRefs.existsVar(this, varName)) {
+				IVariableModel<?> newVar = value instanceof IJavaObject ?
+					new ReferenceModel(jv, false, null, getRuntime()) :
+					new ValueModel(jv, false, null, getRuntime());
+				staticRefs.add(this, newVar);
+			}
 		}
 		else {
-			VariableInfo info = varParser.locateVariable(varName, frame.getLineNumber());
-			System.err.println(varName + ": " + info);
-
-			IVariableModel<?> newVar = null;
-
-			if(value instanceof IJavaObject) {
-				ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
-				Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
-				refElement.setTags(tags);
-				newVar = refElement;
+			if(stackVars.containsKey(varName) && stackVars.get(varName).getJavaVariable() == jv) {
+				IVariableModel<?> vModel = stackVars.get(varName);
+				vModel.update(step);
 			}
 			else {
-				newVar = new ValueModel(jv, isInstance, info, this);
+				IVariableModel<?> newVar = createVar(jv, isInstance, value);
+				stackVars.put(varName, newVar);
+
+				setChanged();
+				notifyObservers(new StackEvent(StackEvent.Type.NEW_VARIABLE, newVar));
 			}
-
-			map.put(varName, newVar);
-			
-			setChanged();
-			notifyObservers(new StackEvent(StackEvent.Type.NEW_VARIABLE, newVar));
 		}
+	}
 
+	private IVariableModel<?> createVar(IJavaVariable jv, boolean isInstance, IJavaValue value)
+			throws DebugException {
+		String varName = jv.getName();
+		VariableInfo info = varParser.locateVariable(varName, frame.getLineNumber());
+		System.err.println(frame.getDeclaringTypeName() + " -- " +  frame.getMethodName() + " " + (jv.isStatic() ? "static " : "") + varName + ": " + info);
+		IVariableModel<?> newVar = null;
+
+		if(value instanceof IJavaObject) {
+			ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
+			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
+			refElement.setTags(tags);
+			newVar = refElement;
+		}
+		else {
+			newVar = new ValueModel(jv, isInstance, info, this);
+		}
+		return newVar;
 	}
 
 
 	public Collection<IReferenceModel> getReferencesTo(IEntityModel object) {
 		List<IReferenceModel> refs = new ArrayList<>(3);
-		findReferences(staticVars, object, refs);
+		//		findReferences(staticVars, object, refs);
 		findReferences(stackVars, object, refs);
 		return refs;
 	}
@@ -368,8 +390,8 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public void setStep(int step) {
 		if(step != stepPointer) {
 			stepPointer = step;
-			for(IVariableModel<?> var : stackVars.values())
-				var.setStep(stepPointer);
+			//			for(IVariableModel<?> var : staticVars.values())
+			//				var.setStep(stepPointer);
 
 			for(IVariableModel<?> var : stackVars.values())
 				var.setStep(stepPointer);
@@ -390,14 +412,14 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public Collection<IVariableModel<?>> getStackVariables() {
 		return Collections.unmodifiableCollection(stackVars.values());
 	}
-	
+
 	public Collection<IVariableModel<?>> getAllVariables() {
 		ArrayList<IVariableModel<?>> vars = new ArrayList<>();
-		vars.addAll(staticVars.values());
+		//		vars.addAll(staticVars.values());
 		vars.addAll(stackVars.values());
 		return vars;
 	}
-	
-	
-	
+
+
+
 }

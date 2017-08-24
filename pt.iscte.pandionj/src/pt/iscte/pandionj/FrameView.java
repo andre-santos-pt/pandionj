@@ -1,5 +1,6 @@
 package pt.iscte.pandionj;
 
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
@@ -38,7 +39,7 @@ class FrameView extends Composite {
 		super(parent, SWT.BORDER);
 		GridLayout layout = new GridLayout();
 		setLayout(layout);
-		
+		setBackground(ColorConstants.white);
 		header = new Label(this, SWT.BORDER);
 		header.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, false));
 

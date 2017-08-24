@@ -25,13 +25,25 @@ class StaticArea extends Composite {
 	//		return new Point(SWT.DEFAULT, Constants.STATIC_AREA_HEIGHT);
 	//	}
 
+//	void setInput(IStackFrameModel model) {
+//		if(this.model != model) {
+//			this.model = model;
+//
+//			PandionJUI.executeUpdate(() -> {
+//				if(!model.getRuntime().isTerminated()) {
+//					viewer.setModel(model, (v) -> v.isStatic());
+//				}
+//				requestLayout();
+//			});
+//		}
+//	}
 	void setInput(IStackFrameModel model) {
 		if(this.model != model) {
 			this.model = model;
 
 			PandionJUI.executeUpdate(() -> {
 				if(!model.getRuntime().isTerminated()) {
-					viewer.setModel(model, (v) -> v.isStatic());
+					viewer.setModel(model.getRuntime().getStaticVars(), (v) -> v.isStatic());
 				}
 				requestLayout();
 			});

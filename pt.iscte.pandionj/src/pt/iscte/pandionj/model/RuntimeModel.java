@@ -24,6 +24,7 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
@@ -33,15 +34,20 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	private List<StackFrameModel> callStack;
 	private Map<Long, EntityModel<?>> objects;
 	private Map<Long, EntityModel<?>> looseObjects;
+	private StaticRefsContainer staticRefs;
+	
 	private int countActive;
 	private boolean terminated;
 
+	
 	private int step;
 
 	public RuntimeModel() {
 		callStack = new ArrayList<>();
 		objects = new HashMap<>();
 		looseObjects = new HashMap<>();
+		staticRefs = new StaticRefsContainer(this);
+		
 		countActive = 0;
 		terminated = false;
 		step = 0;
@@ -76,6 +82,8 @@ public class RuntimeModel extends DisplayUpdateObservable {
 				});
 		}
 
+		// TODO setStep static
+		
 		PandionJView.getInstance().executeInternal(() -> {
 			handle(thread.getStackFrames());
 		});
@@ -99,13 +107,13 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		}
 		else if(isStackIncrement(revStackFrames)) {
 			for(int i = callStack.size(); i < revStackFrames.length; i++)
-				callStack.add(new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i]));
+				callStack.add(new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs));
 			setChanged();
 		}
 		else {
 			callStack.clear();
 			for(int i = 0; i < revStackFrames.length; i++)
-				callStack.add(new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i]));
+				callStack.add(new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs));
 			setChanged();
 		}
 		notifyObservers();
@@ -262,5 +270,9 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		//			notifyObservers(Collections.emptyList());
 		//		}
 
+	}
+
+	public IStackFrameModel getStaticVars() {
+		return staticRefs;
 	}
 }
