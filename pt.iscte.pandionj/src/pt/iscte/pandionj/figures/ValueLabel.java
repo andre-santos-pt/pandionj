@@ -29,7 +29,7 @@ class ValueLabel extends Label {
 		setText(fixedValue);
 		setOpaque(true);
 		FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
-		setSize(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
+		setPreferredSize(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
 		setBackgroundColor(ColorConstants.white);
 		setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 	}
