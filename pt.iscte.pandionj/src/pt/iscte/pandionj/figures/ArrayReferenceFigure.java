@@ -43,9 +43,9 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 
 		@Override
 		public Point getLocation(Point reference) {
-			Rectangle r = position.getBounds();
+			Rectangle r = position.valueLabel.getBounds();
 			getOwner().translateToAbsolute(r);
-			return position.getLocation().translate(r.width/2, r.height/2);
+			return position.valueLabel.getLocation().translate(r.width/2, r.height/2);
 		}
 	}
 

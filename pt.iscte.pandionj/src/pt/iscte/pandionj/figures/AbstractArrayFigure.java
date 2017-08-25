@@ -98,7 +98,7 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 	}
 	
 	class Position extends Figure {
-		private Label valueLabel;
+		Label valueLabel;
 		private Label indexLabel;
 
 		public Position(Integer index) {
