@@ -8,14 +8,16 @@ import pt.iscte.pandionj.parser.VariableInfo;
 
 
 public class ArrayReferenceModel extends ArrayModel<IReferenceModel> {
-	
+
 	public ArrayReferenceModel(IJavaArray array, RuntimeModel runtime, IReferenceModel sourceReference) {
 		super(array, runtime);
 		if(sourceReference != null) {
 			VariableInfo info = sourceReference.getVariableRole();
-			for(IReferenceModel ref : getModelElements()) {
-				VariableInfo copy = info.convertToArrayAccessDim(ref);
-				ref.setVariableRole(copy);
+			if(info != null) {
+				for(IReferenceModel ref : getModelElements()) {
+					VariableInfo copy = info.convertToArrayAccessDim(ref);
+					ref.setVariableRole(copy);
+				}
 			}
 		}
 	}

@@ -79,10 +79,12 @@ public class FrameViewer extends Composite {
 		scroll.setContent(canvas);
 
 		pane = new Figure();
+		pane.setBackgroundColor(ColorConstants.white);
 		xyLayout = new XYLayout();
 		pane.setLayoutManager(xyLayout);
 		lws = new LightweightSystem(canvas);
 		lws.setContents(pane);
+		
 
 		//		pane.setScale(1.2);
 		y = Constants.MARGIN;

@@ -14,7 +14,7 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 
-public class StaticRefsContainer implements IStackFrameModel {
+public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameModel.StackEvent> implements IStackFrameModel {
 	// la.la.Class.VAR -> 
 	private Map<String, IVariableModel<?>> map;
 	private RuntimeModel runtime;
@@ -32,6 +32,9 @@ public class StaticRefsContainer implements IStackFrameModel {
 		try {
 			String id = frame.getStackFrame().getDeclaringTypeName() + "." + v.getName();
 			map.put(id,v);
+			setChanged();
+			notifyObservers(new StackEvent(StackEvent.Type.NEW_VARIABLE,v));
+			
 		}
 		catch (DebugException e) {
 			e.printStackTrace();
@@ -50,14 +53,12 @@ public class StaticRefsContainer implements IStackFrameModel {
 
 	@Override
 	public Collection<IVariableModel<?>> getStackVariables() {
-		// TODO filter by stack
+		if(runtime.isEmpty())
+			return Collections.emptyList();
+		
 		StackFrameModel topFrame = runtime.getTopFrame();
 		try {
 			String type = topFrame.getStackFrame().getDeclaringTypeName();
-			System.out.println("??? " + map.entrySet().stream()
-					.filter((e) -> e.getKey().substring(0, e.getKey().lastIndexOf('.')).equals(type))
-					.map((e) -> e.getValue())
-					.collect(Collectors.toList()));
 			return map.entrySet().stream()
 					.filter((e) -> e.getKey().substring(0, e.getKey().lastIndexOf('.')).equals(type))
 					.map((e) -> e.getValue())
@@ -86,6 +87,26 @@ public class StaticRefsContainer implements IStackFrameModel {
 	@Override
 	public RuntimeModel getRuntime() {
 		return runtime;
+	}
+
+	@Override
+	public String getInvocationExpression() {
+		return "(static frame)";
+	}
+
+	@Override
+	public boolean isObsolete() {
+		return false;
+	}
+
+	@Override
+	public boolean isExecutionFrame() {
+		return false;
+	}
+
+	@Override
+	public int getLineNumber() {
+		return 0;
 	}
 
 	

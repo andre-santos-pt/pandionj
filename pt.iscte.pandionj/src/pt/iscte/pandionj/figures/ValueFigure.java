@@ -41,14 +41,29 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		this.model = model;
 		Role role = model.getRole();
 		
-		layout = new GridLayout(3, false);
+		layout = new GridLayout(1, false);
+		layout.verticalSpacing = 0;
+		layout.horizontalSpacing = 0;
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		
 		setLayoutManager(layout);
 
+		Figure comp = new Figure();
+		GridLayout compLayout = new GridLayout(2,false);
+		compLayout.marginHeight = 0;
+		compLayout.marginWidth = 0;
+		compLayout.horizontalSpacing = 3;
+		compLayout.verticalSpacing = 0;
+		
+		comp.setLayoutManager(compLayout);
+		
 		Label nameLabel = new Label(model.getName());
-		add(nameLabel);
 		if(role != null)
 			nameLabel.setToolTip(new Label(role.toString()));
 		
+		comp.add(nameLabel);
+
 		if(model.isInstance())
 			FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE, Style.BOLD);
 		else
@@ -56,14 +71,16 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 
 		valueLabel = new ValueLabel(model);
 		Dimension size = valueLabel.getSize();
-		layout.setConstraint(valueLabel, new GridData(size.width, size.height));
-	
-		add(valueLabel);
+		compLayout.setConstraint(valueLabel, new GridData(size.width, size.height));
+		comp.add(valueLabel);
+		add(comp);
+		
+		layout.setConstraint(comp, new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 
 		if(Role.FIXED_VALUE.equals(role)) {
 			valueLabel.setBorder(new LineBorder(Constants.Colors.CONSTANT, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 			valueLabel.setForegroundColor(Constants.Colors.CONSTANT);
-			nameLabel.setForegroundColor(Constants.Colors.CONSTANT);
+//			nameLabel.setForegroundColor(Constants.Colors.CONSTANT);
 		}
 
 //		setOpaque(false); 
@@ -114,15 +131,19 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		//		model.getRuntimeModel().registerDisplayObserver((o,a) -> setVisible(model.isWithinScope()));
 
 		if(Role.GATHERER.equals(role)) {
+			add(new Label());
 			extraFigure = new Label("");
 			extraFigure.setForegroundColor(ColorConstants.gray);
 			FontManager.setFont(extraFigure, Constants.VAR_FONT_SIZE);
 			add(extraFigure);
+			layout.setConstraint(extraFigure, new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 		}
 		else if(Role.MOST_WANTED_HOLDER.equals(role)) {
+			add(new Label());
 			extraFigure = new Figure();
 			extraFigure.setLayoutManager(new FlowLayout());
 			add(extraFigure);
+			layout.setConstraint(extraFigure, new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 		}
 		else if(Role.STEPPER.equals(role)) {
 			setBorder(new ArrowBorder(model.getVariableRole().getDirection()));
@@ -139,12 +160,12 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		StringBuffer parcels = new StringBuffer(v.toString());
 		for(int i = 1; i < history.size(); i++) {
 			Object x = pType.getValue(history.get(i));
-			if(pType.equals(PrimitiveType.BYTE))			parcels.append(" + " + ((Byte) 		x - (Byte) v));
-			else if(pType.equals(PrimitiveType.SHORT))	parcels.append(" + " + ((Short) 		x - (Short) v));
-			else if(pType.equals(PrimitiveType.INT)) 	parcels.append(" + " + ((Integer) 	x - (Integer) v));
-			else if(pType.equals(PrimitiveType.LONG))	parcels.append(" + " + ((Long) 		x - (Long) v));
-			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append(" + " + ((Float) 		x - (Float) v));
-			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append(" + " + ((Double) 	x - (Double) v));
+			if(pType.equals(PrimitiveType.BYTE))			parcels.append("+" + ((Byte) 		x - (Byte) v));
+			else if(pType.equals(PrimitiveType.SHORT))	parcels.append("+" + ((Short) 		x - (Short) v));
+			else if(pType.equals(PrimitiveType.INT)) 	parcels.append("+" + ((Integer) 	x - (Integer) v));
+			else if(pType.equals(PrimitiveType.LONG))	parcels.append("+" + ((Long) 		x - (Long) v));
+			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append("+" + ((Float) 		x - (Float) v));
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append("+" + ((Double) 	x - (Double) v));
 			v = x;
 		}
 		return "(" + parcels.toString() + ")";
@@ -161,12 +182,12 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		StringBuffer parcels = new StringBuffer(v.toString());
 		for(int i = 1; i < history.size(); i++) {
 			Object x = pType.getValue(history.get(i));
-			if(pType.equals(PrimitiveType.BYTE))			parcels.append(" - " + ((Byte) 		v - (Byte) x));
-			else if(pType.equals(PrimitiveType.SHORT))	parcels.append(" - " + ((Short) 		v - (Short) x));
-			else if(pType.equals(PrimitiveType.INT)) 	parcels.append(" - " + ((Integer) 	v - (Integer) x));
-			else if(pType.equals(PrimitiveType.LONG))	parcels.append(" - " + ((Long) 		v - (Long) x));
-			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append(" - " + ((Float) 		v - (Float) x));
-			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append(" - " + ((Double) 	v - (Double) x));
+			if(pType.equals(PrimitiveType.BYTE))			parcels.append("-" + ((Byte) 		v - (Byte) x));
+			else if(pType.equals(PrimitiveType.SHORT))	parcels.append("-" + ((Short) 		v - (Short) x));
+			else if(pType.equals(PrimitiveType.INT)) 	parcels.append("-" + ((Integer) 	v - (Integer) x));
+			else if(pType.equals(PrimitiveType.LONG))	parcels.append("-" + ((Long) 		v - (Long) x));
+			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append("-" + ((Float) 		v - (Float) x));
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append("-" + ((Double) 	v - (Double) x));
 			v = x;
 		}
 		return "(" + parcels.toString() + ")";
@@ -182,12 +203,12 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		StringBuffer parcels = new StringBuffer(v.toString());
 		for(int i = 1; i < history.size(); i++) {
 			Object x = pType.getValue(history.get(i));
-			if(pType.equals(PrimitiveType.BYTE))			parcels.append(" x " + ((Byte) 		x / (Byte) v));
-			else if(pType.equals(PrimitiveType.SHORT))	parcels.append(" x " + ((Short) 		x / (Short) v));
-			else if(pType.equals(PrimitiveType.INT)) 	parcels.append(" x " + ((Integer) 	x / (Integer) v));
-			else if(pType.equals(PrimitiveType.LONG))	parcels.append(" x " + ((Long) 		x / (Long) v));
-			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append(" x " + ((Float) 		x / (Float) v));
-			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append(" x " + ((Double) 	x / (Double) v));
+			if(pType.equals(PrimitiveType.BYTE))			parcels.append("x" + ((Byte) 		x / (Byte) v));
+			else if(pType.equals(PrimitiveType.SHORT))	parcels.append("x" + ((Short) 		x / (Short) v));
+			else if(pType.equals(PrimitiveType.INT)) 	parcels.append("x" + ((Integer) 	x / (Integer) v));
+			else if(pType.equals(PrimitiveType.LONG))	parcels.append("x" + ((Long) 		x / (Long) v));
+			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append("x" + ((Float) 		x / (Float) v));
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append("x" + ((Double) 	x / (Double) v));
 			v = x;
 		}
 		return "(" + parcels.toString() + ")";
@@ -196,7 +217,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 	private class HistoryLabel extends Label {
 		public HistoryLabel(String val) {
 			super(val);
-			FontManager.setFont(this, Constants.VAR_FONT_SIZE);
+			FontManager.setFont(this, Constants.VAR_FONT_SIZE/2);
 			setForegroundColor(ColorConstants.gray);
 			// TODO text align center
 //			setLabelAlignment(PositionConstants.CENTER);

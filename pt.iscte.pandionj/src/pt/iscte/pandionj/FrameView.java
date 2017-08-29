@@ -36,7 +36,7 @@ class FrameView extends Composite {
 	Slider slider;
 	
 	FrameView(Composite parent) {
-		super(parent, SWT.BORDER);
+		super(parent, SWT.NONE);
 		GridLayout layout = new GridLayout();
 		setLayout(layout);
 		setBackground(ColorConstants.white);

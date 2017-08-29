@@ -51,9 +51,10 @@ public class PandionJView extends ViewPart {
 	private ScrolledComposite scroll; 
 	private Composite area;
 
-	private StaticArea staticArea;
-	private StackView stackView;
-
+//	private StaticArea staticArea;
+//	private StackView stackView;
+	private RuntimeViewer runtimeView;
+	
 	private InvocationArea invocationArea;
 
 	private Label labelInit;
@@ -99,12 +100,13 @@ public class PandionJView extends ViewPart {
 		parent.setLayout(stackLayout);
 		parent.setBackground(new Color(null, 255, 255, 255));
 
+		// TODO scroll update
 		scroll = new ScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
 		scroll.setExpandHorizontal(true);
 		scroll.setExpandVertical(true);
 		scroll.setMinHeight(100);
 		scroll.setMinWidth(0);
-		scroll.setAlwaysShowScrollBars(true);
+//		scroll.setAlwaysShowScrollBars(true);
 
 		area = new Composite(scroll, SWT.NONE);
 		area.setBackground(Constants.Colors.VIEW_BACKGROUND);
@@ -113,8 +115,8 @@ public class PandionJView extends ViewPart {
 		layout.marginRight = 0;
 		layout.marginTop = 0;
 		layout.marginBottom = 0;
-		layout.horizontalSpacing = 1;
-		layout.verticalSpacing = 1;
+		layout.horizontalSpacing = 0;
+		layout.verticalSpacing = 0;
 		area.setLayout(layout);
 		scroll.setContent(area);
 
@@ -126,13 +128,17 @@ public class PandionJView extends ViewPart {
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		stackLayout.topControl = labelComposite;
 
-		staticArea = new StaticArea(area);
+//		staticArea = new StaticArea(area);
 //		staticArea.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 		//		staticArea.setLayoutData(new GridData(SWT.DEFAULT, 200));
 
-		stackView = new StackView(area);
-		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+//		stackView = new StackView(area);
+//		stackView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
+		runtimeView = new RuntimeViewer(area);
+		runtimeView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+		
 		invocationArea = new InvocationArea(parent);
 		setTitleToolTip(getVersion());
 	}
@@ -206,14 +212,15 @@ public class PandionJView extends ViewPart {
 			// TODO avoid reload
 			if(runtime == null || !runtime.isPartiallyCommon(thread.getStackFrames())) {
 				runtime = new RuntimeModel();
-				stackView.setInput(runtime);
+//				stackView.setInput(runtime);
+				runtimeView.setInput(runtime);
 			}
 
 			runtime.update(thread);
 
 			if(!runtime.isEmpty() && !runtime.isTerminated()) {
 				StackFrameModel frame = runtime.getTopFrame();
-				staticArea.setInput(frame);
+//				staticArea.setInput(frame);
 				PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber());
 			}
 		});
@@ -259,8 +266,8 @@ public class PandionJView extends ViewPart {
 		toolBar = getViewSite().getActionBars().getToolBarManager();
 		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.Messages.TRASH, () -> runtime.simulateGC());
 
-		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
-		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
+//		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
+//		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());
 		//		addToolbarAction("Highlight", true, "highlight.gif", "Activates the highlight mode, which ...", () -> {});
 		//		addToolbarAction("Clipboard", false, "clipboard.gif", "Copies the visible area of the top frame as image to the clipboard.", () -> stackView.copyToClipBoard());
 		addMenuBarItems();
@@ -274,12 +281,13 @@ public class PandionJView extends ViewPart {
 		menuManager.add(new Action("Copy canvas to clipboard") {
 			@Override
 			public void run() {
-				stackView.copyToClipBoard();
+//				stackView.copyToClipBoard();
 			}
 
 			@Override
 			public boolean isEnabled() {
-				return !stackView.isEmpty();
+//				return !stackView.isEmpty();
+				return false;
 			}
 		});
 	}

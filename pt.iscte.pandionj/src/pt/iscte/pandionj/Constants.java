@@ -25,8 +25,8 @@ public interface Constants {
 	int MARGIN = 20;
 	int NODE_SPACING = 100;
 
-	Dimension OBJECT_CORNER = new Dimension(10, 10);
-	int OBJECT_PADDING = 5;
+	Dimension OBJECT_CORNER = new Dimension(15, 15);
+	int OBJECT_PADDING = 2;
 
 	int BUTTON_FONT_SIZE = 12;
 

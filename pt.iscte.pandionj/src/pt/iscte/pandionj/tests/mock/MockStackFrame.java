@@ -38,4 +38,26 @@ public class MockStackFrame implements IStackFrameModel {
 	public Collection<IVariableModel<?>> getAllVariables() {
 		return getStackVariables();
 	}
+
+	@Override
+	public String getInvocationExpression() {
+		return null;
+	}
+
+	@Override
+	public boolean isObsolete() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean isExecutionFrame() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public int getLineNumber() {
+		return 0;
+	}
 }
