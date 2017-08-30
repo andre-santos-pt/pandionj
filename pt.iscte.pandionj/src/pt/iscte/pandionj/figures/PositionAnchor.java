@@ -37,6 +37,12 @@ public class PositionAnchor extends AbstractConnectionAnchor {
 			Point getPoint(Rectangle r) {
 				return new Point(r.x, r.y + r.height/4);
 			}
+		},
+		CENTER {
+			@Override
+			Point getPoint(Rectangle r) {
+				return new Point(r.x + r.width/2, r.y + r.height/2);
+			}
 		};
 
 		abstract Point getPoint(org.eclipse.draw2d.geometry.Rectangle r);

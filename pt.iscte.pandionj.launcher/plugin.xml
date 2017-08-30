@@ -75,7 +75,6 @@
          point="org.eclipse.ui.bindings">
       <key
             commandId="pt.iscte.pandionj.launcher.run"
-            contextId="pt.iscte.pandionj.context"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+R">
       </key>

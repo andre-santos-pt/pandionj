@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.jdt.core.IType;
@@ -23,23 +24,38 @@ import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.PandionJView;
+import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
 
-public class RuntimeModel extends DisplayUpdateObservable {
+public class RuntimeModel extends DisplayUpdateObservable<RuntimeModel.Event<?>> {
+
+	public static class Event<T> {
+		public enum Type {
+			NEW_FRAME, NEW_STACK, STEP, TERMINATION, NEW_OBJECT;
+		}
+
+		public final Type type;
+		public final T arg;
+
+		public Event(Type type, T arg) {
+			this.type = type;
+			this.arg = arg;
+		}
+	}
+
 	private ILaunch launch;
 	private List<StackFrameModel> callStack;
-	private Map<Long, EntityModel<?>> objects;
-	private Map<Long, EntityModel<?>> looseObjects;
+	private Map<Long, IEntityModel> objects;
+	private Map<Long, IEntityModel> looseObjects;
 	private StaticRefsContainer staticRefs;
-	
+
 	private int countActive;
 	private boolean terminated;
 
-	
 	private int step;
 
 	public RuntimeModel() {
@@ -47,7 +63,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 		objects = new HashMap<>();
 		looseObjects = new HashMap<>();
 		staticRefs = new StaticRefsContainer(this);
-		
+
 		countActive = 0;
 		terminated = false;
 		step = 0;
@@ -66,69 +82,79 @@ public class RuntimeModel extends DisplayUpdateObservable {
 			step = 0;
 			terminated = false;
 			countActive = 0;
+			setChanged();
+			notifyObservers(new Event<List<StackFrameModel>>(Event.Type.NEW_STACK, getFilteredStackPath()));
 		}
 
 		terminated = false;
+
+		//		for (EntityModel<?> e : objects.values()) {
+		//			e.update(step);		
+		//		}
 
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel && o.update(step))
 				setChanged();
 			else if(o instanceof ObjectModel)
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
-					public void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field) {
-						if(object != null && object.update(step))
+					public void visit(IEntityModel object, ObjectModel parent, int index, int depth, String field) {
+						if(object != null && ((EntityModel<?>) object).update(step))
 							setChanged();
 					}
 				});
 		}
 
 		// TODO setStep static
-		
+
 		PandionJView.getInstance().executeInternal(() -> {
 			handle(thread.getStackFrames());
 		});
-		
+
 		for(int i = 0; i < countActive; i++)
 			callStack.get(i).update();
 
 		step++;
 		setChanged();
-		notifyObservers(step);
+		notifyObservers(new Event<Object>(Event.Type.STEP, null));
 	}
 
-	private void handle(IStackFrame[] stackFrames) {
+	private void handle(IStackFrame[] stackFrames) throws DebugException {
 		assert stackFrames != null;
 
 		IStackFrame[] revStackFrames = reverse(stackFrames);
-		countActive = revStackFrames.length;
 		if(isSubStack(revStackFrames)) {
-			for(int i = countActive; i < callStack.size(); i++)
+			for(int i = revStackFrames.length; i < callStack.size(); i++)
 				callStack.get(i).setObsolete();
 		}
 		else if(isStackIncrement(revStackFrames)) {
-			for(int i = callStack.size(); i < revStackFrames.length; i++)
-				callStack.add(new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs));
-			setChanged();
+			for(int i = callStack.size(); i < revStackFrames.length; i++) {
+//				if(revStackFrames[i].getLineNumber() != -1) {
+					StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs);
+					callStack.add(newFrame);
+					countActive++;
+					setChanged();
+					notifyObservers(new Event<StackFrameModel>(Event.Type.NEW_FRAME, newFrame));	
+//				}
+			}
 		}
 		else {
 			callStack.clear();
-			for(int i = 0; i < revStackFrames.length; i++)
-				callStack.add(new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs));
-			setChanged();
+			for(int i = 0; i < revStackFrames.length; i++) {
+				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs);
+				callStack.add(newFrame);
+			}
+			countActive = revStackFrames.length;
+			//			setChanged();
+			//			notifyObservers(new Event<List<StackFrameModel>>(Event.Type.NEW_STACK, getFilteredStackPath()));
 		}
-		notifyObservers();
-	}
 
-	public void refresh() {
-		setChanged();
-		notifyObservers();
 	}
 
 	public boolean isPartiallyCommon(IStackFrame[] stackFrames) {
 		IStackFrame[] reverse = reverse(stackFrames);
 		return isSubStack(reverse) || isStackIncrement(reverse);
 	}
-	
+
 	private boolean isSubStack(IStackFrame[] stackFrames) {
 		if(stackFrames.length > callStack.size())
 			return false;
@@ -192,7 +218,7 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	public void setTerminated() {
 		terminated = true;
 		setChanged();
-		notifyObservers();
+		notifyObservers(new Event<Object>(Event.Type.TERMINATION, null));
 	}
 
 	public boolean isTerminated() {
@@ -204,11 +230,11 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	}
 
 
-	public EntityModel<? extends IJavaObject> getObject(IJavaObject obj, boolean loose, IReferenceModel model) {
+	public IEntityModel getObject(IJavaObject obj, boolean loose, IReferenceModel model) {
 		assert !obj.isNull();
-		
+
 		return PandionJView.getInstance().executeInternal(() -> {
-			EntityModel<? extends IJavaObject> e = objects.get(obj.getUniqueId());
+			IEntityModel e = objects.get(obj.getUniqueId());
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType) {
 					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
@@ -232,14 +258,15 @@ public class RuntimeModel extends DisplayUpdateObservable {
 				}
 				else {
 					objects.put(obj.getUniqueId(), e);
+					setChanged();
+					notifyObservers(new Event<IEntityModel>(Event.Type.NEW_OBJECT, e));
 				}
-				setChanged();
 			}
 			return e;
 		}, null);
 	}
 
-	public Collection<EntityModel<?>> getLooseObjects() {
+	public Collection<IEntityModel> getLooseObjects() {
 		return Collections.unmodifiableCollection(looseObjects.values());
 	}
 
@@ -275,4 +302,15 @@ public class RuntimeModel extends DisplayUpdateObservable {
 	public IStackFrameModel getStaticVars() {
 		return staticRefs;
 	}
+
+	public List<IReferenceModel> findReferences(IEntityModel e) {
+		List<IReferenceModel> list = new ArrayList<>();
+		for(int i = 0; i < countActive; i++)
+			list.addAll(callStack.get(i).getReferencesTo(e));
+
+		return list;
+	}
+
+
+
 }

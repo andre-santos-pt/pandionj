@@ -1,6 +1,7 @@
 package pt.iscte.pandionj;
 
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -58,8 +59,10 @@ public class FigureProvider  {
 			if(entity.isNull())
 				fig = new NullFigure(entity);
 			else {
-				Set<String> tags = getEntityTags(entity);
-
+				// TODO repor
+//				Set<String> tags = getEntityTags(entity);
+				Set<String> tags = Collections.emptySet();
+				
 				if(model instanceof IArrayModel) {
 					IArrayModel aModel = (IArrayModel) model;
 					IArrayWidgetExtension arrayExtension = ExtensionManager.getArrayExtension(aModel, tags);

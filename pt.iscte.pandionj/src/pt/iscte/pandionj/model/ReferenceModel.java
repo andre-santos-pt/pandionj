@@ -11,7 +11,6 @@ import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
-import org.eclipse.jdt.internal.core.index.Index;
 
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
@@ -50,12 +49,12 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 		});
 	}
 
-	public EntityModel<?> getModelTarget() {
+	public IEntityModel getModelTarget() {
 		IJavaObject target = getContent();
 		if(target == null || target.isNull())
 			return getNullInstance();
 		else {
-			EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject(target, false, this);
+			IEntityModel object = getRuntimeModel().getObject(target, false, this);
 			return object == null ? getNullInstance() : object;
 		}
 	}

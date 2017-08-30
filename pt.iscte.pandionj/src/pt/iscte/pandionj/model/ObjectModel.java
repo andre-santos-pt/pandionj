@@ -42,6 +42,7 @@ import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
@@ -260,7 +261,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 
 	public interface SiblingVisitor {
-		void visit(EntityModel<?> object, ObjectModel parent, int index, int depth, String field);
+		void visit(IEntityModel object, ObjectModel parent, int index, int depth, String field);
 	}
 
 
@@ -268,7 +269,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		class SiblingVisitorDepth implements SiblingVisitor {
 			int max;
 			@Override
-			public void visit(EntityModel<?> o, ObjectModel parent, int index, int d, String f) {
+			public void visit(IEntityModel o, ObjectModel parent, int index, int d, String f) {
 				max = Math.max(max, d);
 			}
 		};
@@ -280,7 +281,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public int siblingsBreath() {
 		class SiblingVisitorBreath implements SiblingVisitor {
 			Multiset<Integer> count = HashMultiset.create();
-			public void visit(EntityModel<?> o, ObjectModel parent, int index, int d, String f) {
+			public void visit(IEntityModel o, ObjectModel parent, int index, int d, String f) {
 				count.add(d);
 			}
 			public int max() {
@@ -309,7 +310,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-	private void traverseSiblings(EntityModel<?> e, ObjectModel parent, int index, Set<EntityModel<?>> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
+	private void traverseSiblings(IEntityModel e, ObjectModel parent, int index, Set<IEntityModel> set, SiblingVisitor v, int depth, String field, boolean visitNulls) throws DebugException {
 		assert e != null;
 		if(!set.contains(e)) {
 			set.add(e);
@@ -322,7 +323,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				int i = 0;
 				for(String siblingRef : refsOfSameType) {
 					ReferenceModel refModel = obj.references.get(siblingRef);
-					EntityModel<?> o = refModel.getModelTarget();
+					IEntityModel o = refModel.getModelTarget();
 					traverseSiblings(o, obj, i++, set, v, depth+1, siblingRef, visitNulls);
 				}
 			}
@@ -415,8 +416,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 		visited.add(obj);
 
-		EntityModel<?> leftTarget = obj.references.get(left).getModelTarget();
-		EntityModel<?> rightTarget = obj.references.get(right).getModelTarget();
+		IEntityModel leftTarget = obj.references.get(left).getModelTarget();
+		IEntityModel rightTarget = obj.references.get(right).getModelTarget();
 
 		return (leftTarget instanceof NullModel || isBinaryTree((ObjectModel) leftTarget, left, right, visited)) &&
 				(rightTarget instanceof NullModel || isBinaryTree((ObjectModel) rightTarget, left, right, visited));
@@ -430,12 +431,12 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	
 	
 
-	private void infixTraverse(EntityModel<?> e, ObjectModel parent, String field, int depth, SiblingVisitor visitor, boolean visitNulls) {
+	private void infixTraverse(IEntityModel e, ObjectModel parent, String field, int depth, SiblingVisitor visitor, boolean visitNulls) {
 		int index = field == null ? -1 : field.equals(leftField) ? 0 : 1;
 		if(e instanceof ObjectModel) {
 			ObjectModel obj = (ObjectModel) e;
 
-			EntityModel<?> leftTarget = obj.references.get(leftField).getModelTarget();
+			IEntityModel leftTarget = obj.references.get(leftField).getModelTarget();
 			if(leftTarget instanceof NullModel && visitNulls)
 				visitor.visit(leftTarget, obj, index, depth+1, field);
 			else
@@ -444,7 +445,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			visitor.visit(e, parent, index, depth, field);
 
 
-			EntityModel<?> rightTarget = obj.references.get(rightField).getModelTarget();
+			IEntityModel rightTarget = obj.references.get(rightField).getModelTarget();
 			if(rightTarget instanceof NullModel && visitNulls)
 				visitor.visit(rightTarget, obj, index, depth+1, field);
 			else
@@ -553,7 +554,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			if(ret != null) {
 				if(ret instanceof IJavaObject) {
 			
-				EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject((IJavaObject) ret, true, null);
+				IEntityModel object = getRuntimeModel().getObject((IJavaObject) ret, true, null);
 					System.out.println(ret + " == " + object);
 				}
 				else
@@ -637,7 +638,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			//			if(!(field.getJavaType() instanceof IJavaArrayType))
 			//				throw new IllegalArgumentException(fieldName + " is not an array field");
 
-			EntityModel<?> t = references.get(fieldName).getModelTarget();
+			IEntityModel t = references.get(fieldName).getModelTarget();
 			return t instanceof IArrayModel ? (IArrayModel) t : null;
 		} catch (DebugException e) {
 			e.printStackTrace();

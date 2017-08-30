@@ -35,7 +35,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	private RuntimeModel runtime;
 	private IJavaStackFrame frame;
 	private Map<String, IVariableModel<?>> stackVars;
-	//	private Map<String, IVariableModel<?>> staticVars;
 
 	private IFile srcFile;
 	private VarParser varParser;
@@ -62,7 +61,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		this.staticRefs = staticRefs;
 
 		stackVars = new LinkedHashMap<>();
-		//		staticVars = new LinkedHashMap<>();
 
 		Object sourceElement = frame.getLaunch().getSourceLocator().getSourceElement(frame);
 		if(sourceElement instanceof IFile) {
@@ -191,8 +189,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		String varName = jv.getName();
 		IJavaValue value = (IJavaValue) jv.getValue();
 
-		//		Map<String, IVariableModel<?>> map = jv.isStatic() ? staticVars : stackVars;
-
 		if(jv.isStatic()) {
 			if(!staticRefs.existsVar(this, varName)) {
 				IVariableModel<?> newVar = value instanceof IJavaObject ?
@@ -238,7 +234,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	public Collection<IReferenceModel> getReferencesTo(IEntityModel object) {
 		List<IReferenceModel> refs = new ArrayList<>(3);
-		//		findReferences(staticVars, object, refs);
 		findReferences(stackVars, object, refs);
 		return refs;
 	}

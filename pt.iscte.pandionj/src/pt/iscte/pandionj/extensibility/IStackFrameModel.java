@@ -10,7 +10,7 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 	Collection<IVariableModel<?>> getAllVariables();
 	Collection<IReferenceModel> getReferencesTo(IEntityModel e);
 	RuntimeModel getRuntime();
-
+	String getInvocationExpression();
 	
 	class StackEvent {
 		public enum Type {
@@ -24,4 +24,8 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 			this.variable = variable;
 		}
 	}
+
+	boolean isObsolete();
+	boolean isExecutionFrame();
+	int getLineNumber();
 }

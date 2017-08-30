@@ -141,8 +141,10 @@ public class LaunchCommand extends AbstractHandler {
 									}
 								});
 							} 
-							else
-								launch(file, line, firstType, agentArgs + ";" + selectedMethod.getElementName() + "()", mainMethod);
+							else {
+								if(PandionJUI.checkView())
+									launch(file, line, firstType, agentArgs + ";" + selectedMethod.getElementName() + "()", mainMethod);
+							}
 						}
 					}
 				}
