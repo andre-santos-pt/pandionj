@@ -69,6 +69,8 @@ public class RuntimeViewer extends Composite {
 		rootFig.setBackgroundColor(ColorConstants.white);
 		rootGrid = new GridLayout(2, false);
 		rootGrid.horizontalSpacing = GAP;
+		rootGrid.marginWidth = Constants.MARGIN;
+		rootGrid.marginHeight = Constants.MARGIN;
 		rootFig.setLayoutManager(rootGrid);
 
 		stackFig = new StackFigure();

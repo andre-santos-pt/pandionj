@@ -96,16 +96,10 @@ public class PandionJView extends ViewPart {
 
 	private void createWidgets(Composite parent) {
 		stackLayout = new StackLayout();
+		stackLayout.marginHeight = 0;
+		stackLayout.marginWidth = 0;
 		parent.setLayout(stackLayout);
 		parent.setBackground(Constants.Colors.VIEW_BACKGROUND);
-
-		GridLayout layout = new GridLayout(1, true);
-		layout.marginLeft = 0;
-		layout.marginRight = 0;
-		layout.marginTop = 0;
-		layout.marginBottom = 0;
-		layout.horizontalSpacing = 0;
-		layout.verticalSpacing = 0;
 
 		Composite labelComposite = new Composite(parent, SWT.NONE);
 		labelComposite.setLayout(new GridLayout());
