@@ -30,7 +30,8 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		add(positionsFig);
 	}
 
-	abstract Label createValueLabel(int i);
+	abstract Figure createValueLabel(E e);
+	
 	abstract GridData createValueLabelGridData();
 	
 	private RoundedRectangle createPositionsFig() {
@@ -108,7 +109,7 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 	}
 	
 	class Position extends Figure {
-		Label valueLabel;
+		Figure valueLabel;
 		private Label indexLabel;
 
 		public Position(Integer index) {
@@ -118,10 +119,9 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 			layout.marginWidth = 5;
 			layout.marginHeight = 5;
 			setLayoutManager(layout);
-			
 
 			if(index != null){
-				valueLabel = createValueLabel(index);
+				valueLabel = createValueLabel(model.getElementModel(index));
 			}else{
 				valueLabel = new ValueLabel("...", true);
 			}
