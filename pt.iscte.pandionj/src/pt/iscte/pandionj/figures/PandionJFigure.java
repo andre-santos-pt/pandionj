@@ -7,6 +7,7 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MarginBorder;
 
+
 import pt.iscte.pandionj.extensibility.IObservableModel;
 
 public class PandionJFigure<T extends IObservableModel<?>> extends Figure {
@@ -25,17 +26,22 @@ public class PandionJFigure<T extends IObservableModel<?>> extends Figure {
 	public T getModel() {
 		return model;
 	}
-
-//	@Override
-//	public Dimension getPreferredSize(int wHint, int hHint) {
-//		System.out.println("* " + getLayoutManager().getPreferredSize(this, wHint, hHint));
-//		return super.getPreferredSize(wHint, hHint).getExpanded(OBJECT_PADDING*2, OBJECT_PADDING*2);
-//	}
+	
+	public IFigure getInnerFigure() {
+		return this;
+	}
 
 	public static class Extension extends PandionJFigure<IObservableModel<?>> {
+		private final IFigure innerFigure;
 		public Extension(IFigure innerFigure, IObservableModel<?> model) {
 			super(model);
+			this.innerFigure = innerFigure;
 			add(innerFigure);
 		}
+		
+		public IFigure getInnerFigure() {
+			return innerFigure;
+		}
 	}
+	
 }

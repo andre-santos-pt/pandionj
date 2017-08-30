@@ -5,20 +5,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
-import org.eclipse.draw2d.PolylineDecoration;
-import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.draw2d.geometry.PointList;
-import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.RuntimeViewer.ObjectContainer;
 import pt.iscte.pandionj.extensibility.IArrayModel;
@@ -29,28 +22,26 @@ import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.figures.AbstractArrayFigure;
-import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.figures.PandionJFigure;
 import pt.iscte.pandionj.figures.PositionAnchor;
 import pt.iscte.pandionj.figures.ReferenceFigure;
 import pt.iscte.pandionj.model.ModelObserver;
-import pt.iscte.pandionj.model.StackFrameModel;
 
 public class StackFrameViewer extends Figure {
 	private GridLayout layout;
 	private FigureProvider figProvider;
-	private ObjectContainer objectFig;
+	private ObjectContainer objectContainer;
 	private Figure rootPane;
 	private Map<IReferenceModel, PolylineConnection> pointerMap;
 	private boolean invisible;
 	
-	public StackFrameViewer(Figure rootPane, IStackFrameModel frame, ObjectContainer objectFig, boolean invisible) {
+	public StackFrameViewer(Figure rootPane, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
 		this.rootPane = rootPane;
-		this.objectFig = objectFig;
+		this.objectContainer = objectContainer;
 		this.invisible = invisible;
-		
-		setBackgroundColor(ColorManager.getColor(240, 240, 240));
+
+		setBackgroundColor(Constants.Colors.OBJECT);
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 2;
 		setLayoutManager(layout);
@@ -60,6 +51,7 @@ public class StackFrameViewer extends Figure {
 			Label label = new Label(frame.getInvocationExpression());
 			label.setForegroundColor(Constants.Colors.CONSTANT);
 			add(label);
+			layout.setConstraint(label, Constants.RIGHT_ALIGN);
 		}
 		pointerMap = new HashMap<>();
 		figProvider = new FigureProvider(frame);
@@ -70,6 +62,10 @@ public class StackFrameViewer extends Figure {
 		updateLook(frame);
 	}
 
+	public void clearPointers() {
+		for (PolylineConnection conn : pointerMap.values())
+			rootPane.remove(conn);
+	}
 
 	private void addFrameObserver(IStackFrameModel frame) {
 		frame.registerDisplayObserver(new ModelObserver<StackEvent>() {
@@ -92,13 +88,13 @@ public class StackFrameViewer extends Figure {
 					for (IVariableModel<?> v : frame.getStackVariables()) {
 						if(v instanceof IReferenceModel) {
 							IReferenceModel ref = (IReferenceModel) v;
-							IEntityModel target = ref.getModelTarget();
-							updateIllustration(ref);
-							if(target instanceof IArrayModel && ((IArrayModel) target).isReferenceType()) {
-								IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
-								for (IReferenceModel e : a.getModelElements())
-									updateIllustration(e);
-							}
+//							IEntityModel target = ref.getModelTarget();
+							objectContainer.updateIllustration(ref);
+//							if(target instanceof IArrayModel && ((IArrayModel) target).isReferenceType()) {
+//								IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
+//								for (IReferenceModel e : a.getModelElements())
+//									updateIllustration(e);
+//							}
 						}
 					}
 				}
@@ -122,25 +118,38 @@ public class StackFrameViewer extends Figure {
 					}
 				}
 			}
-
 			
+			private boolean handleIllustration(IReferenceModel reference, IFigure targetFig) {
+				if(targetFig instanceof AbstractArrayFigure) {
+					if(reference.hasIndexVars()) {
+						IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig);
+						targetFig.setBorder(b);
+						return true;
+					}
+					else
+						targetFig.setBorder(null);
+				}
+				return false;
+			} 
+
+
 		});
 	}
 
 	private void updateLook(IStackFrameModel model) {
 		if(!invisible) {
-		if(model.isObsolete())
-			setBorder(new LineBorder(Constants.Colors.OBSOLETE, 2));
-		//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.OBSOLETE);
-		else if(model.isExecutionFrame())
-			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.INST_POINTER);
-			setBorder(new LineBorder(Constants.Colors.INST_POINTER, 3));
-		else
-			setBorder(new LineBorder(ColorConstants.lightGray, 1));
-		//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
+			if(model.isObsolete())
+				setBorder(new LineBorder(Constants.Colors.OBSOLETE, 1));
+			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.OBSOLETE);
+			else if(model.isExecutionFrame())
+				//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.INST_POINTER);
+				setBorder(new LineBorder(Constants.Colors.INST_POINTER, 3));
+			else
+				setBorder(new LineBorder(ColorConstants.lightGray, 1));
+			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		}
 	}
-	
+
 	private void updateSize() {
 		//		GridData prevData = (GridData) getLayoutData();
 		//		if(prevData == null)
@@ -156,136 +165,47 @@ public class StackFrameViewer extends Figure {
 		PandionJFigure<?> figure = figProvider.getFigure(v);
 		add(figure);
 
-		//		if(figure instanceof ReferenceFigure)
-		layout.setConstraint(figure, new GridData(SWT.RIGHT, SWT.CENTER, false, false));
-
-		//		v.registerDisplayObserver((a) -> {
-		//			Rectangle r = (Rectangle) xyLayout.getConstraint(figure);
-		//			if(r != null) {
-		//				xyLayout.setConstraint(figure, new Rectangle(r.getLocation(), figure.getPreferredSize()));
-		//				xyLayout.layout(figure);
-		//			}
-		//			Dimension dim = figure.getPreferredSize();
-		//			layout.setConstraint(figure, new GridData(dim.width, dim.height));
-		//		});
+		layout.setConstraint(figure, Constants.RIGHT_ALIGN);
 
 		if(v instanceof IReferenceModel) {
 			IReferenceModel ref = (IReferenceModel) v;
 			IEntityModel target = ref.getModelTarget();
-			if(!target.isNull()) {
-				PandionJFigure<?> targetFig = objectFig.addObject(target);
-				addPointer((ReferenceFigure) figure, ref, target, targetFig);
-			}
-			//
-			//			if(target instanceof IArrayModel && ((IArrayModel<?>) target).isReferenceType() && targetFig instanceof ArrayReferenceFigure) {
-			//				IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
-			//
-			//				Iterator<Integer> it = a.getValidModelIndexes();
-			//				while(it.hasNext()) {
-			//					Integer next = it.next();
-			//					System.out.println(next);
-			//					add2dElement(figure, targetFig, a, next);
-			//				}
-			//			}
-			//
-			//			int th = targetFig.getPreferredSize().height;
-			//			if(th > h)
-			//				h = th;
-			//		}
-			//		else { // ValueFigure
-			//			v.registerDisplayObserver((a) -> {
-			//				Rectangle r = (Rectangle) xyLayout.getConstraint(figure);
-			//				if(r != null) {
-			//					xyLayout.setConstraint(figure, new Rectangle(r.getLocation(), figure.getPreferredSize()));
-			//					xyLayout.layout(figure);
-			//				}
-			//			});
+			PandionJFigure<?> targetFig = null;
+			if(!target.isNull())
+				targetFig = objectContainer.addObject(target);
+			addPointer((ReferenceFigure) figure, ref, target, targetFig);
 		}
 	}
 
-	//	public static PandionJFigure<?> getVariableFigure(Figure fig, IObservableModel<?> v) {
-	//		for (Object object : fig.getChildren()) {
-	//			if(object instanceof PandionJFigure) {
-	//				IObservableModel<?> model = ((PandionJFigure<?>) object).getModel();
-	//				if(v == model)
-	//					return (PandionJFigure<?>) object;
-	//			}
-	//		}
-	//		return null;
-	//	}
-
-
-
-	private void add2dElement(PandionJFigure<?> figure, PandionJFigure<?> targetFig, IArrayModel<IReferenceModel> a,
-			int i) {
-		IReferenceModel e = a.getElementModel(i);
-		IEntityModel eTarget = e.getModelTarget();
-		PandionJFigure<?> eTargetFig = figProvider.getFigure(eTarget);
-		addEntityFigure(e, eTargetFig, new Point(100, figure.getLocation().y * (i+1)));
-		addPointer2D((ArrayReferenceFigure) targetFig, e, i, eTarget, eTargetFig);
-	}
-
-	private void addPointer(ReferenceFigure figure, IReferenceModel ref, IEntityModel target,
-			PandionJFigure<?> targetFig) {
+	private void addPointer(ReferenceFigure figure, IReferenceModel ref, IEntityModel target, PandionJFigure<?> targetFig) {
 		PolylineConnection pointer = new PolylineConnection();
+		pointer.setVisible(!target.isNull());
 		pointer.setSourceAnchor(figure.getAnchor());
-		pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
+		if(target.isNull())
+			pointer.setSourceAnchor(figure.getAnchor());
+		else
+			pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
 		RuntimeViewer.addPointerDecoration(target, pointer);
 		addPointerObserver(ref, pointer);
 		rootPane.add(pointer);
 		pointerMap.put(ref, pointer);
 	}
 
-	private void addPointer2D(ArrayReferenceFigure figure, IReferenceModel ref, int index, IEntityModel target,
-			PandionJFigure<?> targetFig) {
-		PolylineConnection pointer = new PolylineConnection();
-		pointer.setSourceAnchor(figure.getAnchor(index));
-		pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
-		RuntimeViewer.addPointerDecoration(target, pointer);
-		addPointerObserver(ref, pointer);
-		rootPane.add(pointer);
-	}
-
-
-
-
 	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
 		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
 			@Override
 			public void update(IEntityModel arg) {
-//				rootPane.remove(pointer);
-//				pointerMap.remove(ref);
 				IEntityModel target = ref.getModelTarget();
 				pointer.setVisible(!target.isNull());
 				if(!target.isNull()) {
-					PandionJFigure<?> targetFig = objectFig.addObject(target);
+					PandionJFigure<?> targetFig = objectContainer.addObject(target);
 					pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
 					RuntimeViewer.addPointerDecoration(target, pointer);
 				}
 			}
 		});
 	}
-
-	private void addEntityFigure(IReferenceModel ref, PandionJFigure<?> targetFig, Point location) {
-		add(targetFig);
-		handleIllustration(ref, targetFig);
-		//		xyLayout.setConstraint(targetFig, new Rectangle(location, targetFig.getPreferredSize()));
-	}
-
-
-	private boolean handleIllustration(IReferenceModel reference, IFigure targetFig) {
-		if(targetFig instanceof AbstractArrayFigure) {
-			if(reference.hasIndexVars()) {
-				IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig);
-				targetFig.setBorder(b);
-				return true;
-			}
-			else
-				targetFig.setBorder(null);
-		}
-		return false;
-	} 
-
+	
 
 	public PandionJFigure<?> getVariableFigure(IVariableModel<?> v) {
 		for (Object object : getChildren()) {
@@ -295,22 +215,15 @@ public class StackFrameViewer extends Figure {
 		return null;
 	}
 
-	public List<PandionJFigure<?>> findReferences(IEntityModel arg) {
-		List<PandionJFigure<?>> list = new ArrayList<>();
-		for (Object object : getChildren()) {
-			if(object instanceof PandionJFigure) {
-				IObservableModel<?> model = ((PandionJFigure<?>) object).getModel();
-				if(model instanceof IReferenceModel && ((IReferenceModel) model).getModelTarget() == arg)
-					list.add((PandionJFigure<?>) object);
-			}
-		}
-		return list;
-	}
-
-	public void clearPointers() {
-		for (PolylineConnection conn : pointerMap.values())
-			rootPane.remove(conn);
-	}
-
-
+//	public List<PandionJFigure<?>> findReferences(IEntityModel arg) {
+//		List<PandionJFigure<?>> list = new ArrayList<>();
+//		for (Object object : getChildren()) {
+//			if(object instanceof PandionJFigure) {
+//				IObservableModel<?> model = ((PandionJFigure<?>) object).getModel();
+//				if(model instanceof IReferenceModel && ((IReferenceModel) model).getModelTarget() == arg)
+//					list.add((PandionJFigure<?>) object);
+//			}
+//		}
+//		return list;
+//	}
 }

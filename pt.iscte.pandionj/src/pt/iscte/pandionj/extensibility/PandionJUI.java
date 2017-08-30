@@ -9,11 +9,13 @@ import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -31,10 +33,34 @@ public interface PandionJUI {
 	}
 
 	static void promptInvocation(IMethod m, InvocationAction a) {
-		if(m.getNumberOfParameters() != 0)
-			PandionJView.getInstance().promptInvocation(m, a);
+		PandionJView view = PandionJView.getInstance();
+		if(view == null)
+			view = openViewDialog();
+
+		if(view != null && m.getNumberOfParameters() != 0)
+			view.promptInvocation(m, a);
 	}
 
+	static PandionJView openViewDialog() {
+		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", "Please...")) {
+			try {
+				return (PandionJView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(Constants.VIEW_ID);
+//				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
+			} catch (PartInitException e) {
+				MessageDialog.openError(Display.getDefault().getActiveShell(), "Open PandionJ view", "View could not be opened.");
+			}
+		}
+		return null;
+	}
+
+	static boolean checkView() {
+		PandionJView view = PandionJView.getInstance();
+		if(view == null)
+			view = openViewDialog();
+		
+		return view != null;
+	}
+	
 	/**
 	 * Open editor and select a given line
 	 */
@@ -85,6 +111,8 @@ public interface PandionJUI {
 	public static void executeUpdate(DebugRun r) {
 		Display.getDefault().asyncExec(() -> PandionJView.getInstance().executeInternal(r));
 	}
+
+
 	
 	
 }

@@ -1,7 +1,9 @@
 package pt.iscte.pandionj;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ColorConstants;
@@ -13,6 +15,7 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.swt.SWT;
@@ -24,6 +27,7 @@ import org.eclipse.swt.widgets.Composite;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObservableModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
@@ -31,35 +35,32 @@ import pt.iscte.pandionj.figures.AbstractArrayFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.figures.PandionJFigure;
+import pt.iscte.pandionj.figures.PandionJFigure.Extension;
 import pt.iscte.pandionj.figures.PositionAnchor;
 import pt.iscte.pandionj.model.ModelObserver;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
 public class RuntimeViewer extends Composite {
-	private static final int GAP = 150;
+	private static final int GAP = 100;
 
 	private FigureProvider figProvider;
 	private Figure rootFig;
 	private StackFigure stackFig;
 	private ObjectContainer objectFig;
-
 	private LightweightSystem lws;
-
 	private GridLayout rootGrid;
+	private ScrolledComposite scroll;
+	private Canvas canvas;
 
 
 	public RuntimeViewer(Composite parent) {
-		super(parent, SWT.NONE);
+		super(parent, SWT.BORDER);
 		setLayout(new FillLayout());
-
-		ScrolledComposite scroll = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL);
-		scroll.setExpandHorizontal(true);
-		scroll.setExpandVertical(true);
-		scroll.setMinWidth(0);
-		scroll.setMinHeight(100);
-
-		Canvas canvas = new Canvas(scroll, SWT.DOUBLE_BUFFERED);
+		setBackground(Constants.Colors.VIEW_BACKGROUND);
+		scroll = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL);
+		scroll.setBackground(Constants.Colors.VIEW_BACKGROUND);
+		canvas = new Canvas(scroll, SWT.DOUBLE_BUFFERED);
 		canvas.setBackground(ColorConstants.white);
 		canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
 		scroll.setContent(canvas);
@@ -67,7 +68,7 @@ public class RuntimeViewer extends Composite {
 		rootFig = new Figure();
 		rootFig.setBackgroundColor(ColorConstants.white);
 		rootGrid = new GridLayout(2, false);
-		rootGrid.horizontalSpacing = 50;
+		rootGrid.horizontalSpacing = GAP;
 		rootFig.setLayoutManager(rootGrid);
 
 		stackFig = new StackFigure();
@@ -86,23 +87,7 @@ public class RuntimeViewer extends Composite {
 		//		PandionJUI.executeUpdate(() -> rebuildStack(model.getFilteredStackPath()));
 		figProvider = new FigureProvider(null);
 
-
 		model.registerDisplayObserver((e) -> refresh(model, e));
-		//		objectFig.setInput(model);
-
-		//		model.registerDisplayObserver((e) -> {
-		//			if(e.type == RuntimeModel.Event.Type.NEW_OBJECT) {
-		//				List<IReferenceModel> refs = model.findReferences((IEntityModel) e.arg);
-		//				for(IReferenceModel r : refs) {
-		//					for (Object object : stackFig.getChildren()) {
-		//						PandionJFigure<?> refFig = ((StackFrameViewer) object).getVariableFigure(r);
-		//						if(refFig != null)
-		//							addPointer(r, refFig, objectFig.getEntityFigure((IEntityModel) e.arg));
-		//					}	
-		//				}
-		//			}
-		//		});
-
 	}
 
 	private void refresh(RuntimeModel model, RuntimeModel.Event<?> event) {
@@ -112,29 +97,30 @@ public class RuntimeViewer extends Composite {
 			stackFig.addFrame((StackFrameModel) event.arg, false);
 
 		stackFig.getLayoutManager().layout(stackFig);
+		updateLayout();
+	}
+
+	private void updateLayout() {
+		org.eclipse.swt.graphics.Point prev = canvas.getSize();
+		Dimension size = rootFig.getPreferredSize();
+		canvas.setSize(size.width, size.height);
+		canvas.layout();
+		if(size.width > prev.y)
+			scroll.setOrigin(size.width, size.height);
+
 	}
 
 	private void rebuildStack(RuntimeModel model) {
+		//		for (Object object : rootFig.getChildren()) {
+		//			if(object instanceof PolylineConnection)
+		//				
+		//		}
 		stackFig.removeAll();
 		objectFig.removeAll();
 		IStackFrameModel staticVars = model.getStaticVars();
 		stackFig.addFrame(staticVars, true);
 	}
 
-
-
-	private boolean handleIllustration(IReferenceModel reference, IFigure targetFig) {
-		if(targetFig instanceof AbstractArrayFigure) {
-			if(reference.hasIndexVars()) {
-				IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig);
-				targetFig.setBorder(b);
-				return true;
-			}
-			else
-				targetFig.setBorder(null);
-		}
-		return false;
-	} 
 
 	static void addPointerDecoration(IEntityModel target, PolylineConnection pointer) {
 		if(target.isNull())
@@ -172,7 +158,9 @@ public class RuntimeViewer extends Composite {
 	class StackFigure extends Figure {
 		public StackFigure() {
 			setBackgroundColor(ColorConstants.white);
-			setLayoutManager(new GridLayout(1, true));
+			GridLayout gridLayout = new GridLayout(1, true);
+			gridLayout.verticalSpacing = Constants.OBJECT_PADDING*2;
+			setLayoutManager(gridLayout);
 			setOpaque(true);
 		}
 
@@ -193,11 +181,20 @@ public class RuntimeViewer extends Composite {
 		}
 	}
 
+
+
+
+
+
 	class ObjectContainer extends Figure {
+
+		Map<IReferenceModel, PolylineConnection> pointerMap;
+
 		ObjectContainer() {
 			setBackgroundColor(ColorConstants.white);
 			setOpaque(true);
 			setLayoutManager(new GridLayout(1, true));
+			pointerMap = new HashMap<>();
 		}
 
 		void setInput(RuntimeModel model) {
@@ -210,57 +207,118 @@ public class RuntimeViewer extends Composite {
 			});
 		}
 
+		@Override
+		public void removeAll() {
+			for (PolylineConnection conn : pointerMap.values())
+				rootFig.remove(conn);
+
+			pointerMap.clear();
+			super.removeAll();
+		}
+
 		PandionJFigure<?> addObject(IEntityModel e) {
 			PandionJFigure<?> fig = figProvider.getFigure(e);
 			if(!containsChild(fig)) {
-				add(fig);
-				getLayoutManager().layout(this);
-
 				if(e instanceof IArrayModel && ((IArrayModel<?>) e).isReferenceType() && fig instanceof ArrayReferenceFigure) {
-					IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) e;
+					Extension ext = new Extension(fig, e);
+					ext.setLayoutManager(new GridLayout(2, false));
 
+					Figure container2d = new Figure();
+					container2d.setLayoutManager(new GridLayout(1, false));
+					//					container2d.setOpaque(true);
+					//					container2d.setBackgroundColor(ColorConstants.blue);
+					ext.add(container2d);
+
+					IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) e;
 					Iterator<Integer> it = a.getValidModelIndexes();
 					while(it.hasNext()) {
 						Integer next = it.next();
-						add2dElement(fig, fig, a, next);
+						add2dElement(container2d, fig, a, next);
 					}
-				}			
+					add(ext);
+				}
+				else {					
+					add(fig);
+				}
+				getLayoutManager().layout(this);
 			}
 			return fig;
 		}
 
-		private void add2dElement(PandionJFigure<?> figure, PandionJFigure<?> targetFig, IArrayModel<IReferenceModel> a,
-				int i) {
+		private void add2dElement(Figure container, PandionJFigure<?> targetFig, IArrayModel<IReferenceModel> a, int i) {
 			IReferenceModel e = a.getElementModel(i);
 			IEntityModel eTarget = e.getModelTarget();
-			PandionJFigure<?> eTargetFig = figProvider.getFigure(eTarget);
-			add(eTargetFig);
-			//			addEntityFigure(e, eTargetFig, new Point(figure.getLocation().x + GAP, figure.getLocation().y * (i+1))); // TODO review spacing
-			addPointer2D((ArrayReferenceFigure) targetFig, e, i, eTarget, eTargetFig);
+			PandionJFigure<?> eTargetFig = null;
+			if(!eTarget.isNull()) {
+				eTargetFig = figProvider.getFigure(eTarget);
+				container.add(eTargetFig);
+			}
+			addPointer2D((ArrayReferenceFigure) targetFig, e, i, eTarget, eTargetFig, container);
 		}
 
 
-		private void addPointer2D(ArrayReferenceFigure figure, IReferenceModel ref, int index, IEntityModel target,
-				PandionJFigure<?> targetFig) {
+		private void addPointer2D(ArrayReferenceFigure figure, IReferenceModel ref, int index, IEntityModel target, PandionJFigure<?> targetFig, Figure container) {
 			PolylineConnection pointer = new PolylineConnection();
+			pointer.setVisible(!target.isNull());
 			pointer.setSourceAnchor(figure.getAnchor(index));
-			pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
-			//			setPointerDecoration(target, pointer);
-			addPointerObserver(ref, pointer);
+			if(target.isNull())
+				pointer.setTargetAnchor(figure.getAnchor(index));
+			else
+				pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
+
+			addPointerDecoration(target, pointer);
+			addPointerObserver(ref, pointer, container);
 			rootFig.add(pointer);
+			pointerMap.put(ref, pointer);
 		}
 
-		private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
+		private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer, Figure container) {
 			ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
 				@Override
 				public void update(IEntityModel arg) {
 					IEntityModel target = ref.getModelTarget();
-					PandionJFigure<?> targetFig = objectFig.addObject(target);
-					pointer.setTargetAnchor(new ChopboxAnchor(targetFig));
-					addPointerDecoration(target, pointer);
+					pointer.setVisible(!target.isNull());
+					if(!target.isNull()) {
+						PandionJFigure<?> figure = figProvider.getFigure(target);
+						if(!containsChild(figure))
+							container.add(figure);
+						pointer.setTargetAnchor(new PositionAnchor(figure, PositionAnchor.Position.LEFT));
+						addPointerDecoration(target, pointer);
+						container.getLayoutManager().layout(container);
+					}
 				}
 			});
 		}
+
+		void updateIllustration(IReferenceModel v) {
+			IEntityModel target = v.getModelTarget();
+			PandionJFigure<?> fig = getDeepChild(target);
+			if(fig != null) {
+				if(handleIllustration(v, fig.getInnerFigure())) {
+					//								xyLayout.setConstraint(fig, new Rectangle(fig.getBounds().getLocation(), fig.getPreferredSize()));
+					//								xyLayout.layout(StackFrameViewer.this);
+				}
+
+				if(target instanceof IArrayModel && ((IArrayModel) target).isReferenceType()) {
+					IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
+					for (IReferenceModel e : a.getModelElements())
+						updateIllustration(e);
+				}
+			}
+		}
+
+		private boolean handleIllustration(IReferenceModel reference, IFigure targetFig) {
+			if(targetFig instanceof AbstractArrayFigure) {
+				if(reference.hasIndexVars()) {
+					IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig);
+					targetFig.setBorder(b);
+					return true;
+				}
+				else
+					targetFig.setBorder(null);
+			}
+			return false;
+		} 
 
 		private 	boolean containsChild(IFigure child) {
 			for (Object object : getChildren()) {
@@ -268,6 +326,22 @@ public class RuntimeViewer extends Composite {
 					return true;
 			}
 			return false;
+		}
+
+		private PandionJFigure<?> getDeepChild(IEntityModel e) {
+			return getDeepChildRef(this, e);
+		}
+
+		private PandionJFigure<?> getDeepChildRef(IFigure f, IEntityModel e) {
+			for (Object object : f.getChildren()) {
+				if(object instanceof PandionJFigure && ((PandionJFigure<?>) object).getModel() == e)
+					return (PandionJFigure<?>) object;
+
+				PandionJFigure<?> ret = getDeepChildRef((IFigure) object, e);
+				if(ret != null)
+					return ret;
+			}
+			return null;
 		}
 	}
 

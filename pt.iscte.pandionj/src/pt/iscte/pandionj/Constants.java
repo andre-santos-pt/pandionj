@@ -1,14 +1,18 @@
 package pt.iscte.pandionj;
 
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
 public interface Constants {
 	String PLUGIN_ID = Constants.class.getPackage().getName();
 	String CONTEXT_ID = PLUGIN_ID + ".context";
+	String VIEW_ID = PLUGIN_ID + ".view";
+	
 	String IMAGE_FOLDER = "images";
 	
 	int ARRAY_LENGTH_LIMIT = 10;
@@ -16,7 +20,7 @@ public interface Constants {
 	
 	
 	
-	int MESSAGE_FONT_SIZE = 16;
+	int MESSAGE_FONT_SIZE = 14;
 
 	int ARROW_EDGE = 4;
 	int ARROW_LINE_WIDTH = 1;
@@ -89,8 +93,8 @@ public interface Constants {
 	int COMBO_STRING_WIDTH = 200;
 
 	int COMBO_WIDTH = 75;
-
 	
+	GridData RIGHT_ALIGN = new GridData(SWT.RIGHT, SWT.DEFAULT, false, false);
 
 	static GridLayout getOneColGridLayout() {
 		GridLayout layout = new GridLayout(1, false);
