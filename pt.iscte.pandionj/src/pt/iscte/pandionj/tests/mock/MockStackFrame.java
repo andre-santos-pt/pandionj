@@ -60,4 +60,10 @@ public class MockStackFrame implements IStackFrameModel {
 	public int getLineNumber() {
 		return 0;
 	}
+	
+	@Override
+	public boolean exceptionOccurred() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 }

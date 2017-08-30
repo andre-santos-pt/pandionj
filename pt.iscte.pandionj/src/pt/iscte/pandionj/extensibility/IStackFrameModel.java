@@ -4,7 +4,7 @@ import java.util.Collection;
 
 import pt.iscte.pandionj.model.RuntimeModel;
 
-public interface IStackFrameModel extends IObservableModel<IStackFrameModel.StackEvent> {
+public interface IStackFrameModel extends IObservableModel<IStackFrameModel.StackEvent<?>> {
 
 	Collection<IVariableModel<?>> getStackVariables();
 	Collection<IVariableModel<?>> getAllVariables();
@@ -12,20 +12,21 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 	RuntimeModel getRuntime();
 	String getInvocationExpression();
 	
-	class StackEvent {
+	class StackEvent<T> {
 		public enum Type {
-			NEW_VARIABLE, VARIABLE_OUT_OF_SCOPE;
+			NEW_VARIABLE, VARIABLE_OUT_OF_SCOPE, EXCEPTION;
 		}
 		public final Type type;
-		public final IVariableModel<?> variable;
+		public final T arg;
 
-		public StackEvent(Type type, IVariableModel<?> variable) {
+		public StackEvent(Type type, T arg) {
 			this.type = type;
-			this.variable = variable;
+			this.arg = arg;
 		}
 	}
 
 	boolean isObsolete();
 	boolean isExecutionFrame();
 	int getLineNumber();
+	boolean exceptionOccurred();
 }

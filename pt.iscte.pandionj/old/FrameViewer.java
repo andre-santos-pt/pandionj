@@ -91,7 +91,7 @@ public class FrameViewer extends Composite {
 	}
 
 
-	public void setModel(IStackFrameModel frame, Predicate<IVariableModel> accept) {
+	public void setModel(IStackFrameModel frame, Predicate<IVariableModel<?>> accept) {
 		for(Object child : new ArrayList<Object>(pane.getChildren()))
 			pane.remove((IFigure) child);
 
@@ -111,13 +111,13 @@ public class FrameViewer extends Composite {
 		updateSize();
 	}
 
-	private void addFrameObserver(IStackFrameModel frame, Predicate<IVariableModel> accept) {
-		frame.registerDisplayObserver(new ModelObserver<StackEvent>() {
+	private void addFrameObserver(IStackFrameModel frame, Predicate<IVariableModel<?>> accept) {
+		frame.registerDisplayObserver(new ModelObserver<StackEvent<?>>() {
 			@Override
-			public void update(StackEvent event) {
+			public void update(StackEvent<?> event) {
 				if(event != null) {
-					if(event.type == StackEvent.Type.NEW_VARIABLE && accept.test(event.variable)) {
-						add(event.variable);
+					if(event.type == StackEvent.Type.NEW_VARIABLE && accept.test((IVariableModel) event.arg)) {
+						add((IVariableModel<?>) event.arg);
 					}
 					else if(event.type == StackEvent.Type.VARIABLE_OUT_OF_SCOPE) {
 						PandionJFigure<?> toRemove = null; 
@@ -125,7 +125,7 @@ public class FrameViewer extends Composite {
 						for (Object object : pane.getChildren()) {
 							if(object instanceof PandionJFigure) {
 								IObservableModel<?> model = ((PandionJFigure<?>) object).getModel();
-								if(event.variable == model)
+								if(event.arg == model)
 									toRemove = (PandionJFigure<?>) object;
 							}
 						}

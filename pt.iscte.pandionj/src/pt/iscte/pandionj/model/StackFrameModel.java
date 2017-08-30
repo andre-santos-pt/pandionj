@@ -31,7 +31,7 @@ import pt.iscte.pandionj.parser.VariableInfo;
 
 
 
-public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.StackEvent> implements IStackFrameModel {
+public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.StackEvent<?>> implements IStackFrameModel {
 	private RuntimeModel runtime;
 	private IJavaStackFrame frame;
 	private Map<String, IVariableModel<?>> stackVars;
@@ -174,7 +174,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 				e.getValue().setOutOfScope();
 				iterator.remove();
 				setChanged();
-				notifyObservers(new StackEvent(StackEvent.Type.VARIABLE_OUT_OF_SCOPE, e.getValue()));
+				notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.VARIABLE_OUT_OF_SCOPE, e.getValue()));
 			}
 		}
 	}
@@ -322,7 +322,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 
 	public void setReturnValue(IJavaValue v) {
-
 		this.returnValue = valueToString(v);
 		obsolete = true;
 		setChanged();
@@ -354,7 +353,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		//			}
 
 		setChanged();
-		notifyObservers();
+		notifyObservers(new StackEvent<String>(StackEvent.Type.EXCEPTION, exceptionType));
 	}
 
 	public IJavaProject getJavaProject() {

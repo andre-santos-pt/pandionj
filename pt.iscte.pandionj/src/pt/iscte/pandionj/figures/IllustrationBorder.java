@@ -16,6 +16,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.ExceptionType;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
@@ -44,8 +45,12 @@ public class IllustrationBorder implements Border {
 	private final Rectangle firstLabelBounds;
 	private final Rectangle lastLabelBounds;
 
-	public IllustrationBorder(IReferenceModel ref, AbstractArrayFigure<?> arrayFigure) {
+	private ExceptionType exception;
+	
+	public IllustrationBorder(IReferenceModel ref, AbstractArrayFigure<?> arrayFigure, ExceptionType exception) {
 		this.arrayFigure = arrayFigure;
+		this.exception = exception;
+		
 		N = arrayFigure.getModel().getLength();
 		horizontal = arrayFigure instanceof ArrayPrimitiveFigure;
 		vars = ref.getIndexVars();
@@ -227,8 +232,10 @@ public class IllustrationBorder implements Border {
 				p = new Point(origin.x, origin.y - POS - Constants.ARRAY_POSITION_SPACING);
 			}
 			
-			if(showLeftOutOfBoundsError)
+			// TODO ASantos: excecao
+			if(exception == ExceptionType.ARRAY_INDEX_OUT_BOUNDS)
 				g.setForegroundColor(Constants.Colors.ERROR);
+			
 			g.setLineDashOffset(2.5f);
 			g.setLineStyle(Graphics.LINE_DASH);
 			g.drawRectangle(new Rectangle(p, rectDim));

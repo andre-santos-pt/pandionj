@@ -1,34 +1,27 @@
 package pt.iscte.pandionj;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PolylineConnection;
 
 import pt.iscte.pandionj.RuntimeViewer.ObjectContainer;
-import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
-import pt.iscte.pandionj.extensibility.IObservableModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.figures.AbstractArrayFigure;
-import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.figures.PandionJFigure;
 import pt.iscte.pandionj.figures.PositionAnchor;
 import pt.iscte.pandionj.figures.ReferenceFigure;
 import pt.iscte.pandionj.model.ModelObserver;
 
-public class StackFrameViewer extends Figure {
+public class StackFrameFigure extends Figure {
 	private GridLayout layout;
 	private FigureProvider figProvider;
 	private ObjectContainer objectContainer;
@@ -36,7 +29,7 @@ public class StackFrameViewer extends Figure {
 	private Map<IReferenceModel, PolylineConnection> pointerMap;
 	private boolean invisible;
 	
-	public StackFrameViewer(Figure rootPane, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
+	public StackFrameFigure(Figure rootPane, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
 		this.rootPane = rootPane;
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
@@ -58,7 +51,7 @@ public class StackFrameViewer extends Figure {
 		for (IVariableModel<?> v : frame.getStackVariables())
 			add(v);
 		addFrameObserver(frame);
-		updateSize();
+		layout.layout(this);
 		updateLook(frame);
 	}
 
@@ -68,97 +61,54 @@ public class StackFrameViewer extends Figure {
 	}
 
 	private void addFrameObserver(IStackFrameModel frame) {
-		frame.registerDisplayObserver(new ModelObserver<StackEvent>() {
+		frame.registerDisplayObserver(new ModelObserver<StackEvent<?>>() {
 			@Override
-			public void update(StackEvent event) {
+			public void update(StackEvent<?> event) {
 				if(event != null) {
+					ExceptionType exception = null;
 					if(event.type == StackEvent.Type.NEW_VARIABLE) {
-						add(event.variable);
+						add((IVariableModel<?>) event.arg);
 					}
 					else if(event.type == StackEvent.Type.VARIABLE_OUT_OF_SCOPE) {
-						PandionJFigure<?> toRemove = getVariableFigure(event.variable); 
+						PandionJFigure<?> toRemove = getVariableFigure((IVariableModel<?>)  event.arg); 
 						if(toRemove != null)
 							remove(toRemove);
 
-						PolylineConnection conn = pointerMap.get(event.variable);
+						PolylineConnection conn = pointerMap.get(event.arg);
 						if(conn != null)
 							rootPane.remove(conn);
+					}
+					else if(event.type == StackEvent.Type.EXCEPTION) {
+						exception = ExceptionType.match((String) event.arg);
 					}
 
 					for (IVariableModel<?> v : frame.getStackVariables()) {
 						if(v instanceof IReferenceModel) {
 							IReferenceModel ref = (IReferenceModel) v;
-//							IEntityModel target = ref.getModelTarget();
-							objectContainer.updateIllustration(ref);
-//							if(target instanceof IArrayModel && ((IArrayModel) target).isReferenceType()) {
-//								IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
-//								for (IReferenceModel e : a.getModelElements())
-//									updateIllustration(e);
-//							}
+							objectContainer.updateIllustration(ref, exception);
 						}
 					}
 				}
-				updateSize();
+				layout.layout(StackFrameFigure.this);
 				updateLook(frame);
 			}
-
-
-
-			private void updateIllustration(IReferenceModel v) {
-				IEntityModel target = v.getModelTarget();
-				for (Object object : getChildren()) {
-					if(object instanceof PandionJFigure) {
-						PandionJFigure<?> fig = (PandionJFigure<?>) object;
-						IObservableModel<?> model = ((PandionJFigure<?>) object).getModel();
-						if(target == model)
-							if(handleIllustration(v, (PandionJFigure<?>) object)) {
-								//								xyLayout.setConstraint(fig, new Rectangle(fig.getBounds().getLocation(), fig.getPreferredSize()));
-								//								xyLayout.layout(StackFrameViewer.this);
-							}
-					}
-				}
-			}
-			
-			private boolean handleIllustration(IReferenceModel reference, IFigure targetFig) {
-				if(targetFig instanceof AbstractArrayFigure) {
-					if(reference.hasIndexVars()) {
-						IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig);
-						targetFig.setBorder(b);
-						return true;
-					}
-					else
-						targetFig.setBorder(null);
-				}
-				return false;
-			} 
-
-
 		});
 	}
 
 	private void updateLook(IStackFrameModel model) {
 		if(!invisible) {
 			if(model.isObsolete())
-				setBorder(new LineBorder(Constants.Colors.OBSOLETE, 1));
+				setBorder(new LineBorder(Constants.Colors.OBSOLETE, 2));
 			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.OBSOLETE);
+			else if(model.exceptionOccurred())
+				setBorder(new LineBorder(Constants.Colors.ERROR, 2));
 			else if(model.isExecutionFrame())
 				//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.INST_POINTER);
-				setBorder(new LineBorder(Constants.Colors.INST_POINTER, 3));
+				setBorder(new LineBorder(Constants.Colors.INST_POINTER, 2));
 			else
-				setBorder(new LineBorder(ColorConstants.lightGray, 1));
+				setBorder(new LineBorder(ColorConstants.lightGray, 2));
 			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		}
-	}
-
-	private void updateSize() {
-		//		GridData prevData = (GridData) getLayoutData();
-		//		if(prevData == null)
-		//			prevData = new GridData(200, 100);
-		//		Dimension dim = getPreferredSize().expand(Constants.MARGIN, Constants.MARGIN);
-		//		setLayoutData(new GridData(
-		//				Math.max(prevData.widthHint, dim.width), 
-		//				Math.max(prevData.heightHint, dim.height)));
-		layout.layout(this);
 	}
 
 	private void add(IVariableModel<?> v) {
@@ -174,6 +124,7 @@ public class StackFrameViewer extends Figure {
 			if(!target.isNull())
 				targetFig = objectContainer.addObject(target);
 			addPointer((ReferenceFigure) figure, ref, target, targetFig);
+			objectContainer.updateIllustration(ref, null);
 		}
 	}
 
@@ -214,16 +165,4 @@ public class StackFrameViewer extends Figure {
 		}
 		return null;
 	}
-
-//	public List<PandionJFigure<?>> findReferences(IEntityModel arg) {
-//		List<PandionJFigure<?>> list = new ArrayList<>();
-//		for (Object object : getChildren()) {
-//			if(object instanceof PandionJFigure) {
-//				IObservableModel<?> model = ((PandionJFigure<?>) object).getModel();
-//				if(model instanceof IReferenceModel && ((IReferenceModel) model).getModelTarget() == arg)
-//					list.add((PandionJFigure<?>) object);
-//			}
-//		}
-//		return list;
-//	}
 }

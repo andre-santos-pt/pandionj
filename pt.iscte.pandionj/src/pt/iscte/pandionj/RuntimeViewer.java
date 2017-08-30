@@ -2,21 +2,17 @@ package pt.iscte.pandionj;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
-import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
-import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PolygonDecoration;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
 import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -27,7 +23,6 @@ import org.eclipse.swt.widgets.Composite;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
-import pt.iscte.pandionj.extensibility.IObservableModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
@@ -168,7 +163,7 @@ public class RuntimeViewer extends Composite {
 
 		void addFrame(IStackFrameModel frame, boolean invisible) {
 			if(frame.getLineNumber() != -1) {
-				StackFrameViewer sv = new StackFrameViewer(rootFig, frame, objectFig, invisible);
+				StackFrameFigure sv = new StackFrameFigure(rootFig, frame, objectFig, invisible);
 				add(sv);
 				getLayoutManager().setConstraint(sv, new org.eclipse.draw2d.GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 			}
@@ -177,7 +172,7 @@ public class RuntimeViewer extends Composite {
 		@Override
 		public void removeAll() {
 			for (Object object : getChildren())
-				((StackFrameViewer) object).clearPointers();
+				((StackFrameFigure) object).clearPointers();
 
 			super.removeAll();
 		}
@@ -227,8 +222,6 @@ public class RuntimeViewer extends Composite {
 
 					Figure container2d = new Figure();
 					container2d.setLayoutManager(new GridLayout(1, false));
-					//					container2d.setOpaque(true);
-					//					container2d.setBackgroundColor(ColorConstants.blue);
 					ext.add(container2d);
 
 					IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) e;
@@ -292,11 +285,11 @@ public class RuntimeViewer extends Composite {
 			});
 		}
 
-		void updateIllustration(IReferenceModel v) {
+		void updateIllustration(IReferenceModel v, ExceptionType exception) {
 			IEntityModel target = v.getModelTarget();
 			PandionJFigure<?> fig = getDeepChild(target);
 			if(fig != null) {
-				if(handleIllustration(v, fig.getInnerFigure())) {
+				if(handleIllustration(v, fig.getInnerFigure(), exception)) {
 					//								xyLayout.setConstraint(fig, new Rectangle(fig.getBounds().getLocation(), fig.getPreferredSize()));
 					//								xyLayout.layout(StackFrameViewer.this);
 				}
@@ -304,15 +297,15 @@ public class RuntimeViewer extends Composite {
 				if(target instanceof IArrayModel && ((IArrayModel) target).isReferenceType()) {
 					IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) target;
 					for (IReferenceModel e : a.getModelElements())
-						updateIllustration(e);
+						updateIllustration(e, exception);
 				}
 			}
 		}
 
-		private boolean handleIllustration(IReferenceModel reference, IFigure targetFig) {
+		private boolean handleIllustration(IReferenceModel reference, IFigure targetFig, ExceptionType exception) {
 			if(targetFig instanceof AbstractArrayFigure) {
 				if(reference.hasIndexVars()) {
-					IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig);
+					IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig, exception);
 					targetFig.setBorder(b);
 					return true;
 				}

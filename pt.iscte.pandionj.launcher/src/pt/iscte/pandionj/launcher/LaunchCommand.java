@@ -181,7 +181,6 @@ public class LaunchCommand extends AbstractHandler {
 			URL find = FileLocator.find(bundle, new Path("lib/agent.jar"), null);
 			URL resolve = FileLocator.resolve(find);
 			if(!mainMethod.exists()) {
-				// FIXME bug Windows: "\" inicial
 				String path = resolve.getPath();
 				if(Platform.getOS().compareTo(Platform.OS_WIN32) == 0)
 					path = path.substring(1);

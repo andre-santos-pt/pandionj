@@ -4,7 +4,7 @@ import java.util.List;
 
 public interface Utils {
 
-	public static String toSimpleName(String qualifiedName) {
+	static String toSimpleName(String qualifiedName) {
 		String name = qualifiedName;
 		int dot = name.lastIndexOf('.');
 		if(dot != -1) 
@@ -18,7 +18,7 @@ public interface Utils {
 		return name;
 	}
 	
-	public static void stripQualifiedNames(List<String> list) {
+	static void stripQualifiedNames(List<String> list) {
 		for(int i = 0; i < list.size(); i++)
 			list.set(i, toSimpleName(list.get(i)));
 	}

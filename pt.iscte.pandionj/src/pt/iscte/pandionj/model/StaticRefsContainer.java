@@ -14,7 +14,7 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 
-public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameModel.StackEvent> implements IStackFrameModel {
+public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameModel.StackEvent<?>> implements IStackFrameModel {
 	// la.la.Class.VAR -> 
 	private Map<String, IVariableModel<?>> map;
 	private RuntimeModel runtime;
@@ -33,7 +33,7 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 			String id = frame.getStackFrame().getDeclaringTypeName() + "." + v.getName();
 			map.put(id,v);
 			setChanged();
-			notifyObservers(new StackEvent(StackEvent.Type.NEW_VARIABLE,v));
+			notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE,v));
 			
 		}
 		catch (DebugException e) {
@@ -107,6 +107,11 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	@Override
 	public int getLineNumber() {
 		return 0;
+	}
+
+	@Override
+	public boolean exceptionOccurred() {
+		return false;
 	}
 
 	
