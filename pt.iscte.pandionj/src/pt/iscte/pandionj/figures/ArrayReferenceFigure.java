@@ -51,7 +51,7 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 
 	@Override
 	Label createValueLabel(int i) {
-		return new ValueLabel(" ");
+		return new ValueLabel(" ", true);
 	}
 
 	@Override

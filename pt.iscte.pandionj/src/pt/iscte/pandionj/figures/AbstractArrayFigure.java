@@ -6,16 +6,13 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.eclipse.draw2d.Border;
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.swt.SWT;
 import pt.iscte.pandionj.Constants;
-import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 
 public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<E>> {
@@ -23,7 +20,6 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 	final List<Position> positions;
 	private final RoundedRectangle positionsFig;
 	private final boolean horizontal;
-	private static final GridData layoutCenter = new GridData(SWT.CENTER, SWT.CENTER, false, false);
 	
 	public AbstractArrayFigure(IArrayModel<E> model, boolean horizontal) {
 		super(model);
@@ -88,7 +84,21 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		translateToAbsolute(r);
 		return r;
 	}
-	
+
+	public Rectangle getLabelBounds(int i) {
+		Rectangle r = getBounds();
+		if(i >= 0 && i < model.getLength()){
+			if(i < positions.size() - 2){
+				r = positions.get(i).valueLabel.getBounds();
+			}else if( i == model.getLength() - 1){
+				r = positions.get(positions.size() - 1).valueLabel.getBounds();
+			}else{
+				r = positions.get(positions.size() - 2).valueLabel.getBounds();
+			}
+		}
+		translateToAbsolute(r);
+		return r;
+	}
 
 	@Override
 	public void setBorder(Border border) {
@@ -113,18 +123,14 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 			if(index != null){
 				valueLabel = createValueLabel(index);
 			}else{
-				valueLabel = new ValueLabel("...");
+				valueLabel = new ValueLabel("...", true);
 			}
 
 			layout.setConstraint(valueLabel, createValueLabelGridData());
 			add(valueLabel);
 
-			
-			indexLabel = new Label(indexText(index));
-			FontManager.setFont(indexLabel, Constants.INDEX_FONT_SIZE);
-			indexLabel.setLabelAlignment(SWT.CENTER);
-			indexLabel.setForegroundColor(ColorConstants.gray);
-			layout.setConstraint(indexLabel, layoutCenter);
+			indexLabel = new ValueLabel(indexText(index), false);
+			layout.setConstraint(indexLabel, createValueLabelGridData());
 			add(indexLabel, horizontal ? 1 : 0);
 		}
 
