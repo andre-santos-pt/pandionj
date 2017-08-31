@@ -2,6 +2,7 @@ package pt.iscte.pandionj.model;
 
 import org.eclipse.jdt.debug.core.IJavaObject;
 
+// TODO singleton
 public class NullModel extends EntityModel<IJavaObject> {
 
 	public NullModel(RuntimeModel runtime) {

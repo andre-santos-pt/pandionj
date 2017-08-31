@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.draw2d.AbstractConnectionAnchor;
+import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.IFigure;
@@ -31,9 +32,11 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 		return len > 0 && i == len-1 ? positions.size()-1 : i;
 	}
 	
-	public AbstractConnectionAnchor getAnchor(int modelIndex) {
+	public ConnectionAnchor getAnchor(int modelIndex) {
 		assert getModel().isValidModelIndex(modelIndex);
-		return anchors.get(convertToPositionFigureIndex(modelIndex));
+		AbstractArrayFigure<IReferenceModel>.Position position = positions.get(convertToPositionFigureIndex(modelIndex));
+		return ((ReferenceLabel) position.valueLabel).getAnchor();
+//		return anchors.get(convertToPositionFigureIndex(modelIndex));
 	}
 
 	private static class Anchor extends AbstractConnectionAnchor {
@@ -60,5 +63,10 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 	@Override
 	GridData createValueLabelGridData() {
 		return new GridData(POSITION_WIDTH, POSITION_WIDTH);
+	}
+	
+	@Override
+	public ConnectionAnchor getIncommingAnchor() {
+		return new CustomChopboxAnchor(this, (r) -> new Point(r.x + POSITION_WIDTH*2, r.y + POSITION_WIDTH));
 	}
 }

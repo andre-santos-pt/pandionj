@@ -66,6 +66,11 @@ public class TagParser {
 		for (Comment comment : (List<Comment>) cunit.getCommentList())
 			comment.accept(commentVisitor);
 	}
+	
+	@Override
+	public String toString() {
+		return variables.toString();
+	}
 
 	class TagVisitor extends ASTVisitor {
 
@@ -179,22 +184,4 @@ public class TagParser {
 		}
 		
 	}
-	public static void main(String[] args) {
-		Set<String> validtags = Sets.newHashSet();
-		validtags.add("T1");
-		validtags.add("T2");
-		
-		TagParser parser = new TagParser("/Users/andresantos/git/pandionj2/pt.iscte.pandionj/src/pt/iscte/pandionj/parser2/ClassInfo.java", validtags);
-		parser.run();
-
-		Collection<String> tags = parser.getTags("name", 14);
-		System.out.println(parser.getTags("name", 14));
-		System.out.println(parser.getTags("name", 21));
-		System.out.println(parser.getTags("img", 32));
-		System.out.println(parser.variables);
-	}
-
-	
-
-
 }

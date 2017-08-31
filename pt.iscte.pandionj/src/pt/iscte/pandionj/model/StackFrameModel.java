@@ -82,6 +82,11 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		}
 	}
 
+	@Override
+	public String toString() {
+		return getInvocationExpression();
+	}
+	
 	public RuntimeModel getRuntime() {
 		return runtime;
 	}
@@ -191,9 +196,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 		if(jv.isStatic()) {
 			if(!staticRefs.existsVar(this, varName)) {
-				IVariableModel<?> newVar = value instanceof IJavaObject ?
-					new ReferenceModel(jv, false, null, getRuntime()) :
-					new ValueModel(jv, false, null, getRuntime());
+				IVariableModel<?> newVar = createVar(jv, false, value);
 				staticRefs.add(this, newVar);
 			}
 		}

@@ -80,10 +80,10 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	}
 
 	public void setTags(Collection<String> tags) {
-		if(tags.isEmpty()) {
+		if(this.tags == Collections.EMPTY_LIST)
 			this.tags = new ArrayList<String>(tags.size());
-			this.tags.addAll(tags);
-		}
+
+		this.tags.addAll(tags);
 	}
 
 	public Collection<String> getTags() {

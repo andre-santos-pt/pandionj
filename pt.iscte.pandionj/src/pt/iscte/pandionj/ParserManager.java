@@ -49,6 +49,7 @@ public class ParserManager {
 			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
+			System.out.println(tagParser);
 		}
 		return r;
 	}

@@ -16,7 +16,7 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 	private ReferenceLabel refLabel;
 	
 	public ReferenceFigure(IReferenceModel model) {
-		super(model);
+		super(model, false);
 		GridLayout layout = new GridLayout(2, false);
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
@@ -40,6 +40,7 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 	}
 	
 	public ConnectionAnchor getAnchor() {
-		return new PositionAnchor(refLabel, PositionAnchor.Position.CENTER);
+//		return new PositionAnchor(this, PositionAnchor.Position.RIGHT);
+		return refLabel.getAnchor();
 	}
 }

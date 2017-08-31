@@ -37,7 +37,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 	private GridLayout layout;
 
 	public ValueFigure(IValueModel model) {
-		super(model);
+		super(model, false);
 		this.model = model;
 		Role role = model.getRole();
 		
@@ -99,7 +99,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 					}
 					else if(Role.MOST_WANTED_HOLDER.equals(role)) {
 						List<String> history = model.getHistory();
-						String val = history.get(history.size()-2);
+						String val = history.get(history.size()-2); // FIXME bug?
 						extraFigure.add(new HistoryLabel(val), 0);
 					}
 					layout();

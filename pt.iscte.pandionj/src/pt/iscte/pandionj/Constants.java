@@ -46,8 +46,12 @@ public interface Constants {
 	int ARRAY_POSITION_SPACING = 4;
 	int ARRAY_LINE_WIDTH = 1;
 
-	
+	int STACKFRAME_LINE_WIDTH = 3;
 
+	int STACKCOLUMN_MIN_WIDTH = 150;
+	int STACK_TO_OBJECTS_GAP = 40;
+
+	
 	int ILLUSTRATION_LINE_WIDTH = 2;
 
 	
@@ -57,7 +61,7 @@ public interface Constants {
 		Color OBJECT = new Color(Display.getDefault(), 225, 225, 225);
 		Color OBJECT_HEADER_FONT = new Color(Display.getDefault(), 128, 128, 128);
 		
-		Color VARIABLE_BOX = new Color(Display.getDefault(), 245, 245, 245);
+		Color VARIABLE_BOX = new Color(Display.getDefault(), 255, 255, 255);
 
 		Color ILLUSTRATION = ColorConstants.black;
 		
@@ -69,7 +73,10 @@ public interface Constants {
 
 		Color VIEW_BACKGROUND = ColorConstants.white;
 		Color ERROR = ColorConstants.red;
-		Color OBSOLETE = new Color(Display.getDefault(), 200, 200, 200);
+		
+		Color FRAME_BORDER = new Color(Display.getDefault(), 200, 200, 200);
+		
+		Color OBSOLETE = new Color(Display.getDefault(), 240, 240, 240);
 		
 		Color[] ROLE_VARS = { ColorConstants.darkBlue, ColorConstants.darkGreen, ColorConstants.orange};
 		Color CONSTANT = new Color(null, 160, 160, 160);
@@ -83,6 +90,7 @@ public interface Constants {
 	interface Messages {
 		String START = "This view will be populated once the execution of the Java debugger hits a breakpoint.";
 		String TRASH = "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.";
+		String RUN_DIALOG = "Do you want to open PandionJ view?";
 	}
 	
 

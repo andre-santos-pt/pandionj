@@ -1,14 +1,13 @@
 package pt.iscte.pandionj;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.RuntimeViewer.ObjectContainer;
 import pt.iscte.pandionj.extensibility.IEntityModel;
@@ -25,39 +24,35 @@ public class StackFrameFigure extends Figure {
 	private GridLayout layout;
 	private FigureProvider figProvider;
 	private ObjectContainer objectContainer;
-	private Figure rootPane;
-	private Map<IReferenceModel, PolylineConnection> pointerMap;
+	private RuntimeViewer runtimeViewer;
 	private boolean invisible;
 	
-	public StackFrameFigure(Figure rootPane, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
-		this.rootPane = rootPane;
+	public StackFrameFigure(RuntimeViewer runtimeViewer, FigureProvider figProvider, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
+		this.runtimeViewer = runtimeViewer;
+		this.figProvider = figProvider;
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
 
-		setBackgroundColor(Constants.Colors.OBJECT);
+		setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		layout = new GridLayout(1, false);
-		layout.verticalSpacing = 2;
+		layout.verticalSpacing = 4;
+		layout.horizontalSpacing = 2;
 		setLayoutManager(layout);
 		if(!invisible) {
 			setOpaque(true);
-			setBorder(new LineBorder(ColorConstants.lightGray, 1));
+			setBorder(new LineBorder(ColorConstants.gray, 2));
 			Label label = new Label(frame.getInvocationExpression());
-			label.setForegroundColor(Constants.Colors.CONSTANT);
+			label.setForegroundColor(ColorConstants.gray);
 			add(label);
-			layout.setConstraint(label, Constants.RIGHT_ALIGN);
+//			layout.setConstraint(label, Constants.RIGHT_ALIGN);
 		}
-		pointerMap = new HashMap<>();
-		figProvider = new FigureProvider(frame);
 		for (IVariableModel<?> v : frame.getStackVariables())
 			add(v);
-		addFrameObserver(frame);
-		layout.layout(this);
+		
+//		layout.layout(this);
 		updateLook(frame);
-	}
-
-	public void clearPointers() {
-		for (PolylineConnection conn : pointerMap.values())
-			rootPane.remove(conn);
+		addFrameObserver(frame);
+		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame));
 	}
 
 	private void addFrameObserver(IStackFrameModel frame) {
@@ -74,9 +69,8 @@ public class StackFrameFigure extends Figure {
 						if(toRemove != null)
 							remove(toRemove);
 
-						PolylineConnection conn = pointerMap.get(event.arg);
-						if(conn != null)
-							rootPane.remove(conn);
+						if(event.arg instanceof IReferenceModel)
+							runtimeViewer.removePointer((IReferenceModel) event.arg);
 					}
 					else if(event.type == StackEvent.Type.EXCEPTION) {
 						exception = ExceptionType.match((String) event.arg);
@@ -89,7 +83,6 @@ public class StackFrameFigure extends Figure {
 						}
 					}
 				}
-				layout.layout(StackFrameFigure.this);
 				updateLook(frame);
 			}
 		});
@@ -97,25 +90,28 @@ public class StackFrameFigure extends Figure {
 
 	private void updateLook(IStackFrameModel model) {
 		if(!invisible) {
-			if(model.isObsolete())
-				setBorder(new LineBorder(Constants.Colors.OBSOLETE, 2));
-			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.OBSOLETE);
+			if(model.isObsolete()) {
+//				setBorder(new LineBorder(Constants.Colors.OBSOLETE, Constants.STACKFRAME_LINE_WIDTH));
+				setBackgroundColor(Constants.Colors.OBSOLETE);
+				setBorder(new LineBorder(ColorConstants.lightGray, 2, SWT.LINE_DASH));
+			}
 			else if(model.exceptionOccurred())
-				setBorder(new LineBorder(Constants.Colors.ERROR, 2));
+				setBorder(new LineBorder(Constants.Colors.ERROR, Constants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
 			else if(model.isExecutionFrame())
-				//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.INST_POINTER);
-				setBorder(new LineBorder(Constants.Colors.INST_POINTER, 2));
+				setBackgroundColor(Constants.Colors.INST_POINTER);
+//				setBorder(new LineBorder(Constants.Colors.INST_POINTER, Constants.STACKFRAME_LINE_WIDTH));
 			else
-				setBorder(new LineBorder(ColorConstants.lightGray, 2));
-			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
+//				setBorder(new LineBorder(Constants.Colors.FRAME_BORDER, Constants.STACKFRAME_LINE_WIDTH));
+				setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		}
+		layout.layout(this);
 	}
 
 	private void add(IVariableModel<?> v) {
 		PandionJFigure<?> figure = figProvider.getFigure(v);
 		add(figure);
 
-		layout.setConstraint(figure, Constants.RIGHT_ALIGN);
+		layout.setConstraint(figure, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 
 		if(v instanceof IReferenceModel) {
 			IReferenceModel ref = (IReferenceModel) v;
@@ -135,11 +131,10 @@ public class StackFrameFigure extends Figure {
 		if(target.isNull())
 			pointer.setSourceAnchor(figure.getAnchor());
 		else
-			pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
-		RuntimeViewer.addPointerDecoration(target, pointer);
+			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+		RuntimeViewer.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer);
-		rootPane.add(pointer);
-		pointerMap.put(ref, pointer);
+		runtimeViewer.addPointer(ref, pointer);
 	}
 
 	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
@@ -150,8 +145,8 @@ public class StackFrameFigure extends Figure {
 				pointer.setVisible(!target.isNull());
 				if(!target.isNull()) {
 					PandionJFigure<?> targetFig = objectContainer.addObject(target);
-					pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
-					RuntimeViewer.addPointerDecoration(target, pointer);
+					pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+					RuntimeViewer.addArrowDecoration(pointer);
 				}
 			}
 		});

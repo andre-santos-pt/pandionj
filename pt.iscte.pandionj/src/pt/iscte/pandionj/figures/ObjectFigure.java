@@ -35,7 +35,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	private RoundedRectangle fig;
 	
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure, boolean addMethods) {
-		super(model);
+		super(model, true);
 		assert extensionFigure != null;
 //		this.model = model;
 		GridLayout layout = new GridLayout(1, false);

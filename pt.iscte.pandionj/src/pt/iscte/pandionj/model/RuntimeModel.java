@@ -125,6 +125,8 @@ public class RuntimeModel extends DisplayUpdateObservable<RuntimeModel.Event<?>>
 		if(isSubStack(revStackFrames)) {
 			for(int i = revStackFrames.length; i < callStack.size(); i++)
 				callStack.get(i).setObsolete();
+
+			countActive = revStackFrames.length;
 		}
 		else if(isStackIncrement(revStackFrames)) {
 			for(int i = callStack.size(); i < revStackFrames.length; i++) {
@@ -304,7 +306,7 @@ public class RuntimeModel extends DisplayUpdateObservable<RuntimeModel.Event<?>>
 	}
 
 	public List<IReferenceModel> findReferences(IEntityModel e) {
-		List<IReferenceModel> list = new ArrayList<>();
+		List<IReferenceModel> list = new ArrayList<>(staticRefs.getReferencesTo(e));
 		for(int i = 0; i < countActive; i++)
 			list.addAll(callStack.get(i).getReferencesTo(e));
 

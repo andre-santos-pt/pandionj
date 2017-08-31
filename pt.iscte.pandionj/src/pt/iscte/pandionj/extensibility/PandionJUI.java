@@ -15,7 +15,6 @@ import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -42,10 +41,9 @@ public interface PandionJUI {
 	}
 
 	static PandionJView openViewDialog() {
-		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", "Please...")) {
+		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", Constants.Messages.RUN_DIALOG)) {
 			try {
 				return (PandionJView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(Constants.VIEW_ID);
-//				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
 			} catch (PartInitException e) {
 				MessageDialog.openError(Display.getDefault().getActiveShell(), "Open PandionJ view", "View could not be opened.");
 			}
