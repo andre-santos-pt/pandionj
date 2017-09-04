@@ -36,7 +36,6 @@ public interface Constants {
 
 	int OBJECT_HEADER_FONT_SIZE = 14;
 
-
 	int VALUE_FONT_SIZE = 16;
 	String FONT_FACE = "Monospace";
 
@@ -64,6 +63,8 @@ public interface Constants {
 		Color VARIABLE_BOX = new Color(Display.getDefault(), 255, 255, 255);
 
 		Color ILLUSTRATION = ColorConstants.black;
+
+		Color ROLE_ANNOTATIONS = ColorConstants.gray;
 		
 		Color HIGHLIGHT = new Color(Display.getDefault(), 223, 234, 255);
 
@@ -77,6 +78,9 @@ public interface Constants {
 		Color FRAME_BORDER = new Color(Display.getDefault(), 200, 200, 200);
 		
 		Color OBSOLETE = new Color(Display.getDefault(), 240, 240, 240);
+
+		Color TRUE = ColorConstants.darkGreen;
+		Color FALSE = ColorConstants.red;
 		
 		Color[] ROLE_VARS = { ColorConstants.darkBlue, ColorConstants.darkGreen, ColorConstants.orange};
 		Color CONSTANT = new Color(null, 160, 160, 160);

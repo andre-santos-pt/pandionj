@@ -5,6 +5,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
@@ -65,5 +67,9 @@ public class MockStackFrame implements IStackFrameModel {
 	public boolean exceptionOccurred() {
 		// TODO Auto-generated method stub
 		return false;
+	}
+	@Override
+	public IFile getSourceFile() {
+		return null;
 	}
 }

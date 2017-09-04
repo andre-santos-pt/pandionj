@@ -56,8 +56,6 @@ public class VarParser {
 	public void run() {
 		visitor = new MethodVisitor();
 		parser.parse(visitor);
-		//		if(visitor.current != null)
-		//			visitor.current.accept(new PostRolesVisitor());
 	}
 
 	//	static class PostRolesVisitor implements BlockInfoVisitor {
@@ -104,7 +102,6 @@ public class VarParser {
 			return new BlockInfo(current, start, end, getBlockType(node));
 		}
 
-		// TODO other blocks
 		private BlockInfo.Type getBlockType(ASTNode node) {
 			if(node instanceof TypeDeclaration)
 				return BlockInfo.Type.TYPE;
@@ -120,7 +117,6 @@ public class VarParser {
 
 			else if(node instanceof IfStatement)
 				return BlockInfo.Type.IF;
-
 			else
 				return BlockInfo.Type.OTHER;
 		}

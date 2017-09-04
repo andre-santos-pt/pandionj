@@ -11,7 +11,6 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.geometry.Insets;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
-import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObservableModel;
@@ -27,7 +26,8 @@ import pt.iscte.pandionj.model.RuntimeModel;
 
 public class FigureProvider  {
 	private Map<IObservableModel<?>, PandionJFigure<?>> figCache = new WeakHashMap<>();
-
+	private Map<IObservableModel<?>, PandionJFigure<?>> figCacheExtensions = new WeakHashMap<>();
+	
 	private RuntimeModel runtime;
 
 	FigureProvider(RuntimeModel runtime) {
@@ -35,18 +35,19 @@ public class FigureProvider  {
 		this.runtime = runtime;
 	}
 
-	public PandionJFigure<?> getFigure(Object element) {
+	public PandionJFigure<?> getFigure(Object element, boolean findExtensions) {
 		assert element != null;
-		PandionJFigure<?> fig = figCache.get(element);
+		Map<IObservableModel<?>, PandionJFigure<?>>  map = findExtensions ? figCacheExtensions : figCache;
+		PandionJFigure<?> fig = map.get(element);
 		if(fig == null) {
 			IObservableModel<?> model = (IObservableModel<?>) element;
-			fig = createFigure(model);
-			figCache.put(model, fig);
+			fig = createFigure(model, findExtensions);
+			map.put(model, fig);
 		}
 		return fig;		
 	}
 
-	private PandionJFigure<?> createFigure(IObservableModel<?> model) {
+	private PandionJFigure<?> createFigure(IObservableModel<?> model, boolean findExtensions) {
 		PandionJFigure<?> fig = null;
 
 		if(model instanceof IValueModel) {
@@ -62,8 +63,10 @@ public class FigureProvider  {
 
 			if(model instanceof IArrayModel) {
 				IArrayModel aModel = (IArrayModel) model;
-				IArrayWidgetExtension arrayExtension = ExtensionManager.getArrayExtension(aModel, tags);
-				IFigure extFig = arrayExtension.createFigure(aModel);
+//				IArrayWidgetExtension arrayExtension = ExtensionManager.getArrayExtension(aModel, tags);
+				IFigure extFig = findExtensions ? 
+						ExtensionManager.getArrayExtension(aModel, tags).createFigure(aModel) : null;
+					
 				if(extFig == null) {
 					if(aModel.isPrimitiveType()) {
 						fig = new ArrayPrimitiveFigure(aModel);

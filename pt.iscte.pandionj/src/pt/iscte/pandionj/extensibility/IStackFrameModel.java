@@ -2,6 +2,8 @@ package pt.iscte.pandionj.extensibility;
 
 import java.util.Collection;
 
+import org.eclipse.core.resources.IFile;
+
 import pt.iscte.pandionj.model.RuntimeModel;
 
 public interface IStackFrameModel extends IObservableModel<IStackFrameModel.StackEvent<?>> {
@@ -29,4 +31,5 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 	boolean isExecutionFrame();
 	int getLineNumber();
 	boolean exceptionOccurred();
+	IFile getSourceFile();
 }

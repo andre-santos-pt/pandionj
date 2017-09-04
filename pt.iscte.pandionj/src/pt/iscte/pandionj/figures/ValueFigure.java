@@ -31,6 +31,7 @@ import pt.iscte.pandionj.model.ModelObserver;
 import pt.iscte.pandionj.model.PrimitiveType;
 
 public class ValueFigure extends PandionJFigure<IValueModel> {
+	private static final int ANNOTATION_FONT_SIZE = (int) Math.round(Constants.VAR_FONT_SIZE/1.5);
 	private ValueLabel valueLabel;
 	private IValueModel model;
 	private Figure extraFigure;
@@ -80,22 +81,16 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		if(Role.FIXED_VALUE.equals(role)) {
 			valueLabel.setBorder(new LineBorder(Constants.Colors.CONSTANT, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 			valueLabel.setForegroundColor(Constants.Colors.CONSTANT);
-//			nameLabel.setForegroundColor(Constants.Colors.CONSTANT);
 		}
 
-//		setOpaque(false); 
-		model.registerDisplayObserver(new ModelObserver() {
+		model.registerDisplayObserver(new ModelObserver<Object>() {
 			
 			@Override
 			public void update(Object arg) {
-//				setVisible(model.isWithinScope());
 				if(isVisible()) {
 					if(Role.GATHERER.equals(role)) {
 						String parcels = parcels();
 						((Label) extraFigure).setText(parcels);
-//						Dimension dim = FigureUtilities.getTextExtents(parcels, extraFigure.getFont());
-//						layout.setConstraint(extraFigure, new GridData(dim.width, dim.height));
-//						layout.layout(ValueFigure.this);
 					}
 					else if(Role.MOST_WANTED_HOLDER.equals(role)) {
 						List<String> history = model.getHistory();
@@ -131,21 +126,19 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		//		model.getRuntimeModel().registerDisplayObserver((o,a) -> setVisible(model.isWithinScope()));
 
 		if(Role.GATHERER.equals(role)) {
-			add(new Label());
 			extraFigure = new Label("");
-			extraFigure.setForegroundColor(ColorConstants.gray);
-			FontManager.setFont(extraFigure, Constants.VAR_FONT_SIZE);
+			extraFigure.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);
+			FontManager.setFont(extraFigure, ANNOTATION_FONT_SIZE);
 			add(extraFigure);
-			layout.setConstraint(extraFigure, new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
+			layout.setConstraint(extraFigure, new GridData(SWT.RIGHT, SWT.BEGINNING, false, false));
 		}
 		else if(Role.MOST_WANTED_HOLDER.equals(role)) {
-			add(new Label());
 			extraFigure = new Figure();
 			extraFigure.setLayoutManager(new FlowLayout());
 			add(extraFigure);
 			layout.setConstraint(extraFigure, new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 		}
-		else if(Role.STEPPER.equals(role)) {
+		else if(Role.STEPPER.equals(role) || Role.ARRAY_ITERATOR.equals(role)) {
 			setBorder(new ArrowBorder(model.getVariableRole().getDirection()));
 		}
 	}
@@ -162,10 +155,10 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			Object x = pType.getValue(history.get(i));
 			if(pType.equals(PrimitiveType.BYTE))			parcels.append("+" + ((Byte) 		x - (Byte) v));
 			else if(pType.equals(PrimitiveType.SHORT))	parcels.append("+" + ((Short) 		x - (Short) v));
-			else if(pType.equals(PrimitiveType.INT)) 	parcels.append("+" + ((Integer) 	x - (Integer) v));
+			else if(pType.equals(PrimitiveType.INT)) 	parcels.append("+" + ((Integer) 		x - (Integer) v));
 			else if(pType.equals(PrimitiveType.LONG))	parcels.append("+" + ((Long) 		x - (Long) v));
 			else if(pType.equals(PrimitiveType.FLOAT)) 	parcels.append("+" + ((Float) 		x - (Float) v));
-			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append("+" + ((Double) 	x - (Double) v));
+			else if(pType.equals(PrimitiveType.DOUBLE)) 	parcels.append("+" + ((Double) 		x - (Double) v));
 			v = x;
 		}
 		return "(" + parcels.toString() + ")";
@@ -217,7 +210,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 	private class HistoryLabel extends Label {
 		public HistoryLabel(String val) {
 			super(val);
-			FontManager.setFont(this, Constants.VAR_FONT_SIZE/2);
+			FontManager.setFont(this, ANNOTATION_FONT_SIZE);
 			setForegroundColor(ColorConstants.gray);
 			// TODO text align center
 //			setLabelAlignment(PositionConstants.CENTER);
@@ -232,10 +225,10 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			g.drawLine(r.getTopLeft(), r.getBottomRight());
 		}
 
-		@Override
-		public Dimension getPreferredSize(int wHint, int hHint) {
-			return new Dimension(valueLabel.getSize().width, Constants.POSITION_WIDTH/2);
-		}
+//		@Override
+//		public Dimension getPreferredSize(int wHint, int hHint) {
+//			return new Dimension(valueLabel.getSize().width, Constants.POSITION_WIDTH/2);
+//		}
 	}
 
 	private class ArrowBorder implements Border {
@@ -246,7 +239,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		}
 		@Override
 		public Insets getInsets(IFigure figure) {
-			return new Insets(0, 0, 0, 3);
+			return new Insets(0, 0, 0, 0);
 		}
 
 		@Override
@@ -264,8 +257,9 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			graphics.setLineStyle(SWT.LINE_DOT);
 			graphics.setForegroundColor(Constants.Colors.ILLUSTRATION);
 			Rectangle r = figure.getBounds();
-			Point from = r.getLocation().getTranslated(r.width-6, 10);
-			Point to = from.getTranslated(0, Constants.POSITION_WIDTH / 2);
+			int startY = direction == Direction.FORWARD ? 2 : 1 + (Constants.POSITION_WIDTH/3)*2;
+			Point from = r.getLocation().getTranslated(r.width-6, startY);
+			Point to = from.getTranslated(0, Constants.POSITION_WIDTH / 4);
 			if(direction == Direction.FORWARD) {
 				Point t = from;
 				from = to;

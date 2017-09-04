@@ -26,7 +26,6 @@ import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.ParamsDialog;
 import pt.iscte.pandionj.RuntimeViewer;
-import pt.iscte.pandionj.StackFrameFigure;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
@@ -41,36 +40,41 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure, boolean addMethods) {
 		super(model, true);
 		assert extensionFigure != null;
+		
+		fieldLabels = new HashMap<String, Label>();
+		
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;
 		layout.verticalSpacing = 2;
 		layout.marginHeight = 5;
 		layout.marginWidth = 5;
-
+		
+		extensionFigure.setOpaque(true);
+		extensionFigure.setBackgroundColor(ColorConstants.blue);
+		
 		fig = new RoundedRectangle();
 		fig.setLayoutManager(layout);
 		fig.setCornerDimensions(Constants.OBJECT_CORNER);
 		fig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		fig.setBackgroundColor(Constants.Colors.OBJECT);
 
-
-		fieldLabels = new HashMap<String, Label>();
 		fig.add(extensionFigure);
-
 		fig.setToolTip(new Label(model.getTypeName()));
+
+		RuntimeViewer runtimeViewer = RuntimeViewer.getInstance();
+		ObjectContainer objectContainer = new ObjectContainer(false);
+		objectContainer.setFigProvider(runtimeViewer.getFigureProvider());
+//		objectContainer.setBackgroundColor(ColorConstants.yellow);
+		
+		StackFrameFigure sf = new StackFrameFigure(runtimeViewer, model.getRuntimeModel().getTopFrame(), objectContainer, true, true);
+		fig.add(sf);
 
 		if(addMethods)
 			addMethods(model);
-
+		
 		add(fig);
-		
-		RuntimeViewer runtimeViewer = RuntimeViewer.getInstance();
-		ObjectContainer objectContainer = new ObjectContainer();
-		objectContainer.setFigProvider(runtimeViewer.getFigureProvider());
-		
-//		StackFrameFigure sf = new StackFrameFigure(runtimeViewer, null, objectContainer, true);
-		
-		//		setPreferredSize(fig.getPreferredSize().expand(Constants.OBJECT_PADDING, Constants.OBJECT_PADDING));
+		add(objectContainer);
+	
 	}
 
 

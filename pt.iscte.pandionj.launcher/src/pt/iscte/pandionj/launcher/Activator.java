@@ -30,6 +30,8 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.BundleContext;
 
+import pt.iscte.pandionj.extensibility.PandionJUI;
+
 public class Activator extends AbstractUIPlugin {
 	private static ILaunch launch;
 	private Annotation annotation = new Annotation(IDebugUIConstants.ANNOTATION_TYPE_INSTRUCTION_POINTER_CURRENT, false, "");
@@ -172,7 +174,7 @@ public class Activator extends AbstractUIPlugin {
 	}
 
 	static void terminate() {
-		if(launch != null)
+		if(launch != null) {
 			try {
 				IDebugTarget debugTarget = launch.getDebugTarget();
 				if(debugTarget != null)
@@ -180,5 +182,7 @@ public class Activator extends AbstractUIPlugin {
 			} catch (DebugException e) {
 				e.printStackTrace();
 			}
+		}
 	}
+		
 }

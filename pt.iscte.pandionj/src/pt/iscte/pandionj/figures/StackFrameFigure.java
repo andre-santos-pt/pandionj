@@ -1,4 +1,4 @@
-package pt.iscte.pandionj;
+package pt.iscte.pandionj.figures;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
@@ -6,17 +6,22 @@ import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.MouseEvent;
+import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 
+import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.ExceptionType;
+import pt.iscte.pandionj.FigureProvider;
+import pt.iscte.pandionj.RuntimeViewer;
+import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.figures.ObjectContainer;
-import pt.iscte.pandionj.figures.PandionJFigure;
-import pt.iscte.pandionj.figures.ReferenceFigure;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.ModelObserver;
 
 public class StackFrameFigure extends Figure {
@@ -25,13 +30,14 @@ public class StackFrameFigure extends Figure {
 	private ObjectContainer objectContainer;
 	private RuntimeViewer runtimeViewer;
 	private boolean invisible;
-	
-	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
+	private boolean instance;
+
+	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible, boolean instance) {
 		this.runtimeViewer = runtimeViewer;
 		this.figProvider = runtimeViewer.getFigureProvider();
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
-
+		this.instance = instance;
 		setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 4;
@@ -43,11 +49,18 @@ public class StackFrameFigure extends Figure {
 			Label label = new Label(frame.getInvocationExpression());
 			label.setForegroundColor(ColorConstants.gray);
 			add(label);
-//			layout.setConstraint(label, Constants.RIGHT_ALIGN);
+			label.addMouseListener(new MouseListener() {
+				public void mousePressed(MouseEvent me) {}
+				public void mouseReleased(MouseEvent me) {}
+				public void mouseDoubleClicked(MouseEvent me) {
+					PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber()-1);
+				}
+			});
+			//			layout.setConstraint(label, Constants.RIGHT_ALIGN);
 		}
 		for (IVariableModel<?> v : frame.getStackVariables())
 			add(v);
-		
+
 		updateLook(frame);
 		addFrameObserver(frame);
 		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame));
@@ -103,19 +116,21 @@ public class StackFrameFigure extends Figure {
 	}
 
 	private void add(IVariableModel<?> v) {
-		PandionJFigure<?> figure = figProvider.getFigure(v);
-		add(figure);
+		if(v.isInstance() == instance) {
+			PandionJFigure<?> figure = figProvider.getFigure(v, true);
+			add(figure);
 
-		layout.setConstraint(figure, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
+			layout.setConstraint(figure, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 
-		if(v instanceof IReferenceModel) {
-			IReferenceModel ref = (IReferenceModel) v;
-			IEntityModel target = ref.getModelTarget();
-			PandionJFigure<?> targetFig = null;
-			if(!target.isNull())
-				targetFig = objectContainer.addObject(target);
-			addPointer((ReferenceFigure) figure, ref, target, targetFig);
-			objectContainer.updateIllustration(ref, null);
+			if(v instanceof IReferenceModel) {
+				IReferenceModel ref = (IReferenceModel) v;
+				IEntityModel target = ref.getModelTarget();
+				PandionJFigure<?> targetFig = null;
+				if(!target.isNull())
+					targetFig = objectContainer.addObject(target);
+				addPointer((ReferenceFigure) figure, ref, target, targetFig);
+				objectContainer.updateIllustration(ref, null);
+			}
 		}
 	}
 
@@ -146,7 +161,7 @@ public class StackFrameFigure extends Figure {
 			}
 		});
 	}
-	
+
 
 	public PandionJFigure<?> getVariableFigure(IVariableModel<?> v) {
 		for (Object object : getChildren()) {

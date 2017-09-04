@@ -119,7 +119,6 @@ public class ExtensionManager {
 			for (Entry<String, Collection<String>> e : tags.asMap().entrySet())
 				addChildFigures(m, e.getKey());
 
-			compositeFig.setBackgroundColor(ColorConstants.blue);
 			return compositeFig;
 		}
 

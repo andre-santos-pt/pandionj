@@ -23,29 +23,19 @@ import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
+import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
 
-public class RuntimeModel extends DisplayUpdateObservable<RuntimeModel.Event<?>> {
-
-	public static class Event<T> {
-		public enum Type {
-			NEW_FRAME, NEW_STACK, STEP, TERMINATION, NEW_OBJECT;
-		}
-
-		public final Type type;
-		public final T arg;
-
-		public Event(Type type, T arg) {
-			this.type = type;
-			this.arg = arg;
-		}
-	}
+public class RuntimeModel
+extends DisplayUpdateObservable<IRuntimeModel.Event<?>>
+implements IRuntimeModel {
 
 	private ILaunch launch;
 	private List<StackFrameModel> callStack;
@@ -130,18 +120,16 @@ public class RuntimeModel extends DisplayUpdateObservable<RuntimeModel.Event<?>>
 		}
 		else if(isStackIncrement(revStackFrames)) {
 			for(int i = callStack.size(); i < revStackFrames.length; i++) {
-//				if(revStackFrames[i].getLineNumber() != -1) {
-					StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs);
-					callStack.add(newFrame);
-					countActive++;
-					setChanged();
-					notifyObservers(new Event<StackFrameModel>(Event.Type.NEW_FRAME, newFrame));	
-//				}
+				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs);
+				callStack.add(newFrame);
+				countActive++;
+				setChanged();
+				notifyObservers(new Event<StackFrameModel>(Event.Type.NEW_FRAME, newFrame));	
 			}
 		}
 		else {
 			callStack.clear();
-			for(int i = 0; i < revStackFrames.length; i++) {
+			for(int i = Math.max(0, revStackFrames.length-1-Constants.STACK_LIMIT); i < revStackFrames.length; i++) {
 				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs);
 				callStack.add(newFrame);
 			}

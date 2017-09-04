@@ -7,6 +7,11 @@
             defaultHandler="pt.iscte.pandionj.launcher.LaunchCommand"
             id="pt.iscte.pandionj.launcher.run"
             name="Launch in debug mode">
+         <commandParameter
+               id="pt.iscte.pandionj.launcher.runParameter"
+               name="last"
+               optional="true">
+         </commandParameter>
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.StepIntoCommand"
@@ -77,6 +82,15 @@
             commandId="pt.iscte.pandionj.launcher.run"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+R">
+      </key>
+      <key
+            commandId="pt.iscte.pandionj.launcher.run"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+Y">
+         <parameter
+               id="pt.iscte.pandionj.launcher.runParameter"
+               value="true">
+         </parameter>
       </key>
       <key
             commandId="pt.iscte.pandionj.launcher.stepinto"

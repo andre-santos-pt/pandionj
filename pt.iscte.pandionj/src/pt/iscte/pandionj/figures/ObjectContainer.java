@@ -20,6 +20,7 @@ import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.PandionJFigure.Extension;
@@ -51,8 +52,10 @@ public class ObjectContainer extends Figure {
 
 
 	FigureProvider figProvider;
+	boolean findExtensions;
 	
-	public ObjectContainer() {
+	public ObjectContainer(boolean findExtensions) {
+		this.findExtensions = findExtensions;
 		setBackgroundColor(ColorConstants.white);
 		setOpaque(true);
 		setLayoutManager(new GridLayout(1, true));
@@ -73,7 +76,7 @@ public class ObjectContainer extends Figure {
 	}
 
 	public PandionJFigure<?> addObject(IEntityModel e) {
-		PandionJFigure<?> fig = figProvider.getFigure(e);
+		PandionJFigure<?> fig = figProvider.getFigure(e, findExtensions);
 		if(!containsChild(fig)) {
 			if(e instanceof IArrayModel && ((IArrayModel<?>) e).isReferenceType() && fig instanceof ArrayReferenceFigure) {
 				Extension ext = new Extension(fig, e);
@@ -95,6 +98,22 @@ public class ObjectContainer extends Figure {
 				}
 				add(ext);
 			}
+//			else if(e instanceof IObjectModel) {
+//				Extension ext = new Extension(fig, e);
+//				GridLayout gridLayout = new GridLayout(2, false);
+//				gridLayout.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP;
+//				ext.setLayoutManager(gridLayout);
+//				org.eclipse.draw2d.GridData alignTop = new org.eclipse.draw2d.GridData(SWT.LEFT, SWT.TOP, false, false);
+//				gridLayout.setConstraint(fig, alignTop);
+//				
+//				Figure container =  new Figure();
+//				container.setLayoutManager(new GridLayout(1, false));
+//				container.setBackgroundColor(ColorConstants.orange);
+//				container.setOpaque(true);
+//				ext.add(container);
+//				
+//				add(ext);
+//			}
 			else {					
 				add(fig);
 			}
@@ -108,7 +127,7 @@ public class ObjectContainer extends Figure {
 		IEntityModel eTarget = e.getModelTarget();
 		PandionJFigure<?> eTargetFig = null;
 		if(!eTarget.isNull()) {
-			eTargetFig = figProvider.getFigure(eTarget);
+			eTargetFig = figProvider.getFigure(eTarget, false);
 			container.addAt(i, eTargetFig);
 		}
 		addPointer2D((ArrayReferenceFigure) targetFig, e, i, eTarget, eTargetFig, container);
@@ -136,7 +155,7 @@ public class ObjectContainer extends Figure {
 				IEntityModel target = ref.getModelTarget();
 				pointer.setVisible(!target.isNull());
 				if(!target.isNull()) {
-					PandionJFigure<?> figure = figProvider.getFigure(target);
+					PandionJFigure<?> figure = figProvider.getFigure(target, false);
 					container.addAt(index, figure);
 					pointer.setTargetAnchor(figure.getIncommingAnchor());
 					Utils.addArrowDecoration(pointer);

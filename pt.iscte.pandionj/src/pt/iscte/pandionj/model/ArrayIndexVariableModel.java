@@ -8,6 +8,7 @@ import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VariableInfo;
@@ -163,5 +164,10 @@ implements IArrayIndexModel {
 	@Override
 	public void setVariableRole(VariableInfo info) {
 		
+	}
+	
+	@Override
+	public IRuntimeModel getRuntimeModel() {
+		return model.getRuntimeModel();
 	}
 }

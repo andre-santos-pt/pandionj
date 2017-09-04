@@ -7,6 +7,7 @@ import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
 
 class ValueLabel extends Label {
@@ -22,6 +23,11 @@ class ValueLabel extends Label {
 		setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 		updateValue();
 		model.registerDisplayObserver((a) -> updateValue());
+		model.getRuntimeModel().registerDisplayObserver((e) -> {
+			if(e.type == IRuntimeModel.Event.Type.STEP) {
+				updateBackground();
+			}
+		});
 		dirty = false;
 	}
 	
@@ -37,7 +43,7 @@ class ValueLabel extends Label {
 			FontManager.setFont(this, Constants.INDEX_FONT_SIZE);
 			setLabelAlignment(SWT.CENTER);
 			setForegroundColor(ColorConstants.gray);
-			setToolTip(new Label(fixedValue));;
+			setToolTip(new Label(fixedValue));
 		}
 	}
 
@@ -46,7 +52,7 @@ class ValueLabel extends Label {
 		dirty = !getText().equals(textValue);
 		setText(textValue);
 		if(model.isBoolean())
-			setForegroundColor(textValue.equals(Boolean.TRUE.toString()) ? ColorConstants.green : ColorConstants.red);
+			setForegroundColor(textValue.equals(Boolean.TRUE.toString()) ? Constants.Colors.TRUE : Constants.Colors.FALSE);
 
 		setToolTip(new Label(textValue));
 		if(!model.isBoolean() && textValue.length() > (model.isDecimal() ? 5 : 2))

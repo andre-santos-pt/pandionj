@@ -14,9 +14,12 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -62,6 +65,14 @@ public interface PandionJUI {
 		
 		return view != null;
 	}
+	
+	static void activateEditor() {
+//		IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+//		IViewReference viewRef = activePage.findViewReference(Constants.VIEW_ID);
+//		viewRef.getPart(false).getSite().getSelectionProvider().setSelection(StructuredSelection.EMPTY);
+
+	}
+	
 	
 	/**
 	 * Open editor and select a given line
@@ -121,6 +132,7 @@ public interface PandionJUI {
 	static void setFont(Figure fig, int size) {
 		FontManager.setFont(fig, size);
 	}
-	
+
+
 	
 }
