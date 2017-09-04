@@ -97,7 +97,7 @@ public class LaunchCommand extends AbstractHandler {
 
 				IMethod mainMethod = firstType.getMethod("main", new String[] {"[QString;"});
 
-				if(mainMethod.exists() && PandionJUI.checkView()) {
+				if(mainMethod.exists() && mainMethod.isMainMethod() && PandionJUI.checkView()) {
 					launch(file, line, firstType, agentArgs, mainMethod);
 				}
 				else {

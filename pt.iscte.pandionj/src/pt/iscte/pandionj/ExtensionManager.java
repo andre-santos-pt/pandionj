@@ -24,12 +24,14 @@ import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensions.ColorAguia;
+import pt.iscte.pandionj.extensions.ColorRGBArray;
 import pt.iscte.pandionj.extensions.ColorWidget;
 import pt.iscte.pandionj.extensions.GrayscaleImageWidget;
 import pt.iscte.pandionj.extensions.HistogramWidget;
 import pt.iscte.pandionj.extensions.ImageAguia;
 import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
+import pt.iscte.pandionj.extensions.StringCharArray;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.model.ModelObserver;
 
@@ -42,6 +44,8 @@ public class ExtensionManager {
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
 		arrayExtensions.put("image", new GrayscaleImageWidget());
 		arrayExtensions.put("hist", new HistogramWidget());
+		arrayExtensions.put("color", new ColorRGBArray());
+		arrayExtensions.put("string", new StringCharArray());
 
 		objectExtensions = new ArrayList<>();
 		objectExtensions.add(new NumberWidget());
@@ -54,7 +58,7 @@ public class ExtensionManager {
 
 
 	// TODO composite extension? (as TagExtension?)
-	public static IArrayWidgetExtension getArrayExtension(IArrayModel<?> m, Set<String> tags) {
+	public static IArrayWidgetExtension getArrayExtension(IArrayModel<?> m, Collection<String> tags) {
 
 		for (String tag : tags) {
 			IArrayWidgetExtension ext = arrayExtensions.get(tag);
@@ -121,16 +125,14 @@ public class ExtensionManager {
 
 		// FIXME field values on null / undefined fields
 		private void addChildFigures(IObjectModel m, String attName) {
-			for (String tag : tags.get(attName)) {
-				IArrayWidgetExtension ext = arrayExtensions.get(tag);
-				if(ext != null) {
-					IArrayModel array = m.getArray(attName);
-					if(array != null) {
-						IFigure f = ext.createFigure(array);
-						f.setToolTip(new Label(attName));
-						figs.put(attName, f);
-						compositeFig.add(f);
-					}
+			IArrayModel array = m.getArray(attName);
+			if(array != null) {
+				IArrayWidgetExtension ext = getArrayExtension(array, tags.get(attName));
+				if(ext != IArrayWidgetExtension.NULL_EXTENSION) {
+					IFigure f = ext.createFigure(array);
+					f.setToolTip(new Label(attName));
+					figs.put(attName, f);
+					compositeFig.add(f);
 				}
 			}
 		}

@@ -24,7 +24,7 @@ import pt.iscte.pandionj.model.PrimitiveType;
 
 public class StaticInvocationWidget extends Composite {
 	private static final Color ERROR_BOX = new Color(null, 200, 0, 0);
-	
+
 	private String methodName;
 	private IMethod method;
 	private Combo[] paramBoxes; 
@@ -83,13 +83,13 @@ public class StaticInvocationWidget extends Composite {
 					//						combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
 				}
 			});
-//			combo.addVerifyListener(new VerifyListener() {
-//
-//				@Override
-//				public void verifyText(VerifyEvent e) {
-//					combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
-//				}
-//			});
+			//			combo.addVerifyListener(new VerifyListener() {
+			//
+			//				@Override
+			//				public void verifyText(VerifyEvent e) {
+			//					combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
+			//				}
+			//			});
 			combo.addSelectionListener(new SelectionAdapter() {
 				public void widgetDefaultSelected(SelectionEvent e) {
 					invokeOrNext(action, ii);
@@ -102,19 +102,14 @@ public class StaticInvocationWidget extends Composite {
 	}
 
 	private void invokeOrNext(InvocationAction action, int i) {
-//		if(i == paramBoxes.length-1) {
-			if(allValid()) {
-				for(int j = 0; j < paramBoxes.length; j++) {
-					if(PrimitiveType.isPrimitiveSig(parameterTypes[i]))
-						if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
-							paramBoxes[i].add(paramBoxes[i].getText());
-				}
-				action.invoke(getInvocationExpression());
+		if(allValid()) {
+			for(int j = 0; j < paramBoxes.length; j++) {
+				if(PrimitiveType.isPrimitiveSig(parameterTypes[i]))
+					if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
+						paramBoxes[i].add(paramBoxes[i].getText());
 			}
-//		}
-//		else {
-//			paramBoxes[i+1].setFocus();
-//		}
+			action.invoke(getInvocationExpression());
+		}
 	}
 
 	public void refreshItems() {
@@ -127,6 +122,7 @@ public class StaticInvocationWidget extends Composite {
 			int i = combo.getSelectionIndex();
 			String sel = combo.getText();
 			combo.removeAll();
+			combo.add("null");
 			IType owner = (IType) method.getParent();
 			try {
 				IField[] fields = owner.getFields();
@@ -215,11 +211,11 @@ public class StaticInvocationWidget extends Composite {
 	public String getInvocationExpression() {
 		String[] values = getValues();
 		String[] parameterTypes = method.getParameterTypes();
-		
+
 		for(int i = 0; i < values.length; i++)
 			if(!contains(paramBoxes[i].getItems(), values[i]))
 				paramBoxes[i].add(values[i]);
-		
+
 		for(int i = 0; i < values.length; i++) {
 			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
 			values[i] = convertForTypedInvocation(values[i], pType);

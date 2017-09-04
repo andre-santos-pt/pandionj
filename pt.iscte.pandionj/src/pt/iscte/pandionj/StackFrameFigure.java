@@ -9,14 +9,13 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 
-import pt.iscte.pandionj.RuntimeViewer.ObjectContainer;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.figures.ObjectContainer;
 import pt.iscte.pandionj.figures.PandionJFigure;
-import pt.iscte.pandionj.figures.PositionAnchor;
 import pt.iscte.pandionj.figures.ReferenceFigure;
 import pt.iscte.pandionj.model.ModelObserver;
 
@@ -27,9 +26,9 @@ public class StackFrameFigure extends Figure {
 	private RuntimeViewer runtimeViewer;
 	private boolean invisible;
 	
-	public StackFrameFigure(RuntimeViewer runtimeViewer, FigureProvider figProvider, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
+	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
 		this.runtimeViewer = runtimeViewer;
-		this.figProvider = figProvider;
+		this.figProvider = runtimeViewer.getFigureProvider();
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
 
@@ -49,7 +48,6 @@ public class StackFrameFigure extends Figure {
 		for (IVariableModel<?> v : frame.getStackVariables())
 			add(v);
 		
-//		layout.layout(this);
 		updateLook(frame);
 		addFrameObserver(frame);
 		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame));
@@ -91,7 +89,6 @@ public class StackFrameFigure extends Figure {
 	private void updateLook(IStackFrameModel model) {
 		if(!invisible) {
 			if(model.isObsolete()) {
-//				setBorder(new LineBorder(Constants.Colors.OBSOLETE, Constants.STACKFRAME_LINE_WIDTH));
 				setBackgroundColor(Constants.Colors.OBSOLETE);
 				setBorder(new LineBorder(ColorConstants.lightGray, 2, SWT.LINE_DASH));
 			}
@@ -99,9 +96,7 @@ public class StackFrameFigure extends Figure {
 				setBorder(new LineBorder(Constants.Colors.ERROR, Constants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
 			else if(model.isExecutionFrame())
 				setBackgroundColor(Constants.Colors.INST_POINTER);
-//				setBorder(new LineBorder(Constants.Colors.INST_POINTER, Constants.STACKFRAME_LINE_WIDTH));
 			else
-//				setBorder(new LineBorder(Constants.Colors.FRAME_BORDER, Constants.STACKFRAME_LINE_WIDTH));
 				setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		}
 		layout.layout(this);
@@ -132,7 +127,7 @@ public class StackFrameFigure extends Figure {
 			pointer.setSourceAnchor(figure.getAnchor());
 		else
 			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
-		RuntimeViewer.addArrowDecoration(pointer);
+		Utils.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer);
 		runtimeViewer.addPointer(ref, pointer);
 	}
@@ -146,7 +141,7 @@ public class StackFrameFigure extends Figure {
 				if(!target.isNull()) {
 					PandionJFigure<?> targetFig = objectContainer.addObject(target);
 					pointer.setTargetAnchor(targetFig.getIncommingAnchor());
-					RuntimeViewer.addArrowDecoration(pointer);
+					Utils.addArrowDecoration(pointer);
 				}
 			}
 		});

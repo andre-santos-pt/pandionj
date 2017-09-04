@@ -83,7 +83,7 @@ public class Test {
 		parser.run();
 //		System.out.println(parser.toText());
 		parser.print();
-		System.err.println(parser.locateVariable("j", 29));
+		System.err.println(parser.locateVariable("j", 29, false));
 		
 	}
 }

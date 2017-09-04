@@ -61,11 +61,11 @@ public class ParserManager {
 		return tagParser.getAttributeTags(className, attName);
 	}
 			
-	public static Collection<String> getTags(IFile file, String varName, int line) {
+	public static Collection<String> getTags(IFile file, String varName, int line, boolean isField) {
 		TagParser tagParser = tagParserCache.get(file);
 		if(tagParser == null)
 			return Collections.emptyList();
 		
-		return tagParser.getTags(varName, line);
+		return tagParser.getTags(varName, line, isField);
 	}
 }

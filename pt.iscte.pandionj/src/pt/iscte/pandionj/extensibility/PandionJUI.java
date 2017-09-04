@@ -8,11 +8,13 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.draw2d.Figure;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
@@ -22,7 +24,9 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
+import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.PandionJView;
 
 public interface PandionJUI {
@@ -110,7 +114,13 @@ public interface PandionJUI {
 		Display.getDefault().asyncExec(() -> PandionJView.getInstance().executeInternal(r));
 	}
 
-
+	static Color getColor(int r, int g, int b) {
+		return ColorManager.getColor(r, g, b);
+	}
+	
+	static void setFont(Figure fig, int size) {
+		FontManager.setFont(fig, size);
+	}
 	
 	
 }

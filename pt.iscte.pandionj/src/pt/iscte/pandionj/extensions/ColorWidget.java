@@ -27,5 +27,10 @@ public class ColorWidget implements IObjectWidgetExtension {
 		label.setBackgroundColor(new org.eclipse.swt.graphics.Color(null, r, g, b));
 		return label;
 	}
+	
+	@Override
+	public boolean includeMethod(String methodName) {
+		return false;
+	}
 
 }

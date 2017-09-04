@@ -79,7 +79,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 		return getName() + " -> " + getModelTarget();
 	}
 
-	public void setTags(Collection<String> tags) {
+	public void setTags(Collection<String> tags) {	
 		if(this.tags == Collections.EMPTY_LIST)
 			this.tags = new ArrayList<String>(tags.size());
 

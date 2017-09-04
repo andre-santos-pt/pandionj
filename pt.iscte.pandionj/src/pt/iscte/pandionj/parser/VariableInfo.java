@@ -20,22 +20,24 @@ import pt.iscte.pandionj.parser.VariableOperation.Type;
 public class VariableInfo {
 	private final String name;
 	private final int paramIndex;
+	private final boolean isField;
 	private List<VariableOperation> operations;
 	private BlockInfo declarationBlock;
 
-	public VariableInfo(String name, BlockInfo declarationBlock, int paramIndex) {
+	public VariableInfo(String name, BlockInfo declarationBlock, int paramIndex, boolean isField) {
 		this.name = name;
+		this.isField = isField;
 		this.paramIndex = paramIndex;
 		operations = new ArrayList<>(5);
 		this.declarationBlock = declarationBlock;
 	}
 	
 	public VariableInfo(String name, BlockInfo declarationBlock) {
-		this(name, declarationBlock, -1);
+		this(name, declarationBlock, -1, false);
 	}
 
 	public VariableInfo copy() {
-		VariableInfo copy = new VariableInfo(name, declarationBlock, paramIndex);
+		VariableInfo copy = new VariableInfo(name, declarationBlock, paramIndex, isField);
 		for(VariableOperation o : operations)
 			copy.addOperation(o.copy());
 		return copy;
@@ -92,7 +94,7 @@ public class VariableInfo {
 	}
 
 	public VariableInfo convertToArrayAccessDim(IReferenceModel ref) {
-		VariableInfo conv = new VariableInfo(name, declarationBlock, paramIndex);
+		VariableInfo conv = new VariableInfo(name, declarationBlock, paramIndex, isField);
 		Iterator<VariableOperation> it = operations.iterator();
 		while(it.hasNext()) {
 			VariableOperation op = it.next();

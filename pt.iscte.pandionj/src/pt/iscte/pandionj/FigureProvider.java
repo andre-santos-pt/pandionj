@@ -30,7 +30,7 @@ public class FigureProvider  {
 
 	private RuntimeModel runtime;
 
-	public FigureProvider(RuntimeModel runtime) {
+	FigureProvider(RuntimeModel runtime) {
 		assert runtime != null;
 		this.runtime = runtime;
 	}
@@ -89,6 +89,7 @@ public class FigureProvider  {
 
 
 	private Set<String> getEntityTags(IEntityModel e) {
+		
 		Set<String> tags = new HashSet<String>();
 		for(IReferenceModel r : runtime.findReferences(e))
 			tags.addAll(r.getTags());
