@@ -61,4 +61,9 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 	GridData createValueLabelGridData() {
 		return new GridData(POSITION_WIDTH, POSITION_WIDTH);
 	}
+	
+	@Override
+	GridData createIndexLabelGridData() {
+		return new GridData(POSITION_WIDTH/2, POSITION_WIDTH/2);
+	}
 }

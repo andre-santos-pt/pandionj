@@ -1,6 +1,5 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.ARRAY_POSITION_SPACING;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -33,6 +32,7 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 	abstract Figure createValueLabel(E e);
 	
 	abstract GridData createValueLabelGridData();
+	abstract GridData createIndexLabelGridData();
 	
 	private RoundedRectangle createPositionsFig() {
 		RoundedRectangle fig = new RoundedRectangle();
@@ -40,16 +40,16 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		fig.setCornerDimensions(Constants.OBJECT_CORNER);
 		fig.setBackgroundColor(Constants.Colors.OBJECT);
 		
-		GridLayout layout = new GridLayout(horizontal ? (model.getLength() > Constants.ARRAY_LENGTH_LIMIT ? N + 1 : Math.max(1, N)) : 1, true);
+		GridLayout layout = new GridLayout(horizontal ? (model.getLength() > Constants.ARRAY_LENGTH_LIMIT ? N + 1 : Math.max(1, N)) : 1, false);
 		layout.verticalSpacing = Constants.ARRAY_POSITION_SPACING;
 		layout.horizontalSpacing = 0;
-		layout.marginWidth = ARRAY_POSITION_SPACING;
+		layout.marginWidth = 0;
 		fig.setLayoutManager(layout);
 		
 		fig.setToolTip(new Label("length = " + model.getLength()));
 		if(N == 0) {
 			Label empty = new Label("");
-			GridData layoutData = new GridData(POSITION_WIDTH/2, POSITION_WIDTH+20);
+			GridData layoutData = new GridData(POSITION_WIDTH, POSITION_WIDTH+20);
 			layout.setConstraint(empty, layoutData);
 			fig.add(empty);
 		}
@@ -114,23 +114,31 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 
 		public Position(Integer index) {
 			GridLayout layout = new GridLayout(horizontal ? 1 : 2, false);
-			layout.verticalSpacing = 5;
-			layout.horizontalSpacing = 5;
-			layout.marginWidth = 5;
-			layout.marginHeight = 5;
+			if(horizontal){
+				layout.verticalSpacing = 3;
+				layout.horizontalSpacing = 4;
+				layout.marginHeight = 2;
+			}
+			else{
+				layout.verticalSpacing = 6;
+				layout.horizontalSpacing = 3;
+				layout.marginHeight = 4;
+			}
+
+			layout.marginWidth = 4;
 			setLayoutManager(layout);
 
 			if(index != null){
 				valueLabel = createValueLabel(model.getElementModel(index));
 			}else{
-				valueLabel = new ValueLabel("...", true);
+				valueLabel = new ValueLabel("...", false);
 			}
 
 			layout.setConstraint(valueLabel, createValueLabelGridData());
 			add(valueLabel);
 
-			indexLabel = new ValueLabel(indexText(index), false);
-			layout.setConstraint(indexLabel, createValueLabelGridData());
+			indexLabel = new ValueLabel(indexText(index), true);
+			layout.setConstraint(indexLabel, createIndexLabelGridData());
 			add(indexLabel, horizontal ? 1 : 0);
 		}
 

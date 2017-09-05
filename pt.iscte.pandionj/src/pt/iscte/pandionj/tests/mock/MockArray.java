@@ -43,7 +43,7 @@ implements IArrayModel {
 
 	@Override
 	public Object[] getValues() {
-		return null;
+		return values.toArray();
 	}
 
 	@Override

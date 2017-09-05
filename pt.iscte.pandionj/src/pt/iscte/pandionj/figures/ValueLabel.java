@@ -25,19 +25,19 @@ class ValueLabel extends Label {
 		dirty = false;
 	}
 	
-	ValueLabel(String fixedValue, boolean isOpaque){
+	ValueLabel(String fixedValue, boolean isIndexLabel){
 		setText(fixedValue);
-		setOpaque(isOpaque);
+		setOpaque(!isIndexLabel);
 		setPreferredSize(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
-		if(isOpaque){
-			FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
-			setBackgroundColor(ColorConstants.white);
-			setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
-		}else{
+		if(isIndexLabel){
 			FontManager.setFont(this, Constants.INDEX_FONT_SIZE);
 			setLabelAlignment(SWT.CENTER);
 			setForegroundColor(ColorConstants.gray);
-			setToolTip(new Label(fixedValue));;
+			setToolTip(new Label(fixedValue));
+		}else{
+			FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
+			setBackgroundColor(ColorConstants.white);
+			setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 		}
 	}
 

@@ -22,4 +22,9 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 	GridData createValueLabelGridData() {
 		return new GridData(POSITION_WIDTH, POSITION_WIDTH);
 	}
+	
+	@Override
+	GridData createIndexLabelGridData() {
+		return new GridData(POSITION_WIDTH, POSITION_WIDTH/2);
+	}
 }

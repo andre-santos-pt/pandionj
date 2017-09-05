@@ -37,9 +37,6 @@ public class IllustrationBorder implements Border {
 	private final Collection<IArrayIndexModel> vars;
 	private final Collection<IArrayIndexModel> fixedVars;
 	
-	private boolean showLeftOutOfBoundsError;
-	private boolean showRightOutOfBoundsError;
-	
 	private final Rectangle firstPositionBounds;
 	private final Rectangle lastPositionBounds;
 	private final Rectangle firstLabelBounds;
@@ -58,9 +55,7 @@ public class IllustrationBorder implements Border {
 			v.registerDisplayObserver((a) -> arrayFigure.repaint());
 
 		fixedVars = ref.getFixedIndexes();
-		showLeftOutOfBoundsError = false;
-		showRightOutOfBoundsError = false;
-		
+
 		firstPositionBounds = arrayFigure.getPositionBounds(0);
 		lastPositionBounds = arrayFigure.getPositionBounds(N - 1);
 		firstLabelBounds = arrayFigure.getLabelBounds(0);
@@ -70,7 +65,12 @@ public class IllustrationBorder implements Border {
 
 	@Override
 	public Insets getInsets(IFigure figure) {
-		return new Insets(0, Constants.POSITION_WIDTH, EXTRA, Constants.POSITION_WIDTH);
+		int outOfBoundsExtra = firstLabelBounds.width + Constants.ARRAY_POSITION_SPACING * 2;
+		if(horizontal){
+			return new Insets(0, outOfBoundsExtra, EXTRA, outOfBoundsExtra);
+		}else{
+			return new Insets(outOfBoundsExtra, EXTRA, outOfBoundsExtra, 0);
+		}
 	}
 
 	@Override
@@ -209,9 +209,11 @@ public class IllustrationBorder implements Border {
 
 	private void drawOutOfBoundsPositions(IFigure figure, Graphics g, int POS) {
 		final Dimension rectDim = firstLabelBounds.getSize();
+		if(!horizontal)
+			rectDim.setSize(new Dimension(rectDim.width/2, rectDim.height/2));
 		
-		boolean showLeft = true;	
-		boolean showRight = true;
+		boolean showLeft = false;	
+		boolean showRight = false;
 		for( IArrayIndexModel v : vars){
 			if(v.getBound() == null || v.getBound().getValue() == null)
 				continue;
@@ -222,19 +224,18 @@ public class IllustrationBorder implements Border {
 				showRight = true;
 			}
 		}
+
+		if(exception == ExceptionType.ARRAY_INDEX_OUT_BOUNDS)
+			g.setForegroundColor(Constants.Colors.ERROR);
 		
 		if(showLeft) {
-			Point origin = horizontal ? firstLabelBounds.getLocation() : firstPositionBounds.getLocation();
+			Point origin = firstLabelBounds.getLocation();
 			Point p;
 			if(horizontal){
 				p = new Point(origin.x - POS - Constants.ARRAY_POSITION_SPACING, origin.y);
 			}else{
-				p = new Point(origin.x, origin.y - POS - Constants.ARRAY_POSITION_SPACING);
+				p = new Point(origin.x, origin.y - POS/2 - Constants.ARRAY_POSITION_SPACING);
 			}
-			
-			// TODO ASantos: excecao
-			if(exception == ExceptionType.ARRAY_INDEX_OUT_BOUNDS)
-				g.setForegroundColor(Constants.Colors.ERROR);
 			
 			g.setLineDashOffset(2.5f);
 			g.setLineStyle(Graphics.LINE_DASH);
@@ -243,17 +244,15 @@ public class IllustrationBorder implements Border {
 		}
 		
 		if(showRight) {
-			Point origin = horizontal ? lastLabelBounds.getLocation() : lastPositionBounds.getLocation();
+			Point origin = lastLabelBounds.getLocation();
 			
 			Point p;
 			if(horizontal){
 				p = new Point(origin.x + POS  + Constants.ARRAY_POSITION_SPACING, origin.y);
 			}else{
-				p = new Point(origin.x, origin.y + POS - Constants.ARRAY_POSITION_SPACING);
+				p = new Point(origin.x, origin.y + POS - Constants.ARRAY_POSITION_SPACING*3);
 			}
 			
-			if(showRightOutOfBoundsError)
-				g.setForegroundColor(Constants.Colors.ERROR);
 			g.setLineDashOffset(2.5f);
 			g.setLineStyle(Graphics.LINE_DASH);
 			g.drawRectangle(new Rectangle(p, rectDim));
@@ -289,7 +288,7 @@ public class IllustrationBorder implements Border {
 					w= -w;
 			}else{ 
 				if(!open)
-					w = 0;
+					w = -Constants.ARRAY_POSITION_SPACING * 2;
 				else
 					w = firstPositionBounds.height + Constants.ARRAY_POSITION_SPACING;
 			}
