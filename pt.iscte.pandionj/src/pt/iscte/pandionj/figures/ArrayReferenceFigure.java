@@ -66,6 +66,10 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 	}
 	
 	@Override
+	GridData createIndexLabelGridData() {
+		return new GridData(POSITION_WIDTH/2, POSITION_WIDTH/2);
+	}
+	
 	public ConnectionAnchor getIncommingAnchor() {
 		return new CustomChopboxAnchor(this, (r) -> new Point(r.x + POSITION_WIDTH*2, r.y + POSITION_WIDTH));
 	}

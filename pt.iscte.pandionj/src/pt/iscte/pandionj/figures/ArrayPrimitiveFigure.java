@@ -27,6 +27,10 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 	}
 	
 	@Override
+	GridData createIndexLabelGridData() {
+		return new GridData(POSITION_WIDTH, POSITION_WIDTH/2);
+	}
+	
 	public ConnectionAnchor getIncommingAnchor() {
 		return new CustomChopboxAnchor(this, (r) -> new Point(
 				(int) Math.round(r.x + Constants.POSITION_WIDTH*2), 
