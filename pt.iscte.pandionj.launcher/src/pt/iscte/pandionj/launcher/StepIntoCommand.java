@@ -15,6 +15,4 @@ public class StepIntoCommand extends AbstractHandler {
 	public boolean isEnabled() {
 		return Activator.isExecutingLaunch();
 	}
-
-
 }

@@ -24,26 +24,29 @@ import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensions.ColorAguia;
+import pt.iscte.pandionj.extensions.ColorRGBArray;
 import pt.iscte.pandionj.extensions.ColorWidget;
 import pt.iscte.pandionj.extensions.GrayscaleImageWidget;
 import pt.iscte.pandionj.extensions.HistogramWidget;
 import pt.iscte.pandionj.extensions.ImageAguia;
 import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
+import pt.iscte.pandionj.extensions.StringCharArray;
 import pt.iscte.pandionj.extensions.StringWidget;
-import pt.iscte.pandionj.figures.NullFigure;
 import pt.iscte.pandionj.model.ModelObserver;
 
 public class ExtensionManager {
 
 	private static Map<String, IArrayWidgetExtension> arrayExtensions;
 	private static List<IObjectWidgetExtension> objectExtensions;
-	
+
 	static {
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
 		arrayExtensions.put("image", new GrayscaleImageWidget());
 		arrayExtensions.put("hist", new HistogramWidget());
-		
+		arrayExtensions.put("color", new ColorRGBArray());
+		arrayExtensions.put("string", new StringCharArray());
+
 		objectExtensions = new ArrayList<>();
 		objectExtensions.add(new NumberWidget());
 		objectExtensions.add(new StringWidget());
@@ -52,10 +55,11 @@ public class ExtensionManager {
 		objectExtensions.add(new ColorAguia());
 		objectExtensions.add(new ImageAguia());
 	}
-	
-	
+
+
 	// TODO composite extension? (as TagExtension?)
-	public static IArrayWidgetExtension getArrayExtension(IArrayModel<?> m, Set<String> tags) {
+	public static IArrayWidgetExtension getArrayExtension(IArrayModel<?> m, Collection<String> tags) {
+
 		for (String tag : tags) {
 			IArrayWidgetExtension ext = arrayExtensions.get(tag);
 			if(ext != null && ext.accept(m))
@@ -68,7 +72,7 @@ public class ExtensionManager {
 	public static IObjectWidgetExtension getObjectExtension(IObjectModel m) {
 		if(m.hasAttributeTags())
 			return new TagExtension(m.getAttributeTags());
-		
+
 		IType type = m.getType();
 		for(IObjectWidgetExtension ext : ExtensionManager.objectExtensions)
 			if(ext.accept(type))
@@ -77,16 +81,16 @@ public class ExtensionManager {
 	}
 
 
-//	public static IObjectWidgetExtension createTagExtension(ObjectModel m) {
-//		return new TagExtension(m.getAttributeTags());
-//	}
-	
+	//	public static IObjectWidgetExtension createTagExtension(ObjectModel m) {
+	//		return new TagExtension(m.getAttributeTags());
+	//	}
+
 	static class TagExtension implements IObjectWidgetExtension {
-		
+
 		private Multimap<String, String> tags;
 		private Multimap<String, IFigure> figs;
 		private IFigure compositeFig;
-		
+
 		public TagExtension(Multimap<String, String> tags) {
 			assert tags != null;
 			this.tags = tags;
@@ -103,41 +107,40 @@ public class ExtensionManager {
 					if(figs.containsKey(attName)) {
 						for (IFigure f : figs.get(attName))
 							compositeFig.remove(f);
-						
+
 						figs.removeAll(attName);
 						addChildFigures(m, attName);
 					}
 				}
 			});
-			
+
 			compositeFig = new Figure();
 			compositeFig.setLayoutManager(new FlowLayout());
 			for (Entry<String, Collection<String>> e : tags.asMap().entrySet())
 				addChildFigures(m, e.getKey());
-			
-			compositeFig.setBackgroundColor(ColorConstants.blue);
+
 			return compositeFig;
 		}
 
 		// FIXME field values on null / undefined fields
 		private void addChildFigures(IObjectModel m, String attName) {
-			for (String tag : tags.get(attName)) {
-				IArrayWidgetExtension ext = arrayExtensions.get(tag);
-				if(ext != null) {
-					IArrayModel array = m.getArray(attName);
-					IFigure f = array == null ? new NullFigure(null) : ext.createFigure(array);
+			IArrayModel array = m.getArray(attName);
+			if(array != null) {
+				IArrayWidgetExtension ext = getArrayExtension(array, tags.get(attName));
+				if(ext != IArrayWidgetExtension.NULL_EXTENSION) {
+					IFigure f = ext.createFigure(array);
 					f.setToolTip(new Label(attName));
 					figs.put(attName, f);
 					compositeFig.add(f);
 				}
 			}
 		}
-		
+
 		@Override
 		public boolean accept(IType objectType) {
 			return true;
 		}
-		
+
 	}
 
 	public static Set<String> validTags() {

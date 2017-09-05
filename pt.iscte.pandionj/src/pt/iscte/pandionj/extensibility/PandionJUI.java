@@ -8,14 +8,18 @@ import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.draw2d.Figure;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IViewPart;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
@@ -23,7 +27,9 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
+import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.PandionJView;
 
 public interface PandionJUI {
@@ -42,10 +48,9 @@ public interface PandionJUI {
 	}
 
 	static PandionJView openViewDialog() {
-		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", "Please...")) {
+		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", Constants.Messages.RUN_DIALOG)) {
 			try {
 				return (PandionJView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(Constants.VIEW_ID);
-//				PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(view);
 			} catch (PartInitException e) {
 				MessageDialog.openError(Display.getDefault().getActiveShell(), "Open PandionJ view", "View could not be opened.");
 			}
@@ -60,6 +65,14 @@ public interface PandionJUI {
 		
 		return view != null;
 	}
+	
+	static void activateEditor() {
+//		IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+//		IViewReference viewRef = activePage.findViewReference(Constants.VIEW_ID);
+//		viewRef.getPart(false).getSite().getSelectionProvider().setSelection(StructuredSelection.EMPTY);
+
+	}
+	
 	
 	/**
 	 * Open editor and select a given line
@@ -112,7 +125,14 @@ public interface PandionJUI {
 		Display.getDefault().asyncExec(() -> PandionJView.getInstance().executeInternal(r));
 	}
 
-
+	static Color getColor(int r, int g, int b) {
+		return ColorManager.getColor(r, g, b);
+	}
 	
+	static void setFont(Figure fig, int size) {
+		FontManager.setFont(fig, size);
+	}
+
+
 	
 }

@@ -46,8 +46,7 @@ implements IVariableModel<O> {
 	
 	public VariableModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame) {
 		this(variable, isInstance, stackFrame.getRuntime());
-		this.stackFrame = stackFrame;
-		
+		this.stackFrame = stackFrame;	
 	}
 
 	@SuppressWarnings("unchecked")

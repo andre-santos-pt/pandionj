@@ -101,7 +101,7 @@ public class PandionJView extends ViewPart {
 		parent.setLayout(stackLayout);
 		parent.setBackground(Constants.Colors.VIEW_BACKGROUND);
 
-		Composite labelComposite = new Composite(parent, SWT.NONE);
+		Composite labelComposite = new Composite(parent, SWT.BORDER);
 		labelComposite.setLayout(new GridLayout());
 		labelInit = new Label(labelComposite, SWT.WRAP);
 		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);

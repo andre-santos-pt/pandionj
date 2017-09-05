@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 import pt.iscte.pandionj.parser.VariableInfo;
@@ -104,5 +105,10 @@ implements IValueModel {
 	@Override
 	public void setVariableRole(VariableInfo info) {
 		
+	}
+	
+	@Override
+	public IRuntimeModel getRuntimeModel() {
+		return null;
 	}
 }

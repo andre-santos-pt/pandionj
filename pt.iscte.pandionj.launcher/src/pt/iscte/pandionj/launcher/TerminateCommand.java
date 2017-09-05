@@ -10,7 +10,8 @@ public class TerminateCommand extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Activator.terminate();
-		fireHandlerChanged(new HandlerEvent(this, false, true));
+
+//		fireHandlerChanged(new HandlerEvent(this, true, true));
 		return null;
 	}
 
@@ -20,8 +21,7 @@ public class TerminateCommand extends AbstractHandler {
 		return Activator.isExecutingLaunch();
 	}
 	
-	@Override
-	public void setEnabled(Object evaluationContext) {
+//	public void setEnabled(Object evaluationContext) {
 //		setBaseEnabled(isEnabled());
-	}
+//	}
 }

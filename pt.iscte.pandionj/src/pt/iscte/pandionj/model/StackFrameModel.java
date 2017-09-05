@@ -82,6 +82,11 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		}
 	}
 
+	@Override
+	public String toString() {
+		return getInvocationExpression();
+	}
+	
 	public RuntimeModel getRuntime() {
 		return runtime;
 	}
@@ -191,9 +196,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 		if(jv.isStatic()) {
 			if(!staticRefs.existsVar(this, varName)) {
-				IVariableModel<?> newVar = value instanceof IJavaObject ?
-					new ReferenceModel(jv, false, null, getRuntime()) :
-					new ValueModel(jv, false, null, getRuntime());
+				IVariableModel<?> newVar = createVar(jv, false, value);
 				staticRefs.add(this, newVar);
 			}
 		}
@@ -207,7 +210,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 				stackVars.put(varName, newVar);
 
 				setChanged();
-				notifyObservers(new StackEvent(StackEvent.Type.NEW_VARIABLE, newVar));
+				notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE, newVar));
 			}
 		}
 	}
@@ -215,13 +218,14 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	private IVariableModel<?> createVar(IJavaVariable jv, boolean isInstance, IJavaValue value)
 			throws DebugException {
 		String varName = jv.getName();
-		VariableInfo info = varParser.locateVariable(varName, frame.getLineNumber());
+		boolean isField = !jv.isLocal();
+		VariableInfo info = varParser != null ? varParser.locateVariable(varName, frame.getLineNumber(), isField) : null;
 		System.err.println(frame.getDeclaringTypeName() + " -- " +  frame.getMethodName() + " " + (jv.isStatic() ? "static " : "") + varName + ": " + info);
 		IVariableModel<?> newVar = null;
 
 		if(value instanceof IJavaObject) {
 			ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
-			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber());
+			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
 			refElement.setTags(tags);
 			newVar = refElement;
 		}

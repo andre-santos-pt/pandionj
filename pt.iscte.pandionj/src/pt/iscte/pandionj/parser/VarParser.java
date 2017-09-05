@@ -56,8 +56,6 @@ public class VarParser {
 	public void run() {
 		visitor = new MethodVisitor();
 		parser.parse(visitor);
-		//		if(visitor.current != null)
-		//			visitor.current.accept(new PostRolesVisitor());
 	}
 
 	//	static class PostRolesVisitor implements BlockInfoVisitor {
@@ -83,10 +81,10 @@ public class VarParser {
 		return text;
 	}
 
-	public VariableInfo locateVariable(String name, int line) {
+	public VariableInfo locateVariable(String name, int line, boolean isField) {
 		assert visitor != null;
 		for(BlockInfo b : visitor.roots) {
-			VariableInfo v = b.locateVariable(name, line);
+			VariableInfo v = b.locateVariable(name, line, isField);
 			if(v != null)
 				return v;
 		}
@@ -104,7 +102,6 @@ public class VarParser {
 			return new BlockInfo(current, start, end, getBlockType(node));
 		}
 
-		// TODO other blocks
 		private BlockInfo.Type getBlockType(ASTNode node) {
 			if(node instanceof TypeDeclaration)
 				return BlockInfo.Type.TYPE;
@@ -120,7 +117,6 @@ public class VarParser {
 
 			else if(node instanceof IfStatement)
 				return BlockInfo.Type.IF;
-
 			else
 				return BlockInfo.Type.OTHER;
 		}
@@ -145,7 +141,7 @@ public class VarParser {
 		@Override
 		public boolean visit(FieldDeclaration node) {
 			for(Object o : node.fragments()) {
-				handleVarDeclaration((VariableDeclarationFragment) o);
+				handleVarDeclaration((VariableDeclarationFragment) o, true);
 			}
 			return true;
 		}
@@ -183,7 +179,7 @@ public class VarParser {
 			List<?> parameters = node.parameters();
 			for(int i = 0; i < parameters.size(); i++) {
 				SingleVariableDeclaration var = (SingleVariableDeclaration) parameters.get(i);
-				current.addVar(var.getName().getIdentifier(), i);
+				current.addVar(var.getName().getIdentifier(), i, false);
 			}
 		}
 
@@ -192,7 +188,7 @@ public class VarParser {
 		@Override
 		public boolean visit(VariableDeclarationExpression node) {
 			for(Object var : node.fragments())
-				handleVarDeclaration((VariableDeclarationFragment) var);
+				handleVarDeclaration((VariableDeclarationFragment) var, false);
 			return true;
 		}
 
@@ -200,13 +196,13 @@ public class VarParser {
 		@Override
 		public boolean visit(VariableDeclarationStatement node) {
 			for(Object var : node.fragments())
-				handleVarDeclaration((VariableDeclarationFragment) var);
+				handleVarDeclaration((VariableDeclarationFragment) var, false);
 			return true;
 		}
 
-		private void handleVarDeclaration(VariableDeclarationFragment var) {
+		private void handleVarDeclaration(VariableDeclarationFragment var, boolean isField) {
 			String varName = var.getName().getIdentifier();
-			VariableInfo varInfo = current.addVar(varName);
+			VariableInfo varInfo = current.addVar(varName, isField);
 			Expression init = var.getInitializer();
 			if(init instanceof SimpleName) {
 				String initVar = ((SimpleName) init).getIdentifier();

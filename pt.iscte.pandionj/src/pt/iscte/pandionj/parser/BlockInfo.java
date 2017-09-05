@@ -178,11 +178,12 @@ public class BlockInfo {
 		return lineStart+"-"+lineEnd+ " " + getId();
 	}
 
-	public VariableInfo addVar(String var) {
-		return addVar(var, -1);
+	public VariableInfo addVar(String var, boolean isField) {
+		return addVar(var, -1, isField);
 	}
-	public VariableInfo addVar(String var, int paramIndex) {
-		VariableInfo varInfo = new VariableInfo(var, this, paramIndex);
+	
+	public VariableInfo addVar(String var, int paramIndex, boolean isField) {
+		VariableInfo varInfo = new VariableInfo(var, this, paramIndex, isField);
 		vars.add(varInfo);
 		return varInfo;
 	}
@@ -221,15 +222,15 @@ public class BlockInfo {
 		}
 	}
 
-	public VariableInfo locateVariable(String name, int line) {
-		if(line == -1)
+	public VariableInfo locateVariable(String name, int line, boolean isField) {
+		if(line == -1 && isField)
 			return getVariable(name);
 		else
-			return locateVariable(this, name, line);
+			return locateVariable(this, name, line, isField);
 	}
 
 
-	private static VariableInfo locateVariable(BlockInfo block, String name, int line) {
+	private static VariableInfo locateVariable(BlockInfo block, String name, int line, boolean isField) {
 		if(block.inScope(line)) {
 			BlockInfo childInScope = null;
 			for(BlockInfo child : block.children) {
@@ -239,7 +240,7 @@ public class BlockInfo {
 				}
 			}
 			if(childInScope != null)
-				return locateVariable(childInScope, name, line);
+				return locateVariable(childInScope, name, line, isField);
 			else
 				return block.getVariable(name);
 		}

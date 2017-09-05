@@ -9,6 +9,7 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockReference implements IReferenceModel {
@@ -111,6 +112,11 @@ public class MockReference implements IReferenceModel {
 	@Override
 	public void setVariableRole(VariableInfo info) {
 		
+	}
+	
+	@Override
+	public IRuntimeModel getRuntimeModel() {
+		return null;
 	}
 
 }

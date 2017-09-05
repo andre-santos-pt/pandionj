@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
 
 import pt.iscte.pandionj.extensibility.IEntityModel;
@@ -112,6 +113,11 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	@Override
 	public boolean exceptionOccurred() {
 		return false;
+	}
+
+	@Override
+	public IFile getSourceFile() {
+		return null;
 	}
 
 	

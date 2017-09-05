@@ -1,6 +1,7 @@
 package pt.iscte.pandionj;
 
 import java.util.Arrays;
+import java.util.List;
 
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.Signature;
@@ -13,16 +14,18 @@ import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import pt.iscte.pandionj.extensibility.IVisibleMethod;
+
 public class ParamsDialog {
 		private Shell shell;
 		private Text[] textFields; 
 		private String methodName;
 		private String[] values;
 		
-		public ParamsDialog(Shell parent, IMethod m) {
-			methodName = m.getElementName();
+		public ParamsDialog(Shell parent, IVisibleMethod m) {
+			methodName = m.getName();
 			shell = new Shell(parent, SWT.PRIMARY_MODAL);
-			shell.setText(m.getElementName());
+			shell.setText(m.getName());
 			//			org.eclipse.swt.layout.GridLayout layout = new org.eclipse.swt.layout.GridLayout(m.getNumberOfParameters(), true);
 			//			layout.marginLeft = 0;
 			//			layout.marginTop = 0;
@@ -31,9 +34,10 @@ public class ParamsDialog {
 
 			shell.setLayout(new RowLayout());
 			org.eclipse.swt.widgets.Label label = new org.eclipse.swt.widgets.Label(shell, SWT.NONE);
-			label.setText(m.getElementName() + " (");
+			label.setText(m.getName() + " (");
 			FontManager.setFont(label, Constants.BUTTON_FONT_SIZE);
 
+			List<String> parameterTypes = m.getParameterTypes();
 			textFields = new Text[m.getNumberOfParameters()];
 			for(int i = 0; i < m.getNumberOfParameters(); i++) {
 				if(i != 0) {
@@ -41,8 +45,8 @@ public class ParamsDialog {
 					FontManager.setFont(comma, Constants.BUTTON_FONT_SIZE);
 					comma.setText(", ");
 				}
-				;
-				String pType = Signature.toString(m.getParameterTypes()[i]);
+				String pType = parameterTypes.get(i);
+//				String pType = Signature.toString(m.getParameterTypes()[i]);
 				Text text = new org.eclipse.swt.widgets.Text(shell, SWT.BORDER);
 				text.setToolTipText(pType);
 				//				text.setLayoutData(new Row(40, 20));

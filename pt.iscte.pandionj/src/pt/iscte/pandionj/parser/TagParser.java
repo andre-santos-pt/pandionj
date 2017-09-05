@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -20,8 +21,6 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
-import com.google.common.collect.Sets;
-
 
 
 public class TagParser {
@@ -31,7 +30,7 @@ public class TagParser {
 	private CompilationUnit cunit;
 
 	private Set<String> validTags;
-	
+
 	public TagParser(String path, Set<String> validTags) {
 		parser = JavaSourceParser.createFromFile(path);
 		cunit = parser.getCompilationUnit();
@@ -43,19 +42,26 @@ public class TagParser {
 		this(file.getLocation().toOSString(), validTags);
 	}
 
-	public Collection<String> getTags(String varName, int line) {
-		for (VariableTags t : variables)
-			if(t.name.equals(varName) && t.withinLine(line))
-				return t.getTags();
-		
+	public Collection<String> getTags(String varName, int line, boolean isField) {
+		if(isField) {
+			for (VariableTags t : variables)
+				if(t.name.equals(varName) && t.isField == true)
+					return t.getTags();
+		}
+		else {
+			for (VariableTags t : variables)
+				if(t.name.equals(varName) && t.withinLine(line))
+					return t.getTags();
+		}
+
 		return Collections.emptyList();
 	}
-	
+
 	public Collection<String> getAttributeTags(String typeName, String attName) {
 		for (VariableTags t : variables)
 			if(typeName.equals(t.type) && attName.equals(t.name))
 				return t.getTags();
-		
+
 		return Collections.emptyList();
 	}
 
@@ -65,6 +71,13 @@ public class TagParser {
 		CommentVisitor commentVisitor = new CommentVisitor();
 		for (Comment comment : (List<Comment>) cunit.getCommentList())
 			comment.accept(commentVisitor);
+
+		Collections.sort(variables);
+	}
+
+	@Override
+	public String toString() {
+		return variables.stream().filter((v) -> !v.tags.isEmpty()).collect(Collectors.toList()).toString();
 	}
 
 	class TagVisitor extends ASTVisitor {
@@ -72,19 +85,19 @@ public class TagParser {
 		public boolean visit(SingleVariableDeclaration node) {
 			String varName = node.getName().getIdentifier();
 			int line = cunit.getLineNumber(node.getStartPosition());
-			Scope scope = new Scope(node.getParent(), cunit);
-			VariableTags tags = new VariableTags(varName, null, line, scope);
+			Scope scope = new Scope(line, getEndLine(node.getParent(), cunit));
+			VariableTags tags = new VariableTags(varName, null, line, scope, false);
 			variables.add(tags);
 			return false;
 		}
-		
+
 		@Override
 		public boolean visit(VariableDeclarationStatement node) {
 			VariableDeclarationFragment frag = (VariableDeclarationFragment) node.fragments().get(0);
 			String varName = frag.getName().getIdentifier();
 			int line = cunit.getLineNumber(node.getStartPosition());
-			Scope scope = new Scope(node.getParent(), cunit);
-			VariableTags tags = new VariableTags(varName, null, line, scope);
+			Scope scope = new Scope(line, getEndLine(node.getParent(), cunit));
+			VariableTags tags = new VariableTags(varName, null, line, scope, false);
 			variables.add(tags);
 			return super.visit(node);
 		}
@@ -94,14 +107,19 @@ public class TagParser {
 			VariableDeclarationFragment frag = (VariableDeclarationFragment) node.fragments().get(0);
 			String varName = frag.getName().getIdentifier();
 			int line = cunit.getLineNumber(node.getStartPosition());
-			Scope scope = new Scope(node.getParent(), cunit);
+			ASTNode parent = node.getParent();
+			Scope scope = new Scope(cunit.getLineNumber(parent.getStartPosition()), getEndLine(parent, cunit));
 			TypeDeclaration dec = (TypeDeclaration) node.getParent();
-			
+
 			String type = !Modifier.isStatic(node.getModifiers()) ? dec.getName().getFullyQualifiedName() : null; 
-			VariableTags tags = new VariableTags(varName, type, line, scope);
+			VariableTags tags = new VariableTags(varName, type, line, scope, true);
 			variables.add(tags);
 			return false;
 		}
+	}
+
+	private static int getEndLine(ASTNode node, CompilationUnit cunit) {
+		return cunit.getLineNumber(node.getStartPosition() + node.getLength());
 	}
 
 	class CommentVisitor extends ASTVisitor {
@@ -111,32 +129,34 @@ public class TagParser {
 			String comment = parser.getSourceFragment(start, node.getLength());
 			comment = comment.substring(comment.indexOf('/')+2).trim();
 			String[] tags = comment.split("\\s+");
-			
+
 			for (VariableTags t : variables)
 				if(t.declarationLine == line)
 					for(String tag : tags)
 						if(validTags.contains(tag))
 							t.addTag(tag);
-			
+
 			return true;
 		}
 	}
-	
-	private static class VariableTags {
+
+	private static class VariableTags implements Comparable<VariableTags>{
 		private final String name;
 		private final String type;
 		private final int declarationLine;
 		private final Scope scope;
+		private final boolean isField;
 		private final Set<String> tags;
-		
-		public VariableTags(String name, String type, int declarationLine, Scope scope) {
+
+		public VariableTags(String name, String type, int declarationLine, Scope scope, boolean isField) {
 			this.name = name;
 			this.type = type;
 			this.declarationLine = declarationLine;
 			this.scope = scope;
+			this.isField = isField;
 			this.tags = new HashSet<String>();
 		}
-		
+
 		public boolean withinLine(int line) {
 			return scope.contains(line);
 		}
@@ -144,7 +164,7 @@ public class TagParser {
 		public void addTag(String tag) {
 			tags.add(tag);
 		}			
-		
+
 		@Override
 		public String toString() {
 			return name + " on scope " + scope + " (" + type + ") : " + tags;
@@ -153,48 +173,45 @@ public class TagParser {
 		public Set<String> getTags() {
 			return Collections.unmodifiableSet(tags);
 		}
+
+		public boolean isField() {
+			return isField;
+		}
+
+		@Override
+		public int compareTo(VariableTags o) {
+			return scope.compareTo(o.scope);
+		}
 	}
 
-	private static class Scope {
+	private static class Scope implements Comparable<Scope>{
 		final int firstLine;
 		final int lastLine;
-		
-		Scope(ASTNode node, CompilationUnit cunit) {
-			this.firstLine = cunit.getLineNumber(node.getStartPosition());
-			this.lastLine = cunit.getLineNumber(node.getStartPosition() + node.getLength());
+
+		Scope(int firstLine, int lastLine) {
+			this.firstLine = firstLine;
+			this.lastLine = lastLine;
 		}
-		
-	
+
+
 		boolean contains(int line) {
 			return line >= firstLine && line <= lastLine;
 		}
-		
+
 		boolean isInnerScopeOf(Scope scope) {
 			return firstLine >= scope.firstLine && lastLine <= scope.lastLine;
 		}
-		
+
 		@Override
 		public String toString() {
 			return "[" + firstLine + ", " + lastLine + "]";
 		}
-		
+
+
+		@Override
+		public int compareTo(Scope s) {
+			return isInnerScopeOf(s) ? -1 : 1;
+		}
+
 	}
-	public static void main(String[] args) {
-		Set<String> validtags = Sets.newHashSet();
-		validtags.add("T1");
-		validtags.add("T2");
-		
-		TagParser parser = new TagParser("/Users/andresantos/git/pandionj2/pt.iscte.pandionj/src/pt/iscte/pandionj/parser2/ClassInfo.java", validtags);
-		parser.run();
-
-		Collection<String> tags = parser.getTags("name", 14);
-		System.out.println(parser.getTags("name", 14));
-		System.out.println(parser.getTags("name", 21));
-		System.out.println(parser.getTags("img", 32));
-		System.out.println(parser.variables);
-	}
-
-	
-
-
 }

@@ -1,63 +1,69 @@
-package pt.iscte.pandionj;
-
-import java.util.HashMap;
-import java.util.Map;
+package pt.iscte.pandionj.figures;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.MouseEvent;
+import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.swt.SWT;
 
-import pt.iscte.pandionj.RuntimeViewer.ObjectContainer;
+import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.ExceptionType;
+import pt.iscte.pandionj.FigureProvider;
+import pt.iscte.pandionj.RuntimeViewer;
+import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.figures.PandionJFigure;
-import pt.iscte.pandionj.figures.PositionAnchor;
-import pt.iscte.pandionj.figures.ReferenceFigure;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.ModelObserver;
 
 public class StackFrameFigure extends Figure {
 	private GridLayout layout;
 	private FigureProvider figProvider;
 	private ObjectContainer objectContainer;
-	private Figure rootPane;
-	private Map<IReferenceModel, PolylineConnection> pointerMap;
+	private RuntimeViewer runtimeViewer;
 	private boolean invisible;
-	
-	public StackFrameFigure(Figure rootPane, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
-		this.rootPane = rootPane;
+	private boolean instance;
+
+	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible, boolean instance) {
+		this.runtimeViewer = runtimeViewer;
+		this.figProvider = runtimeViewer.getFigureProvider();
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
-
-		setBackgroundColor(Constants.Colors.OBJECT);
+		this.instance = instance;
+		setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		layout = new GridLayout(1, false);
-		layout.verticalSpacing = 2;
+		layout.verticalSpacing = 4;
+		layout.horizontalSpacing = 2;
 		setLayoutManager(layout);
 		if(!invisible) {
 			setOpaque(true);
-			setBorder(new LineBorder(ColorConstants.lightGray, 1));
+			setBorder(new LineBorder(ColorConstants.gray, 2));
 			Label label = new Label(frame.getInvocationExpression());
-			label.setForegroundColor(Constants.Colors.CONSTANT);
+			label.setForegroundColor(ColorConstants.gray);
 			add(label);
-			layout.setConstraint(label, Constants.RIGHT_ALIGN);
+			label.addMouseListener(new MouseListener() {
+				public void mousePressed(MouseEvent me) {}
+				public void mouseReleased(MouseEvent me) {}
+				public void mouseDoubleClicked(MouseEvent me) {
+					PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber()-1);
+				}
+			});
+			//			layout.setConstraint(label, Constants.RIGHT_ALIGN);
 		}
-		pointerMap = new HashMap<>();
-		figProvider = new FigureProvider(frame);
 		for (IVariableModel<?> v : frame.getStackVariables())
 			add(v);
-		addFrameObserver(frame);
-		layout.layout(this);
-		updateLook(frame);
-	}
 
-	public void clearPointers() {
-		for (PolylineConnection conn : pointerMap.values())
-			rootPane.remove(conn);
+		updateLook(frame);
+		addFrameObserver(frame);
+		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame));
 	}
 
 	private void addFrameObserver(IStackFrameModel frame) {
@@ -74,9 +80,8 @@ public class StackFrameFigure extends Figure {
 						if(toRemove != null)
 							remove(toRemove);
 
-						PolylineConnection conn = pointerMap.get(event.arg);
-						if(conn != null)
-							rootPane.remove(conn);
+						if(event.arg instanceof IReferenceModel)
+							runtimeViewer.removePointer((IReferenceModel) event.arg);
 					}
 					else if(event.type == StackEvent.Type.EXCEPTION) {
 						exception = ExceptionType.match((String) event.arg);
@@ -89,7 +94,6 @@ public class StackFrameFigure extends Figure {
 						}
 					}
 				}
-				layout.layout(StackFrameFigure.this);
 				updateLook(frame);
 			}
 		});
@@ -97,34 +101,36 @@ public class StackFrameFigure extends Figure {
 
 	private void updateLook(IStackFrameModel model) {
 		if(!invisible) {
-			if(model.isObsolete())
-				setBorder(new LineBorder(Constants.Colors.OBSOLETE, 2));
-			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.OBSOLETE);
+			if(model.isObsolete()) {
+				setBackgroundColor(Constants.Colors.OBSOLETE);
+				setBorder(new LineBorder(ColorConstants.lightGray, 2, SWT.LINE_DASH));
+			}
 			else if(model.exceptionOccurred())
-				setBorder(new LineBorder(Constants.Colors.ERROR, 2));
+				setBorder(new LineBorder(Constants.Colors.ERROR, Constants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
 			else if(model.isExecutionFrame())
-				//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.INST_POINTER);
-				setBorder(new LineBorder(Constants.Colors.INST_POINTER, 2));
+				setBackgroundColor(Constants.Colors.INST_POINTER);
 			else
-				setBorder(new LineBorder(ColorConstants.lightGray, 2));
-			//					StackFrameViewer.this.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
+				setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		}
+		layout.layout(this);
 	}
 
 	private void add(IVariableModel<?> v) {
-		PandionJFigure<?> figure = figProvider.getFigure(v);
-		add(figure);
+		if(v.isInstance() == instance) {
+			PandionJFigure<?> figure = figProvider.getFigure(v, true);
+			add(figure);
 
-		layout.setConstraint(figure, Constants.RIGHT_ALIGN);
+			layout.setConstraint(figure, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 
-		if(v instanceof IReferenceModel) {
-			IReferenceModel ref = (IReferenceModel) v;
-			IEntityModel target = ref.getModelTarget();
-			PandionJFigure<?> targetFig = null;
-			if(!target.isNull())
-				targetFig = objectContainer.addObject(target);
-			addPointer((ReferenceFigure) figure, ref, target, targetFig);
-			objectContainer.updateIllustration(ref, null);
+			if(v instanceof IReferenceModel) {
+				IReferenceModel ref = (IReferenceModel) v;
+				IEntityModel target = ref.getModelTarget();
+				PandionJFigure<?> targetFig = null;
+				if(!target.isNull())
+					targetFig = objectContainer.addObject(target);
+				addPointer((ReferenceFigure) figure, ref, target, targetFig);
+				objectContainer.updateIllustration(ref, null);
+			}
 		}
 	}
 
@@ -135,11 +141,10 @@ public class StackFrameFigure extends Figure {
 		if(target.isNull())
 			pointer.setSourceAnchor(figure.getAnchor());
 		else
-			pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
-		RuntimeViewer.addPointerDecoration(target, pointer);
+			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+		Utils.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer);
-		rootPane.add(pointer);
-		pointerMap.put(ref, pointer);
+		runtimeViewer.addPointer(ref, pointer);
 	}
 
 	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
@@ -150,13 +155,13 @@ public class StackFrameFigure extends Figure {
 				pointer.setVisible(!target.isNull());
 				if(!target.isNull()) {
 					PandionJFigure<?> targetFig = objectContainer.addObject(target);
-					pointer.setTargetAnchor(new PositionAnchor(targetFig, PositionAnchor.Position.LEFT));
-					RuntimeViewer.addPointerDecoration(target, pointer);
+					pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+					Utils.addArrowDecoration(pointer);
 				}
 			}
 		});
 	}
-	
+
 
 	public PandionJFigure<?> getVariableFigure(IVariableModel<?> v) {
 		for (Object object : getChildren()) {

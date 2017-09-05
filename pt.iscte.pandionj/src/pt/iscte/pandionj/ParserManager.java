@@ -49,6 +49,7 @@ public class ParserManager {
 			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
+			System.out.println(tagParser);
 		}
 		return r;
 	}
@@ -60,11 +61,11 @@ public class ParserManager {
 		return tagParser.getAttributeTags(className, attName);
 	}
 			
-	public static Collection<String> getTags(IFile file, String varName, int line) {
+	public static Collection<String> getTags(IFile file, String varName, int line, boolean isField) {
 		TagParser tagParser = tagParserCache.get(file);
 		if(tagParser == null)
 			return Collections.emptyList();
 		
-		return tagParser.getTags(varName, line);
+		return tagParser.getTags(varName, line, isField);
 	}
 }

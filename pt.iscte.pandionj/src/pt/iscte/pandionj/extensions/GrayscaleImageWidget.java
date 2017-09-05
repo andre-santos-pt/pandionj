@@ -35,10 +35,11 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 	
 	@Override
 	public boolean accept(IArrayModel model) {
-		if(!model.getComponentType().equals(int.class.getName()) || model.getDimensions() != 2 || model.getLength() < 1)
-			return false;
-
-		return internalAccept(model.getValues());
+		return 
+				model.getComponentType().equals(int.class.getName()) &&
+				model.getDimensions() == 2 && 
+				model.getLength() > 0 && 
+				internalAccept(model.getValues());
 	}
 
 

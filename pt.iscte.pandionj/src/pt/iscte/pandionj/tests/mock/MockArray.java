@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 
@@ -98,6 +99,12 @@ implements IArrayModel {
 	public boolean isValidModelIndex(int i) {
 		// TODO Auto-generated method stub
 		return false;
+	}
+
+	@Override
+	public IRuntimeModel getRuntimeModel() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

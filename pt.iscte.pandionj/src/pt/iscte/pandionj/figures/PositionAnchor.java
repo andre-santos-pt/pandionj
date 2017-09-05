@@ -5,54 +5,69 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
-public class PositionAnchor extends AbstractConnectionAnchor {
+import pt.iscte.pandionj.Constants;
 
-	public enum Position {
+public class PositionAnchor extends AbstractConnectionAnchor {
+	interface PointProvider {
+		Point getPoint(Rectangle r);
+	}
+	
+	public enum Position implements PointProvider {
 		TOP {
 			@Override
-			Point getPoint(Rectangle r) {
+			public Point getPoint(Rectangle r) {
 				return new Point(r.x + r.width/2, r.y);
 			}
 		},
 		RIGHT {
 			@Override
-			Point getPoint(Rectangle r) {
+			public Point getPoint(Rectangle r) {
 				return new Point(r.x + r.width, r.y + r.height/2);
 			}
 		},
 		BOTTOM {
 			@Override
-			Point getPoint(Rectangle r) {
+			public Point getPoint(Rectangle r) {
 				return new Point(r.x + r.width/2, r.y + r.height);
 			}
 		},
 		LEFT {
 			@Override
-			Point getPoint(Rectangle r) {
-				return new Point(r.x, r.y + r.height/2);
+			public Point getPoint(Rectangle r) { //TODO only for array
+				return new Point(r.x+Constants.POSITION_WIDTH, r.y + r.height/2);
 			}
 		},
 		TOPLEFT {
 			@Override
-			Point getPoint(Rectangle r) {
-				return new Point(r.x, r.y + r.height/4);
+			public Point getPoint(Rectangle r) {
+				return new Point(r.x, r.y + Constants.OBJECT_PADDING);
 			}
 		},
 		CENTER {
 			@Override
-			Point getPoint(Rectangle r) {
+			public Point getPoint(Rectangle r) {
 				return new Point(r.x + r.width/2, r.y + r.height/2);
+			}
+		},
+		QUARTER1 {
+			@Override
+			public Point getPoint(Rectangle r) {
+				return new Point(r.x + r.width/4, r.y + r.height/2);
 			}
 		};
 
-		abstract Point getPoint(org.eclipse.draw2d.geometry.Rectangle r);
+		public abstract Point getPoint(org.eclipse.draw2d.geometry.Rectangle r);
 	}
 
-	private Position position;
+	private PointProvider provider;
 
 	public PositionAnchor(IFigure fig, Position position) {
+		this(fig, (PointProvider) position);
+	}
+	
+	public PositionAnchor(IFigure fig, PointProvider provider) {
 		super(fig);
-		this.position = position;
+		this.provider = provider;
 	}
 
 	@Override
@@ -62,6 +77,6 @@ public class PositionAnchor extends AbstractConnectionAnchor {
 		r.translate(0, 0);
 		r.resize(1, 1);
 		getOwner().translateToAbsolute(r);
-		return position.getPoint(r);
+		return provider.getPoint(r);
 	}
 }

@@ -5,7 +5,6 @@ import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
-import java.util.Arrays;
 
 import javassist.ClassPool;
 import javassist.CtClass;
@@ -30,7 +29,6 @@ public class PandionJAgent {
 
 		int i = expression.indexOf("(");
 		final String expMethod = i == -1 ? "" : expression.substring(0, i);
-
 		inst.addTransformer(new ClassFileTransformer() {
 			@Override
 			public byte[] transform(ClassLoader classLoader, String s, Class<?> aClass, ProtectionDomain protectionDomain, byte[] bytes) throws IllegalClassFormatException {
@@ -39,31 +37,18 @@ public class PandionJAgent {
 						ClassPool cp = ClassPool.getDefault();
 						CtClass cc = cp.get(s.replace('/','.'));
 						CtMethod[] methods = cc.getDeclaredMethods();
+						CtClass retType = null;
+						boolean multiple = false;
 						for(CtMethod m : methods) {
-							CtClass retType = m.getReturnType();
-							if(!m.isEmpty() && m.getName().equals(expMethod) && m.getMethodInfo().isMethod() && !retType.equals(CtClass.voidType)) {
-								//								String fieldName = m.getName() + "_return";
-								//								CtField f = new CtField(m.getReturnType(), fieldName, cc);
-								//								SyntheticAttribute syntheticAttribute = new SyntheticAttribute(cc.getClassFile().getConstPool()); //creating a synthetic attribute using an instance of ConstPool
-								//								f.setAttribute(SyntheticAttribute.tag, syntheticAttribute.get());
-								//								f.setModifiers(Modifier.STATIC | Modifier.PRIVATE);
-								//								cc.addField(f);
-//								System.out.println(retType.getComponentType().getName());
-								if(retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
-									CtClass c = retType;
-									while(c.isArray())
-										c = c.getComponentType();
-									String inst = "System.out.println(\"" + expression + " = \" + java.util.Arrays.toString((" + retType.getComponentType().getName() +"[])$_));";
-//									String inst = "Object[] __ret__ = (Object[])$_;";
-//									System.out.println(inst);
-									m.insertAfter(inst);
-								}
-								else
-									m.insertAfter("System.out.println(\"" + expression + " = \" + $_);");
-								//								m.insertAfter(fieldName + " = $_;");
+							if(!m.isEmpty() && m.getName().equals(expMethod) && m.getMethodInfo().isMethod()) {
+								if(retType != null)
+									multiple = true;
+								retType = m.getReturnType();
 							}
 						}
-
+						if(multiple)
+							retType = null;
+						
 						try {
 							// check if real main method exists
 							CtMethod method = cc.getMethod("main", "([Ljava/lang/String;)V");
@@ -77,9 +62,30 @@ public class PandionJAgent {
 							//							 String test = "java.io.PrintStream stderr = System.err;" +
 							//							 "java.io.OutputStream out = new java.io.OutputStream() { public void write(int b) { } };";
 							//							 "System.setErr(new java.io.PrintStream(out));";
+							
+//							CtMethod m = CtNewMethod.make("public static void main(String[] args) { " + expression + "; }", cc);
+							CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
 
-							CtMethod m = CtNewMethod.make("public static void main(String[] args) { " + expression + "; }", cc);
 							cc.addMethod(m); 
+							
+							if(retType != null && retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
+								CtClass c = retType;
+								while(c.isArray())
+									c = c.getComponentType();
+								String inst = "System.out.println(\"" + expression + " = \" + java.util.Arrays.toString((" + retType.getComponentType().getName() +"[])" + expression + "));";
+//								String inst = "Object[] __ret__ = (Object[])$_;";
+//								System.out.println(inst);
+								m.insertAfter(inst);
+							}
+							else if(retType != null && !CtClass.voidType.equals(retType)){
+								String inst = "System.out.println(\"" + expression + " = \" + " + expression + ");";
+								m.insertAfter(inst);
+							}
+							else {
+								m.insertAfter(expression + ";");
+							}
+								
+							//								m.insertAfter(fieldName + " = $_;");
 
 							byte[] byteCode = cc.toBytecode();	
 							cc.detach();

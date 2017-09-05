@@ -59,7 +59,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private String rightField;
 
 	private IObjectWidgetExtension extension;
-	
+
 	public ObjectModel(IJavaObject object, IType type, RuntimeModel runtime) {
 		super(object, runtime);
 		assert type != null;
@@ -85,7 +85,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 								notifyObservers(name);
 							}
 						});
-						
+
 						IResource resource = jType.getResource();
 						if(resource instanceof IFile) {
 							Collection<String> tags = ParserManager.getAttributeTags((IFile) resource, jType.getFullyQualifiedName(), name);
@@ -112,12 +112,12 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		catch(DebugException e) {
 			e.printStackTrace();
 		}
-		
+
 		if(refsOfSameType.size() == 2) {
 			leftField = refsOfSameType.get(0);
 			rightField = refsOfSameType.get(1);
 		}
-		
+
 		extension = ExtensionManager.getObjectExtension(this);
 	}
 
@@ -128,12 +128,12 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public String getTypeName() {
 		return jType.getFullyQualifiedName();
 	}
-	
+
 	@Override
 	public boolean isNull() {
 		return false;
 	}
-	
+
 	public boolean includeMethod(IMethod method) {
 		return extension.includeMethod(method.getElementName());
 
@@ -152,22 +152,22 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				return true;
 		return false;
 	}
-	
-	
+
+
 	public Multimap<String, String> getAttributeTags() {
 		Multimap<String, String> map = ArrayListMultimap.create();
-		
+
 		for(ReferenceModel r : references.values()) {
 			if(r.hasTags())
 				map.putAll(r.getName(), r.getTags());
 		}
 		return map;
 	}
-	
+
 	public boolean hasWidgetExtension() {
 		return extension != IObjectWidgetExtension.NULL_EXTENSION;
 	}
-	
+
 	public Set<String> getFieldNames() {
 		return Collections.unmodifiableSet(values.keySet());
 	}
@@ -216,23 +216,23 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	@Override
 	public String toString() {
-//		try {
-			return "?toString?"; //invoke4("toString", new IJavaValue[0]).getValueString();
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return super.toString();
-//		}
-		
-//		try {
-//			return "(" + getContent().getJavaType().getName() + ")";
-//			//			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
-//			//			for(Entry<String, ReferenceModel> e : references.entrySet())
-//			//				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
-//			//			return s;
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return super.toString();
-//		}
+		//		try {
+		return "?toString?"; //invoke4("toString", new IJavaValue[0]).getValueString();
+		//		} catch (DebugException e) {
+		//			e.printStackTrace();
+		//			return super.toString();
+		//		}
+
+		//		try {
+		//			return "(" + getContent().getJavaType().getName() + ")";
+		//			//			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
+		//			//			for(Entry<String, ReferenceModel> e : references.entrySet())
+		//			//				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
+		//			//			return s;
+		//		} catch (DebugException e) {
+		//			e.printStackTrace();
+		//			return super.toString();
+		//		}
 	}
 
 	@Override
@@ -249,15 +249,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public boolean equals(Object obj) {
 		return obj instanceof ObjectModel && ((ObjectModel) obj).hashCode() == hashCode();
 	}
-	
-	
+
+
 	@Override
 	public void setStep(int stepPointer) {
 		// TODO stepPointer
-		
+
 	}
-	
-	
+
+
 
 
 	public interface SiblingVisitor {
@@ -330,15 +330,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-//	private boolean noSiblings() {
-//		for(String siblingRef : refsOfSameType) {
-//			ReferenceModel refModel = references.get(siblingRef);
-//			EntityModel<?> o = refModel.getModelTarget();
-//			if(!(o instanceof NullModel))
-//				return false;
-//		}
-//		return true;
-//	}
+	//	private boolean noSiblings() {
+	//		for(String siblingRef : refsOfSameType) {
+	//			ReferenceModel refModel = references.get(siblingRef);
+	//			EntityModel<?> o = refModel.getModelTarget();
+	//			if(!(o instanceof NullModel))
+	//				return false;
+	//		}
+	//		return true;
+	//	}
 
 
 	//	public void traverseSiblingsDepth(SiblingVisitor v, boolean visitNulls) {
@@ -428,8 +428,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 		infixTraverse(this, null, null, 0, visitor, visitNulls);
 	}
-	
-	
+
+
 
 	private void infixTraverse(IEntityModel e, ObjectModel parent, String field, int depth, SiblingVisitor visitor, boolean visitNulls) {
 		int index = field == null ? -1 : field.equals(leftField) ? 0 : 1;
@@ -459,7 +459,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			List<IMethod> list = new ArrayList<>();
 			IMethod[] methods = jType.getMethods();
 			for(IMethod m : methods)
-			
+
 				if(!m.isConstructor() && !Flags.isStatic(m.getFlags()) && isMethodVisible(m))
 					list.add(m);
 			return list;
@@ -475,11 +475,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			int f = m.getFlags();
 			return 	extension.includeMethod(m.getElementName()) && 
 					(
-					!jType.isMember() && jType.getPackageFragment().isDefaultPackage() && 
-					(Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
-					||
-					Flags.isPublic(f)
-					);
+							!jType.isMember() && jType.getPackageFragment().isDefaultPackage() && 
+							(Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
+							||
+							Flags.isPublic(f)
+							);
 		}
 		catch (JavaModelException e) {
 			e.printStackTrace();
@@ -501,7 +501,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		public String getName() {
 			return name;
 		}
-		
+
 		@Override
 		public List<String> getParameterTypes() {
 			return paramTypes;
@@ -515,20 +515,20 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				list.add(new VisibleMethod(m));
 		return list;
 	}
-	
-//	public void invoke(IMethod method, IWatchExpressionListener listener, IJavaValue ... args) {
-//		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-//		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
-//		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
-//		Collection<ReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
-//		if(!referencesTo.isEmpty()) {
-//			String exp = referencesTo.iterator().next().getName() + "." + method.getElementName() + "()";
-//			System.out.println(exp);
-//			delegate.evaluateExpression(exp , stackFrame.getStackFrame(), listener);
-//		}
-//	}
-	
-	
+
+	//	public void invoke(IMethod method, IWatchExpressionListener listener, IJavaValue ... args) {
+	//		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+	//		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
+	//		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
+	//		Collection<ReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
+	//		if(!referencesTo.isEmpty()) {
+	//			String exp = referencesTo.iterator().next().getName() + "." + method.getElementName() + "()";
+	//			System.out.println(exp);
+	//			delegate.evaluateExpression(exp , stackFrame.getStackFrame(), listener);
+	//		}
+	//	}
+
+
 	public void invoke(String methodName, InvocationResult listener, String ... args) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
@@ -536,30 +536,31 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		Collection<IReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
 		if(!referencesTo.isEmpty()) {
 			String exp = referencesTo.iterator().next().getName() + "." + methodName + "(" + String.join(", ", args) + ")";
-			
+
 			delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(listener));
 		}
 	}
-	
+
 	private class ExpressionListener implements IWatchExpressionListener {
 		InvocationResult listener;
 		ExpressionListener(InvocationResult listener) {
 			this.listener = listener;
 		}
-		
+
 		@Override
 		public void watchEvaluationFinished(IWatchExpressionResult result) {
 			//			try {
 			IJavaValue ret = (IJavaValue) result.getValue();
 			if(ret != null) {
 				if(ret instanceof IJavaObject) {
-			
-				IEntityModel object = getRuntimeModel().getObject((IJavaObject) ret, true, null);
+
+					IEntityModel object = getRuntimeModel().getObject((IJavaObject) ret, true, null);
 					System.out.println(ret + " == " + object);
+					listener.valueReturn(object);
 				}
 				else
 					listener.valueReturn(ret.toString());
-//				processInvocationResult((IJavaValue) result.getValue()); 
+				//				processInvocationResult((IJavaValue) result.getValue()); 
 			}
 			else {
 				DebugException exception = result.getException();
@@ -570,36 +571,36 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			}
 		}
 
-//		private void processInvocationResult(IJavaValue ret) {
-//			if(ret instanceof IJavaObject) {
-//				EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject((IJavaObject) ret, true);
-//				System.out.println(ret + " == " + object);
-//			}
-//			else if(ret instanceof IJavaPrimitiveValue) {
-//				PandionJUI.executeUpdate(() -> {
-//					try {
-//						//					new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
-//						new ResultDialog(Display.getDefault().getActiveShell(), 400, 400, ret.getValueString()).open();
-//					} catch (DebugException e) {
-//						e.printStackTrace();
-//					}
-//				});
-//			}
-//			getRuntimeModel().refresh();
-//		}
+		//		private void processInvocationResult(IJavaValue ret) {
+		//			if(ret instanceof IJavaObject) {
+		//				EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject((IJavaObject) ret, true);
+		//				System.out.println(ret + " == " + object);
+		//			}
+		//			else if(ret instanceof IJavaPrimitiveValue) {
+		//				PandionJUI.executeUpdate(() -> {
+		//					try {
+		//						//					new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
+		//						new ResultDialog(Display.getDefault().getActiveShell(), 400, 400, ret.getValueString()).open();
+		//					} catch (DebugException e) {
+		//						e.printStackTrace();
+		//					}
+		//				});
+		//			}
+		//			getRuntimeModel().refresh();
+		//		}
 	};
 
 	// TODO: attribute tags
 	public Multimap<String, String> getTags() {
 		Multimap<String,String> tags = ArrayListMultimap.create();
-		
+
 		for (Entry<String, ReferenceModel> e : references.entrySet()) {
 			for(String t : e.getValue().getTags())
 				tags.put(e.getKey(), t);
 		}
 		return tags;
 	}
-	
+
 
 	@Override
 	public String getStringValue() {
@@ -646,108 +647,108 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-	
-	
-//	public IJavaValue invoke4(String methodName, IJavaValue[] args) {
-//	class Temp {
-//		IJavaValue val;
-//	}
-//	Temp t = new Temp();
-//	IWatchExpressionListener listener = new IWatchExpressionListener() {
-//		
-//		@Override
-//		public void watchEvaluationFinished(IWatchExpressionResult result) {
-//			t.val = (IJavaValue) result.getValue();
-//			synchronized (t) {
-//				t.notifyAll();					
-//			}
-//		}
-//	};
-//	
-//	invoke3(methodName, args, listener);
-//	
-//	try {
-//		synchronized (t) {
-//			if(t.val == null)
-//				t.wait();
-//		}	
-//	} catch (InterruptedException e) {
-//		e.printStackTrace();
-//	}
-//	return t.val;
-//}
 
 
-//public IJavaValue invoke(IMethod m, IJavaValue ... args) {
-//	try {
-//		IJavaThread t = (IJavaThread) getStackFrame().getStackFrame().getThread();
-//
-//		class MethodCall implements IEvaluationRunnable, ITerminate {
-//			IJavaValue ret;
-//
-//			Thread job;
-//
-//			@Override
-//			public boolean canTerminate() {
-//				return true;
-//			}
-//
-//			@Override
-//			public boolean isTerminated() {
-//				return !job.isAlive();
-//			}
-//
-//			@Override
-//			public void terminate() throws DebugException {
-//				job.stop();
-//			}
-//
-//			@Override
-//			public void run(IJavaThread thread, IProgressMonitor monitor) throws DebugException {
-//				job = new Thread() {
-//					public void run() {
-//						try {
-//							try {
-//								ret = getContent().sendMessage(m.getElementName(), m.getSignature(), args, t, false);
-//							} catch (JavaModelException e) {
-//								e.printStackTrace();
-//							}
-//						} catch (DebugException e) {
-//							e.printStackTrace();
-//						}
-//					};
-//				};
-//				job.start();
-//				try {
-//					job.join();
-//				} catch (InterruptedException e) {
-//					e.printStackTrace();
-//				}
-//			}
-//
-//		}
-//
-//		MethodCall call = new MethodCall();
-//		t.runEvaluation(call, null, DebugEvent.EVALUATION, true);
-//
-//		return call.ret;
-//	} catch (DebugException e) {
-//		//			ObjectReference exception = ((InvocationException) e.getCause()).exception();
-//		//			((InvocationException) e.getCause()).printStackTrace();
-//		//			System.out.println(exception);
-//		return null;
-//	}
-//}
+	//	public IJavaValue invoke4(String methodName, IJavaValue[] args) {
+	//	class Temp {
+	//		IJavaValue val;
+	//	}
+	//	Temp t = new Temp();
+	//	IWatchExpressionListener listener = new IWatchExpressionListener() {
+	//		
+	//		@Override
+	//		public void watchEvaluationFinished(IWatchExpressionResult result) {
+	//			t.val = (IJavaValue) result.getValue();
+	//			synchronized (t) {
+	//				t.notifyAll();					
+	//			}
+	//		}
+	//	};
+	//	
+	//	invoke3(methodName, args, listener);
+	//	
+	//	try {
+	//		synchronized (t) {
+	//			if(t.val == null)
+	//				t.wait();
+	//		}	
+	//	} catch (InterruptedException e) {
+	//		e.printStackTrace();
+	//	}
+	//	return t.val;
+	//}
 
-//	public IJavaValue invoke(String methodName, String returnType, IJavaValue ... args) {
-//		String signature = JNIUtil.genJNISignature(returnType, args);
-//
-//		try {
-//			return object.sendMessage(methodName, signature, args, (IJavaThread) model.getStackFrame().getThread(), null);
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
+
+	//public IJavaValue invoke(IMethod m, IJavaValue ... args) {
+	//	try {
+	//		IJavaThread t = (IJavaThread) getStackFrame().getStackFrame().getThread();
+	//
+	//		class MethodCall implements IEvaluationRunnable, ITerminate {
+	//			IJavaValue ret;
+	//
+	//			Thread job;
+	//
+	//			@Override
+	//			public boolean canTerminate() {
+	//				return true;
+	//			}
+	//
+	//			@Override
+	//			public boolean isTerminated() {
+	//				return !job.isAlive();
+	//			}
+	//
+	//			@Override
+	//			public void terminate() throws DebugException {
+	//				job.stop();
+	//			}
+	//
+	//			@Override
+	//			public void run(IJavaThread thread, IProgressMonitor monitor) throws DebugException {
+	//				job = new Thread() {
+	//					public void run() {
+	//						try {
+	//							try {
+	//								ret = getContent().sendMessage(m.getElementName(), m.getSignature(), args, t, false);
+	//							} catch (JavaModelException e) {
+	//								e.printStackTrace();
+	//							}
+	//						} catch (DebugException e) {
+	//							e.printStackTrace();
+	//						}
+	//					};
+	//				};
+	//				job.start();
+	//				try {
+	//					job.join();
+	//				} catch (InterruptedException e) {
+	//					e.printStackTrace();
+	//				}
+	//			}
+	//
+	//		}
+	//
+	//		MethodCall call = new MethodCall();
+	//		t.runEvaluation(call, null, DebugEvent.EVALUATION, true);
+	//
+	//		return call.ret;
+	//	} catch (DebugException e) {
+	//		//			ObjectReference exception = ((InvocationException) e.getCause()).exception();
+	//		//			((InvocationException) e.getCause()).printStackTrace();
+	//		//			System.out.println(exception);
+	//		return null;
+	//	}
+	//}
+
+	//	public IJavaValue invoke(String methodName, String returnType, IJavaValue ... args) {
+	//		String signature = JNIUtil.genJNISignature(returnType, args);
+	//
+	//		try {
+	//			return object.sendMessage(methodName, signature, args, (IJavaThread) model.getStackFrame().getThread(), null);
+	//		} catch (DebugException e) {
+	//			e.printStackTrace();
+	//			return null;
+	//		}
+	//	}
 
 }

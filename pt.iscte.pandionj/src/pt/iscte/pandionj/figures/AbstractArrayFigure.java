@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import org.eclipse.draw2d.Border;
+import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
@@ -21,7 +22,7 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 	private final boolean horizontal;
 	
 	public AbstractArrayFigure(IArrayModel<E> model, boolean horizontal) {
-		super(model);
+		super(model, true);
 		this.horizontal = horizontal;
 		N = Math.min(model.getLength(), Constants.ARRAY_LENGTH_LIMIT);
 		positions = new ArrayList<>(N);
@@ -147,4 +148,5 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 			else return Integer.toString(index);
 		}
 	}
+	
 }
