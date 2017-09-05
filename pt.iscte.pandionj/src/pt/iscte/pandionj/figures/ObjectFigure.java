@@ -1,8 +1,5 @@
 package pt.iscte.pandionj.figures;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
@@ -28,20 +25,18 @@ import pt.iscte.pandionj.ParamsDialog;
 import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
+import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.model.ObjectModel;
 
 public class ObjectFigure extends PandionJFigure<IObjectModel> {
-	private Map<String, Label> fieldLabels;
-	private Label headerLabel;
 	private RoundedRectangle fig;
+	private StackContainer stack;
+	private ObjectContainer objectContainer;
 
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure, boolean addMethods) {
 		super(model, true);
 		assert extensionFigure != null;
-		
-		fieldLabels = new HashMap<String, Label>();
 		
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;
@@ -62,61 +57,29 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		fig.setToolTip(new Label(model.getTypeName()));
 
 		RuntimeViewer runtimeViewer = RuntimeViewer.getInstance();
-		ObjectContainer objectContainer = new ObjectContainer(false);
+		objectContainer = new ObjectContainer(false);
 		objectContainer.setFigProvider(runtimeViewer.getFigureProvider());
-//		objectContainer.setBackgroundColor(ColorConstants.yellow);
+		objectContainer.setBackgroundColor(ColorConstants.yellow);
 		
 		StackFrameFigure sf = new StackFrameFigure(runtimeViewer, model.getRuntimeModel().getTopFrame(), objectContainer, true, true);
 		fig.add(sf);
 
-		if(addMethods)
-			addMethods(model);
+//		if(addMethods)
+//			addMethods(model);
 		
 		add(fig);
 		add(objectContainer);
+		
+		stack = new StackContainer();
+		fig.add(stack);
 	
 	}
 
+	public void addFrame(IStackFrameModel frame) {
+		stack.addFrame(frame, RuntimeViewer.getInstance(), objectContainer, false);
+	}	
 
-	//	private IWatchExpressionListener invocationListener = new IWatchExpressionListener() {
-	//
-	//		@Override
-	//		public void watchEvaluationFinished(IWatchExpressionResult result) {
-	//			//			try {
-	//			IJavaValue ret = (IJavaValue) result.getValue();
-	//			if(ret != null) {
-	//				processInvocationResult((IJavaValue) result.getValue()); 
-	//			}
-	//			else {
-	//				DebugException exception = result.getException();
-	//				if(exception.getCause() instanceof InvocationException) {
-	//					InvocationException e = (InvocationException) exception.getCause();
-	//					ObjectReference exception2 = e.exception();
-	//				}
-	//			}
-	//			//			} catch (DebugException e) {
-	//			//				e.printStackTrace();
-	//			//			}
-	//		}
-	//
-	//		private void processInvocationResult(IJavaValue ret) {
-	//			if(ret instanceof IJavaObject) {
-	//				EntityModel<? extends IJavaObject> object = model.getRuntimeModel().getObject((IJavaObject) ret, true);
-	//				System.out.println(ret + " == " + object);
-	//			}
-	//			else if(ret instanceof IJavaPrimitiveValue) {
-	//				PandionJUI.executeUpdate(() -> {
-	//					try {
-	//						//					new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
-	//						new ResultDialog(Display.getDefault().getActiveShell(), 400, 400, ret.getValueString()).open();
-	//					} catch (DebugException e) {
-	//						e.printStackTrace();
-	//					}
-	//				});
-	//			}
-	//			model.getRuntimeModel().refresh();
-	//		}
-	//	};
+	
 
 
 	private void addMethods(IObjectModel model) {
@@ -213,4 +176,45 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 					shell.getDisplay().sleep();
 		}
 	}
+	
+	
+//	private IWatchExpressionListener invocationListener = new IWatchExpressionListener() {
+	//
+	//		@Override
+	//		public void watchEvaluationFinished(IWatchExpressionResult result) {
+	//			//			try {
+	//			IJavaValue ret = (IJavaValue) result.getValue();
+	//			if(ret != null) {
+	//				processInvocationResult((IJavaValue) result.getValue()); 
+	//			}
+	//			else {
+	//				DebugException exception = result.getException();
+	//				if(exception.getCause() instanceof InvocationException) {
+	//					InvocationException e = (InvocationException) exception.getCause();
+	//					ObjectReference exception2 = e.exception();
+	//				}
+	//			}
+	//			//			} catch (DebugException e) {
+	//			//				e.printStackTrace();
+	//			//			}
+	//		}
+	//
+	//		private void processInvocationResult(IJavaValue ret) {
+	//			if(ret instanceof IJavaObject) {
+	//				EntityModel<? extends IJavaObject> object = model.getRuntimeModel().getObject((IJavaObject) ret, true);
+	//				System.out.println(ret + " == " + object);
+	//			}
+	//			else if(ret instanceof IJavaPrimitiveValue) {
+	//				PandionJUI.executeUpdate(() -> {
+	//					try {
+	//						//					new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
+	//						new ResultDialog(Display.getDefault().getActiveShell(), 400, 400, ret.getValueString()).open();
+	//					} catch (DebugException e) {
+	//						e.printStackTrace();
+	//					}
+	//				});
+	//			}
+	//			model.getRuntimeModel().refresh();
+	//		}
+	//	};
 }

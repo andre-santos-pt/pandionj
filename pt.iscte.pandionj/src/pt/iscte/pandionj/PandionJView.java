@@ -1,5 +1,6 @@
 package pt.iscte.pandionj;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
@@ -192,7 +193,10 @@ public class PandionJView extends ViewPart {
 
 			if(!runtime.isEmpty() && !runtime.isTerminated()) {
 				StackFrameModel frame = runtime.getTopFrame();
-				PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber());
+				IFile sourceFile = frame.getSourceFile();
+				int lineNumber = frame.getLineNumber();
+				if(sourceFile != null && lineNumber != -1)
+					PandionJUI.navigateToLine(sourceFile, lineNumber);
 			}
 		});
 	}

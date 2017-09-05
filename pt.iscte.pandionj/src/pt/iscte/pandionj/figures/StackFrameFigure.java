@@ -25,15 +25,18 @@ import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.ModelObserver;
 
 public class StackFrameFigure extends Figure {
+	private final IStackFrameModel frame;
 	private GridLayout layout;
 	private FigureProvider figProvider;
 	private ObjectContainer objectContainer;
 	private RuntimeViewer runtimeViewer;
 	private boolean invisible;
 	private boolean instance;
-
+	private Label label;
+	
 	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible, boolean instance) {
 		this.runtimeViewer = runtimeViewer;
+		this.frame = frame;
 		this.figProvider = runtimeViewer.getFigureProvider();
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
@@ -46,7 +49,7 @@ public class StackFrameFigure extends Figure {
 		if(!invisible) {
 			setOpaque(true);
 			setBorder(new LineBorder(ColorConstants.gray, 2));
-			Label label = new Label(frame.getInvocationExpression());
+			label = new Label(frame.getInvocationExpression());
 			label.setForegroundColor(ColorConstants.gray);
 			add(label);
 			label.addMouseListener(new MouseListener() {
@@ -56,7 +59,6 @@ public class StackFrameFigure extends Figure {
 					PandionJUI.navigateToLine(frame.getSourceFile(), frame.getLineNumber()-1);
 				}
 			});
-			//			layout.setConstraint(label, Constants.RIGHT_ALIGN);
 		}
 		for (IVariableModel<?> v : frame.getStackVariables())
 			add(v);
@@ -113,6 +115,8 @@ public class StackFrameFigure extends Figure {
 				setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		}
 		layout.layout(this);
+		if(label != null) // TODO when not available
+			label.setToolTip(new Label(frame.getSourceFile().getName() + " (line " + frame.getLineNumber() +")"));
 	}
 
 	private void add(IVariableModel<?> v) {

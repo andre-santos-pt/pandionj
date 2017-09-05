@@ -12,7 +12,7 @@ class ObserverContainer<A> {
 		changed = false;
 	}
 
-	public void addObserver(ModelObserver<A> o) {
+	public synchronized void addObserver(ModelObserver<A> o) {
 		if (o == null)
 			throw new NullPointerException();
 		if (!obs.contains(o)) {
@@ -20,15 +20,15 @@ class ObserverContainer<A> {
 		}
 	}
 
-	public void deleteObserver(ModelObserver<A> o) {
+	public synchronized void deleteObserver(ModelObserver<A> o) {
 		obs.remove(o);
 	}
 
-	public void notifyObservers() {
+	public synchronized void notifyObservers() {
 		notifyObservers(null);
 	}
 
-	public void notifyObservers(A arg) {
+	public synchronized void notifyObservers(A arg) {
 		if (!changed)
 			return;
 
@@ -38,23 +38,23 @@ class ObserverContainer<A> {
 		clearChanged();
 	}
 
-	public void deleteObservers() {
+	public synchronized void deleteObservers() {
 		obs.clear();
 	}
 
-	public void setChanged() {
+	public synchronized void setChanged() {
 		changed = true;
 	}
 
-	public void clearChanged() {
+	public synchronized void clearChanged() {
 		changed = false;
 	}
 
-	public boolean hasChanged() {
+	public synchronized boolean hasChanged() {
 		return changed;
 	}
 
-	public int countObservers() {
+	public synchronized int countObservers() {
 		return obs.size();
 	}
 	

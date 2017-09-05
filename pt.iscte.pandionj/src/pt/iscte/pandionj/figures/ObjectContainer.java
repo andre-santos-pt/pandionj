@@ -52,10 +52,10 @@ public class ObjectContainer extends Figure {
 
 
 	FigureProvider figProvider;
-	boolean findExtensions;
+	boolean useExtensions;
 	
-	public ObjectContainer(boolean findExtensions) {
-		this.findExtensions = findExtensions;
+	public ObjectContainer(boolean useExtensions) {
+		this.useExtensions = useExtensions;
 		setBackgroundColor(ColorConstants.white);
 		setOpaque(true);
 		setLayoutManager(new GridLayout(1, true));
@@ -76,7 +76,7 @@ public class ObjectContainer extends Figure {
 	}
 
 	public PandionJFigure<?> addObject(IEntityModel e) {
-		PandionJFigure<?> fig = figProvider.getFigure(e, findExtensions);
+		PandionJFigure<?> fig = figProvider.getFigure(e, useExtensions);
 		if(!containsChild(fig)) {
 			if(e instanceof IArrayModel && ((IArrayModel<?>) e).isReferenceType() && fig instanceof ArrayReferenceFigure) {
 				Extension ext = new Extension(fig, e);
@@ -216,6 +216,14 @@ public class ObjectContainer extends Figure {
 			PandionJFigure<?> ret = getDeepChildRef((IFigure) object, e);
 			if(ret != null)
 				return ret;
+		}
+		return null;
+	}
+
+	public ObjectFigure findObject(IObjectModel obj) {
+		for (Object object : getChildren()) {
+			if(object instanceof ObjectFigure && ((ObjectFigure) object).getModel() == obj)
+				return (ObjectFigure) object;
 		}
 		return null;
 	}

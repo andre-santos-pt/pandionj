@@ -23,6 +23,7 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -111,6 +112,16 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			return -1;
 		}
 	}
+	
+	public boolean isInstance() {
+		try {
+			return !frame.isStatic() && !frame.isConstructor();
+		} catch (DebugException e) {
+			return false;
+		}
+		
+	}
+
 
 	public void update() {
 		handleVariables(); // FIXME bug new variables int[][]
@@ -418,6 +429,17 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		return vars;
 	}
 
+	public IObjectModel getThis() {
+		assert isInstance();
+		try {
+			return (IObjectModel) getRuntime().getObject(frame.getThis(), true, null);
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	
 
 
 }

@@ -42,13 +42,14 @@ public class ParserManager {
 		if(r == null || f.getModificationStamp() != modStamps.get(f)) {
 			r = new VarParser(f.getRawLocation().toOSString());
 			r.run();
-			System.out.println(r.toText());
 			cacheParser.put(f, r);
 			modStamps.put(f, f.getModificationStamp());
 			
 			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
+			
+			System.out.println(r.toText());
 			System.out.println(tagParser);
 		}
 		return r;
@@ -56,7 +57,7 @@ public class ParserManager {
 	
 	
 	public static Collection<String> getAttributeTags(IFile file, String className, String attName) {
-		assert tagParserCache.containsKey(file);
+		getVarParserResult(file); // loads if not loaded
 		TagParser tagParser = tagParserCache.get(file);
 		return tagParser.getAttributeTags(className, attName);
 	}

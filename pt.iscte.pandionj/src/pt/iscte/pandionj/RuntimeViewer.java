@@ -27,9 +27,12 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.figures.ObjectContainer;
+import pt.iscte.pandionj.figures.ObjectFigure;
+import pt.iscte.pandionj.figures.StackContainer;
 import pt.iscte.pandionj.figures.StackFrameFigure;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
@@ -39,8 +42,8 @@ public class RuntimeViewer extends Composite {
 	
 	private FigureProvider figProvider;
 	private Figure rootFig;
-	private StackFigure stackFig;
-	private ObjectContainer objectFig;
+	private StackContainer stackFig;
+	private ObjectContainer objectContainer;
 	private LightweightSystem lws;
 	private GridLayout rootGrid;
 	private ScrolledComposite scroll;
@@ -68,15 +71,15 @@ public class RuntimeViewer extends Composite {
 		rootGrid.marginHeight = Constants.MARGIN;
 		rootFig.setLayoutManager(rootGrid);
 
-		stackFig = new StackFigure();
+		stackFig = new StackContainer();
 		rootFig.add(stackFig);
 		org.eclipse.draw2d.GridData d = new org.eclipse.draw2d.GridData(SWT.BEGINNING, SWT.BEGINNING, true, true);
 		d.widthHint = Constants.STACKCOLUMN_MIN_WIDTH;
 		rootGrid.setConstraint(stackFig, d);
 
-		objectFig = new ObjectContainer(true);
-		rootFig.add(objectFig);
-		rootGrid.setConstraint(objectFig, new org.eclipse.draw2d.GridData(SWT.FILL, SWT.FILL, true, true));
+		objectContainer = new ObjectContainer(true);
+		rootFig.add(objectContainer);
+		rootGrid.setConstraint(objectContainer, new org.eclipse.draw2d.GridData(SWT.FILL, SWT.FILL, true, true));
 
 		lws = new LightweightSystem(canvas);
 		lws.setContents(rootFig);
@@ -96,16 +99,26 @@ public class RuntimeViewer extends Composite {
 	
 	public void setInput(RuntimeModel model) {
 		figProvider = new FigureProvider(model);
-		objectFig.setFigProvider(figProvider);
+		objectContainer.setFigProvider(figProvider);
 		model.registerDisplayObserver((e) -> refresh(model, e));
 	}
 
 	private void refresh(RuntimeModel model, RuntimeModel.Event<?> event) {
 		if(event.type == RuntimeModel.Event.Type.NEW_STACK)
 			rebuildStack(model);
-		else if(event.type == RuntimeModel.Event.Type.NEW_FRAME)
-			stackFig.addFrame((StackFrameModel) event.arg, false);
+		else if(event.type == RuntimeModel.Event.Type.NEW_FRAME) {
+			StackFrameModel frame = (StackFrameModel) event.arg;
+			if(frame.isInstance()) {
+				IObjectModel obj = frame.getThis();
+				ObjectFigure fig = objectContainer.findObject(obj);
+				if(fig != null)
+					fig.addFrame(frame);
+			}				
+			else {
+				stackFig.addFrame(frame, this, objectContainer, false);
+			}
 
+		}
 		stackFig.getLayoutManager().layout(stackFig);
 		updateLayout();
 	}
@@ -132,9 +145,9 @@ public class RuntimeViewer extends Composite {
 		pointersMap.clear();
 		
 		stackFig.removeAll();
-		objectFig.removeAll();
+		objectContainer.removeAll();
 		IStackFrameModel staticVars = model.getStaticVars();
-		stackFig.addFrame(staticVars, true);
+		stackFig.addFrame(staticVars, this, objectContainer, true);
 	}
 	
 	public void addPointer(IReferenceModel ref, PolylineConnection pointer) {
@@ -152,22 +165,22 @@ public class RuntimeViewer extends Composite {
 
 
 
-	class StackFigure extends Figure {
-		public StackFigure() {
-			GridLayout gridLayout = new GridLayout(1, true);
-			gridLayout.verticalSpacing = Constants.OBJECT_PADDING*2;
-			setLayoutManager(gridLayout);
-			setOpaque(true);
-		}
-
-		void addFrame(IStackFrameModel frame, boolean invisible) {
-			if(frame.getLineNumber() != -1) {
-				StackFrameFigure sv = new StackFrameFigure(RuntimeViewer.this, frame, objectFig, invisible, false);
-				add(sv);
-				getLayoutManager().setConstraint(sv, new org.eclipse.draw2d.GridData(SWT.FILL, SWT.DEFAULT, true, false));
-			}
-		}
-	}
+//	class StackFigure extends Figure {
+//		public StackFigure() {
+//			GridLayout gridLayout = new GridLayout(1, true);
+//			gridLayout.verticalSpacing = Constants.OBJECT_PADDING*2;
+//			setLayoutManager(gridLayout);
+//			setOpaque(true);
+//		}
+//
+//		void addFrame(IStackFrameModel frame, boolean invisible) {
+//			if(frame.getLineNumber() != -1) {
+//				StackFrameFigure sv = new StackFrameFigure(RuntimeViewer.this, frame, objectFig, invisible, false);
+//				add(sv);
+//				getLayoutManager().setConstraint(sv, new org.eclipse.draw2d.GridData(SWT.FILL, SWT.DEFAULT, true, false));
+//			}
+//		}
+//	}
 
 
 
