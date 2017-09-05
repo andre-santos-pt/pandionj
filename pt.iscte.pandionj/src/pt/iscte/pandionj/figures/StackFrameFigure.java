@@ -60,8 +60,11 @@ public class StackFrameFigure extends Figure {
 				}
 			});
 		}
+		
+		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
+		
 		for (IVariableModel<?> v : frame.getStackVariables())
-			add(v);
+			addVariable(v, exception);
 
 		updateLook(frame);
 		addFrameObserver(frame);
@@ -75,7 +78,7 @@ public class StackFrameFigure extends Figure {
 				if(event != null) {
 					ExceptionType exception = null;
 					if(event.type == StackEvent.Type.NEW_VARIABLE) {
-						add((IVariableModel<?>) event.arg);
+						addVariable((IVariableModel<?>) event.arg, exception);
 					}
 					else if(event.type == StackEvent.Type.VARIABLE_OUT_OF_SCOPE) {
 						PandionJFigure<?> toRemove = getVariableFigure((IVariableModel<?>)  event.arg); 
@@ -107,8 +110,11 @@ public class StackFrameFigure extends Figure {
 				setBackgroundColor(Constants.Colors.OBSOLETE);
 				setBorder(new LineBorder(ColorConstants.lightGray, 2, SWT.LINE_DASH));
 			}
-			else if(model.exceptionOccurred())
+			else if(model.exceptionOccurred()) {
+				setBackgroundColor(Constants.Colors.INST_POINTER);
 				setBorder(new LineBorder(Constants.Colors.ERROR, Constants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
+				paintNullRefs();
+			}
 			else if(model.isExecutionFrame())
 				setBackgroundColor(Constants.Colors.INST_POINTER);
 			else
@@ -119,7 +125,16 @@ public class StackFrameFigure extends Figure {
 			label.setToolTip(new Label(frame.getSourceFile().getName() + " (line " + frame.getLineNumber() +")"));
 	}
 
-	private void add(IVariableModel<?> v) {
+	private void paintNullRefs() {
+		for (Object object : getChildren()) {
+			if(object instanceof ReferenceFigure) {
+				ReferenceFigure ref = (ReferenceFigure) object;
+				if(ref.model.getModelTarget().isNull())
+					ref.setError();
+			}
+		}
+	}
+	private void addVariable(IVariableModel<?> v, ExceptionType exception) {
 		if(v.isInstance() == instance) {
 			PandionJFigure<?> figure = figProvider.getFigure(v, true);
 			add(figure);
@@ -133,7 +148,7 @@ public class StackFrameFigure extends Figure {
 				if(!target.isNull())
 					targetFig = objectContainer.addObject(target);
 				addPointer((ReferenceFigure) figure, ref, target, targetFig);
-				objectContainer.updateIllustration(ref, null);
+				objectContainer.updateIllustration(ref, exception);
 			}
 		}
 	}
@@ -174,4 +189,5 @@ public class StackFrameFigure extends Figure {
 		}
 		return null;
 	}
+	
 }

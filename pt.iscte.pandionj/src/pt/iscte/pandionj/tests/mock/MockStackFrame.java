@@ -72,4 +72,10 @@ public class MockStackFrame implements IStackFrameModel {
 	public IFile getSourceFile() {
 		return null;
 	}
+
+	@Override
+	public String getExceptionType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 }

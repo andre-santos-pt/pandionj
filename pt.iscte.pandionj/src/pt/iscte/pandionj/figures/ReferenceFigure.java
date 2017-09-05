@@ -13,6 +13,7 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 
 public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 
+	private Label label;
 	private ReferenceLabel refLabel;
 	
 	public ReferenceFigure(IReferenceModel model) {
@@ -23,11 +24,9 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		layout.horizontalSpacing = 3;
 		layout.verticalSpacing = 0;
 		setLayoutManager(layout);
-		Label label = new Label(model.getName());
-		if(model.isInstance())
-			FontManager.setFont(label, Constants.VAR_FONT_SIZE, FontManager.Style.BOLD);
-		else
-			FontManager.setFont(label, Constants.VAR_FONT_SIZE);
+		label = new Label(model.getName());
+
+		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
 
 		Collection<String> tags = model.getTags();
 		if(!tags.isEmpty())
@@ -40,7 +39,11 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 	}
 	
 	public ConnectionAnchor getAnchor() {
-//		return new PositionAnchor(this, PositionAnchor.Position.RIGHT);
 		return refLabel.getAnchor();
+	}
+
+	public void setError() {
+//		label.setForegroundColor(Constants.Colors.ERROR);
+		refLabel.setError();
 	}
 }

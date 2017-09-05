@@ -231,7 +231,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		String varName = jv.getName();
 		boolean isField = !jv.isLocal();
 		VariableInfo info = varParser != null ? varParser.locateVariable(varName, frame.getLineNumber(), isField) : null;
-		System.err.println(frame.getDeclaringTypeName() + " -- " +  frame.getMethodName() + " " + (jv.isStatic() ? "static " : "") + varName + ": " + info);
+		System.out.println(frame.getDeclaringTypeName() + " -- " +  frame.getMethodName() + " " + (jv.isStatic() ? "static " : "") + varName + ": " + info);
 		IVariableModel<?> newVar = null;
 
 		if(value instanceof IJavaObject) {
@@ -384,7 +384,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		return exceptionType != null;
 	}
 
-	public String getExceptionMessage() {
+	public String getExceptionType() {
 		return exceptionType;
 	}
 

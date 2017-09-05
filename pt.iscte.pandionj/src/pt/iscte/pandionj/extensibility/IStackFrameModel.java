@@ -31,5 +31,6 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 	boolean isExecutionFrame();
 	int getLineNumber();
 	boolean exceptionOccurred();
+	String getExceptionType();
 	IFile getSourceFile();
 }

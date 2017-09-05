@@ -65,10 +65,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		
 		comp.add(nameLabel);
 
-		if(model.isInstance())
-			FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE, Style.BOLD);
-		else
-			FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
+		FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
 
 		valueLabel = new ValueLabel(model);
 		Dimension size = valueLabel.getSize();

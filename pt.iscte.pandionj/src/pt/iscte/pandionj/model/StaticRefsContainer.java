@@ -120,6 +120,11 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 		return null;
 	}
 
+	@Override
+	public String getExceptionType() {
+		return null;
+	}
+
 	
 	
 }

@@ -17,27 +17,25 @@ class ReferenceLabel extends Figure {
 	private IReferenceModel ref;
 	private Point center;
 	private boolean dirty;
+	private boolean error;
 	
 	public ReferenceLabel(IReferenceModel ref) {
 		this.ref = ref;
 		ref.registerDisplayObserver((o) -> {dirty = true; repaint();});
 		center = new Point(-1,-1);
-//		setOpaque(true);
-//		ref.registerDisplayObserver((e) -> dirty = true);
 		ref.getRuntimeModel().registerDisplayObserver((e) -> {
 			if(e.type == IRuntimeModel.Event.Type.STEP) {
 				dirty = false;
-//				repaint();
-//				updateBackground();
+				repaint();
 			}
 		});
+		error = false;
 	}
 
-	void updateBackground() {
-		setBackgroundColor(dirty ? Constants.Colors.HIGHLIGHT : ColorConstants.white);
-		dirty = false;
+	public void setError() {
+		error = true;
 	}
-
+	
 	@Override
 	public Dimension getPreferredSize(int wHint, int hHint) {
 		return new Dimension(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH/2);
@@ -56,10 +54,11 @@ class ReferenceLabel extends Figure {
 		g.setForegroundColor(ref.getRole() == Role.FIXED_VALUE ? Constants.Colors.CONSTANT : ColorConstants.black);
 		g.drawRectangle(square);
 
-		g.setBackgroundColor(ColorConstants.black);
+		g.setBackgroundColor(error ? Constants.Colors.ERROR : ColorConstants.black);
 		g.fillOval(center.x-3, center.y-3, 7, 7);
 
 		if(ref.getModelTarget().isNull()) {
+			g.setForegroundColor(error ? Constants.Colors.ERROR : ColorConstants.black);
 			Point dest = center.getTranslated(20, 0);
 			g.drawLine(center, dest);
 			g.drawLine(dest.getTranslated(-3, 5), dest.getTranslated(3, -5));

@@ -72,7 +72,7 @@ public class IllustrationBorder implements Border {
 			return new Insets(outOfBoundsExtra, EXTRA, outOfBoundsExtra, 0);
 		}
 	}
-
+	
 	@Override
 	public Dimension getPreferredSize(IFigure figure) {
 		return new Dimension();
@@ -99,7 +99,7 @@ public class IllustrationBorder implements Border {
 			int i = f.getCurrentIndex();
 			String varName = f.getName();
 			int textWidth = FigureUtilities.getTextWidth(varName, font);
-			Rectangle bounds = arrayFigure.getPositionBounds(i);
+			Rectangle bounds = arrayFigure.getPositionBounds(i); // FIXME problema quando nao eh indice valido
 			g.setLineStyle(SWT.LINE_DOT);
 			g.setLineWidth(1);
 			g.drawRectangle(bounds.getExpanded(new Insets(1)));

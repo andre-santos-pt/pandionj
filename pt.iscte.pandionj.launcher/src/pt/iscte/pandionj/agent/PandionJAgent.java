@@ -48,7 +48,7 @@ public class PandionJAgent {
 						}
 						if(multiple)
 							retType = null;
-						
+
 						try {
 							// check if real main method exists
 							CtMethod method = cc.getMethod("main", "([Ljava/lang/String;)V");
@@ -62,29 +62,40 @@ public class PandionJAgent {
 							//							 String test = "java.io.PrintStream stderr = System.err;" +
 							//							 "java.io.OutputStream out = new java.io.OutputStream() { public void write(int b) { } };";
 							//							 "System.setErr(new java.io.PrintStream(out));";
-							
-//							CtMethod m = CtNewMethod.make("public static void main(String[] args) { " + expression + "; }", cc);
+
+							//							CtMethod m = CtNewMethod.make("public static void main(String[] args) { " + expression + "; }", cc);
 							CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
 
 							cc.addMethod(m); 
-							
-							if(retType != null && retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
-								CtClass c = retType;
-								while(c.isArray())
-									c = c.getComponentType();
+
+							if(retType == null) {
+								m.insertAfter(expression + ";");
+							}
+							else if(retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
 								String inst = "System.out.println(\"" + expression + " = \" + java.util.Arrays.toString((" + retType.getComponentType().getName() +"[])" + expression + "));";
-//								String inst = "Object[] __ret__ = (Object[])$_;";
-//								System.out.println(inst);
+								//								String inst = "Object[] __ret__ = (Object[])$_;";
+								//								System.out.println(inst);
 								m.insertAfter(inst);
 							}
-							else if(retType != null && !CtClass.voidType.equals(retType)){
+							else if(retType.isArray() && getNDims(retType) == 2) {
+								String inst = retType.getName() + " ret = " + expression + ";\n";
+								inst += "System.out.print(\"[\");";
+								String cName = retType.getName();
+								cName = cName.substring(0, cName.length()-2);
+								//									inst += "for(" +  cName + " o" + d + " : ret) {";
+								inst += "for(int i = 0; i < ret.length; i++) {";
+								inst += "String s = java.util.Arrays.toString(ret[i]);";
+								inst += "if(i != 0) System.out.print(\", \");";
+								inst += "System.out.print(s);};";
+								inst += "System.out.println(\"]\");";
+								m.insertAfter(inst);
+							}
+							else if(!CtClass.voidType.equals(retType)){
 								String inst = "System.out.println(\"" + expression + " = \" + " + expression + ");";
 								m.insertAfter(inst);
 							}
-							else {
-								m.insertAfter(expression + ";");
-							}
-								
+
+
 							//								m.insertAfter(fieldName + " = $_;");
 
 							byte[] byteCode = cc.toBytecode();	
@@ -96,6 +107,20 @@ public class PandionJAgent {
 					}
 				}
 				return null;
+			}
+
+			private int getNDims(CtClass retType) {
+				CtClass c = retType;
+				int d = 0;
+				while(c.isArray()) {
+					try {
+						c = c.getComponentType();
+					} catch (NotFoundException e) {
+						e.printStackTrace();
+					}
+					d++;
+				}
+				return d;
 			}
 		});
 	}

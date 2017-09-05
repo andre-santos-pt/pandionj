@@ -131,7 +131,6 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 				}
 				list.add(indexModel);
 			}
-			
 		}
 		return list;
 	}

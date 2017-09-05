@@ -18,6 +18,7 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
+import pt.iscte.pandionj.figures.IllustrationBorder;
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.PandionJFigure;
 import pt.iscte.pandionj.figures.ReferenceFigure;
@@ -70,15 +71,18 @@ public class FigureProvider  {
 				if(extFig == null) {
 					if(aModel.isPrimitiveType()) {
 						fig = new ArrayPrimitiveFigure(aModel);
+						fig.setBorder(new MarginBorder(new Insets(0, Constants.POSITION_WIDTH, 0, Constants.POSITION_WIDTH))); // TODO temp margin
+//						fig.setBorder(new MarginBorder(IllustrationBorder.internalInsets(true)));
 					}
 					else {
 						fig = new ArrayReferenceFigure(aModel);
+						fig.setBorder(new MarginBorder(new Insets(0, Constants.POSITION_WIDTH, 0, Constants.POSITION_WIDTH))); // TODO temp margin
+//						fig.setBorder(new MarginBorder(IllustrationBorder.internalInsets(false)));
 					}
 				}
 				else {
 					fig = new PandionJFigure.Extension(extFig, model);
 				}
-				fig.setBorder(new MarginBorder(new Insets(0, Constants.POSITION_WIDTH, 20, Constants.POSITION_WIDTH))); // TODO temp margin
 			}
 			else if(model instanceof IObjectModel) {
 				IObjectModel oModel = (IObjectModel) model; 
