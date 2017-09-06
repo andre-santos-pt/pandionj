@@ -40,7 +40,7 @@ public class PandionJAgent {
 						CtClass retType = null;
 						boolean multiple = false;
 						for(CtMethod m : methods) {
-							if(!m.isEmpty() && m.getName().equals(expMethod) && m.getMethodInfo().isMethod()) {
+							if(!m.isEmpty() && m.getName().equals(expMethod) && m.getMethodInfo().isMethod() && !m.getReturnType().equals(CtClass.voidType)) {
 								if(retType != null)
 									multiple = true;
 								retType = m.getReturnType();
@@ -79,10 +79,9 @@ public class PandionJAgent {
 							}
 							else if(retType.isArray() && getNDims(retType) == 2) {
 								String inst = retType.getName() + " ret = " + expression + ";\n";
-								inst += "System.out.print(\"[\");";
+								inst += "System.out.print(\"" + expression + " = [\");";
 								String cName = retType.getName();
 								cName = cName.substring(0, cName.length()-2);
-								//									inst += "for(" +  cName + " o" + d + " : ret) {";
 								inst += "for(int i = 0; i < ret.length; i++) {";
 								inst += "String s = java.util.Arrays.toString(ret[i]);";
 								inst += "if(i != 0) System.out.print(\", \");";
@@ -94,7 +93,6 @@ public class PandionJAgent {
 								String inst = "System.out.println(\"" + expression + " = \" + " + expression + ");";
 								m.insertAfter(inst);
 							}
-
 
 							//								m.insertAfter(fieldName + " = $_;");
 

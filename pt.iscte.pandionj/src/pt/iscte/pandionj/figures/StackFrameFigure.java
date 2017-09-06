@@ -18,6 +18,7 @@ import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.IRuntimeModel.Event;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -66,9 +67,9 @@ public class StackFrameFigure extends Figure {
 		for (IVariableModel<?> v : frame.getStackVariables())
 			addVariable(v, exception);
 
-		updateLook(frame);
+		updateLook(frame, false);
 		addFrameObserver(frame);
-		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame));
+		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame, e.type == Event.Type.TERMINATION));
 	}
 
 	private void addFrameObserver(IStackFrameModel frame) {
@@ -99,14 +100,14 @@ public class StackFrameFigure extends Figure {
 						}
 					}
 				}
-				updateLook(frame);
+				updateLook(frame, false);
 			}
 		});
 	}
 
-	private void updateLook(IStackFrameModel model) {
+	private void updateLook(IStackFrameModel model, boolean termination) {
 		if(!invisible) {
-			if(model.isObsolete()) {
+			if(model.isObsolete() || termination) {
 				setBackgroundColor(Constants.Colors.OBSOLETE);
 				setBorder(new LineBorder(ColorConstants.lightGray, 2, SWT.LINE_DASH));
 			}
@@ -121,7 +122,7 @@ public class StackFrameFigure extends Figure {
 				setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		}
 		layout.layout(this);
-		if(label != null) // TODO when not available
+		if(label != null && frame.getSourceFile() != null && frame.getLineNumber() != -1) 
 			label.setToolTip(new Label(frame.getSourceFile().getName() + " (line " + frame.getLineNumber() +")"));
 	}
 

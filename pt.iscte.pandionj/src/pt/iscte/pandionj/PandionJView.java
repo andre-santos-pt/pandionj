@@ -302,10 +302,8 @@ public class PandionJView extends ViewPart {
 			@Override
 			public void watchEvaluationFinished(IWatchExpressionResult result) {
 				listener.valueReturn(result.getValue());
-				System.out.println("? " + result.getValue());
 			}
 		});
-
 	}
 
 

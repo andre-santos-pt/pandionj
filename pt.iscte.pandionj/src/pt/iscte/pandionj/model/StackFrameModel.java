@@ -236,6 +236,8 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 		if(value instanceof IJavaObject) {
 			ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
+//			if(isField)
+//				refElement.setOwner
 			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
 			refElement.setTags(tags);
 			newVar = refElement;

@@ -56,7 +56,7 @@ public class LaunchCommand extends AbstractHandler {
 
 	private IJavaLineBreakpoint breakPoint;
 	private String args;
-//	org.eclipse.debug.internal.ui.actions.RetargetRunToLineAction e;
+
 	@Override
 	public boolean isEnabled() {
 		IWorkbench wb = PlatformUI.getWorkbench();
@@ -148,7 +148,8 @@ public class LaunchCommand extends AbstractHandler {
 							else {
 								if(selectedMethod.getParameterTypes().length != 0) {
 									if(last && args != null) {
-										launch(file, lineFinal, firstType, args, mainMethod);
+										if(PandionJUI.checkView())
+											launch(file, lineFinal, firstType, args, mainMethod);
 									}
 									else {
 										PandionJUI.promptInvocation(selectedMethod, new InvocationAction() {

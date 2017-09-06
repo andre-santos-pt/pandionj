@@ -36,13 +36,9 @@ public interface IVariableModel<O> extends IObservableModel<O> {
 	String getName();
 	String getTypeName();
 	
-	
 	boolean isInstance();
-
-//	boolean isWithinScope();
 	
 	Role getRole();
-	
 	VariableInfo getVariableRole();
 	
 	boolean isStatic();

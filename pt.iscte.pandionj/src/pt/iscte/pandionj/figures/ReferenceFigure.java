@@ -27,10 +27,15 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		label = new Label(model.getName());
 
 		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
+		
+		// TODO classname
+		String tooltip = model.isStatic() ? "static field" : "local variable";
 
 		Collection<String> tags = model.getTags();
 		if(!tags.isEmpty())
-			label.setToolTip(new Label("tags: " + tags.toString()));
+			tooltip += "\ntags: " + String.join(", ", tags);
+			
+		label.setToolTip(new Label(tooltip));
 
 		add(label);
 		refLabel = new ReferenceLabel(model);
@@ -43,7 +48,6 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 	}
 
 	public void setError() {
-//		label.setForegroundColor(Constants.Colors.ERROR);
 		refLabel.setError();
 	}
 }

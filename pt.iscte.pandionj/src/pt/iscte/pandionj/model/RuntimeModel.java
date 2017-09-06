@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IStackFrame;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.debug.core.IJavaArray;
@@ -236,7 +237,9 @@ implements IRuntimeModel {
 				else {
 					IType type = null;
 					try {
-						type = getTopFrame().getJavaProject().findType(obj.getJavaType().getName());
+						IJavaProject javaProject = getTopFrame().getJavaProject();
+						if(javaProject != null)
+							type = javaProject.findType(obj.getJavaType().getName());
 					} catch (JavaModelException e1) {
 						e1.printStackTrace();
 					}

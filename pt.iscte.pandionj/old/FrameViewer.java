@@ -211,7 +211,6 @@ public class FrameViewer extends Composite {
 				Iterator<Integer> it = a.getValidModelIndexes();
 				while(it.hasNext()) {
 					Integer next = it.next();
-					System.out.println(next);
 					add2dElement(figure, targetFig, a, next);
 				}
 				

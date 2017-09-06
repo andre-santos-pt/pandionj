@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
@@ -32,6 +31,7 @@ import pt.iscte.pandionj.model.PrimitiveType;
 
 public class ValueFigure extends PandionJFigure<IValueModel> {
 	private static final int ANNOTATION_FONT_SIZE = (int) Math.round(Constants.VAR_FONT_SIZE/1.5);
+	
 	private ValueLabel valueLabel;
 	private IValueModel model;
 	private Figure extraFigure;
@@ -59,9 +59,14 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		
 		comp.setLayoutManager(compLayout);
 		
+		// TODO class name
+		String tooltip = model.isStatic() ? "static field" : "local variable";
+		
 		Label nameLabel = new Label(model.getName());
 		if(role != null)
-			nameLabel.setToolTip(new Label(role.toString()));
+			tooltip += "\n(" + role.toString() + ")";
+		
+		nameLabel.setToolTip(new Label(tooltip));
 		
 		comp.add(nameLabel);
 

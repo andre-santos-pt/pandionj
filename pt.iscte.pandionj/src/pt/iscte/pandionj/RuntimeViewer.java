@@ -211,7 +211,6 @@ public class RuntimeViewer extends Composite {
 //
 //		Rectangle size = item.getClientArea();
 //
-//		System.out.println(p +  "    " + size);
 //		//			compositeViewer.setBackground(Constants.HIGHLIGHT_COLOR);
 //		GC gc = new GC(item);
 //		//			Rectangle clipping2 = gc.getClipping();

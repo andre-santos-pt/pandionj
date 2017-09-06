@@ -30,7 +30,6 @@ import pt.iscte.pandionj.model.RuntimeModel;
 public class ObjectContainer extends Figure {
 
 	class Container2d extends Figure {
-
 		Container2d(IArrayModel<?> a) {
 			setOpaque(true);
 			setLayoutManager(new GridLayout(1, false));
@@ -44,8 +43,10 @@ public class ObjectContainer extends Figure {
 
 		public void addAt(int index, IFigure figure) {
 			int i = Math.min(index, Constants.ARRAY_LENGTH_LIMIT-1);
-			List children = getChildren();
-			remove((IFigure) children.get(i)); 
+			if(!containsChild(this, figure)) {
+				List children = getChildren();
+				remove((IFigure) children.get(i));
+			}
 			add(figure, i);
 		}
 	}
@@ -76,8 +77,10 @@ public class ObjectContainer extends Figure {
 	}
 
 	public PandionJFigure<?> addObject(IEntityModel e) {
-		PandionJFigure<?> fig = figProvider.getFigure(e, useExtensions);
-		if(!containsChild(fig)) {
+		PandionJFigure<?> fig = getDeepChild(e);
+		if(fig == null) {
+			fig = figProvider.getFigure(e, useExtensions);
+			
 			if(e instanceof IArrayModel && ((IArrayModel<?>) e).isReferenceType() && fig instanceof ArrayReferenceFigure) {
 				Extension ext = new Extension(fig, e);
 				GridLayout gridLayout = new GridLayout(2, false);
@@ -196,8 +199,8 @@ public class ObjectContainer extends Figure {
 		return false;
 	} 
 
-	private 	boolean containsChild(IFigure child) {
-		for (Object object : getChildren()) {
+	private static boolean containsChild(IFigure parent, IFigure child) {
+		for (Object object : parent.getChildren()) {
 			if(object == child)
 				return true;
 		}
