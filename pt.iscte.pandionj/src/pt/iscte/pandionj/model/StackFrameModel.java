@@ -124,7 +124,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 
 	public void update() {
-		handleVariables(); // FIXME bug new variables int[][]
+		handleVariables();
 		//		if(hasChanged()) {
 		step++;
 		stepPointer = step;
@@ -201,7 +201,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			runtime.setReturnOnFrame(this, (IJavaValue) jv.getValue());
 			return;
 		}
-
 		String varName = jv.getName();
 		IJavaValue value = (IJavaValue) jv.getValue();
 
@@ -222,6 +221,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 				setChanged();
 				notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE, newVar));
+//				System.out.println("notify " + newVar);
 			}
 		}
 	}
@@ -355,7 +355,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		else if(invExpression != null)
 			return invExpression;
 		else
-			return toString();
+			return super.toString();
 	}
 
 	public void processException(String exceptionType, int line) {

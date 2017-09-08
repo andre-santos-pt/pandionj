@@ -64,8 +64,8 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		StackFrameFigure sf = new StackFrameFigure(runtimeViewer, model.getRuntimeModel().getTopFrame(), objectContainer, true, true);
 		fig.add(sf);
 
-//		if(addMethods)
-//			addMethods(model);
+		if(addMethods)
+			addMethods(model);
 		
 		add(fig);
 		add(objectContainer);

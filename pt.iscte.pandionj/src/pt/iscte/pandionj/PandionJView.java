@@ -12,26 +12,20 @@ import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.core.dom.Message;
 import org.eclipse.jdt.debug.core.IJavaExceptionBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StackLayout;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MessageBox;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
@@ -133,34 +127,37 @@ public class PandionJView extends ViewPart {
 		public void handleDebugEvents(DebugEvent[] events) {
 			if(events.length > 0 && runtime != null && !runtime.isTerminated()) {
 				DebugEvent e = events[0];
-				if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
-					IJavaThread thread = (IJavaThread) e.getSource();
-					executeInternal(() -> {
+				PandionJUI.executeUpdate(() -> {
+					if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
+						IJavaThread thread = (IJavaThread) e.getSource();
+						//					executeInternal(() -> {
 						handleFrames(thread);
 						IStackFrame f = thread.getTopStackFrame();
 						if(f != null && f.getLineNumber() == -1)
 							thread.resume();
-					});
-				}
-				else if(e.getKind() == DebugEvent.TERMINATE) {
-					runtime.setTerminated();
-				}
-				// TODO: STEP RETURN -> remove frame 
+					}
+					else if(e.getKind() == DebugEvent.TERMINATE) {
+						runtime.setTerminated();
+					}
+				});
 			}
 		}
 	}
 
 
 	void handleLinebreakPoint(IJavaThread thread) {
-		executeInternal(() -> {
+		PandionJUI.executeUpdate(() -> {
+			//		executeInternal(() -> {
 			exception = null;
 			exceptionFrame = null;
 			handleFrames(thread);
+			//		});
 		});
 	}
 
 	void handleExceptionBreakpoint(IJavaThread thread, IJavaExceptionBreakpoint exceptionBreakPoint) {
-		executeInternal(() -> {
+		PandionJUI.executeUpdate(() -> {
+			//		executeInternal(() -> {
 			thread.terminateEvaluation();
 			exception = exceptionBreakPoint.getExceptionTypeName();
 			exceptionFrame = thread.getTopStackFrame();
@@ -183,27 +180,28 @@ public class PandionJView extends ViewPart {
 			});
 		}
 
-//		executeInternal(() -> {
 		IStackFrame[] stackFrames = new IStackFrame[0];
 		try {
 			stackFrames = thread.getStackFrames();
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
-		if(runtime == null || !runtime.isPartiallyCommon(stackFrames)) {
-				runtime = new RuntimeModel();
-				runtimeView.setInput(runtime);
-			}
-			runtime.update(thread);
 
-			if(!runtime.isEmpty() && !runtime.isTerminated()) {
-				StackFrameModel frame = runtime.getTopFrame();
-				IFile sourceFile = frame.getSourceFile();
-				int lineNumber = frame.getLineNumber();
-				if(sourceFile != null && lineNumber != -1)
-					PandionJUI.navigateToLine(sourceFile, lineNumber);
-			}
-//		});
+		if(runtime == null || !runtime.isPartiallyCommon(stackFrames)) {
+			runtime = new RuntimeModel();
+			//			runtime.update(thread);
+			runtimeView.setInput(runtime);
+		}
+		//		else
+		runtime.update(thread);
+
+		if(!runtime.isEmpty() && !runtime.isTerminated()) {
+			StackFrameModel frame = runtime.getTopFrame();
+			IFile sourceFile = frame.getSourceFile();
+			int lineNumber = frame.getLineNumber();
+			if(sourceFile != null && lineNumber != -1)
+				PandionJUI.navigateToLine(sourceFile, lineNumber);
+		}
 	}
 
 

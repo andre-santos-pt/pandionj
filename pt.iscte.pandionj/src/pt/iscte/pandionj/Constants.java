@@ -25,7 +25,8 @@ public interface Constants {
 	int ARROW_EDGE = 4;
 	int ARROW_LINE_WIDTH = 1;
 	int POSITION_WIDTH = 32;
-
+	int POSITION_WIDTH_V = POSITION_WIDTH / 2;
+	
 	int MARGIN = 20;
 	int NODE_SPACING = 100;
 
@@ -48,7 +49,7 @@ public interface Constants {
 	int STACKFRAME_LINE_WIDTH = 3;
 
 	int STACKCOLUMN_MIN_WIDTH = 150;
-	int STACK_TO_OBJECTS_GAP = 40;
+	int STACK_TO_OBJECTS_GAP = 30;
 
 	
 	int ILLUSTRATION_LINE_WIDTH = 2;

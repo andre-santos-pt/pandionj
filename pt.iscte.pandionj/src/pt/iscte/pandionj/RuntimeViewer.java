@@ -52,6 +52,8 @@ public class RuntimeViewer extends Composite {
 
 	RuntimeViewer(Composite parent) {
 		super(parent, SWT.BORDER);
+		instance = this;
+
 		setLayout(new FillLayout());
 		setBackground(Constants.Colors.VIEW_BACKGROUND);
 		scroll = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL);
@@ -74,7 +76,7 @@ public class RuntimeViewer extends Composite {
 		stackFig = new StackContainer();
 		rootFig.add(stackFig);
 		org.eclipse.draw2d.GridData d = new org.eclipse.draw2d.GridData(SWT.BEGINNING, SWT.BEGINNING, true, true);
-		d.widthHint = Constants.STACKCOLUMN_MIN_WIDTH;
+		d.widthHint = Math.max(Constants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
 		rootGrid.setConstraint(stackFig, d);
 
 		objectContainer = new ObjectContainer(true);
@@ -85,8 +87,6 @@ public class RuntimeViewer extends Composite {
 		lws.setContents(rootFig);
 		
 		pointersMap = new HashMap<>();
-		
-		instance = this;
 	}
 
 	public static RuntimeViewer getInstance() {
@@ -100,7 +100,7 @@ public class RuntimeViewer extends Composite {
 	public void setInput(RuntimeModel model) {
 		figProvider = new FigureProvider(model);
 		objectContainer.setFigProvider(figProvider);
-		model.registerDisplayObserver((e) -> refresh(model, e));
+		model.registerObserver((e) -> refresh(model, e));
 	}
 
 	private void refresh(RuntimeModel model, RuntimeModel.Event<?> event) {
@@ -123,20 +123,6 @@ public class RuntimeViewer extends Composite {
 		updateLayout();
 	}
 
-	private void updateLayout() {
-		org.eclipse.swt.graphics.Point prev = canvas.getSize();
-		Dimension size = rootFig.getPreferredSize();
-		canvas.setSize(size.width, size.height);
-		canvas.layout();
-		if(size.height > prev.y)
-			scroll.setOrigin(0, size.height);
-		
-		org.eclipse.draw2d.GridData d = (org.eclipse.draw2d.GridData) rootGrid.getConstraint(stackFig);
-		d.widthHint = stackFig.getPreferredSize().width;
-		rootGrid.layout(rootFig);
-
-	}
-
 	
 	private void rebuildStack(RuntimeModel model) {
 		for(PolylineConnection p : pointersMap.values())
@@ -149,6 +135,22 @@ public class RuntimeViewer extends Composite {
 		IStackFrameModel staticVars = model.getStaticVars();
 		stackFig.addFrame(staticVars, this, objectContainer, true);
 	}
+	
+	
+	private void updateLayout() {
+		org.eclipse.swt.graphics.Point prev = canvas.getSize();
+		Dimension size = rootFig.getPreferredSize();
+		canvas.setSize(size.width, size.height);
+		canvas.layout();
+		if(size.height > prev.y)
+			scroll.setOrigin(0, size.height);
+		
+		org.eclipse.draw2d.GridData d = (org.eclipse.draw2d.GridData) rootGrid.getConstraint(stackFig);
+		d.widthHint = Math.max(Constants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
+		rootGrid.layout(rootFig);
+
+	}
+	
 	
 	public void addPointer(IReferenceModel ref, PolylineConnection pointer) {
 		assert pointer != null;

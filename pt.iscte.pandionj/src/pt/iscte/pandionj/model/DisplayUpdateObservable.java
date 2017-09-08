@@ -15,9 +15,13 @@ public class DisplayUpdateObservable<T> implements IObservableModel<T> {
 	public void registerDisplayObserver(ModelObserver<T> o) {
 		obs.addObserver(new ModelObserver<T>() {
 			public void update(T arg) {
-				Display.getDefault().asyncExec(() -> {
+				if(Thread.currentThread() != Display.getDefault().getThread())
+					Display.getDefault().asyncExec(() -> {
+						o.update(arg);
+					});
+				else {
 					o.update(arg);
-				});
+				}
 			}
 		});
 	}

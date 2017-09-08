@@ -1,5 +1,6 @@
 package pt.iscte.pandionj;
 
+import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
@@ -43,7 +44,7 @@ public class StaticInvocationWidget extends Composite {
 
 		setLayout(rowLayout);
 		org.eclipse.swt.widgets.Label label = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
-		FontManager.setFont(label, Constants.MESSAGE_FONT_SIZE);
+		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
 
 		label.setText(method.getElementName() + " (");
 
@@ -221,7 +222,7 @@ public class StaticInvocationWidget extends Composite {
 			values[i] = convertForTypedInvocation(values[i], pType);
 		}
 
-		return methodName + "(" + String.join(",", values) + ")";
+		return methodName + "(" + String.join(", ", values) + ")";
 	}
 
 	private String convertForTypedInvocation(String val, String pType) {

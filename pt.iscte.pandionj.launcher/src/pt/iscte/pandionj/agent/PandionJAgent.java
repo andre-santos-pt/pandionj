@@ -59,13 +59,7 @@ public class PandionJAgent {
 							return null;
 						}
 						catch(NotFoundException e) {
-							//							 String test = "java.io.PrintStream stderr = System.err;" +
-							//							 "java.io.OutputStream out = new java.io.OutputStream() { public void write(int b) { } };";
-							//							 "System.setErr(new java.io.PrintStream(out));";
-
-							//							CtMethod m = CtNewMethod.make("public static void main(String[] args) { " + expression + "; }", cc);
 							CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
-
 							cc.addMethod(m); 
 
 							if(retType == null) {

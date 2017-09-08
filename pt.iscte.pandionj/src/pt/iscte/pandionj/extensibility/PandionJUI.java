@@ -27,6 +27,8 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
+import com.google.common.hash.HashCode;
+
 import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
@@ -122,7 +124,11 @@ public interface PandionJUI {
 	}
 
 	public static void executeUpdate(DebugRun r) {
-		Display.getDefault().asyncExec(() -> PandionJView.getInstance().executeInternal(r));
+		Display.getDefault().asyncExec(() -> {
+//			System.out.println("UPDATE " + r.hashCode());
+			PandionJView.getInstance().executeInternal(r);
+//			System.out.println("/UPDATE " + r.hashCode());
+		});
 	}
 
 	static Color getColor(int r, int g, int b) {

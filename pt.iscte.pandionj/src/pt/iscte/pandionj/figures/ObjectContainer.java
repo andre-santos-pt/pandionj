@@ -84,7 +84,7 @@ public class ObjectContainer extends Figure {
 			if(e instanceof IArrayModel && ((IArrayModel<?>) e).isReferenceType() && fig instanceof ArrayReferenceFigure) {
 				Extension ext = new Extension(fig, e);
 				GridLayout gridLayout = new GridLayout(2, false);
-				gridLayout.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP;
+				gridLayout.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP/2;
 				ext.setLayoutManager(gridLayout);
 				org.eclipse.draw2d.GridData alignTop = new org.eclipse.draw2d.GridData(SWT.LEFT, SWT.TOP, false, false);
 				gridLayout.setConstraint(fig, alignTop);
@@ -98,6 +98,7 @@ public class ObjectContainer extends Figure {
 				while(it.hasNext()) {
 					Integer i = it.next();
 					add2dElement(fig, a, i, container2d);
+				
 				}
 				add(ext);
 			}
@@ -131,6 +132,7 @@ public class ObjectContainer extends Figure {
 		PandionJFigure<?> eTargetFig = null;
 		if(!eTarget.isNull()) {
 			eTargetFig = figProvider.getFigure(eTarget, false);
+			handleIllustration(a.getElementModel(i), eTargetFig, null);
 			container.addAt(i, eTargetFig);
 		}
 		addPointer2D((ArrayReferenceFigure) targetFig, e, i, eTarget, eTargetFig, container);
@@ -159,6 +161,7 @@ public class ObjectContainer extends Figure {
 				pointer.setVisible(!target.isNull());
 				if(!target.isNull()) {
 					PandionJFigure<?> figure = figProvider.getFigure(target, false);
+					handleIllustration(ref, figure, null);
 					container.addAt(index, figure);
 					pointer.setTargetAnchor(figure.getIncommingAnchor());
 					Utils.addArrowDecoration(pointer);
@@ -193,8 +196,10 @@ public class ObjectContainer extends Figure {
 				targetFig.setBorder(b);
 				return true;
 			}
-			else
-				targetFig.setBorder(new MarginBorder(new Insets(0, Constants.POSITION_WIDTH, 20, Constants.POSITION_WIDTH))); // TODO temp margin
+			else {
+				targetFig.setBorder(new MarginBorder(IllustrationBorder.getInsets(targetFig, targetFig instanceof ArrayPrimitiveFigure)));
+			}
+//				targetFig.setBorder(new MarginBorder(new Insets(0, Constants.POSITION_WIDTH, 20, Constants.POSITION_WIDTH))); // TODO temp margin
 		}
 		return false;
 	} 

@@ -6,7 +6,7 @@
       <command
             defaultHandler="pt.iscte.pandionj.launcher.LaunchCommand"
             id="pt.iscte.pandionj.launcher.run"
-            name="Launch in debug mode">
+            name="Launch in debug mode (PandionJ)">
          <commandParameter
                id="pt.iscte.pandionj.launcher.runParameter"
                name="last"
@@ -16,64 +16,68 @@
       <command
             defaultHandler="pt.iscte.pandionj.launcher.StepIntoCommand"
             id="pt.iscte.pandionj.launcher.stepinto"
-            name="Step into">
+            name="Step into (PandionJ)">
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.StepOverCommand"
             id="pt.iscte.pandionj.launcher.stepover"
-            name="Step over">
+            name="Step over (PandionJ)">
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.StepReturnCommand"
             id="pt.iscte.pandionj.launcher.stepreturn"
-            name="Step return">
+            name="Step return (PandionJ)">
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.ResumeCommand"
             id="pt.iscte.pandionj.launcher.resume"
-            name="Resume">
+            name="Resume (PandionJ)">
       </command>
       <command
             defaultHandler="pt.iscte.pandionj.launcher.TerminateCommand"
             id="pt.iscte.pandionj.launcher.terminate"
-            name="Terminate">
+            name="Terminate (PandionJ)">
       </command>
    </extension>
    <extension
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="toolbar:pt.iscte.pandionj.view">
-         <command
-               commandId="pt.iscte.pandionj.launcher.run"
-               icon="images/run.gif"
-               style="push">
-         </command>
-         <command
-               commandId="pt.iscte.pandionj.launcher.stepinto"
-               icon="images/stepinto.gif"
-               style="push">
-         </command>
-         <command
-               commandId="pt.iscte.pandionj.launcher.stepover"
-               icon="images/stepover.gif"
-               style="push">
-         </command>
-         <command
-               commandId="pt.iscte.pandionj.launcher.stepreturn"
-               icon="images/stepreturn.gif"
-               style="push">
-         </command>
-         <command
-               commandId="pt.iscte.pandionj.launcher.resume"
-               icon="images/resume.gif"
-               style="push">
-         </command>
-         <command
-               commandId="pt.iscte.pandionj.launcher.terminate"
-               icon="images/terminate.gif"
-               style="push">
-         </command>
+            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+         <toolbar
+               id="pt.iscte.pandionj.toolbar"
+               label="PandionJ">
+            <command
+                  commandId="pt.iscte.pandionj.launcher.run"
+                  icon="images/run.gif"
+                  style="push">
+            </command>
+            <command
+                  commandId="pt.iscte.pandionj.launcher.stepinto"
+                  icon="images/stepinto.gif"
+                  style="push">
+            </command>
+            <command
+                  commandId="pt.iscte.pandionj.launcher.stepover"
+                  icon="images/stepover.gif"
+                  style="push">
+            </command>
+            <command
+                  commandId="pt.iscte.pandionj.launcher.stepreturn"
+                  icon="images/stepreturn.gif"
+                  style="push">
+            </command>
+            <command
+                  commandId="pt.iscte.pandionj.launcher.resume"
+                  icon="images/resume.gif"
+                  style="push">
+            </command>
+            <command
+                  commandId="pt.iscte.pandionj.launcher.terminate"
+                  icon="images/terminate.gif"
+                  style="push">
+            </command>
+         </toolbar>
       </menuContribution>
    </extension>
    <extension

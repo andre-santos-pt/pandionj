@@ -72,21 +72,45 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 	}
 	
 
-	public Rectangle getPositionBounds(int i) {
+//	public Rectangle getPositionBounds(int i) {
+//		Rectangle r = getBounds();
+//		if(i >= 0 && i < model.getLength()){
+//			if(i < positions.size() - 2){
+//				r = positions.get(i).getBounds();
+//			}else if( i == model.getLength() - 1){
+//				r = positions.get(positions.size() - 1).getBounds();
+//			}else{
+//				r = positions.get(positions.size() - 2).getBounds();
+//			}
+//		}
+//		translateToAbsolute(r);
+//		return r;
+//	}
+
+	public Rectangle getPositionBounds(int i, boolean horizontal) {
 		Rectangle r = getBounds();
-		if(i >= 0 && i < model.getLength()){
-			if(i < positions.size() - 2){
-				r = positions.get(i).getBounds();
-			}else if( i == model.getLength() - 1){
-				r = positions.get(positions.size() - 1).getBounds();
-			}else{
-				r = positions.get(positions.size() - 2).getBounds();
-			}
-		}
+		if(N == 0)
+			;
+		else if(i < 0)
+			r = positions.get(0).getBounds().getTranslated(
+					horizontal ? -Constants.POSITION_WIDTH - Constants.ARRAY_POSITION_SPACING*2 : 0, 
+					horizontal ? 0 : -Constants.POSITION_WIDTH);
+		else if(i >= N)
+			r = positions.get(N-1).getBounds().getTranslated(
+					horizontal ? Constants.POSITION_WIDTH + Constants.ARRAY_POSITION_SPACING*2 : 0, 
+					horizontal ? 0 : Constants.POSITION_WIDTH_V);
+		else if(i >= Constants.ARRAY_LENGTH_LIMIT && i != N-1)
+			r = positions.get(N-1).getBounds().getTranslated(
+					horizontal ? -Constants.POSITION_WIDTH - Constants.ARRAY_POSITION_SPACING: 0, 
+					horizontal ? 0 : -Constants.POSITION_WIDTH_V);
+		else
+			r = positions.get(i).getBounds();
+		
 		translateToAbsolute(r);
 		return r;
 	}
 
+	
 	public Rectangle getLabelBounds(int i) {
 		Rectangle r = getBounds();
 		if(i >= 0 && i < model.getLength()){

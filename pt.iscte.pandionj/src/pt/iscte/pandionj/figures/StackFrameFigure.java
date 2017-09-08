@@ -63,17 +63,20 @@ public class StackFrameFigure extends Figure {
 		}
 		
 		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
-		
-		for (IVariableModel<?> v : frame.getStackVariables())
+//		System.out.println(frame.getStackVariables());
+		for (IVariableModel<?> v : frame.getStackVariables()) {
 			addVariable(v, exception);
+		}
 
 		updateLook(frame, false);
 		addFrameObserver(frame);
-		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame, e.type == Event.Type.TERMINATION));
+		
+		// TODO repor ConcorrentMod
+//		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame, e.type == Event.Type.TERMINATION));
 	}
 
 	private void addFrameObserver(IStackFrameModel frame) {
-		frame.registerDisplayObserver(new ModelObserver<StackEvent<?>>() {
+		frame.registerObserver(new ModelObserver<StackEvent<?>>() {
 			@Override
 			public void update(StackEvent<?> event) {
 				if(event != null) {

@@ -31,6 +31,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
@@ -192,14 +193,9 @@ public class LaunchCommand extends AbstractHandler {
 		if(breakPoint != null)
 			breakPoint.delete();
 
-		//		if(line != -1) {
-		// TODO run to line
-		//			Map<String, Object> attributes = new HashMap<String, Object>(4);
-		//			attributes.put(IBreakpoint.PERSISTED, Boolean.FALSE);
-		//			attributes.put("org.eclipse.jdt.debug.ui.run_to_line", Boolean.TRUE);
-		//			attributes.put("pandionj_gen", Boolean.TRUE); // ?
-		//			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
-		//		}
+		// TODO remove?
+		if(line != -1)
+			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
 
 		try {	
 			Bundle bundle = Platform.getBundle(LaunchCommand.class.getPackage().getName());

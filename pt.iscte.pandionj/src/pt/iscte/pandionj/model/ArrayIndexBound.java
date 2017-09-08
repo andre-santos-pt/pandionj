@@ -23,7 +23,6 @@ class ArrayIndexBound extends DisplayUpdateObservable implements IArrayIndexMode
 		this.type = type;
 		this.value = expressionCache.get(expression);
 		eval();
-//		runtime.registerObserver((o,a) -> eval());
 	}
 
 	private void eval() {

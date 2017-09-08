@@ -65,7 +65,9 @@ implements IRuntimeModel {
 	}
 
 	public void update(IJavaThread thread) {
+		boolean newStack = false;
 		if(launch != thread.getLaunch()) {
+			newStack = true;
 			launch = thread.getLaunch();
 			callStack.clear();
 			objects.clear();
@@ -76,12 +78,6 @@ implements IRuntimeModel {
 			setChanged();
 			notifyObservers(new Event<List<StackFrameModel>>(Event.Type.NEW_STACK, getFilteredStackPath()));
 		}
-
-		terminated = false;
-
-		//		for (EntityModel<?> e : objects.values()) {
-		//			e.update(step);		
-		//		}
 
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel && o.update(step))
@@ -130,7 +126,7 @@ implements IRuntimeModel {
 		}
 		else {
 			callStack.clear();
-			for(int i = Math.max(0, revStackFrames.length-1-Constants.STACK_LIMIT); i < revStackFrames.length; i++) {
+			for(int i = 0; i < revStackFrames.length; i++) {
 				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs);
 				callStack.add(newFrame);
 			}
@@ -207,7 +203,17 @@ implements IRuntimeModel {
 	}
 
 	public void setTerminated() {
+		if(launch != null)
+			try {
+				launch.terminate();
+			} catch (DebugException e) {
+				e.printStackTrace();
+			}
+		
 		terminated = true;
+		for(StackFrameModel frame : callStack)
+			frame.setObsolete();
+		
 		setChanged();
 		notifyObservers(new Event<Object>(Event.Type.TERMINATION, null));
 	}
@@ -303,7 +309,5 @@ implements IRuntimeModel {
 
 		return list;
 	}
-
-
 
 }

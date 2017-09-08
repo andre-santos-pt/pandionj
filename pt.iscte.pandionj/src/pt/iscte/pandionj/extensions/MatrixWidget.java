@@ -2,7 +2,6 @@ package pt.iscte.pandionj.extensions;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
@@ -10,8 +9,6 @@ import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Canvas;
@@ -23,7 +20,6 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.model.ModelObserver;
 import pt.iscte.pandionj.tests.mock.MockArray;
-import pt.iscte.pandionj.tests.mock.MockReference;
 
 public class MatrixWidget implements IArrayWidgetExtension{
 
@@ -65,7 +61,8 @@ public class MatrixWidget implements IArrayWidgetExtension{
 		}
 
 		private void init(IArrayModel model) {
-			setLayoutManager(new FlowLayout());
+			Object[][] m = (Object[][]) model.getValues();
+			setLayoutManager(new org.eclipse.draw2d.GridLayout(m.length == 0 ? 1 : (m[0].length), true));
 			setBackgroundColor(ColorConstants.white);
 			setBorder(new LineBorder(ColorConstants.gray));
 			setOpaque(true);
@@ -91,9 +88,6 @@ public class MatrixWidget implements IArrayWidgetExtension{
 			repaint();
 		}
 
-//		public void updateModel(IArrayModel model) {
-//			init(model);
-//		}
 
 		@Override
 		protected void paintFigure(Graphics g) {
