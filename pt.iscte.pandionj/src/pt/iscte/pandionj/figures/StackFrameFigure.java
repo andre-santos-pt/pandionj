@@ -112,7 +112,7 @@ public class StackFrameFigure extends Figure {
 		if(!invisible) {
 			if(model.isObsolete() || termination) {
 				setBackgroundColor(Constants.Colors.OBSOLETE);
-				setBorder(new LineBorder(ColorConstants.lightGray, 2, SWT.LINE_DASH));
+				setBorder(new LineBorder(model.exceptionOccurred() ?  Constants.Colors.ERROR : ColorConstants.lightGray, 2, SWT.LINE_DASH));
 			}
 			else if(model.exceptionOccurred()) {
 				setBackgroundColor(Constants.Colors.INST_POINTER);

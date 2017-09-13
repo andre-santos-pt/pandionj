@@ -21,7 +21,7 @@ class ArrayIndexBound extends DisplayUpdateObservable implements IArrayIndexMode
 		assert type != null;
 		this.expression = expression;
 		this.type = type;
-		this.value = expressionCache.get(expression);
+//		this.value = expressionCache.get(expression);
 		eval();
 	}
 

@@ -17,7 +17,7 @@
       <context
             id="pt.iscte.pandionj.context"
             name="PandionJ"
-            parentId="org.eclipse.ui.textEditorScope">
+            parentId="org.eclipse.ui.contexts.window">
       </context>
    </extension>
 

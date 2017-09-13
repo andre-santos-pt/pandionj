@@ -27,7 +27,7 @@ public class PandionJAgent {
 			expression = split[1];
 		}
 
-		int i = expression.indexOf("(");
+		int i = expression.indexOf("(");	
 		final String expMethod = i == -1 ? "" : expression.substring(0, i);
 		inst.addTransformer(new ClassFileTransformer() {
 			@Override

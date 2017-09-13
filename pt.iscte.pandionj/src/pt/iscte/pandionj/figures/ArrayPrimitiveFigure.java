@@ -6,6 +6,7 @@ import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
@@ -28,13 +29,13 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 	
 	@Override
 	GridData createIndexLabelGridData() {
-		return new GridData(POSITION_WIDTH, POSITION_WIDTH/2);
+		return new GridData(SWT.CENTER, SWT.BEGINNING, false, false);
+				//		return new GridData(POSITION_WIDTH, POSITION_WIDTH/);
 	}
 	
 	public ConnectionAnchor getIncommingAnchor() {
 		return new CustomChopboxAnchor(this, (r) -> new Point(
 				(int) Math.round(r.x + Constants.POSITION_WIDTH*2), 
 				(int) Math.round(r.y + (r.height - 20) / 2.0)));
-//		return new PositionAnchor(this, PositionAnchor.Position.LEFT);
 	}
 }

@@ -1,17 +1,20 @@
 package pt.iscte.pandionj.figures;
 
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
 import org.eclipse.draw2d.Border;
-import org.eclipse.draw2d.ConnectionAnchor;
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
+
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 
@@ -31,7 +34,6 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 	}
 
 	abstract Figure createValueLabel(E e);
-	
 	abstract GridData createValueLabelGridData();
 	abstract GridData createIndexLabelGridData();
 	
@@ -42,9 +44,10 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		fig.setBackgroundColor(Constants.Colors.OBJECT);
 		
 		GridLayout layout = new GridLayout(horizontal ? (model.getLength() > Constants.ARRAY_LENGTH_LIMIT ? N + 1 : Math.max(1, N)) : 1, false);
-		layout.verticalSpacing = Constants.ARRAY_POSITION_SPACING;
-		layout.horizontalSpacing = 0;
-		layout.marginWidth = 0;
+		layout.verticalSpacing = 0;
+		layout.horizontalSpacing = Constants.ARRAY_POSITION_SPACING;
+		layout.marginWidth = Constants.ARRAY_MARGIN;
+		layout.marginHeight = Constants.ARRAY_MARGIN;
 		fig.setLayoutManager(layout);
 		
 		fig.setToolTip(new Label("length = " + model.getLength()));
@@ -89,23 +92,25 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 
 	public Rectangle getPositionBounds(int i, boolean horizontal) {
 		Rectangle r = getBounds();
-		if(N == 0)
+		int len = model.getLength();
+		if(len == 0)
 			;
 		else if(i < 0)
 			r = positions.get(0).getBounds().getTranslated(
-					horizontal ? -Constants.POSITION_WIDTH - Constants.ARRAY_POSITION_SPACING*2 : 0, 
+					horizontal ? -Constants.POSITION_WIDTH - Constants.ARRAY_MARGIN : 0, 
 					horizontal ? 0 : -Constants.POSITION_WIDTH);
-		else if(i >= N)
+		else if(i >= len)
 			r = positions.get(N-1).getBounds().getTranslated(
-					horizontal ? Constants.POSITION_WIDTH + Constants.ARRAY_POSITION_SPACING*2 : 0, 
-					horizontal ? 0 : Constants.POSITION_WIDTH_V);
-		else if(i >= Constants.ARRAY_LENGTH_LIMIT && i != N-1)
+					horizontal ? Constants.POSITION_WIDTH + Constants.ARRAY_MARGIN : 0, 
+					horizontal ? 0 : Constants.POSITION_WIDTH);
+		else if(i == len - 1)
+			r = positions.get(N-1).getBounds();
+		else if(len > Constants.ARRAY_LENGTH_LIMIT && i >= Constants.ARRAY_LENGTH_LIMIT-1)
 			r = positions.get(N-1).getBounds().getTranslated(
 					horizontal ? -Constants.POSITION_WIDTH - Constants.ARRAY_POSITION_SPACING: 0, 
-					horizontal ? 0 : -Constants.POSITION_WIDTH_V);
-		else
+					horizontal ? 0 : -Constants.POSITION_WIDTH);
+		else	 
 			r = positions.get(i).getBounds();
-		
 		translateToAbsolute(r);
 		return r;
 	}
@@ -140,9 +145,9 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		public Position(Integer index) {
 			GridLayout layout = new GridLayout(horizontal ? 1 : 2, false);
 			if(horizontal){
-				layout.verticalSpacing = 3;
-				layout.horizontalSpacing = 4;
-				layout.marginHeight = 2;
+				layout.verticalSpacing = 0;
+				layout.horizontalSpacing = 0;
+				layout.marginHeight = 0;
 			}
 			else{
 				layout.verticalSpacing = 6;
@@ -150,7 +155,7 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 				layout.marginHeight = 4;
 			}
 
-			layout.marginWidth = 4;
+			layout.marginWidth = 0;
 			setLayoutManager(layout);
 
 			if(index != null){

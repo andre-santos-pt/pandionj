@@ -43,7 +43,9 @@ public interface Constants {
 	int POSITION_LINE_WIDTH = 1;
 	int INDEX_FONT_SIZE = 10;
 
-	int ARRAY_POSITION_SPACING = 4;
+	int ARRAY_POSITION_SPACING = 2;
+	int ARRAY_MARGIN = ARRAY_POSITION_SPACING*2;
+	
 	int ARRAY_LINE_WIDTH = 1;
 
 	int STACKFRAME_LINE_WIDTH = 3;
@@ -63,7 +65,7 @@ public interface Constants {
 		
 		Color VARIABLE_BOX = new Color(Display.getDefault(), 255, 255, 255);
 
-		Color ILLUSTRATION = ColorConstants.black;
+		Color ILLUSTRATION = ColorConstants.blue;
 
 		Color ROLE_ANNOTATIONS = ColorConstants.gray;
 		

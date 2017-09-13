@@ -30,8 +30,6 @@ import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.debug.core.IJavaLineBreakpoint;
-import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
@@ -55,7 +53,7 @@ import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 public class LaunchCommand extends AbstractHandler {
 	public static final String RUN_LAST_PARAM_ID = "pt.iscte.pandionj.launcher.runParameter";
 
-	private IJavaLineBreakpoint breakPoint;
+//	private IJavaLineBreakpoint breakPoint;
 	private String args;
 
 	@Override
@@ -190,12 +188,12 @@ public class LaunchCommand extends AbstractHandler {
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, firstType.getFullyQualifiedName());
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
 
-		if(breakPoint != null)
-			breakPoint.delete();
-
-		// TODO remove?
-		if(line != -1)
-			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
+//		if(breakPoint != null)
+//			breakPoint.delete();
+//
+//		// TODO remove?
+//		if(line != -1)
+//			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
 
 		try {	
 			Bundle bundle = Platform.getBundle(LaunchCommand.class.getPackage().getName());

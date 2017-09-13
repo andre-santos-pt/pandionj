@@ -84,11 +84,13 @@
          point="org.eclipse.ui.bindings">
       <key
             commandId="pt.iscte.pandionj.launcher.run"
+            contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+R">
       </key>
       <key
             commandId="pt.iscte.pandionj.launcher.run"
+            contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="M1+Y">
          <parameter

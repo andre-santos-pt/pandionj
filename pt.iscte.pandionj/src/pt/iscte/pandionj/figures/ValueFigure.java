@@ -257,7 +257,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		@Override
 		public void paint(IFigure figure, Graphics graphics, Insets insets) {
 			graphics.setLineStyle(SWT.LINE_DOT);
-			graphics.setForegroundColor(Constants.Colors.ILLUSTRATION);
+			graphics.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);
 			Rectangle r = figure.getBounds();
 			int startY = direction == Direction.FORWARD ? 2 : 1 + (Constants.POSITION_WIDTH/3)*2;
 			Point from = r.getLocation().getTranslated(r.width-6, startY);

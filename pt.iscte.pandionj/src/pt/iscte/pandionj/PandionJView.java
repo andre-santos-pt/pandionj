@@ -118,7 +118,7 @@ public class PandionJView extends ViewPart {
 	@Override
 	public void setFocus() {
 		//		area.setFocus();
-		contextService.activateContext(Constants.CONTEXT_ID);
+	
 	}
 
 
@@ -173,6 +173,7 @@ public class PandionJView extends ViewPart {
 	// must be invoked under executeInternal(..)
 	private void handleFrames(IJavaThread thread) {
 		assert thread != null;
+		contextService.activateContext(Constants.CONTEXT_ID);
 		if(stackLayout.topControl != runtimeView) {
 			Display.getDefault().syncExec(() -> {
 				stackLayout.topControl = runtimeView;
