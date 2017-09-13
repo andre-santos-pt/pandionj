@@ -37,11 +37,6 @@ public class MockStackFrame implements IStackFrameModel {
 	}
 
 	@Override
-	public Collection<IVariableModel<?>> getAllVariables() {
-		return getStackVariables();
-	}
-
-	@Override
 	public String getInvocationExpression() {
 		return null;
 	}

@@ -11,7 +11,7 @@ public class TerminateCommand extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		Activator.terminate();
 
-//		fireHandlerChanged(new HandlerEvent(this, true, true));
+		fireHandlerChanged(new HandlerEvent(this, true, true));
 		return null;
 	}
 
@@ -21,7 +21,8 @@ public class TerminateCommand extends AbstractHandler {
 		return Activator.isExecutingLaunch();
 	}
 	
-//	public void setEnabled(Object evaluationContext) {
-//		setBaseEnabled(isEnabled());
-//	}
+	public void setEnabled(Object evaluationContext) {
+		setBaseEnabled(isEnabled());
+		System.out.println("??" + evaluationContext);
+	}
 }

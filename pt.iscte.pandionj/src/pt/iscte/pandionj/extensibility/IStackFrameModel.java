@@ -9,14 +9,13 @@ import pt.iscte.pandionj.model.RuntimeModel;
 public interface IStackFrameModel extends IObservableModel<IStackFrameModel.StackEvent<?>> {
 
 	Collection<IVariableModel<?>> getStackVariables();
-	Collection<IVariableModel<?>> getAllVariables();
 	Collection<IReferenceModel> getReferencesTo(IEntityModel e);
 	RuntimeModel getRuntime();
 	String getInvocationExpression();
 	
 	class StackEvent<T> {
 		public enum Type {
-			NEW_VARIABLE, VARIABLE_OUT_OF_SCOPE, EXCEPTION;
+			NEW_VARIABLE, VARIABLE_OUT_OF_SCOPE, EXCEPTION, STEP;
 		}
 		public final Type type;
 		public final T arg;

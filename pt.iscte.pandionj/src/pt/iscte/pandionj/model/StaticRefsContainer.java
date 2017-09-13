@@ -71,11 +71,6 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	}
 
 	@Override
-	public Collection<IVariableModel<?>> getAllVariables() {
-		return map.values();
-	}
-
-	@Override
 	public Collection<IReferenceModel> getReferencesTo(IEntityModel e) {
 		Collection<IReferenceModel> refs = new ArrayList<>();
 		for(IVariableModel<?> v : map.values())

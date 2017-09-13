@@ -78,7 +78,7 @@ public class IllustrationBorder implements Border {
 			return new Insets(0, out, EXTRA, out);
 		}
 		else {
-			int out = Constants.POSITION_WIDTH/2 + Constants.ARRAY_POSITION_SPACING * 2;
+			int out = Constants.POSITION_WIDTH + Constants.ARRAY_POSITION_SPACING * 2;
 			return new Insets(out, EXTRA, out, 0);
 		}
 	}
@@ -100,7 +100,6 @@ public class IllustrationBorder implements Border {
 		drawOutOfBoundsPositions(figure, g);
 
 		final int pWidth = POSITION_DIM.width;
-//		final int y = ARRAY_POSITION_SPACING + POSITION_DIM.height + EXTRA;
 
 		Font font = FontManager.getFont(Constants.VAR_FONT_SIZE-4);
 		g.setFont(font);
@@ -108,13 +107,17 @@ public class IllustrationBorder implements Border {
 			int i = f.getCurrentIndex();
 			String varName = f.getName();
 			int textWidth = FigureUtilities.getTextWidth(varName, font);
-			Rectangle bounds = arrayFigure.getPositionBounds(i, horizontal);
+//			Rectangle bounds = arrayFigure.getPositionBounds(i, horizontal);
 //			g.setLineStyle(SWT.LINE_DOT);
 //			g.setLineWidth(1);
 //			g.drawRectangle(bounds.getExpanded(new Insets(1)));
 //			Point from = bounds.getLocation().getTranslated(pWidth/2 - textWidth/2, y - EXTRA + Constants.ARRAY_POSITION_SPACING*2);
-			Point from = bounds.getLocation().getTranslated(pWidth/2 - textWidth/2, bounds.height);
-
+			Point from = getIndexLocation(i);
+			if(horizontal)
+				from.translate(textWidth/2, 0);
+			else
+				from.translate(-Math.min(textWidth/2, Constants.POSITION_WIDTH_V), 0);
+					
 			g.setForegroundColor(Constants.Colors.CONSTANT);
 			g.drawText(varName, from);
 		}
@@ -131,9 +134,9 @@ public class IllustrationBorder implements Border {
 //			Point from = arrayFigure.getPositionBounds(i, horizontal).getLocation().getTranslated(0,  firstPositionBounds.height);
 			Point from = getIndexLocation(i);
 			if(horizontal)
-				from = from.getTranslated(textWidth/2, 0);
+				from.translate(textWidth/2, 0);
 			else
-				from = from.getTranslated(-Math.min(textWidth/2, Constants.POSITION_WIDTH_V), -Constants.POSITION_WIDTH_V);
+				from.translate(-Math.min(textWidth/2, Constants.POSITION_WIDTH_V), -Constants.POSITION_WIDTH_V);
 			
 			g.drawText(varName, from);
 			drawHistory(g, v, Constants.Colors.ILLUSTRATION);
@@ -147,17 +150,25 @@ public class IllustrationBorder implements Border {
 				if(boundVal == null)
 					continue; // because of asynchronous evaluation
 
-				directionOK = v.getDirection() == Direction.FORWARD && boundVal >= i ||
-						v.getDirection() == Direction.BACKWARD && boundVal <= i;
+				boolean incDirection = v.getDirection() == Direction.FORWARD && boundVal >= i;
+				boolean decDirection = v.getDirection() == Direction.BACKWARD && boundVal <= i;
+				directionOK = incDirection || decDirection;
 
 				if(boundVal != i && directionOK) {
 					int space = v.getDirection() == Direction.FORWARD ? ARRAY_POSITION_SPACING : -ARRAY_POSITION_SPACING;
-					Point arrowFrom = from;
+					Point arrowFrom = getIndexLocation(i);
 					if(horizontal) 
-						arrowFrom = from.getTranslated(textWidth/2 + space, EXTRA);
+						arrowFrom.translate(textWidth/2 + space, EXTRA);
+					else {
+						if(decDirection)
+							arrowFrom.translate(0, -POSITION_WIDTH/2);
+						else
+							arrowFrom.translate(0, ARRAY_POSITION_SPACING*2);
+					}
 					
-					Point to = getIndexLocation(boundVal).getTranslated(0,
-							horizontal ? -firstPositionBounds.width/2 : 0);
+					Point to = getIndexLocation(boundVal);
+					if(horizontal)
+						to.translate(0, -firstPositionBounds.width/2);
 					
 					drawArrow(g, arrowFrom, getPointDependingOnOrientation(arrowFrom, to));
 				}
@@ -195,11 +206,9 @@ public class IllustrationBorder implements Border {
 			Integer i = Integer.parseInt(history.get(j));
 			Point p = getIndexLocation(i);
 			
-			if(horizontal){
-				p = p.getTranslated(0, EXTRA);
-			}else{
-//				p = p.getTranslated(0, firstPositionBounds.height/2);
-			}
+			if(horizontal)
+				p = p.translate(0, EXTRA);
+			
 			g.fillOval(p.x, p.y, Constants.ILLUSTRATION_LINE_WIDTH+1, Constants.ILLUSTRATION_LINE_WIDTH+1);
 		}
 	}
@@ -213,49 +222,16 @@ public class IllustrationBorder implements Border {
 	}
 
 
-//	private Point getIndexLocation(int index) {
-//		Point p = null;
-//		final int distance = firstPositionBounds.width + Constants.ARRAY_POSITION_SPACING;
-//		if(index < 0)
-//			p = arrayFigure.getPositionBounds(0).getLocation()
-//					.getTranslated(horizontal ? -distance : 0, horizontal ? 0 : -distance);
-//		else if(index >= N)
-//			p = arrayFigure.getPositionBounds(N-1).getLocation()
-//					.getTranslated(horizontal ? distance : 0,  horizontal ? 0 : distance);
-//		else
-//			p = arrayFigure.getPositionBounds(index).getLocation();
-//		return p;
-//	}
-	
 	private Point getIndexLocation(int index) {
-//		Point p = null;
 		Point origin = arrayFigure.getPositionBounds(index, horizontal).getLocation();
 		
 		if(horizontal)
 			origin.translate(firstPositionBounds.width/2, firstPositionBounds.height + Constants.ARRAY_POSITION_SPACING);
-		else
-			origin.translate(-Constants.POSITION_WIDTH/2, POSITION_WIDTH/2  + Constants.ARRAY_POSITION_SPACING);
-		
+		else {
+			origin.translate(-Constants.POSITION_WIDTH/2, firstPositionBounds.height/2);
+		}
 		return origin;
-//		final int distance = firstPositionBounds.width + Constants.ARRAY_POSITION_SPACING;
-//		if(index < 0)
-//			p = arrayFigure.getPositionBounds(0, horizontal).getLocation();
-//		else if(index >= N)
-//			p = arrayFigure.getPositionBounds(N-1, horizontal).getLocation();
-//		else
-//			p = arrayFigure.getPositionBounds(index, horizontal).getLocation();
-//		return p;
 	}
-	
-//	private Point usualTranslation(Point origin) {
-//		if(horizontal){
-//			origin.translate(firstPositionBounds.width/2, firstPositionBounds.height + Constants.ARRAY_POSITION_SPACING);
-//		}else{
-//			origin.translate(-Constants.POSITION_WIDTH/2, -Constants.ARRAY_POSITION_SPACING);
-//		}
-//		return origin;
-//	}
-	
 
 	private void drawOutOfBoundsPositions(IFigure figure, Graphics g) {
 		final Dimension rectDim = firstLabelBounds.getSize().expand(-1, -1);
@@ -286,10 +262,8 @@ public class IllustrationBorder implements Border {
 			if(horizontal){
 				p = new Point(origin.x - firstLabelBounds.width - Constants.ARRAY_MARGIN - 1, origin.y);
 			}else{
-				p = new Point(origin.x, origin.y - firstLabelBounds.width/2 - Constants.ARRAY_POSITION_SPACING);
+				p = new Point(origin.x, origin.y - firstLabelBounds.height);
 			}
-			
-//			g.setLineDashOffset(7.5f);
 			g.setLineStyle(Graphics.LINE_DOT);
 			g.drawRectangle(new Rectangle(p, rectDim));
 		}
@@ -301,11 +275,10 @@ public class IllustrationBorder implements Border {
 			if(horizontal){
 				p = new Point(origin.x + firstLabelBounds.width + Constants.ARRAY_MARGIN + 1, origin.y);
 			}else{
-				p = new Point(origin.x, origin.y + firstLabelBounds.width - Constants.ARRAY_POSITION_SPACING*3);
+				p = new Point(origin.x, origin.y + firstLabelBounds.height + ARRAY_POSITION_SPACING*2 + Constants.ARRAY_MARGIN+1);
 			}
 			
 			g.setLineStyle(Graphics.LINE_DOT);
-//			g.setLineDashOffset(2.5f);
 			g.drawRectangle(new Rectangle(p, rectDim));
 		}
 		
@@ -318,7 +291,7 @@ public class IllustrationBorder implements Border {
 			g.drawLine(to, to.getTranslated(xx, -ARROW_EDGE));
 			g.drawLine(to, to.getTranslated(xx, ARROW_EDGE));
 		}else{
-			to = to.translate(0, from.y < to.y ? firstLabelBounds.height : -firstLabelBounds.height);
+//			to = to.translate(0, from.y < to.y ? firstLabelBounds.height : -firstLabelBounds.height);
 			int xx = from.y < to.y ? -ARROW_EDGE : ARROW_EDGE;
 			g.drawLine(to, to.getTranslated(-ARROW_EDGE, xx));
 			g.drawLine(to, to.getTranslated(ARROW_EDGE, xx));
@@ -333,6 +306,7 @@ public class IllustrationBorder implements Border {
 			int s;
 			boolean b = direction == Direction.FORWARD && bound.getType() == BoundType.CLOSE ||
 					direction == Direction.BACKWARD && bound.getType() == BoundType.OPEN;
+			
 			if(horizontal){
 				s = firstLabelBounds.width/2 + Constants.ARRAY_POSITION_SPACING; 
 				if(!b)

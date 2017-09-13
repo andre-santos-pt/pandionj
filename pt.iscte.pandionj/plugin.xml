@@ -6,7 +6,7 @@
       <view
             allowMultiple="false"
             class="pt.iscte.pandionj.PandionJView"
-            icon="images/pandionj.gif"
+            icon="old/pandionj_old.gif"
             id="pt.iscte.pandionj.view"
             name="PandionJ"
             restorable="true">

@@ -68,7 +68,7 @@ public class ObjectContainer extends Figure {
 
 	void setInput(RuntimeModel model) {
 		PandionJUI.executeUpdate(() -> removeAll());
-		model.registerDisplayObserver((e) -> {
+		model.registerDisplayObserver((e) -> { // FIXME bug
 			if(e.type == RuntimeModel.Event.Type.NEW_STACK)
 				removeAll();
 			else if(e.type == RuntimeModel.Event.Type.NEW_OBJECT)

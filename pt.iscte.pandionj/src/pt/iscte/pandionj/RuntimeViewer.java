@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.MenuItem;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.ObjectContainer;
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.StackContainer;
@@ -190,7 +191,8 @@ public class RuntimeViewer extends Composite {
 	private void addMenu() {
 		Menu menu = new Menu(this);
 		MenuItem item = new MenuItem(menu, SWT.PUSH);
-		item.setText("Copy image");
+		item.setText(Constants.Messages.COPY_CLIPBOARD);
+		item.setImage(PandionJUI.getImage("clipboard.gif"));
 		item.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
@@ -207,42 +209,6 @@ public class RuntimeViewer extends Composite {
 		GC gc = new GC(image);
 		SWTGraphics graphics = new SWTGraphics(gc);
 		rootFig.paint(graphics);
-		
-//		Composite item = viewer;
-//		Point p = viewer.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-//
-//		Rectangle size = item.getClientArea();
-//
-//		//			compositeViewer.setBackground(Constants.HIGHLIGHT_COLOR);
-//		GC gc = new GC(item);
-//		//			Rectangle clipping2 = gc.getClipping();
-//		//			Image img = new Image(Display.getDefault(), size.width, size.height);
-//		//			gc.copyArea(img, 0, 0);
-//		//			ImageData imageData = img.getImageData();
-//
-//		RGB[] rgb = new RGB[256];
-//		// build grey scale palette: 256 different grey values are generated. 
-//		for (int i = 0; i < 256; i++) {
-//			rgb[i] = new RGB(i, i, i);
-//		}
-//
-//		// Construct a new indexed palette given an array of RGB values.
-//		PaletteData palette = new PaletteData(rgb);
-//		Image img2 = new Image(Display.getDefault(), new ImageData(size.width, size.height, 8, palette));
-//		//			gc.setClipping(0, 0, p.x, p.y);
-//		gc.copyArea(img2, 0, 0);
-//		Shell popup = new Shell(Display.getDefault());
-//		popup.setText("Image");
-//		popup.setBounds(50, 50, 200, 200);
-//		Canvas canvas = new Canvas(popup, SWT.NONE);
-//		canvas.setBackground(new Color(null,255,0,0));
-//		canvas.setBounds(image.getBounds());
-//		canvas.addPaintListener(new PaintListener() {
-//			public void paintControl(PaintEvent e) {
-//				e.gc.drawImage(image, 0, 0);
-//			}
-//		});
-//		popup.open();
 		Clipboard clipboard = new Clipboard(Display.getDefault());
 		clipboard.setContents(new Object[]{image.getImageData()}, new Transfer[]{ ImageTransfer.getInstance()}); 
 		image.dispose();

@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.IFigure;
@@ -30,6 +29,7 @@ import pt.iscte.pandionj.extensions.GrayscaleImageWidget;
 import pt.iscte.pandionj.extensions.HistogramWidget;
 import pt.iscte.pandionj.extensions.ImageAguia;
 import pt.iscte.pandionj.extensions.IterableWidget;
+import pt.iscte.pandionj.extensions.MatrixWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringCharArray;
 import pt.iscte.pandionj.extensions.StringWidget;
@@ -42,10 +42,12 @@ public class ExtensionManager {
 
 	static {
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
-		arrayExtensions.put("image", new GrayscaleImageWidget());
-		arrayExtensions.put("hist", new HistogramWidget());
-		arrayExtensions.put("color", new ColorRGBArray());
-		arrayExtensions.put("string", new StringCharArray());
+		arrayExtensions.put("@image", new GrayscaleImageWidget());
+		arrayExtensions.put("@hist", new HistogramWidget());
+		arrayExtensions.put("@color", new ColorRGBArray());
+		arrayExtensions.put("@string", new StringCharArray());
+		arrayExtensions.put("@matrix", new MatrixWidget());
+		
 
 		objectExtensions = new ArrayList<>();
 		objectExtensions.add(new NumberWidget());
