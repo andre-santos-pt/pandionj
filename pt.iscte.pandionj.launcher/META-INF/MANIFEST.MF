@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Name: Java Launcher (PandionJ)
+Bundle-Name: PandionJ Debug Launcher
 Bundle-SymbolicName: pt.iscte.pandionj.launcher;singleton:=true
 Bundle-Version: 0.1
 Bundle-ClassPath: agent.jar,
