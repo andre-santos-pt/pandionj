@@ -226,9 +226,9 @@ public class PandionJView extends ViewPart {
 	}
 
 
-	public void promptInvocation(IMethod method, InvocationAction action) {
+	public void promptInvocation(IFile file, IMethod method, InvocationAction action) {
 		stackLayout.topControl = invocationArea;
-		invocationArea.setMethod(method, action);
+		invocationArea.setMethod(file, method, action);
 		//		invocationArea.requestLayout();
 		invocationArea.getParent().layout();
 		invocationArea.setFocus();

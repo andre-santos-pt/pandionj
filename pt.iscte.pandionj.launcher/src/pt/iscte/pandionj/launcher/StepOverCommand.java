@@ -9,7 +9,7 @@ public class StepOverCommand extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Activator.stepOver();
+		Activator.stepOver(event);
 		return null;
 	}
 

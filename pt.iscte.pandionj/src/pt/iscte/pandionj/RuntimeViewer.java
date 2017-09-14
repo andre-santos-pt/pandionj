@@ -34,7 +34,6 @@ import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.ObjectContainer;
 import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.StackContainer;
-import pt.iscte.pandionj.figures.StackFrameFigure;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 

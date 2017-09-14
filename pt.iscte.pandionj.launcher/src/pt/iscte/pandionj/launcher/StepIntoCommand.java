@@ -7,7 +7,7 @@ public class StepIntoCommand extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Activator.stepInto();
+		Activator.stepInto(event);
 		return null;
 	}
 

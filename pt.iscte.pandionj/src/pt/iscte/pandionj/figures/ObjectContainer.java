@@ -10,7 +10,6 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.PolylineConnection;
-import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
@@ -44,7 +43,7 @@ public class ObjectContainer extends Figure {
 		public void addAt(int index, IFigure figure) {
 			int i = Math.min(index, Constants.ARRAY_LENGTH_LIMIT-1);
 			if(!containsChild(this, figure)) {
-				List children = getChildren();
+				List<?> children = getChildren();
 				remove((IFigure) children.get(i));
 			}
 			add(figure, i);
@@ -66,15 +65,15 @@ public class ObjectContainer extends Figure {
 		this.figProvider = figProvider;
 	}
 
-	void setInput(RuntimeModel model) {
-		PandionJUI.executeUpdate(() -> removeAll());
-		model.registerDisplayObserver((e) -> { // FIXME bug
-			if(e.type == RuntimeModel.Event.Type.NEW_STACK)
-				removeAll();
-			else if(e.type == RuntimeModel.Event.Type.NEW_OBJECT)
-				addObject((IEntityModel) e.arg);
-		});
-	}
+//	void setInput(RuntimeModel model) {
+//		PandionJUI.executeUpdate(() -> removeAll());
+//		model.registerDisplayObserver((e) -> { // FIXME bug
+//			if(e.type == RuntimeModel.Event.Type.NEW_STACK)
+//				removeAll();
+//			else if(e.type == RuntimeModel.Event.Type.NEW_OBJECT)
+//				addObject((IEntityModel) e.arg);
+//		});
+//	}
 
 	public PandionJFigure<?> addObject(IEntityModel e) {
 		PandionJFigure<?> fig = getDeepChild(e);
@@ -98,7 +97,6 @@ public class ObjectContainer extends Figure {
 				while(it.hasNext()) {
 					Integer i = it.next();
 					add2dElement(fig, a, i, container2d);
-				
 				}
 				add(ext);
 			}

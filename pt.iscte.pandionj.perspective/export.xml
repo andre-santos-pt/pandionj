@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project default="zip" name="build">
+	<property name="dir" value="/Users/andresantos/Desktop"/>
+	<property name="pluginsdir" value="${dir}/plugins"/>
+	
+	<target name="plugin_export">
+			<pde.exportPlugins destination="${dir}" exportSource="true" exportSourceBundle="false" exportType="directory" filename="pandionj-plugin.zip" plugins="pt.iscte.pandionj,pt.iscte.pandionj.launcher,pt.iscte.pandionj.perspective" useJARFormat="false"/>
+	</target>
+
+	<target name="zip">
+		<!--
+		<delete dir="${pluginsdir}"/>
+		<waitfor maxwait="30" maxwaitunit="second">
+		    <available file="${pluginsdir}"/>
+		</waitfor>
+		-->
+		
+		<zip destfile="${dir}/pandionj-plugins.zip">
+		 	<zipfileset dir="${pluginsdir}"/>
+		   
+			<!--<zipfileset dir="${pluginsdir}" includes="*.jar"/>-->
+		</zip>
+	</target>
+	
+	
+</project>

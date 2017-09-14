@@ -63,7 +63,6 @@ public class StackFrameFigure extends Figure {
 		}
 		
 		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
-//		System.out.println(frame.getStackVariables());
 		for (IVariableModel<?> v : frame.getStackVariables()) {
 			addVariable(v, exception);
 		}

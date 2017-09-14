@@ -326,7 +326,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			if(value.getReferenceTypeName().equals(String.class.getName()))
 				return "\"" + value.getValueString() + "\"";
 
-			if(value instanceof IJavaObject) { // FIXME bug
+			if(value instanceof IJavaObject) {
 				if(((IJavaObject) value).isNull())
 					return "null";
 				else

@@ -7,7 +7,7 @@ public class ResumeCommand extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Activator.resume();
+		Activator.resume(event);
 		return null;
 	}
 

@@ -14,7 +14,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
@@ -27,8 +26,6 @@ import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
-import com.google.common.hash.HashCode;
-
 import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
@@ -40,13 +37,13 @@ public interface PandionJUI {
 		void invoke(String expression);
 	}
 
-	static void promptInvocation(IMethod m, InvocationAction a) {
+	static void promptInvocation(IFile file, IMethod m, InvocationAction a) {
 		PandionJView view = PandionJView.getInstance();
 		if(view == null)
 			view = openViewDialog();
 
 		if(view != null && m.getNumberOfParameters() != 0)
-			view.promptInvocation(m, a);
+			view.promptInvocation(file, m, a);
 	}
 
 	static PandionJView openViewDialog() {
@@ -69,6 +66,10 @@ public interface PandionJUI {
 	}
 	
 	static void activateEditor() {
+		PandionJView instance = PandionJView.getInstance();
+		if(instance != null)
+			instance.setFocus();
+//		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(instance);
 //		IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 //		IViewReference viewRef = activePage.findViewReference(Constants.VIEW_ID);
 //		viewRef.getPart(false).getSite().getSelectionProvider().setSelection(StructuredSelection.EMPTY);

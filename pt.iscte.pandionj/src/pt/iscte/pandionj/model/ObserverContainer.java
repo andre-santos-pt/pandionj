@@ -30,7 +30,7 @@ class ObserverContainer<A> {
 	public void notifyObservers(A arg) {
 		if (!changed)
 			return;
-
+		
 		for(ModelObserver<A> o : obs)
 			o.update(arg);
 

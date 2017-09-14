@@ -1,5 +1,6 @@
 package pt.iscte.pandionj;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
@@ -30,11 +31,17 @@ public class StaticInvocationWidget extends Composite {
 	private IMethod method;
 	private Combo[] paramBoxes; 
 	private String[] parameterTypes;
-
-
-	public StaticInvocationWidget(Composite parent, IMethod method, InvocationAction action) {
-		super(parent, SWT.NONE);
+	private InvocationArea invArea;
+	private IFile file;
+	private long fileStamp;
+	
+	public StaticInvocationWidget(InvocationArea invArea, IFile file, IMethod method, InvocationAction action) {
+		super(invArea, SWT.NONE);
+		this.invArea = invArea;
 		this.method = method;
+		this.file = file;
+		this.fileStamp = file.getModificationStamp();
+		
 		methodName = method.getElementName();
 		parameterTypes = method.getParameterTypes();
 
@@ -91,14 +98,14 @@ public class StaticInvocationWidget extends Composite {
 			//					combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
 			//				}
 			//			});
-			combo.addSelectionListener(new SelectionAdapter() {
-				public void widgetDefaultSelected(SelectionEvent e) {
-					invokeOrNext(action, ii);
-				}
-			});
+//			combo.addSelectionListener(new SelectionAdapter() {
+//				public void widgetDefaultSelected(SelectionEvent e) {
+//					invokeOrNext(action, ii);
+//				}
+//			});
 		}
 		org.eclipse.swt.widgets.Label close = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
-		FontManager.setFont(close, Constants.MESSAGE_FONT_SIZE);
+		FontManager.setFont(close, Constants.VAR_FONT_SIZE);
 		close.setText(")");
 	}
 
@@ -109,11 +116,15 @@ public class StaticInvocationWidget extends Composite {
 					if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
 						paramBoxes[i].add(paramBoxes[i].getText());
 			}
-			action.invoke(getInvocationExpression());
+			if(fileStamp == file.getModificationStamp())
+				action.invoke(getInvocationExpression());
+			else
+				invArea.setBlank();
 		}
 	}
 
-	public void refreshItems() {
+	public void refreshItems(IFile file) {
+		fileStamp = file.getModificationStamp();
 		for(int i = 0; i < paramBoxes.length; i++)
 			addCombovalues(paramBoxes[i], parameterTypes[i]);
 	}

@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="pt.iscte.pandionj.perspective.IsctePerspective"
+            fixed="true"
+            icon="icons/pandionj.gif"
+            id="pt.iscte.pandionj.perspective"
+            name="PandionJ">
+         <description>
+            Pedagogical perspective to use PandionJ. Several commands of the regular Eclipse toolbar become hidden.
+         </description>
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <wizard
+            class="pt.iscte.pandionj.perspective.wizards.NewFileWizard"
+            icon="icons/javafile.gif"
+            id="pt.iscte.perspective.wizards.NewFileWizard"
+            name="New Java File"
+            project="false">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.jdt.ui.PackageExplorer">
+         <command
+               commandId="pt.iscte.perspective.newfile"
+               icon="icons/javafile.gif"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+  
+  
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="NewJavaFileCommand"
+            id="pt.iscte.perspective.newfile"
+            name="New Java file">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="*">
+         <hiddenMenuItem
+               id="org.eclipse.ui.run">
+         </hiddenMenuItem>
+         
+         <hiddenMenuItem
+               id="org.eclipse.search.menu">
+         </hiddenMenuItem>
+         
+           <hiddenMenuItem
+               id="org.eclipse.search.menu">
+         </hiddenMenuItem>
+         
+         
+         
+         
+         <hiddenToolBarItem
+               id="org.eclipse.debug.ui.main.toolbar">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.userstorage.accounts">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.search.searchActionSet">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.ui.edit.text.gotoPreviousAnnotation">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.oomph.setup.toolbar">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.oomph.ui.toolbars.offline">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.jdt.ui.JavaActionSet">
+         </hiddenToolBarItem>
+         
+         <hiddenToolBarItem
+               id="org.eclipse.debug.ui.launchActionSet">
+         </hiddenToolBarItem>
+        
+         <hiddenToolBarItem
+               id="org.eclipse.debug.ui.main.toolbar">
+         </hiddenToolBarItem>    
+         
+         
+         <hiddenToolBarItem
+               id="org.eclipse.ui.edit.text.toggleShowWhitespaceCharacters">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.ui.edit.text.toggleBlockSelectionMode">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.ui.edit.text.toggleWordWrap">
+         </hiddenToolBarItem>
+         <hiddenToolBarItem
+               id="org.eclipse.ui.edit.text.toggleShowWhitespaceCharacters">
+         </hiddenToolBarItem>
+         
+         
+          <hiddenToolBarItem
+               id="org.eclipse.ui.edit.text.actionSet.annotationNavigation">
+         </hiddenToolBarItem>
+          <hiddenToolBarItem
+                id="org.eclipse.ui.externaltools.ExternalToolMenuDelegateToolbar">
+          </hiddenToolBarItem>
+          
+          <hiddenToolBarItem
+                id="org.eclipse.jdt.ui.edit.text.java.toggleMarkOccurrences">
+          </hiddenToolBarItem>
+         
+           <hiddenToolBarItem
+                id="org.eclipse.jdt.ui.edit.text.java.toggleBreadcrumb">
+          </hiddenToolBarItem>
+         
+            <hiddenToolBarItem
+                id="org.eclipse.jdt.ui.navigate.open.type">
+          </hiddenToolBarItem>
+          
+            <hiddenToolBarItem
+                id="org.eclipse.mylyn.tasks.ui.command.openTask">
+          </hiddenToolBarItem>
+          
+            <hiddenToolBarItem
+                id="org.eclipse.search.OpenSearchDialogPage">
+          </hiddenToolBarItem>
+        
+        
+        
+          <hiddenToolBarItem
+                id="org.eclipse.ui.navigate.previous">
+          </hiddenToolBarItem>
+          
+            <hiddenToolBarItem
+                id="org.eclipse.ui.navigate.next">
+          </hiddenToolBarItem>
+          
+            <hiddenToolBarItem
+                id="org.eclipse.ui.edit.text.gotoLastEditPosition">
+          </hiddenToolBarItem>
+          
+           <hiddenToolBarItem
+                id="org.eclipse.debug.internal.ui.actions.RunDropDownAction">
+          </hiddenToolBarItem>
+         
+          <hiddenToolBarItem
+                id="org.eclipse.debug.internal.ui.actions.DebugDropDownAction">
+          </hiddenToolBarItem>
+         
+            <hiddenToolBarItem
+                id="org.eclipse.mylyn.java.ui.editor.folding.auto">
+          </hiddenToolBarItem>
+         
+         
+      </perspectiveExtension>
+   </extension>
+   
+
+   
+   
+   
+   
+
+  
+
+</plugin>

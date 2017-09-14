@@ -7,7 +7,7 @@ public class StepReturnCommand extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		Activator.stepReturn();
+		Activator.stepReturn(event);
 		return null;
 	}
 
@@ -15,6 +15,4 @@ public class StepReturnCommand extends AbstractHandler {
 	public boolean isEnabled() {
 		return Activator.isExecutingLaunch();
 	}
-
-
 }

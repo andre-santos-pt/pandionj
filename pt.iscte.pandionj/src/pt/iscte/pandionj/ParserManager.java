@@ -69,4 +69,8 @@ public class ParserManager {
 		
 		return tagParser.getTags(varName, line, isField);
 	}
+	
+	public static long getStamp(IFile file) {
+		return modStamps.get(file);
+	}
 }

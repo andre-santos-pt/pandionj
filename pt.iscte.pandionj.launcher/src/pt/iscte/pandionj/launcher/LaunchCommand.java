@@ -9,6 +9,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -63,9 +64,14 @@ public class LaunchCommand extends AbstractHandler {
 		IWorkbenchPage page = window.getActivePage();
 		IEditorPart editor = page.getActiveEditor();
 		IEditorInput input = editor.getEditorInput();
-		return input instanceof FileEditorInput && input.getName().endsWith(".java");
+		return !Activator.isExecutingLaunch() && input instanceof FileEditorInput && input.getName().endsWith(".java");
 	}
 
+	@Override
+	public void setEnabled(Object evaluationContext) {
+		setBaseEnabled(isEnabled());
+	}
+	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		String param = event.getParameter(RUN_LAST_PARAM_ID);
@@ -88,7 +94,7 @@ public class LaunchCommand extends AbstractHandler {
 				IEditorPart editor = page.getActiveEditor();
 				IEditorInput input = editor.getEditorInput();
 				IPath path = ((FileEditorInput)input).getPath();
-				IResource file =  ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+				IFile file =  ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
 				IJavaProject javaProj = JavaCore.create(file.getProject());
 				IPath p = file.getProjectRelativePath();
 
@@ -151,7 +157,7 @@ public class LaunchCommand extends AbstractHandler {
 											launch(file, lineFinal, firstType, args, mainMethod);
 									}
 									else {
-										PandionJUI.promptInvocation(selectedMethod, new InvocationAction() {
+										PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
 											@Override
 											public void invoke(String expression) {
 												args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\"");
