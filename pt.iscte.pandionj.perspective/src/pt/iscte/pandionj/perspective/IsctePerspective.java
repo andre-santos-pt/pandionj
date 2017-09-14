@@ -28,7 +28,6 @@ public class IsctePerspective implements IPerspectiveFactory {
 		prefs.put("org.eclipse.debug.ui.switch_perspective_on_suspend", "never");
 		IEclipsePreferences prefsUi = InstanceScope.INSTANCE.getNode("org.eclipse.ui.ide");
 		prefsUi.put("SWITCH_PERSPECTIVE_ON_PROJECT_CREATION", "never");
-//		prefsUi.put("org.eclipse.ui.ide.switch_perspective_on_project_creation", "never");
 	
 		IEclipsePreferences prefsJdt = InstanceScope.INSTANCE.getNode("org.eclipse.jdt.ui");
 		prefsJdt.put("hoverModifiers", " org.eclipse.jdt.ui.BestMatchHover;!0;org.eclipse.jdt.internal.debug.ui.JavaDebugHover;!0;org.eclipse.jdt.ui.ProblemHover;!0;org.eclipse.jdt.ui.NLSStringHover;Command+Alt;org.eclipse.jdt.ui.JavadocHover;Command+Shift;org.eclipse.jdt.ui.AnnotationHover;!0;org.eclipse.jdt.ui.JavaSourceHover;Shift;");
@@ -55,6 +54,9 @@ public class IsctePerspective implements IPerspectiveFactory {
 		prefsJdt.put("smart_opening_brace", "false");
 		prefsJdt.put("content_assist_fill_method_arguments", "false");
 		prefsJdt.put("editor_folding_enabled", "false");
+
+		IEclipsePreferences prefsWb = InstanceScope.INSTANCE.getNode("org.eclipse.ui.workbench");
+		prefsWb.put("org.eclipse.debug.ui.consoleFont","1|Monaco|14.0|0|COCOA|1|Monaco");
 
 		
 	}

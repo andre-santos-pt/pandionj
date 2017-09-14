@@ -20,6 +20,7 @@ import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.PrimitiveType;
@@ -107,6 +108,9 @@ public class StaticInvocationWidget extends Composite {
 		org.eclipse.swt.widgets.Label close = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
 		FontManager.setFont(close, Constants.VAR_FONT_SIZE);
 		close.setText(")");
+		Label info = new Label(this, SWT.NONE);
+		info.setText(Constants.Messages.PRESS_TO_INVOKE);
+		info.setForeground(Constants.Colors.CONSTANT);
 	}
 
 	private void invokeOrNext(InvocationAction action, int i) {

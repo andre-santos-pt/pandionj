@@ -76,9 +76,4 @@ public class FileInputDialog extends Dialog {
 		return value;
 	}
 
-	public static void main(String[] args) {
-		Shell shell = new Shell();
-		FileInputDialog dialog = new FileInputDialog(shell);
-		System.out.println(dialog.open());
-	}
 }

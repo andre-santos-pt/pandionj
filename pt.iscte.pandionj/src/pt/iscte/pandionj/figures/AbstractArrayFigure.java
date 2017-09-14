@@ -53,7 +53,7 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		fig.setToolTip(new Label("length = " + model.getLength()));
 		if(N == 0) {
 			Label empty = new Label("");
-			GridData layoutData = new GridData(POSITION_WIDTH, POSITION_WIDTH+20);
+			GridData layoutData = new GridData(POSITION_WIDTH/2, POSITION_WIDTH);
 			layout.setConstraint(empty, layoutData);
 			fig.add(empty);
 		}

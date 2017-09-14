@@ -25,9 +25,7 @@ public class NewJavaFileCommand extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-//		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
 		ISelection selection = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService().getSelection();
-		System.out.println(selection);
 		
 		IProject proj = (IProject) ((IStructuredSelection) selection).getFirstElement();
 		FileInputDialog dialog = new FileInputDialog(Display.getDefault().getActiveShell());

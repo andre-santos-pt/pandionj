@@ -188,7 +188,7 @@ public class RuntimeViewer extends Composite {
 
 	
 	private void addMenu() {
-		Menu menu = new Menu(this);
+		Menu menu = new Menu(canvas);
 		MenuItem item = new MenuItem(menu, SWT.PUSH);
 		item.setText(Constants.Messages.COPY_CLIPBOARD);
 		item.setImage(PandionJUI.getImage("clipboard.gif"));
@@ -198,7 +198,7 @@ public class RuntimeViewer extends Composite {
 				copyToClipBoard();
 			}
 		});
-		setMenu(menu);
+		canvas.setMenu(menu);
 	}
 
 

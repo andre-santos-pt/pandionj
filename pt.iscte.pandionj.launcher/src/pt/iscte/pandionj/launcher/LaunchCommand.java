@@ -63,6 +63,9 @@ public class LaunchCommand extends AbstractHandler {
 		IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
 		IWorkbenchPage page = window.getActivePage();
 		IEditorPart editor = page.getActiveEditor();
+		if(editor == null)
+			return false;
+		
 		IEditorInput input = editor.getEditorInput();
 		return !Activator.isExecutingLaunch() && input instanceof FileEditorInput && input.getName().endsWith(".java");
 	}
