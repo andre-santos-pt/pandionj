@@ -5,12 +5,17 @@
          point="org.eclipse.ui.views">
       <view
             allowMultiple="false"
+            category="pt.iscte.pandionj.category"
             class="pt.iscte.pandionj.PandionJView"
             icon="images/pandionj.gif"
             id="pt.iscte.pandionj.view"
             name="PandionJ"
             restorable="true">
       </view>
+      <category
+            id="pt.iscte.pandionj.category"
+            name="PandionJ">
+      </category>
    </extension>
    <extension
          point="org.eclipse.ui.contexts">

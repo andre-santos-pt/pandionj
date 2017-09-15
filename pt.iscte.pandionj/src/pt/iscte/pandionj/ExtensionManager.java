@@ -13,6 +13,7 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.jdt.core.IType;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -117,6 +118,7 @@ public class ExtensionManager {
 			});
 
 			compositeFig = new Figure();
+			compositeFig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 			compositeFig.setLayoutManager(new FlowLayout());
 			for (Entry<String, Collection<String>> e : tags.asMap().entrySet())
 				addChildFigures(m, e.getKey());

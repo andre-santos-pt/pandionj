@@ -92,7 +92,7 @@
             commandId="pt.iscte.pandionj.launcher.run"
             contextId="org.eclipse.ui.textEditorScope"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
-            sequence="M1+Y">
+            sequence="M1+U">
          <parameter
                id="pt.iscte.pandionj.launcher.runParameter"
                value="true">

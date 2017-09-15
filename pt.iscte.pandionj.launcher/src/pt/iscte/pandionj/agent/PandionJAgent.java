@@ -17,14 +17,16 @@ public class PandionJAgent {
 
 	private static String className;
 	private static String expression;
-
+	private static String methodSig;
+	
 	public static void premain(String agentArgs, Instrumentation inst) {
 		String[] split = agentArgs.split(";");
-		if(split.length != 2)
+		if(split.length != 3)
 			className = agentArgs;
 		else {
 			className = split[0];
 			expression = split[1];
+			methodSig = split[2];
 		}
 
 		int i = expression.indexOf("(");	
@@ -36,23 +38,25 @@ public class PandionJAgent {
 					try {
 						ClassPool cp = ClassPool.getDefault();
 						CtClass cc = cp.get(s.replace('/','.'));
-						CtMethod[] methods = cc.getDeclaredMethods();
-						CtClass retType = null;
-						boolean multiple = false;
-						for(CtMethod m : methods) {
-							if(!m.isEmpty() && m.getName().equals(expMethod) && m.getMethodInfo().isMethod() && !m.getReturnType().equals(CtClass.voidType)) {
-								if(retType != null)
-									multiple = true;
-								retType = m.getReturnType();
-							}
-						}
-						if(multiple)
-							retType = null;
+//						CtMethod[] methods = cc.getDeclaredMethods();
+						CtMethod method = cc.getMethod(expMethod, methodSig);
+						CtClass retType = method.getReturnType();
+//						boolean multiple = false;
+//						for(CtMethod m : methods) {
+//							System.out.println(m.getSignature());
+//							if(!m.isEmpty() && m.getName().equals(expMethod) && m.getMethodInfo().isMethod() && !m.getReturnType().equals(CtClass.voidType)) {
+//								if(retType != null)
+//									multiple = true;
+//								retType = m.getReturnType();
+//							}
+//						}
+//						if(multiple)
+//							retType = null;
 
 						try {
 							// check if real main method exists
-							CtMethod method = cc.getMethod("main", "([Ljava/lang/String;)V");
-							int mod = method.getModifiers();
+							CtMethod mainMethod = cc.getMethod("main", "([Ljava/lang/String;)V");
+							int mod = mainMethod.getModifiers();
 							if(!Modifier.isPublic(mod) || !Modifier.isStatic(mod))
 								throw new NotFoundException("dummy");
 
@@ -62,13 +66,11 @@ public class PandionJAgent {
 							CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
 							cc.addMethod(m); 
 
-							if(retType == null) {
+							if(retType.equals(CtClass.voidType)) {
 								m.insertAfter(expression + ";");
 							}
 							else if(retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
 								String inst = "System.out.println(\"" + expression + " = \" + java.util.Arrays.toString((" + retType.getComponentType().getName() +"[])" + expression + "));";
-								//								String inst = "Object[] __ret__ = (Object[])$_;";
-								//								System.out.println(inst);
 								m.insertAfter(inst);
 							}
 							else if(retType.isArray() && getNDims(retType) == 2) {
@@ -87,8 +89,6 @@ public class PandionJAgent {
 								String inst = "System.out.println(\"" + expression + " = \" + " + expression + ");";
 								m.insertAfter(inst);
 							}
-
-							//								m.insertAfter(fieldName + " = $_;");
 
 							byte[] byteCode = cc.toBytecode();	
 							cc.detach();

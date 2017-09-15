@@ -54,7 +54,7 @@ import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 public class LaunchCommand extends AbstractHandler {
 	public static final String RUN_LAST_PARAM_ID = "pt.iscte.pandionj.launcher.runParameter";
 
-//	private IJavaLineBreakpoint breakPoint;
+	//	private IJavaLineBreakpoint breakPoint;
 	private String args;
 
 	@Override
@@ -65,7 +65,7 @@ public class LaunchCommand extends AbstractHandler {
 		IEditorPart editor = page.getActiveEditor();
 		if(editor == null)
 			return false;
-		
+
 		IEditorInput input = editor.getEditorInput();
 		return !Activator.isExecutingLaunch() && input instanceof FileEditorInput && input.getName().endsWith(".java");
 	}
@@ -74,7 +74,7 @@ public class LaunchCommand extends AbstractHandler {
 	public void setEnabled(Object evaluationContext) {
 		setBaseEnabled(isEnabled());
 	}
-	
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		String param = event.getParameter(RUN_LAST_PARAM_ID);
@@ -124,6 +124,7 @@ public class LaunchCommand extends AbstractHandler {
 
 					IMethod mainMethod = firstType.getMethod("main", new String[] {"[QString;"});
 
+					// normal main()
 					if(mainMethod.exists() && mainMethod.isMainMethod() && PandionJUI.checkView()) {
 						launch(file, line, firstType, agentArgs, mainMethod);
 					}
@@ -132,7 +133,7 @@ public class LaunchCommand extends AbstractHandler {
 						for (IInitializer init : firstType.getInitializers()) {
 							ISourceRange sourceRange = init.getSourceRange();
 							if(offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength()) {							
-								launch(file, line, firstType, "", mainMethod);
+								launch(file, line, firstType, "", mainMethod); // FIXME estoira
 								launchInit = true;
 								break;
 							}
@@ -154,16 +155,18 @@ public class LaunchCommand extends AbstractHandler {
 								return null;
 							}
 							else {
-								if(selectedMethod.getParameterTypes().length != 0) {
-									if(last && args != null) {
-										if(PandionJUI.checkView())
-											launch(file, lineFinal, firstType, args, mainMethod);
-									}
-									else {
+								// run last
+								if(last && args != null) {
+									if(PandionJUI.checkView())
+										launch(file, lineFinal, firstType, args, mainMethod);
+								}
+								else {
+									String methodSig = selectedMethod.getSignature();
+									if(selectedMethod.getParameterTypes().length != 0) {
 										PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
 											@Override
 											public void invoke(String expression) {
-												args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\"");
+												args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\"") + ";" + methodSig;
 												try {
 													launch(file, lineFinal, firstType, args, mainMethod);
 												} catch (CoreException e) {
@@ -172,16 +175,17 @@ public class LaunchCommand extends AbstractHandler {
 											}
 										});
 									}
-								} 
-								else {
-									if(PandionJUI.checkView())
-										launch(file, line, firstType, agentArgs + ";" + selectedMethod.getElementName() + "()", mainMethod);
+									else {  // no params
+										if(PandionJUI.checkView())
+											launch(file, line, firstType, agentArgs + ";" + selectedMethod.getElementName() + "()" + ";" + methodSig, mainMethod);
+									}
 								}
 							}
 						}
 					}
 				}
-			} catch (CoreException e) {
+			}
+			catch (CoreException e) {
 				e.printStackTrace();
 			}
 		}
@@ -197,12 +201,12 @@ public class LaunchCommand extends AbstractHandler {
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, firstType.getFullyQualifiedName());
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
 
-//		if(breakPoint != null)
-//			breakPoint.delete();
-//
-//		// TODO remove?
-//		if(line != -1)
-//			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
+		//		if(breakPoint != null)
+		//			breakPoint.delete();
+		//
+		//		// TODO remove?
+		//		if(line != -1)
+		//			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
 
 		try {	
 			Bundle bundle = Platform.getBundle(LaunchCommand.class.getPackage().getName());

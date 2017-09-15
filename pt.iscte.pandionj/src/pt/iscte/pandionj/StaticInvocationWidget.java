@@ -1,7 +1,6 @@
 package pt.iscte.pandionj;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.runtime.content.IContentDescriber;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
@@ -9,13 +8,10 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -26,7 +22,7 @@ import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.PrimitiveType;
 
 public class StaticInvocationWidget extends Composite {
-	private static final Color ERROR_BOX = new Color(null, 200, 0, 0);
+	private static final Color ERROR_BOX = new Color(null, 220, 195, 195);
 
 	private String methodName;
 	private IMethod method;
@@ -35,14 +31,14 @@ public class StaticInvocationWidget extends Composite {
 	private InvocationArea invArea;
 	private IFile file;
 	private long fileStamp;
-	
+
 	public StaticInvocationWidget(InvocationArea invArea, IFile file, IMethod method, InvocationAction action) {
 		super(invArea, SWT.NONE);
 		this.invArea = invArea;
 		this.method = method;
 		this.file = file;
 		this.fileStamp = file.getModificationStamp();
-		
+
 		methodName = method.getElementName();
 		parameterTypes = method.getParameterTypes();
 
@@ -57,6 +53,9 @@ public class StaticInvocationWidget extends Composite {
 		label.setText(method.getElementName() + " (");
 
 		paramBoxes = new Combo[method.getNumberOfParameters()];
+		FillLayout fillLayout = new FillLayout();
+		fillLayout.marginWidth = 3;
+		fillLayout.marginHeight = 3;
 		for(int i = 0; i < parameterTypes.length; i++) {
 			if(i != 0) {
 				org.eclipse.swt.widgets.Label comma = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
@@ -64,11 +63,13 @@ public class StaticInvocationWidget extends Composite {
 				comma.setText(", ");
 			}
 			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
-			Combo combo = new Combo(this, SWT.DROP_DOWN);
+			Composite comboComp = new Composite(this, SWT.NONE);
+			comboComp.setLayout(fillLayout);
+			Combo combo = new Combo(comboComp, SWT.DROP_DOWN);
 			combo.setToolTipText(pType);
 			FontManager.setFont(combo, Constants.MESSAGE_FONT_SIZE);
 			int comboWidth = pType.equals(String.class.getSimpleName()) ? Constants.COMBO_STRING_WIDTH : Constants.COMBO_WIDTH; 
-			combo.setLayoutData(new RowData(comboWidth, SWT.DEFAULT));
+			comboComp.setLayoutData(new RowData(comboWidth, SWT.DEFAULT));
 
 			addCombovalues(combo, parameterTypes[i]);
 
@@ -78,53 +79,37 @@ public class StaticInvocationWidget extends Composite {
 			paramBoxes[i] = combo;
 
 			int ii = i;
-			combo.addFocusListener(new FocusAdapter() {
-				public void focusLost(FocusEvent e) {
-					combo.setBackground(valid(combo, pType) ? null : ERROR_BOX);
-				}
-			});
 			combo.addKeyListener(new KeyAdapter() {
 				public void keyPressed(KeyEvent e) {
-					if(e.keyCode == SWT.CR) {
+					if((e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) && allValid()) {
 						invokeOrNext(action, ii);
 					}
-					//					else
-					//						combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
+				}
+				@Override
+				public void keyReleased(KeyEvent e) {
+					boolean valid = valid(combo, pType);
+					combo.getParent().setBackground(valid ? null : ERROR_BOX);
 				}
 			});
-			//			combo.addVerifyListener(new VerifyListener() {
-			//
-			//				@Override
-			//				public void verifyText(VerifyEvent e) {
-			//					combo.setBackground(valid(combo, pType) ? null : Constants.Colors.ERROR);
-			//				}
-			//			});
-//			combo.addSelectionListener(new SelectionAdapter() {
-//				public void widgetDefaultSelected(SelectionEvent e) {
-//					invokeOrNext(action, ii);
-//				}
-//			});
 		}
 		org.eclipse.swt.widgets.Label close = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
 		FontManager.setFont(close, Constants.VAR_FONT_SIZE);
 		close.setText(")");
 		Label info = new Label(this, SWT.NONE);
-		info.setText(Constants.Messages.PRESS_TO_INVOKE);
+		info.setText("         " + Constants.Messages.PRESS_TO_INVOKE);
 		info.setForeground(Constants.Colors.CONSTANT);
 	}
 
 	private void invokeOrNext(InvocationAction action, int i) {
-		if(allValid()) {
-			for(int j = 0; j < paramBoxes.length; j++) {
-				if(PrimitiveType.isPrimitiveSig(parameterTypes[i]))
-					if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
-						paramBoxes[i].add(paramBoxes[i].getText());
-			}
-			if(fileStamp == file.getModificationStamp())
-				action.invoke(getInvocationExpression());
-			else
-				invArea.setBlank();
+		for(int j = 0; j < paramBoxes.length; j++) {
+			if(PrimitiveType.isPrimitiveSig(parameterTypes[i]))
+				if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
+					paramBoxes[i].add(paramBoxes[i].getText());
 		}
+		if(fileStamp == file.getModificationStamp())
+			action.invoke(getInvocationExpression());
+		else
+			invArea.setBlank();
 	}
 
 	public void refreshItems(IFile file) {
@@ -135,7 +120,6 @@ public class StaticInvocationWidget extends Composite {
 
 	private void addCombovalues(Combo combo, String paramType) {
 		if(!PrimitiveType.isPrimitiveSig(paramType)) {
-			int i = combo.getSelectionIndex();
 			String sel = combo.getText();
 			combo.removeAll();
 			combo.add("null");
@@ -150,7 +134,9 @@ public class StaticInvocationWidget extends Composite {
 			} catch (JavaModelException e1) {
 				e1.printStackTrace();
 			}
-			if(sel != null)
+			if(sel.isEmpty())
+				combo.select(0);
+			else
 				combo.setText(sel);
 		}
 	}
@@ -164,13 +150,11 @@ public class StaticInvocationWidget extends Composite {
 	}
 
 
-	// TODO review bugs
 	private boolean allValid() {
 		String[] parameterTypes = method.getParameterTypes();
 		boolean allValid = true;
 		for(int i = 0; i < paramBoxes.length; i++) {
 			boolean v = valid(paramBoxes[i], Signature.getSignatureSimpleName(parameterTypes[i]));
-			paramBoxes[i].setBackground(v ? null : Constants.Colors.ERROR);
 			if(!v)
 				allValid = false;
 		}

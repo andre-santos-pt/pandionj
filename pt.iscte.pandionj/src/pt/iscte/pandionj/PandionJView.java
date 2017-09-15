@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -89,6 +90,18 @@ public class PandionJView extends ViewPart {
 	}
 
 
+//	private static class InitPanel extends Composite {
+//
+//	public InitPanel(Composite parent) {
+//		super(parent, SWT.NONE);
+//		labelInit = new Label(labelComposite, SWT.WRAP);
+//		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);
+//		labelInit.setText(Constants.Messages.START);
+//		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+//	}
+//		
+//	}
+	
 	private void createWidgets(Composite parent) {
 		stackLayout = new StackLayout();
 		stackLayout.marginHeight = 0;
@@ -97,6 +110,13 @@ public class PandionJView extends ViewPart {
 		parent.setBackground(Constants.Colors.VIEW_BACKGROUND);
 
 		Composite labelComposite = new Composite(parent, SWT.BORDER);
+		Image image = PandionJUI.getImage("logo_small.jpg");
+		Label imageLabel = new Label(labelComposite, SWT.NONE);
+		imageLabel.setImage(image);
+		imageLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+		String toolTipVersion = "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
+		imageLabel.setToolTipText(toolTipVersion);
+		
 		labelComposite.setLayout(new GridLayout());
 		labelInit = new Label(labelComposite, SWT.WRAP);
 		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);
@@ -108,11 +128,14 @@ public class PandionJView extends ViewPart {
 		runtimeView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
 		invocationArea = new InvocationArea(parent);
-		setTitleToolTip(getVersion());
+		
+		setToolTipVersion();
 	}
 
-	static String getVersion() {
-		return "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
+	private void setToolTipVersion() {
+		String toolTipVersion = "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
+		setTitleToolTip(toolTipVersion);
+		labelInit.setToolTipText(toolTipVersion);
 	}
 
 	@Override

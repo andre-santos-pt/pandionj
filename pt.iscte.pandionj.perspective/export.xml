@@ -7,6 +7,8 @@
 			<pde.exportPlugins destination="${dir}" exportSource="true" exportSourceBundle="false" exportType="directory" filename="pandionj-plugin.zip" plugins="pt.iscte.pandionj,pt.iscte.pandionj.launcher,pt.iscte.pandionj.perspective" useJARFormat="false"/>
 	</target>
 
+	<!-- TODO execute agent.jar build -->
+	
 	<target name="zip">
 		<!--
 		<delete dir="${pluginsdir}"/>

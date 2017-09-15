@@ -99,7 +99,7 @@ public interface Constants {
 		String TRASH = "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.";
 		String RUN_DIALOG = "Do you want to open PandionJ view?";
 		String COPY_CLIPBOARD = "Copy image to clipboard";
-		String PRESS_TO_INVOKE = "Press Enter do execute";
+		String PRESS_TO_INVOKE = "press Enter do execute";
 	}
 	
 

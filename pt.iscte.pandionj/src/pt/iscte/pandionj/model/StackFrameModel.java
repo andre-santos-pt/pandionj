@@ -25,7 +25,6 @@ import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
-import pt.iscte.pandionj.extensibility.IRuntimeModel.Event.Type;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VarParser;
@@ -224,7 +223,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 				setChanged();
 				notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE, newVar));
-//				System.out.println("notify " + newVar);
 			}
 		}
 	}

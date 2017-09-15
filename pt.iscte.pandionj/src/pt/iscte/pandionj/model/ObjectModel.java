@@ -62,7 +62,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	public ObjectModel(IJavaObject object, IType type, RuntimeModel runtime) {
 		super(object, runtime);
-		assert type != null : object.toString();
+		assert type != null : object.toString(); // FIXME java.lang.AssertionError: sun.instrument.InstrumentationImpl (id=23)
 		jType = type;
 		init(object);
 	}
