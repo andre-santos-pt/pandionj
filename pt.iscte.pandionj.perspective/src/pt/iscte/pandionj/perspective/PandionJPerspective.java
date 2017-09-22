@@ -6,7 +6,6 @@ import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.IConsoleConstants;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.internal.WorkbenchWindow;
 
 
@@ -23,7 +22,6 @@ public class PandionJPerspective implements IPerspectiveFactory {
 		factory.setEditorAreaVisible(true);
 		factory.setFixed(true);
 		
-	
 		factory.addStandaloneView("org.eclipse.jdt.ui.PackageExplorer", false, IPageLayout.LEFT, 0.15f, factory.getEditorArea());
 		factory.addView("pt.iscte.pandionj.view", IPageLayout.RIGHT, 0.5f, factory.getEditorArea());
 		factory.addStandaloneView(IConsoleConstants.ID_CONSOLE_VIEW, false, IPageLayout.BOTTOM, 0.8f, "pt.iscte.pandionj.view");
