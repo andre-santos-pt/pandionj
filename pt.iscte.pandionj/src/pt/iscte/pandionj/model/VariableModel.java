@@ -96,7 +96,7 @@ implements IVariableModel<O> {
 	@Override
 	public boolean update(int step) {
 		try { // TODO ObjectCollectedException?
-			StepValue current = history.get(history.size()-1);
+			StepValue current = history.get(history.size()-1); // FIXME
 			boolean equals = variable.getValue().equals(current.value);
 			if(!equals) {
 				StepValue sv = new StepValue((T) variable.getValue(), step);

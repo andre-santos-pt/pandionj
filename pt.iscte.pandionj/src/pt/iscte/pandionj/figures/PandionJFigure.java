@@ -39,6 +39,10 @@ public class PandionJFigure<T extends IObservableModel<?>> extends Figure {
 		public Extension(IFigure innerFigure, IObservableModel<?> model) {
 			super(model, true);
 			this.innerFigure = innerFigure;
+			GridLayout layout = new GridLayout();
+			layout.marginWidth = OBJECT_PADDING;
+			layout.marginHeight = OBJECT_PADDING;
+			setLayoutManager(layout);
 			add(innerFigure);
 		}
 		
@@ -46,9 +50,10 @@ public class PandionJFigure<T extends IObservableModel<?>> extends Figure {
 			return innerFigure;
 		}
 		
-		public ConnectionAnchor getIncommingAnchor() {
-			return innerFigure instanceof PandionJFigure ? ((PandionJFigure<?>) innerFigure).getIncommingAnchor() : new ChopboxAnchor(innerFigure);
-		}
+//		public ConnectionAnchor getIncommingAnchor() {
+//			return new ChopboxAnchor(innerFigure);
+//			return innerFigure instanceof PandionJFigure ? ((PandionJFigure<?>) innerFigure).getIncommingAnchor() : new ChopboxAnchor(innerFigure);
+//		}
 	}
 	
 }

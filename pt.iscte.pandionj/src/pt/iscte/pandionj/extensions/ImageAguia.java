@@ -9,7 +9,8 @@ import org.eclipse.jdt.core.IType;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
-import pt.iscte.pandionj.extensions.GrayscaleImageWidget.ImageFig;
+import pt.iscte.pandionj.extensions.images.GrayscaleImageWidget;
+import pt.iscte.pandionj.extensions.images.GrayscaleImageWidget.ImageFig;
 import pt.iscte.pandionj.model.ModelObserver;
 
 public class ImageAguia implements IObjectWidgetExtension {

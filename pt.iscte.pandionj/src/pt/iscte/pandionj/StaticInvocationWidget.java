@@ -1,5 +1,6 @@
 package pt.iscte.pandionj;
 
+
 import org.eclipse.core.resources.IFile;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
@@ -10,9 +11,8 @@ import org.eclipse.jdt.core.Signature;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.layout.FillLayout;
-import org.eclipse.swt.layout.RowData;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -22,7 +22,6 @@ import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.PrimitiveType;
 
 public class StaticInvocationWidget extends Composite {
-	private static final Color ERROR_BOX = new Color(null, 220, 195, 195);
 
 	private String methodName;
 	private IMethod method;
@@ -31,6 +30,7 @@ public class StaticInvocationWidget extends Composite {
 	private InvocationArea invArea;
 	private IFile file;
 	private long fileStamp;
+	private Label info;
 
 	public StaticInvocationWidget(InvocationArea invArea, IFile file, IMethod method, InvocationAction action) {
 		super(invArea, SWT.NONE);
@@ -41,36 +41,47 @@ public class StaticInvocationWidget extends Composite {
 
 		methodName = method.getElementName();
 		parameterTypes = method.getParameterTypes();
-
+		String[] parameterNames = null;
+		try {
+			parameterNames = method.getParameterNames();
+		} catch (JavaModelException e1) {
+			e1.printStackTrace();
+		}
 		RowLayout rowLayout = new RowLayout();
+		rowLayout.spacing = 5;
 		rowLayout.marginTop = Constants.MARGIN;
 		rowLayout.marginLeft = Constants.MARGIN;
 
 		setLayout(rowLayout);
-		org.eclipse.swt.widgets.Label label = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
+		Label label = new Label(this, SWT.NONE);
 		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
 
 		label.setText(method.getElementName() + " (");
-
 		paramBoxes = new Combo[method.getNumberOfParameters()];
-		FillLayout fillLayout = new FillLayout();
+		GridLayout fillLayout = new GridLayout(1, false);
 		fillLayout.marginWidth = 3;
 		fillLayout.marginHeight = 3;
+		fillLayout.verticalSpacing = 1;
+		
 		for(int i = 0; i < parameterTypes.length; i++) {
 			if(i != 0) {
-				org.eclipse.swt.widgets.Label comma = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
-				FontManager.setFont(comma, Constants.MESSAGE_FONT_SIZE);
+				Label comma = new Label(this, SWT.NONE);
+				FontManager.setFont(comma, Constants.VAR_FONT_SIZE);
 				comma.setText(", ");
 			}
 			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
 			Composite comboComp = new Composite(this, SWT.NONE);
 			comboComp.setLayout(fillLayout);
 			Combo combo = new Combo(comboComp, SWT.DROP_DOWN);
-			combo.setToolTipText(pType);
-			FontManager.setFont(combo, Constants.MESSAGE_FONT_SIZE);
+			comboComp.setToolTipText(pType);
 			int comboWidth = pType.equals(String.class.getSimpleName()) ? Constants.COMBO_STRING_WIDTH : Constants.COMBO_WIDTH; 
-			comboComp.setLayoutData(new RowData(comboWidth, SWT.DEFAULT));
-
+			combo.setLayoutData(new GridData(comboWidth, SWT.DEFAULT));
+			
+			Label varName = new Label(comboComp, SWT.NONE);
+			varName.setText(parameterNames[i]);
+			FontManager.setFont(varName, Constants.MESSAGE_FONT_SIZE);
+			varName.setForeground(Constants.Colors.ROLE_ANNOTATIONS);
+			
 			addCombovalues(combo, parameterTypes[i]);
 
 			if(combo.getItemCount() == 0)
@@ -88,15 +99,18 @@ public class StaticInvocationWidget extends Composite {
 				@Override
 				public void keyReleased(KeyEvent e) {
 					boolean valid = valid(combo, pType);
-					combo.getParent().setBackground(valid ? null : ERROR_BOX);
+					combo.getParent().setBackground(valid ? null : Constants.Colors.ERROR);
+					varName.setForeground(valid ? Constants.Colors.ROLE_ANNOTATIONS : Constants.Colors.VIEW_BACKGROUND);
+					comboComp.setToolTipText(valid ? pType : pType + ": inserted value not compatible");
+					info.setVisible(allValid());
 				}
 			});
 		}
-		org.eclipse.swt.widgets.Label close = new org.eclipse.swt.widgets.Label(this, SWT.NONE);
+		Label close = new Label(this, SWT.NONE);
 		FontManager.setFont(close, Constants.VAR_FONT_SIZE);
 		close.setText(")");
-		Label info = new Label(this, SWT.NONE);
-		info.setText("         " + Constants.Messages.PRESS_TO_INVOKE);
+		info = new Label(this, SWT.NONE);
+		info.setText(Constants.Messages.PRESS_TO_INVOKE);
 		info.setForeground(Constants.Colors.CONSTANT);
 	}
 
@@ -106,8 +120,10 @@ public class StaticInvocationWidget extends Composite {
 				if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
 					paramBoxes[i].add(paramBoxes[i].getText());
 		}
-		if(fileStamp == file.getModificationStamp())
-			action.invoke(getInvocationExpression());
+		if(fileStamp == file.getModificationStamp()) {
+			String exp = getInvocationExpression();
+			action.invoke(exp);
+		}
 		else
 			invArea.setBlank();
 	}
@@ -250,6 +266,4 @@ public class StaticInvocationWidget extends Composite {
 		pack();
 		return true;
 	}
-
-
 }

@@ -114,7 +114,7 @@ public class IllustrationBorder implements Border {
 //			Point from = bounds.getLocation().getTranslated(pWidth/2 - textWidth/2, y - EXTRA + Constants.ARRAY_POSITION_SPACING*2);
 			Point from = getIndexLocation(i);
 			if(horizontal)
-				from.translate(textWidth/2, 0);
+				from.translate(-textWidth/2, 0);
 			else
 				from.translate(-Math.min(textWidth/2, Constants.POSITION_WIDTH_V), 0);
 					
@@ -134,7 +134,7 @@ public class IllustrationBorder implements Border {
 //			Point from = arrayFigure.getPositionBounds(i, horizontal).getLocation().getTranslated(0,  firstPositionBounds.height);
 			Point from = getIndexLocation(i);
 			if(horizontal)
-				from.translate(textWidth/2, 0);
+				from.translate(-textWidth/2, 0);
 			else
 				from.translate(-Math.min(textWidth/2, Constants.POSITION_WIDTH_V), -Constants.POSITION_WIDTH_V);
 			
@@ -156,7 +156,7 @@ public class IllustrationBorder implements Border {
 
 				if(boundVal != i && directionOK) {
 					int space = v.getDirection() == Direction.FORWARD ? ARRAY_POSITION_SPACING : -ARRAY_POSITION_SPACING;
-					Point arrowFrom = getIndexLocation(i);
+					Point arrowFrom = getIndexLocation(i).translate(0, 2);
 					if(horizontal) 
 						arrowFrom.translate(textWidth/2 + space, EXTRA);
 					else {

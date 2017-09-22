@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.extensions;
+package pt.iscte.pandionj.extensions.images;
 
 
 import org.eclipse.draw2d.ColorConstants;
@@ -39,22 +39,22 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 				model.getComponentType().equals(int.class.getName()) &&
 				model.getDimensions() == 2 && 
 				model.getLength() > 0 && 
-				internalAccept(model.getValues());
+				model.isMatrix();
 	}
 
 
-	private static boolean internalAccept(Object[] values) {
-		if(values[0] == null)
-			return false;
-
-		int width = ((Object[]) values[0]).length;
-
-		for(int y = 1; y < values.length; y++)
-			if(values[y] == null || ((Object[]) values[y]).length != width)
-				return false;
-
-		return true;
-	}
+//	private static boolean internalAccept(Object[] values) {
+//		if(values[0] == null)
+//			return false;
+//
+//		int width = ((Object[]) values[0]).length;
+//
+//		for(int y = 1; y < values.length; y++)
+//			if(values[y] == null || ((Object[]) values[y]).length != width)
+//				return false;
+//
+//		return true;
+//	}
 
 
 	@Override
@@ -88,7 +88,7 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 
 		public void update(Object arg) {
 			array = (Object[]) arg;
-			valid = internalAccept(array);
+			valid = model.isMatrix();
 			if(valid) {
 				width = ((Object[]) array[0]).length;
 				height = array.length;

@@ -13,7 +13,6 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.jdt.core.IType;
 
 import com.google.common.collect.ArrayListMultimap;
@@ -24,9 +23,7 @@ import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensions.ColorAguia;
-import pt.iscte.pandionj.extensions.ColorRGBArray;
 import pt.iscte.pandionj.extensions.ColorWidget;
-import pt.iscte.pandionj.extensions.GrayscaleImageWidget;
 import pt.iscte.pandionj.extensions.HistogramWidget;
 import pt.iscte.pandionj.extensions.ImageAguia;
 import pt.iscte.pandionj.extensions.IterableWidget;
@@ -34,6 +31,10 @@ import pt.iscte.pandionj.extensions.MatrixWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringCharArray;
 import pt.iscte.pandionj.extensions.StringWidget;
+import pt.iscte.pandionj.extensions.images.BinaryImageWidget;
+import pt.iscte.pandionj.extensions.images.ColorImageWidget;
+import pt.iscte.pandionj.extensions.images.ColorRGBArray;
+import pt.iscte.pandionj.extensions.images.GrayscaleImageWidget;
 import pt.iscte.pandionj.model.ModelObserver;
 
 public class ExtensionManager {
@@ -44,6 +45,8 @@ public class ExtensionManager {
 	static {
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
 		arrayExtensions.put("@image", new GrayscaleImageWidget());
+		arrayExtensions.put("@binaryimage", new BinaryImageWidget());
+		arrayExtensions.put("@colorimage", new ColorImageWidget());
 		arrayExtensions.put("@hist", new HistogramWidget());
 		arrayExtensions.put("@color", new ColorRGBArray());
 		arrayExtensions.put("@string", new StringCharArray());
@@ -118,7 +121,6 @@ public class ExtensionManager {
 			});
 
 			compositeFig = new Figure();
-			compositeFig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 			compositeFig.setLayoutManager(new FlowLayout());
 			for (Entry<String, Collection<String>> e : tags.asMap().entrySet())
 				addChildFigures(m, e.getKey());

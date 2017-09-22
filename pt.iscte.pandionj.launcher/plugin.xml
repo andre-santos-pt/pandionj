@@ -43,41 +43,37 @@
          point="org.eclipse.ui.menus">
       <menuContribution
             allPopups="false"
-            locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
-         <toolbar
-               id="pt.iscte.pandionj.toolbar"
-               label="PandionJ">
-            <command
-                  commandId="pt.iscte.pandionj.launcher.run"
-                  icon="images/run.gif"
-                  style="push">
-            </command>
-            <command
-                  commandId="pt.iscte.pandionj.launcher.stepinto"
-                  icon="images/stepinto.gif"
-                  style="push">
-            </command>
-            <command
-                  commandId="pt.iscte.pandionj.launcher.stepover"
-                  icon="images/stepover.gif"
-                  style="push">
-            </command>
-            <command
-                  commandId="pt.iscte.pandionj.launcher.stepreturn"
-                  icon="images/stepreturn.gif"
-                  style="push">
-            </command>
-            <command
-                  commandId="pt.iscte.pandionj.launcher.resume"
-                  icon="images/resume.gif"
-                  style="push">
-            </command>
-            <command
-                  commandId="pt.iscte.pandionj.launcher.terminate"
-                  icon="images/terminate.gif"
-                  style="push">
-            </command>
-         </toolbar>
+            locationURI="toolbar:pt.iscte.pandionj.view">
+         <command
+               commandId="pt.iscte.pandionj.launcher.run"
+               icon="images/run.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.stepinto"
+               icon="images/stepinto.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.stepover"
+               icon="images/stepover.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.stepreturn"
+               icon="images/stepreturn.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.resume"
+               icon="images/resume.gif"
+               style="push">
+         </command>
+         <command
+               commandId="pt.iscte.pandionj.launcher.terminate"
+               icon="images/terminate.gif"
+               style="push">
+         </command>
       </menuContribution>
    </extension>
    <extension

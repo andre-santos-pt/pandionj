@@ -4,7 +4,7 @@
    <extension
          point="org.eclipse.ui.perspectives">
       <perspective
-            class="pt.iscte.pandionj.perspective.IsctePerspective"
+            class="pt.iscte.pandionj.perspective.PandionJPerspective"
             fixed="true"
             icon="icons/pandionj.gif"
             id="pt.iscte.pandionj.perspective"
@@ -46,6 +46,7 @@
             name="New Java file">
       </command>
    </extension>
+   <!--
    <extension
          point="org.eclipse.ui.perspectiveExtensions">
       <perspectiveExtension
@@ -169,7 +170,7 @@
          
       </perspectiveExtension>
    </extension>
-   
+   -->
 
    
    

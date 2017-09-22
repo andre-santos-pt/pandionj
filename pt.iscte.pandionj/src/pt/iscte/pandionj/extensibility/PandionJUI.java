@@ -30,6 +30,8 @@ import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.PandionJView;
+import pt.iscte.pandionj.ParserManager;
+import pt.iscte.pandionj.parser.VarParser;
 
 public interface PandionJUI {
 
@@ -74,6 +76,11 @@ public interface PandionJUI {
 //		IViewReference viewRef = activePage.findViewReference(Constants.VIEW_ID);
 //		viewRef.getPart(false).getSite().getSelectionProvider().setSelection(StructuredSelection.EMPTY);
 
+	}
+	
+	static boolean hasCompilationErrors(IFile file) {
+		VarParser parser = ParserManager.getVarParserResult(file);
+		return parser.hasErrors();
 	}
 	
 	

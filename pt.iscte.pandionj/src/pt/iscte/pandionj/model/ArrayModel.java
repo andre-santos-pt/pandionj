@@ -245,7 +245,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 	@Override
 	public boolean isMatrix() {
-		if(getDimensions() != 2)
+		if(getDimensions() < 2)
 			return false;
 
 		Object[] values = getValues();

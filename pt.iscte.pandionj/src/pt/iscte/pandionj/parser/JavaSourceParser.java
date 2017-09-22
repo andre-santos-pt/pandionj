@@ -6,15 +6,18 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Message;
 
 
 public class JavaSourceParser {
 	private final ASTParser parser;
 	private char[] source;
+	private boolean hasErrors;
 	
 	private JavaSourceParser(String source, String className) {
 		this.source = source.toCharArray();
@@ -53,6 +56,11 @@ public class JavaSourceParser {
 //			throw new RuntimeException("code has compilation errors");
 		
 		unit.accept(visitor);
+		hasErrors = unit.getProblems().length > 0;
+	}
+	
+	public boolean hasErrors() {
+		return hasErrors;
 	}
 
 	private static String readFileToString(String filePath) {

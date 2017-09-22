@@ -1,6 +1,7 @@
 package pt.iscte.pandionj;
 
 
+import java.awt.Label;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -64,24 +65,23 @@ public class FigureProvider  {
 
 			if(model instanceof IArrayModel) {
 				IArrayModel aModel = (IArrayModel) model;
-//				IArrayWidgetExtension arrayExtension = ExtensionManager.getArrayExtension(aModel, tags);
 				IFigure extFig = findExtensions ? 
 						ExtensionManager.getArrayExtension(aModel, tags).createFigure(aModel) : null;
-					
+				
 				if(extFig == null) {
 					if(aModel.isPrimitiveType()) {
 						fig = new ArrayPrimitiveFigure(aModel);
-						fig.setBorder(new MarginBorder(new Insets(0, Constants.POSITION_WIDTH, 0, Constants.POSITION_WIDTH))); // TODO temp margin
-//						fig.setBorder(new MarginBorder(IllustrationBorder.internalInsets(true)));
+						fig.setBorder(new MarginBorder(IllustrationBorder.getInsets(fig, true)));
 					}
 					else {
 						fig = new ArrayReferenceFigure(aModel);
-						fig.setBorder(new MarginBorder(new Insets(0, Constants.POSITION_WIDTH, 0, Constants.POSITION_WIDTH))); // TODO temp margin
-//						fig.setBorder(new MarginBorder(IllustrationBorder.internalInsets(false)));
+						fig.setBorder(new MarginBorder(IllustrationBorder.getInsets(fig, true)));
 					}
 				}
 				else {
 					fig = new PandionJFigure.Extension(extFig, model);
+//					fig.setToolTip(new Label());
+					extFig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 				}
 			}
 			else if(model instanceof IObjectModel) {

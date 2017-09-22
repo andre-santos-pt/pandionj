@@ -6,6 +6,7 @@ import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
 
+import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -20,7 +21,7 @@ public class PandionJAgent {
 	private static String methodSig;
 	
 	public static void premain(String agentArgs, Instrumentation inst) {
-		String[] split = agentArgs.split(";");
+		String[] split = agentArgs.split("\\|");
 		if(split.length != 3)
 			className = agentArgs;
 		else {
@@ -28,31 +29,15 @@ public class PandionJAgent {
 			expression = split[1];
 			methodSig = split[2];
 		}
-
 		int i = expression.indexOf("(");	
-		final String expMethod = i == -1 ? "" : expression.substring(0, i);
+		final String methodName = i == -1 ? "" : expression.substring(0, i);
 		inst.addTransformer(new ClassFileTransformer() {
 			@Override
 			public byte[] transform(ClassLoader classLoader, String s, Class<?> aClass, ProtectionDomain protectionDomain, byte[] bytes) throws IllegalClassFormatException {
 				if(s.equals(className)) {
+					ClassPool cp = ClassPool.getDefault();
 					try {
-						ClassPool cp = ClassPool.getDefault();
 						CtClass cc = cp.get(s.replace('/','.'));
-//						CtMethod[] methods = cc.getDeclaredMethods();
-						CtMethod method = cc.getMethod(expMethod, methodSig);
-						CtClass retType = method.getReturnType();
-//						boolean multiple = false;
-//						for(CtMethod m : methods) {
-//							System.out.println(m.getSignature());
-//							if(!m.isEmpty() && m.getName().equals(expMethod) && m.getMethodInfo().isMethod() && !m.getReturnType().equals(CtClass.voidType)) {
-//								if(retType != null)
-//									multiple = true;
-//								retType = m.getReturnType();
-//							}
-//						}
-//						if(multiple)
-//							retType = null;
-
 						try {
 							// check if real main method exists
 							CtMethod mainMethod = cc.getMethod("main", "([Ljava/lang/String;)V");
@@ -63,42 +48,71 @@ public class PandionJAgent {
 							return null;
 						}
 						catch(NotFoundException e) {
-							CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
-							cc.addMethod(m); 
-
-							if(retType.equals(CtClass.voidType)) {
-								m.insertAfter(expression + ";");
+							CtMethod method = null;
+							try {
+								method = cc.getMethod(methodName, methodSig);
 							}
-							else if(retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
-								String inst = "System.out.println(\"" + expression + " = \" + java.util.Arrays.toString((" + retType.getComponentType().getName() +"[])" + expression + "));";
-								m.insertAfter(inst);
+							catch(NotFoundException ex) {
+								System.err.println("Could not find method: " + className + "." + methodName + " " + methodSig);
+								CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
+								cc.addMethod(m); 
+								byte[] byteCode = cc.toBytecode();	
+								cc.detach();
+								return byteCode;
 							}
-							else if(retType.isArray() && getNDims(retType) == 2) {
-								String inst = retType.getName() + " ret = " + expression + ";\n";
-								inst += "System.out.print(\"" + expression + " = [\");";
-								String cName = retType.getName();
-								cName = cName.substring(0, cName.length()-2);
-								inst += "for(int i = 0; i < ret.length; i++) {";
-								inst += "String s = java.util.Arrays.toString(ret[i]);";
-								inst += "if(i != 0) System.out.print(\", \");";
-								inst += "System.out.print(s);};";
-								inst += "System.out.println(\"]\");";
-								m.insertAfter(inst);
-							}
-							else if(!CtClass.voidType.equals(retType)){
-								String inst = "System.out.println(\"" + expression + " = \" + " + expression + ");";
-								m.insertAfter(inst);
-							}
+							CtClass retType = method.getReturnType();
+							
+							generateMain(cc, retType);
 
 							byte[] byteCode = cc.toBytecode();	
 							cc.detach();
 							return byteCode;
 						}
 					} catch (Exception ex) {
+						System.err.println("Could not find class: " + className);
 						ex.printStackTrace();
 					}
 				}
 				return null;
+			}
+
+			private void generateMain(CtClass cc, CtClass retType) throws CannotCompileException, NotFoundException {
+				CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
+				cc.addMethod(m); 
+
+				String left = expression.replaceAll("\"", "\\\\\"");
+				String right = expression;
+				
+				if(retType.equals(CtClass.voidType)) {
+					m.insertAfter(expression + ";");
+				}
+				else if(retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
+					String inst = "System.out.println(\"" + left + " = \" + java.util.Arrays.toString((" + retType.getComponentType().getName() +"[])" + right + "));";
+					m.insertAfter(inst);
+				}
+				else if(retType.isArray() && getNDims(retType) == 2) {
+					String inst = retType.getName() + " ret = " + left + ";\n";
+					inst += "System.out.print(\"" + left + " = [\");";
+					String cName = retType.getName();
+					cName = cName.substring(0, cName.length()-2);
+					inst += "for(int i = 0; i < ret.length; i++) {";
+					inst += "String s = java.util.Arrays.toString(ret[i]);";
+					inst += "if(i != 0) System.out.print(\", \");";
+					inst += "System.out.print(s);};";
+					inst += "System.out.println(\"]\");";
+					m.insertAfter(inst);
+				}
+				else if(!CtClass.voidType.equals(retType)){
+					String inst = null;
+					if(CtClass.charType.equals(retType))
+						inst = "System.out.println(\"" + left + " = '\" + " + right + " + \"'\");";
+					else if(retType.getName().equals(String.class.getName()))
+						inst = "System.out.println(\"" + left + " = \\\"\" + " + right + " + \"\\\"\");";
+					else
+						inst = "System.out.println(\"" + left + " = \" + " + right + ");";
+					
+					m.insertAfter(inst);
+				}
 			}
 
 			private int getNDims(CtClass retType) {

@@ -26,10 +26,12 @@ import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IInitializer;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
@@ -84,7 +86,8 @@ public class LaunchCommand extends AbstractHandler {
 			try {
 				IHandlerService handlerService = (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
 				handlerService.executeCommand("org.eclipse.debug.ui.commands.RunToLine", null);
-			} catch (NotDefinedException | NotEnabledException | NotHandledException e) {
+			} 
+			catch (NotDefinedException | NotEnabledException | NotHandledException e) {
 
 			}
 		}
@@ -112,72 +115,94 @@ public class LaunchCommand extends AbstractHandler {
 						offset = textSelection.getOffset();
 					}
 				}
+				
+				if(PandionJUI.hasCompilationErrors(file)) {
+					MessageDialog.openError(Display.getDefault().getActiveShell(),
+							"Compilation errors",
+							"This file has compilation errors, please fix them before launching.");
+					return null;
+				}
+
 
 				final int lineFinal = line;
 				IJavaElement e = javaProj.findElement(p.removeFirstSegments(1));
 				if(e == null)
 					e = javaProj.findElement(new Path(p.lastSegment()));
 
-				if(e != null) {
-					IType firstType = ((ICompilationUnit) e).getTypes()[0];
-					final String agentArgs = firstType.getFullyQualifiedName().replace('.', '/');
+				if(e instanceof ICompilationUnit) {
+					ICompilationUnit unit = (ICompilationUnit) e;
+					IType[] types = unit.getTypes();
+					IType type = null;
+					for(IType t : types)
+						if(withinSourceRange(t, offset))
+							type = t;
+					
+					if(type == null) {
+						showMethodMessage();
+						return null;
+					}
+					
 
-					IMethod mainMethod = firstType.getMethod("main", new String[] {"[QString;"});
+					final String agentArgs = type.getFullyQualifiedName().replace('.', '/');
+
+					IMethod mainMethod = type.getMethod("main", new String[] {"[QString;"});
 
 					// normal main()
 					if(mainMethod.exists() && mainMethod.isMainMethod() && PandionJUI.checkView()) {
-						launch(file, line, firstType, agentArgs, mainMethod);
+						launch(file, line, type, agentArgs, mainMethod);
 					}
 					else {
 						boolean launchInit = false;
-						for (IInitializer init : firstType.getInitializers()) {
-							ISourceRange sourceRange = init.getSourceRange();
-							if(offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength()) {							
-								launch(file, line, firstType, "", mainMethod); // FIXME estoira
+						for (IInitializer init : type.getInitializers()) {
+							if(withinSourceRange(init, offset)) {
+								launch(file, line, type, "", mainMethod); // FIXME estoira
 								launchInit = true;
 								break;
 							}
 						}
 
 						if(!launchInit) {
-							IMethod selectedMethod = null;
-							for (IMethod m : firstType.getMethods()) {
-								ISourceRange sourceRange = m.getSourceRange();
-								if(Modifier.isStatic(m.getFlags()) && offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength()) {							
-									selectedMethod = m;
-									break;
+							// run last
+							if(last && args != null) {
+								if(PandionJUI.checkView()) {
+									String typeName = args.substring(0, args.indexOf('|'));
+									IType t = ((ICompilationUnit) e).getType(typeName);
+									launch(file, lineFinal, t, args, mainMethod);
 								}
-							}
-							if(selectedMethod == null) {
-								MessageDialog.openError(Display.getDefault().getActiveShell(),
-										"Please select method",
-										"Place the cursor at a line of the body of a static method.");
-								return null;
 							}
 							else {
-								// run last
-								if(last && args != null) {
-									if(PandionJUI.checkView())
-										launch(file, lineFinal, firstType, args, mainMethod);
-								}
-								else {
-									String methodSig = selectedMethod.getSignature();
-									if(selectedMethod.getParameterTypes().length != 0) {
-										PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
-											@Override
-											public void invoke(String expression) {
-												args = agentArgs + ";" + expression.replaceAll("\"", "\\\\\"") + ";" + methodSig;
-												try {
-													launch(file, lineFinal, firstType, args, mainMethod);
-												} catch (CoreException e) {
-													e.printStackTrace();
-												}
-											}
-										});
+								IMethod selectedMethod = null;
+								for (IMethod m : type.getMethods()) {
+									if(Modifier.isStatic(m.getFlags()) && withinSourceRange(m, offset)) {							
+										selectedMethod = m;
+										break;
 									}
-									else {  // no params
-										if(PandionJUI.checkView())
-											launch(file, line, firstType, agentArgs + ";" + selectedMethod.getElementName() + "()" + ";" + methodSig, mainMethod);
+								}
+								if(selectedMethod == null) {
+									showMethodMessage();
+									return null;
+								}
+
+								String methodSig = selectedMethod.getSignature().replaceAll("QString;", "Ljava/lang/String;");
+
+								if(selectedMethod.getParameterTypes().length != 0) {
+									final IType t = type;
+									PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
+										@Override
+										public void invoke(String expression) {
+											args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
+											try {
+												launch(file, lineFinal, t, args, mainMethod);
+											} catch (CoreException e) {
+												e.printStackTrace();
+											}
+										}
+									});
+								}
+								else {  // no params
+									if(PandionJUI.checkView()) {
+										args = agentArgs + "|" + selectedMethod.getElementName() + "()" + "|" + methodSig;
+										launch(file, line, type, args, mainMethod);
 									}
 								}
 							}
@@ -192,19 +217,28 @@ public class LaunchCommand extends AbstractHandler {
 		return null;
 	}
 
-	private void launch(IResource file, int line, IType firstType, String agentArgs, IMethod mainMethod)
+	private static boolean withinSourceRange(IMember member, int offset) throws JavaModelException {
+		ISourceRange sourceRange = member.getSourceRange();
+		return offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength();
+	}
+	
+	private static void showMethodMessage() {
+		MessageDialog.openError(Display.getDefault().getActiveShell(),
+				"Please select method",
+				"Place the cursor at a line of the body of a static method.");
+	}
+	
+	private void launch(IResource file, int line, IType type, String agentArgs, IMethod mainMethod)
 			throws CoreException {
 		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-		ILaunchConfigurationType type = manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
-		ILaunchConfigurationWorkingCopy wc = type.newInstance(null, file.getName() + " (PandionJ)");
+		ILaunchConfigurationType confType = manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
+		ILaunchConfigurationWorkingCopy wc = confType.newInstance(null, file.getName() + " (PandionJ)");
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME, file.getProject().getName());
-		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, firstType.getFullyQualifiedName());
+		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_MAIN_TYPE_NAME, type.getFullyQualifiedName());
 		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_STOP_IN_MAIN, false);
 
 		//		if(breakPoint != null)
 		//			breakPoint.delete();
-		//
-		//		// TODO remove?
 		//		if(line != -1)
 		//			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
 

@@ -56,8 +56,13 @@ public class VarParser {
 	public void run() {
 		visitor = new MethodVisitor();
 		parser.parse(visitor);
+		
 	}
 
+	public boolean hasErrors() {
+		return parser.hasErrors();
+	}
+	
 	//	static class PostRolesVisitor implements BlockInfoVisitor {
 	//		@Override
 	//		public void visit(VariableInfo var) {
