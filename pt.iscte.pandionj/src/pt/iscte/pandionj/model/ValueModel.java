@@ -35,7 +35,7 @@ implements IValueModel {
 		else if(!v.getArrayFixedVariables().isEmpty())			return Role.FIXED_ARRAY_INDEX;
 		else if(v.isFixedValue()) 								return Role.FIXED_VALUE;
 		else if(v.isGatherer())									return Role.GATHERER;
-		else if(!v.getAccessedArrays().isEmpty())				return Role.ARRAY_ITERATOR;
+		else if(!v.getAccessedArrays(null).isEmpty())				return Role.ARRAY_ITERATOR;
 		else if(v.isStepperBackward() || v.isStepperForward())	return Role.STEPPER;
 		else if(v.isMostWantedHolder())							return Role.MOST_WANTED_HOLDER;
 		else														return Role.NONE;
@@ -47,7 +47,6 @@ implements IValueModel {
 		try {
 			return getName() + " = " + getContent().getValueString() + (role != Role.NONE ? " (" + role + ")" : "");
 		} catch (DebugException e) {
-			e.printStackTrace();
 			return getClass().getSimpleName();
 		}
 	}

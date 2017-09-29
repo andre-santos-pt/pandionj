@@ -14,8 +14,8 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IArrayModel;
-import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 
 public abstract class ArrayModel<T extends IVariableModel<?>> 
@@ -25,21 +25,16 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	private int dimensions;
 	private String componentType;
 	private List<T> elementsModel;
-	
-	ArrayModel(IJavaArray array, RuntimeModel runtime) {
-		super(array, runtime);
-		try {
-			int len = Math.min(array.getLength(), Constants.ARRAY_LENGTH_LIMIT);
-			elementsModel = new ArrayList<T>(len);
-			elements = array.getValues();
-			dimensions = getDimensions(array);
-			componentType = getComponentType(array);
-			prev = getValues();
-			initArray(array, len);
 
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
+	ArrayModel(IJavaArray array, RuntimeModel runtime) throws DebugException {
+		super(array, runtime);
+		int len = Math.min(array.getLength(), PandionJView.getMaxArrayLength());
+		elementsModel = new ArrayList<T>(len);
+		elements = array.getValues();
+		dimensions = getDimensions(array);
+		componentType = getComponentType(array);
+		prev = getValues();
+		initArray(array, len);
 	}
 
 	private void initArray(IJavaArray array, int length) throws DebugException {
@@ -62,7 +57,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			return null;
 		}
 	}
-	
+
 	public Iterator<Integer> getValidModelIndexes() {
 		return new Iterator<Integer>() {
 			int i = 0;
@@ -70,7 +65,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			public boolean hasNext() {
 				return isValidModelIndex(i);
 			}
-			
+
 			@Override
 			public Integer next() {
 				int r = i;
@@ -81,20 +76,20 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			}
 		};
 	}
-	
+
 	@Override
 	public boolean isValidModelIndex(int i) {
 		return i >= 0 && i < elementsModel.size() - 1 || getLength() > 0 && i == getLength()-1;
 	}
-	
 
-	
+
+
 	@Override
 	public void setStep(int stepPointer) {
 		for(T val : elementsModel)
 			val.setStep(stepPointer);
 	}
-	
+
 	public Object[] getValues() {
 		return getValues(getContent());
 	}
@@ -171,11 +166,11 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		for(T e : elementsModel)
 			if(e.update(step))
 				setChanged();
-		
-//		int len = Math.min(getLength(), Constants.ARRAY_LENGTH_LIMIT);
-//		for(int i = 0; i < len; i++)	
-//			if(updateInternal(i, step))
-//				setChanged();
+
+		//		int len = Math.min(getLength(), Constants.ARRAY_LENGTH_LIMIT);
+		//		for(int i = 0; i < len; i++)	
+		//			if(updateInternal(i, step))
+		//				setChanged();
 
 		if(!hasChanged() && getDimensions() > 1) {
 			Object[] newValues = getValues(getContent());
@@ -191,7 +186,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		return hasChanged;
 	}
 
-//	abstract boolean updateInternal(int i, int step);
+	//	abstract boolean updateInternal(int i, int step);
 
 	public int getLength() {
 		return elements.length;
@@ -206,17 +201,17 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	}
 
 
-	private static int getDimensions(IJavaArray array) {
+	private static int getDimensions(IJavaArray array)  throws DebugException  {
 		int d = 0;
-		try {
-			IJavaType t = array.getJavaType();
-			while(t instanceof IJavaArrayType) {
-				d++;
-				t = ((IJavaArrayType) t).getComponentType();
-			}
-		} catch (DebugException e) {
-			e.printStackTrace();
+		//		try {
+		IJavaType t = array.getJavaType();
+		while(t instanceof IJavaArrayType) {
+			d++;
+			t = ((IJavaArrayType) t).getComponentType();
 		}
+		//		} catch (DebugException e) {
+		//			e.printStackTrace();
+		//		}
 		return d;
 	}
 
@@ -228,18 +223,18 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	public boolean isNull() {
 		return false;
 	}
-	
-	static String getComponentType(IJavaArray array) {
-		try {
-			IJavaType t = array.getJavaType();
-			while(t instanceof IJavaArrayType) {
-				t = ((IJavaArrayType) t).getComponentType();
-			}
-			return t.getName();
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return null;
+
+	static String getComponentType(IJavaArray array) throws DebugException {
+		//		try {
+		IJavaType t = array.getJavaType();
+		while(t instanceof IJavaArrayType) {
+			t = ((IJavaArrayType) t).getComponentType();
 		}
+		return t.getName();
+		//		} catch (DebugException e) {
+		//			e.printStackTrace();
+		//			return null;
+		//		}
 	}
 
 
@@ -260,25 +255,25 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		return true;
 	}
 
-	public Dimension getMatrixDimension() {
+	public Dimension getMatrixDimension() throws DebugException {
 		if(!isMatrix())
 			throw new IllegalStateException("not a matrix");
 
-		try {
-			return new Dimension(getLength(), getLength() == 0 ? 0 : ((IJavaArray) elements[0]).getLength());
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return null;
-		}
+		//		try {
+		return new Dimension(getLength(), getLength() == 0 ? 0 : ((IJavaArray) elements[0]).getLength());
+		//		} catch (DebugException e) {
+		//			e.printStackTrace();
+		//			return null;
+		//		}
 	}
-	
+
 	public List<T> getModelElements() {
 		return Collections.unmodifiableList(elementsModel);
 	}
 
 	@Override
 	public String toString() {
-		int lim = Math.min(Constants.ARRAY_LENGTH_LIMIT, elements.length);
+		int lim = Math.min(PandionJView.getMaxArrayLength(), elements.length);
 		String els = "{";
 		for(int i = 0; i < lim; i++) {
 			if(i != 0)

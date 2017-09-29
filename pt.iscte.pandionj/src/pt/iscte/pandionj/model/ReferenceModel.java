@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
@@ -28,13 +29,13 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	private VariableInfo info;
 	private Collection<String> tags;
 	
-	ReferenceModel(IJavaVariable variable, boolean isInstance, VariableInfo info, StackFrameModel stackFrame) {
+	ReferenceModel(IJavaVariable variable, boolean isInstance, VariableInfo info, StackFrameModel stackFrame) throws DebugException {
 		super(variable, isInstance, stackFrame);
 		this.info = info;
 		init(variable);
 	}
 
-	ReferenceModel(IJavaVariable variable, boolean isInstance, VariableInfo info, RuntimeModel runtime) {
+	ReferenceModel(IJavaVariable variable, boolean isInstance, VariableInfo info, RuntimeModel runtime) throws DebugException {
 		super(variable, isInstance, runtime);
 		this.info = info;
 		init(variable);

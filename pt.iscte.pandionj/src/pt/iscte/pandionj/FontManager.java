@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.FigureUtilities;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
@@ -50,6 +51,8 @@ public class FontManager {
 	public static void setFont(Figure figure, int size, Style ... styles) {
 		figure.setFont(getFont(size, styles));
 	}
+	
+	
 
 	public static void dispose() {
 		for(Font f : instances.values())

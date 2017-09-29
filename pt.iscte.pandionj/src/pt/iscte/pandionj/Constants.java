@@ -15,7 +15,7 @@ public interface Constants {
 	
 	String IMAGE_FOLDER = "images";
 	
-	int ARRAY_LENGTH_LIMIT = 10;
+//	int ARRAY_LENGTH_LIMIT = 10;
 	int STACK_LIMIT = 10; // TODO stack limit
 	
 	
@@ -99,6 +99,7 @@ public interface Constants {
 		String TRASH = "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.";
 		String RUN_DIALOG = "Do you want to open PandionJ view?";
 		String COPY_CLIPBOARD = "Copy image to clipboard";
+		String SET_ARRAY_MAX = "Set array maximum length";
 		String PRESS_TO_INVOKE = "press Enter do execute";
 	}
 	

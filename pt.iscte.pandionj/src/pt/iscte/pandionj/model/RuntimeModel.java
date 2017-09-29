@@ -64,10 +64,8 @@ implements IRuntimeModel {
 		return (IJavaDebugTarget) launch.getDebugTarget();
 	}
 
-	public void update(IJavaThread thread) {
-		boolean newStack = false;
+	public void update(IJavaThread thread) throws DebugException {
 		if(launch != thread.getLaunch()) {
-			newStack = true;
 			launch = thread.getLaunch();
 			callStack.clear();
 			objects.clear();
@@ -82,13 +80,19 @@ implements IRuntimeModel {
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel && o.update(step))
 				setChanged();
-			else if(o instanceof ObjectModel)
+			else if(o instanceof ObjectModel) {
 				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
 					public void visit(IEntityModel object, ObjectModel parent, int index, int depth, String field) {
-						if(object != null && ((EntityModel<?>) object).update(step))
-							setChanged();
+						try {
+							if(object != null && ((EntityModel<?>) object).update(step))
+								setChanged();
+						}
+						catch(DebugException e) {
+//							throw e; // TODO propagate exception
+						}
 					}
 				});
+			}
 		}
 
 		// TODO setStep static
@@ -103,6 +107,7 @@ implements IRuntimeModel {
 		step++;
 		setChanged();
 		notifyObservers(new Event<Object>(Event.Type.STEP, null));
+
 	}
 
 	private void handle(IStackFrame[] stackFrames) throws DebugException {
@@ -206,14 +211,15 @@ implements IRuntimeModel {
 		if(launch != null)
 			try {
 				launch.terminate();
-			} catch (DebugException e) {
-				e.printStackTrace();
 			}
-		
+		catch (DebugException e) {
+			//				e.printStackTrace();
+		}
+
 		terminated = true;
 		for(StackFrameModel frame : callStack)
 			frame.setObsolete();
-		
+
 		setChanged();
 		notifyObservers(new Event<Object>(Event.Type.TERMINATION, null));
 	}

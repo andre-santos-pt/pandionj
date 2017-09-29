@@ -48,6 +48,8 @@ import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
 
+
+// TODO debug Exception
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;

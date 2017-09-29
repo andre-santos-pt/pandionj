@@ -61,8 +61,9 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 	}
 
 	@Override
-	GridData createValueLabelGridData() {
-		return new GridData(POSITION_WIDTH, POSITION_WIDTH);
+	GridData createValueLabelGridData(boolean hole) {
+		int w = hole ? POSITION_WIDTH/2 : POSITION_WIDTH;
+		return new GridData(w, w);
 	}
 	
 	@Override

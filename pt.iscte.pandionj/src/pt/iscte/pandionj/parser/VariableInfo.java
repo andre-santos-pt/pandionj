@@ -45,7 +45,7 @@ public class VariableInfo {
 	
 	@Override
 	public String toString() {
-		List<String> accessedArrays = getAccessedArrays();
+		List<String> accessedArrays = getAccessedArrays(null);
 		Set<String> accessedArraysFixed = getArrayFixedVariables();
 		
 		return name + (isParam() ? "* " : " ") + 
@@ -171,10 +171,10 @@ public class VariableInfo {
 		return arrayAccess;
 	}
 
-	public List<String> getAccessedArrays() {
+	public List<String> getAccessedArrays(Integer dimension) {
 		List<String> list = new ArrayList<>();
 		for(VariableOperation op : operations)
-			if(op.getType() == VariableOperation.Type.INDEX)
+			if(op.getType() == VariableOperation.Type.INDEX && (dimension == null || op.getParam(1).equals(dimension)))
 				list.add(op.getParam(0).toString());
 
 		return list;
@@ -230,7 +230,7 @@ public class VariableInfo {
 					IBound bound = v.getBound();
 					String exp = bound == null ? null : bound.getExpression();
 					if(v.isArrayIndex() && name.equals(v.getInitVariable()) || name.equals(exp))
-						set.addAll(v.getAccessedArrays());
+						set.addAll(v.getAccessedArrays(0));
 				}
 			});
 		}

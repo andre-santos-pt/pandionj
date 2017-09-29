@@ -57,6 +57,8 @@ public class PandionJView extends ViewPart {
 
 	private IToolBarManager toolBar;
 
+	private static int arrayMax = 10;
+	
 	public PandionJView() {
 		instance = this;
 	}
@@ -65,6 +67,14 @@ public class PandionJView extends ViewPart {
 		return instance;
 	}
 
+	public static int getMaxArrayLength() {
+		return arrayMax;
+	}
+	
+	public static void setArrayMaximumLength(int val) {
+		arrayMax = val;
+	}
+	
 	@Override
 	public void createPartControl(Composite parent) {
 		contextService = (IContextService) PlatformUI.getWorkbench().getService(IContextService.class);
@@ -194,7 +204,7 @@ public class PandionJView extends ViewPart {
 	}
 
 	// must be invoked under executeInternal(..)
-	private void handleFrames(IJavaThread thread) {
+	private void handleFrames(IJavaThread thread) throws DebugException {
 		assert thread != null;
 		contextService.activateContext(Constants.CONTEXT_ID);
 		if(stackLayout.topControl != runtimeView) {
@@ -205,11 +215,11 @@ public class PandionJView extends ViewPart {
 		}
 
 		IStackFrame[] stackFrames = new IStackFrame[0];
-		try {
+//		try {
 			stackFrames = thread.getStackFrames();
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//		}
 
 		if(runtime == null || !runtime.isPartiallyCommon(stackFrames)) {
 			runtime = new RuntimeModel();
@@ -327,6 +337,8 @@ public class PandionJView extends ViewPart {
 			}
 		});
 	}
+
+	
 
 
 

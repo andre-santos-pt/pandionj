@@ -31,7 +31,7 @@ import pt.iscte.pandionj.parser.VarParser;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 
-
+//TODO debug Exception
 public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.StackEvent<?>> implements IStackFrameModel {
 	private RuntimeModel runtime;
 	private IJavaStackFrame frame;
@@ -123,7 +123,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 
 
-	public void update() {
+	public void update() throws DebugException {
 		handleVariables();
 		//		if(hasChanged()) {
 		step++;
@@ -147,8 +147,8 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		notifyObservers();
 	}
 
-	private void handleVariables() {
-		try {
+	private void handleVariables() throws DebugException {
+//		try {
 			handleOutOfScopeVars();
 
 			for(IVariable v : frame.getVariables()) {
@@ -167,10 +167,10 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 					handleVar(jv, false);
 				}
 			}
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-		}
+//		}
+//		catch(DebugException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	private void handleOutOfScopeVars() throws DebugException {
@@ -237,8 +237,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 		if(value instanceof IJavaObject) {
 			ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
-//			if(isField)
-//				refElement.setOwner
 			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
 			refElement.setTags(tags);
 			newVar = refElement;
@@ -289,7 +287,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 				return ret;
 			}
 		} catch (DebugException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			return super.toString();
 		}
 	}

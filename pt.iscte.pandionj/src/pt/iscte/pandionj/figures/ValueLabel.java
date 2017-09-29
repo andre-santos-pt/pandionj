@@ -1,12 +1,16 @@
 package pt.iscte.pandionj.figures;
 
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.FigureUtilities;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Font;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
 
@@ -55,10 +59,20 @@ class ValueLabel extends Label {
 			setForegroundColor(textValue.equals(Boolean.TRUE.toString()) ? Constants.Colors.TRUE : Constants.Colors.FALSE);
 
 		setToolTip(new Label(textValue));
-		if(!model.isBoolean() && textValue.length() > (model.isDecimal() ? 5 : 2))
-			FontManager.setFont(this, (int) (Constants.VALUE_FONT_SIZE*.66));
-		else
-			FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
+		setAutoFont(Constants.VALUE_FONT_SIZE, textValue);
+//		if(!model.isBoolean() && textValue.length() > (model.isDecimal() ? 5 : 2))
+//			FontManager.setFont(this, (int) (Constants.VALUE_FONT_SIZE*.66));
+//		else
+//			FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
+	}
+	
+	private void setAutoFont(int size, String text, Style ... styles) {
+		Font f = FontManager.getFont(size, styles);
+		while(FigureUtilities.getTextWidth(text, f) > Constants.POSITION_WIDTH-4 && size > 8) {
+			size--;
+			f = FontManager.getFont(size, styles);
+		}
+		setFont(f);
 	}
 	
 	void updateBackground() {

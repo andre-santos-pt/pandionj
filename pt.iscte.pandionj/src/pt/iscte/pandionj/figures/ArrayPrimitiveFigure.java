@@ -23,7 +23,7 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 	}
 
 	@Override
-	GridData createValueLabelGridData() {
+	GridData createValueLabelGridData(boolean hole) {
 		return new GridData(POSITION_WIDTH, POSITION_WIDTH);
 	}
 	

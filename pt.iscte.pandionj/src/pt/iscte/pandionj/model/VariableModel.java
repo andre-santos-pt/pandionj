@@ -44,20 +44,20 @@ implements IVariableModel<O> {
 		}
 	}
 	
-	public VariableModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame) {
+	public VariableModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame) throws DebugException {
 		this(variable, isInstance, stackFrame.getRuntime());
 		this.stackFrame = stackFrame;	
 	}
 
 	@SuppressWarnings("unchecked")
-	public VariableModel(IJavaVariable variable, boolean isInstance, RuntimeModel runtime) {
+	public VariableModel(IJavaVariable variable, boolean isInstance, RuntimeModel runtime) throws DebugException {
 		super(runtime);
 		assert variable != null;
 		
 		this.variable = variable;
 		history = new ArrayList<>();
 
-		try {
+//		try {
 			this.type = variable.getReferenceTypeName();
 			this.name = variable.getName();
 			this.isInstance = isInstance; // !variable.isLocal() ?
@@ -67,9 +67,9 @@ implements IVariableModel<O> {
 			history.add(sv);
 			stepPointer = 0;
 
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//		}
 		
 		this.stepInit = runtime.getRunningStep();
 		this.scopeEnd = Integer.MAX_VALUE;

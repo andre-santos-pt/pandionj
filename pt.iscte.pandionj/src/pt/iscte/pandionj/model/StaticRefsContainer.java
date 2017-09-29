@@ -25,31 +25,30 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 		map = new HashMap<>();
 	}
 	
-	public boolean existsVar(StackFrameModel stackFrameModel, String varName) {
+	public boolean existsVar(StackFrameModel stackFrameModel, String varName) throws DebugException {
 		return get(stackFrameModel, varName) != null;
 	}
 	
-	public void add(StackFrameModel frame, IVariableModel<?> v) {
-		try {
+	public void add(StackFrameModel frame, IVariableModel<?> v) throws DebugException  {
+//		try {
 			String id = frame.getStackFrame().getDeclaringTypeName() + "." + v.getName();
 			map.put(id,v);
 			setChanged();
 			notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE,v));
-			
-		}
-		catch (DebugException e) {
-			e.printStackTrace();
-		}
+//		}
+//		catch (DebugException e) {
+//			e.printStackTrace();
+//		}
 	}
 	
-	public IVariableModel<?> get(StackFrameModel frame, String varName) {
-		try {
+	public IVariableModel<?> get(StackFrameModel frame, String varName) throws DebugException {
+//		try {
 			String id = frame.getStackFrame().getDeclaringTypeName() + "." + varName;
 			return map.get(id);
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
-		return null;
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//		}
+//		return null;
 	}
 
 	@Override

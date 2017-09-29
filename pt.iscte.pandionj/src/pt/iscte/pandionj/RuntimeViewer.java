@@ -15,8 +15,12 @@ import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.ImageTransfer;
 import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.events.KeyAdapter;
+import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -24,8 +28,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
@@ -198,6 +205,53 @@ public class RuntimeViewer extends Composite {
 				copyToClipBoard();
 			}
 		});
+		
+		
+		MenuItem setArrayItem = new MenuItem(menu, SWT.PUSH);
+		setArrayItem.setText(Constants.Messages.SET_ARRAY_MAX + " (current: " + PandionJView.getMaxArrayLength() + ")");
+		setArrayItem.setImage(PandionJUI.getImage("array.gif"));
+		setArrayItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				Display display = Display.getDefault();
+				Shell shell = new Shell(display, SWT.APPLICATION_MODAL);
+				shell.setLayout(new FillLayout());
+				shell.setLocation(Display.getDefault().getCursorLocation());
+//				Label label = new Label(shell, SWT.NONE);
+//				label.setText("Maximum array length display");
+				Text text = new Text(shell, SWT.BORDER);
+				text.setText(PandionJView.getMaxArrayLength() + "");
+				text.addVerifyListener(new VerifyListener() {
+					@Override
+					public void verifyText(VerifyEvent e) {
+						if(!(e.character >= '0' && e.character <= '9') && e.keyCode != SWT.BS)
+							e.doit = false;
+					}
+				});
+				text.addKeyListener(new KeyAdapter() {
+					@Override
+					public void keyPressed(KeyEvent e) {
+						if(e.keyCode == SWT.CR) {
+							int val = Integer.parseInt(text.getText());
+							PandionJView.setArrayMaximumLength(val);
+							setArrayItem.setText(Constants.Messages.SET_ARRAY_MAX + " (current: " + val + ")");
+							shell.close();
+						}
+						else if(e.keyCode == SWT.ESC) 
+							shell.close();
+					}
+				});
+				shell.pack();
+				shell.open();
+				while (!shell.isDisposed()) {
+				    if (!display.readAndDispatch()) {
+				        display.sleep();
+				     }
+				}
+
+			}
+		});
+		
 		canvas.setMenu(menu);
 	}
 

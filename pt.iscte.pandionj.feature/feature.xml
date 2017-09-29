@@ -2,7 +2,7 @@
 <feature
       id="pt.iscte.pandionj.feature"
       label="PandionJ"
-      version="0.1.1"
+      version="0.1.3"
       provider-name="ISCTE-IUL">
 
    <description url="http://www.example.com/description">

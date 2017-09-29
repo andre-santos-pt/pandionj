@@ -15,16 +15,15 @@ import org.eclipse.swt.SWT;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ExceptionType;
 import pt.iscte.pandionj.FigureProvider;
+import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
-import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.PandionJFigure.Extension;
 import pt.iscte.pandionj.model.ModelObserver;
-import pt.iscte.pandionj.model.RuntimeModel;
 
 public class ObjectContainer extends Figure {
 
@@ -41,7 +40,7 @@ public class ObjectContainer extends Figure {
 		}
 
 		public void addAt(int index, IFigure figure) {
-			int i = Math.min(index, Constants.ARRAY_LENGTH_LIMIT-1);
+			int i = Math.min(index, PandionJView.getMaxArrayLength()-1);
 			if(!containsChild(this, figure)) {
 				List<?> children = getChildren();
 				remove((IFigure) children.get(i));
