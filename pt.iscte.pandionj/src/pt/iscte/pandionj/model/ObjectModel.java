@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.model;
+		package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
 import java.util.Collection;

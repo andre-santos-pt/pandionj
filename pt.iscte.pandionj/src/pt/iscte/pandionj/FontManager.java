@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.FigureUtilities;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
@@ -30,11 +29,8 @@ public class FontManager {
 	
 	private static Map<String, Font> instances = new HashMap<>();
 	
-	// TODO: zoom sync
-	private static double zoom = 1.0;
-	
 	public static Font getFont(int size, Style ... styles) {
-		int sizeZoom = (int) Math.round(size*zoom);
+		int sizeZoom = (int) Math.round(size);
 		String key = sizeZoom + Arrays.toString(styles);
 		Font f = instances.get(key);
 		if(f == null || f.isDisposed()) {
@@ -51,8 +47,6 @@ public class FontManager {
 	public static void setFont(Figure figure, int size, Style ... styles) {
 		figure.setFont(getFont(size, styles));
 	}
-	
-	
 
 	public static void dispose() {
 		for(Font f : instances.values())

@@ -49,7 +49,6 @@ public class ObjectContainer extends Figure {
 		}
 	}
 
-
 	FigureProvider figProvider;
 	boolean useExtensions;
 	
@@ -63,16 +62,6 @@ public class ObjectContainer extends Figure {
 	public void setFigProvider(FigureProvider figProvider) {
 		this.figProvider = figProvider;
 	}
-
-//	void setInput(RuntimeModel model) {
-//		PandionJUI.executeUpdate(() -> removeAll());
-//		model.registerDisplayObserver((e) -> { // FIXME bug
-//			if(e.type == RuntimeModel.Event.Type.NEW_STACK)
-//				removeAll();
-//			else if(e.type == RuntimeModel.Event.Type.NEW_OBJECT)
-//				addObject((IEntityModel) e.arg);
-//		});
-//	}
 
 	public PandionJFigure<?> addObject(IEntityModel e) {
 		PandionJFigure<?> fig = getDeepChild(e);
@@ -196,7 +185,6 @@ public class ObjectContainer extends Figure {
 			else {
 				targetFig.setBorder(new MarginBorder(IllustrationBorder.getInsets(targetFig, targetFig instanceof ArrayPrimitiveFigure)));
 			}
-//				targetFig.setBorder(new MarginBorder(new Insets(0, Constants.POSITION_WIDTH, 20, Constants.POSITION_WIDTH))); // TODO temp margin
 		}
 		return false;
 	} 

@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.figures;
 
+import java.util.List;
+
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.swt.SWT;
@@ -22,5 +24,15 @@ public class StackContainer extends Figure {
 			add(sv);
 			getLayoutManager().setConstraint(sv, new org.eclipse.draw2d.GridData(SWT.FILL, SWT.DEFAULT, true, false));
 		}
+	}
+	
+	public void removeFrame(IStackFrameModel frame) {
+		Figure f = null;
+		for(Object o : getChildren())
+			if(((StackFrameFigure)o).frame == frame)
+				f = (Figure) o;
+		
+		if(f != null)
+			remove(f);
 	}
 }

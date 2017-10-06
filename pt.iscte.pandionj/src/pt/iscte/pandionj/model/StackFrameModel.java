@@ -87,7 +87,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public String toString() {
 		return getInvocationExpression();
 	}
-	
+
 	public RuntimeModel getRuntime() {
 		return runtime;
 	}
@@ -112,14 +112,14 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			return -1;
 		}
 	}
-	
+
 	public boolean isInstance() {
 		try {
 			return !frame.isStatic() && !frame.isConstructor();
 		} catch (DebugException e) {
 			return false;
 		}
-		
+
 	}
 
 
@@ -148,29 +148,24 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 
 	private void handleVariables() throws DebugException {
-//		try {
-			handleOutOfScopeVars();
+		handleOutOfScopeVars();
 
-			for(IVariable v : frame.getVariables()) {
-				IJavaVariable jv = (IJavaVariable) v;
-				String varName = v.getName();
-				if(varName.equals("this")) {
-					for (IVariable iv : jv.getValue().getVariables()) {
-						IJavaVariable att = (IJavaVariable) iv;
-						if(!att.isSynthetic() && !att.isStatic()) {
-							handleVar(att, true);
-						}
+		for(IVariable v : frame.getVariables()) {
+			IJavaVariable jv = (IJavaVariable) v;
+			String varName = v.getName();
+			if(varName.equals("this")) {
+				for (IVariable iv : jv.getValue().getVariables()) {
+					IJavaVariable att = (IJavaVariable) iv;
+					if(!att.isSynthetic() && !att.isStatic()) {
+						handleVar(att, true);
 					}
 				}
-
-				else if(!jv.isSynthetic()) {
-					handleVar(jv, false);
-				}
 			}
-//		}
-//		catch(DebugException e) {
-//			e.printStackTrace();
-//		}
+
+			else if(!jv.isSynthetic()) {
+				handleVar(jv, false);
+			}
+		}
 	}
 
 	private void handleOutOfScopeVars() throws DebugException {
@@ -232,7 +227,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		String varName = jv.getName();
 		boolean isField = !jv.isLocal();
 		VariableInfo info = varParser != null ? varParser.locateVariable(varName, frame.getLineNumber(), isField) : null;
-//		System.out.println(frame.getDeclaringTypeName() + " -- " +  frame.getMethodName() + " " + (jv.isStatic() ? "static " : "") + varName + ": " + info);
+		//		System.out.println(frame.getDeclaringTypeName() + " -- " +  frame.getMethodName() + " " + (jv.isStatic() ? "static " : "") + varName + ": " + info);
 		IVariableModel<?> newVar = null;
 
 		if(value instanceof IJavaObject) {
@@ -287,7 +282,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 				return ret;
 			}
 		} catch (DebugException e) {
-//			e.printStackTrace();
+			//			e.printStackTrace();
 			return super.toString();
 		}
 	}
@@ -433,14 +428,14 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public IObjectModel getThis() {
 		assert isInstance();
 		try {
-			return (IObjectModel) getRuntime().getObject(frame.getThis(), true, null);
+			return (IObjectModel) getRuntime().getObject(frame.getThis(), false, null);
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
 		return null;
 	}
 
-	
+
 
 
 }

@@ -101,6 +101,7 @@ public interface Constants {
 		String COPY_CLIPBOARD = "Copy image to clipboard";
 		String SET_ARRAY_MAX = "Set array maximum length";
 		String PRESS_TO_INVOKE = "press Enter do execute";
+		String CLEAR = "Clear";
 	}
 	
 

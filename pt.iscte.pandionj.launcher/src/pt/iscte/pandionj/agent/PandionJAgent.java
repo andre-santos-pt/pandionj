@@ -113,6 +113,8 @@ public class PandionJAgent {
 					
 					m.insertAfter(inst);
 				}
+				
+				m.insertAfter("System.exit(0);");
 			}
 
 			private int getNDims(CtClass retType) {

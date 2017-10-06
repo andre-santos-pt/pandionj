@@ -1,24 +1,13 @@
 package pt.iscte.pandionj.extensions.images;
 
 
-import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.Figure;
-import org.eclipse.draw2d.FlowLayout;
-import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.LineBorder;
-import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.widgets.Display;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
-import pt.iscte.pandionj.model.ModelObserver;
 
 
 public class BinaryImageWidget implements IArrayWidgetExtension {
@@ -37,17 +26,17 @@ public class BinaryImageWidget implements IArrayWidgetExtension {
 
 	@Override
 	public IFigure createFigure(IArrayModel<?> model) {
-		return new BinaryImageFigure(model, binaryPalette);
+		return new BinaryImageFigure(model);
 	}
 
 
 	static class BinaryImageFigure extends ImageFigure {
-		public BinaryImageFigure(IArrayModel<?> model, PaletteData palette) {
-			super(model, palette);
+		public BinaryImageFigure(IArrayModel<?> model) {
+			super(model);
 		}
 
 		protected ImageData getImageData() {
-			ImageData data = new ImageData(width, height, 1, palette);
+			ImageData data = new ImageData(width, height, 1, binaryPalette);
 			for(int y = 0; y < height; y++) {
 				Object[] line = (Object[]) array[y];
 				for(int x = 0; x < line.length && x < width; x++)

@@ -25,7 +25,6 @@ import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensions.ColorAguia;
 import pt.iscte.pandionj.extensions.ColorWidget;
 import pt.iscte.pandionj.extensions.HistogramWidget;
-import pt.iscte.pandionj.extensions.ImageAguia;
 import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.MatrixWidget;
 import pt.iscte.pandionj.extensions.NumberWidget;
@@ -44,13 +43,13 @@ public class ExtensionManager {
 
 	static {
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
-		arrayExtensions.put("@image", new GrayscaleImageWidget());
-		arrayExtensions.put("@binaryimage", new BinaryImageWidget());
-		arrayExtensions.put("@colorimage", new ColorImageWidget());
-		arrayExtensions.put("@hist", new HistogramWidget());
-		arrayExtensions.put("@color", new ColorRGBArray());
 		arrayExtensions.put("@string", new StringCharArray());
 		arrayExtensions.put("@matrix", new MatrixWidget());
+		arrayExtensions.put("@grayimage", new GrayscaleImageWidget());
+		arrayExtensions.put("@binaryimage", new BinaryImageWidget());
+		arrayExtensions.put("@color", new ColorRGBArray());
+		arrayExtensions.put("@colorimage", new ColorImageWidget());
+		arrayExtensions.put("@hist", new HistogramWidget());
 		
 
 		objectExtensions = new ArrayList<>();
@@ -59,7 +58,6 @@ public class ExtensionManager {
 		objectExtensions.add(new ColorWidget());
 		objectExtensions.add(new IterableWidget());
 		objectExtensions.add(new ColorAguia());
-		objectExtensions.add(new ImageAguia());
 	}
 
 

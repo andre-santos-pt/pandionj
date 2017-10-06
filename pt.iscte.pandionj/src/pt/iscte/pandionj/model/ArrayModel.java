@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.model;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -125,6 +126,63 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		}
 	}
 
+	public Object getMatrixValues() {
+		Class<?> type = Object.class;
+		PrimitiveType pType = PrimitiveType.match(componentType);
+		try {
+			type = Class.forName(componentType);
+		} catch (ClassNotFoundException e) {
+		}
+
+		try {
+			int[] dims = matrixDims();
+			Object array = Array.newInstance(type, dims);
+			IJavaArray javaArray = getContent();
+			IJavaValue[] values = javaArray.getValues();
+			for(int i = 0; i < dims[0]; i++) {
+				Object line = Array.get(array, i);
+
+				if(dims.length == 2) {
+					IJavaArray aLine = (IJavaArray) values[i];
+					for(int j = 0; j < dims[1]; j++) {
+						if(pType == null) {
+							// TODO
+						}
+						else {
+							Array.set(line, j, pType.getValue(aLine.getValue(j)));
+						}
+					}
+				}
+			}
+			return array;
+		}
+		catch(DebugException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private int[] matrixDims() throws DebugException {
+		int[] dims = new int[getDimensions()];
+		IJavaArray javaArray = getContent();
+		IJavaValue[] values = javaArray.getValues();
+		dims[0] = values.length;
+		dims[1] = ((IJavaArray) values[0]).getLength();
+		
+		//		Object[] values = getValues();
+		//		for(Object o : values)
+		//			if(o == null)
+		//				return false;
+		//
+		//		for(int i = 0; i < values.length-1; i++) {
+		//			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
+		//				return false;
+		//		}
+
+		return dims;
+	}
+
+
 	private Object[] prev;
 
 	private static boolean diff(Object[] a, Object[] b, int dim) {
@@ -248,9 +306,27 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			if(o == null)
 				return false;
 
-		for(int i = 0; i < values.length-1; i++)
+		for(int i = 0; i < values.length-1; i++) {
 			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
 				return false;
+		}
+
+		return true;
+	}
+
+	public boolean isMatrix2() {
+		if(getDimensions() < 2)
+			return false;
+
+		Object[] values = getValues();
+		for(Object o : values)
+			if(o == null)
+				return false;
+
+		for(int i = 0; i < values.length-1; i++) {
+			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
+				return false;
+		}
 
 		return true;
 	}

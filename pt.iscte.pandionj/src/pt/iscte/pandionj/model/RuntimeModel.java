@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -77,6 +78,8 @@ implements IRuntimeModel {
 			notifyObservers(new Event<List<StackFrameModel>>(Event.Type.NEW_STACK, getFilteredStackPath()));
 		}
 
+		
+		
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel && o.update(step))
 				setChanged();
@@ -98,7 +101,23 @@ implements IRuntimeModel {
 		// TODO setStep static
 
 		PandionJView.getInstance().executeInternal(() -> {
-			handle(thread.getStackFrames());
+			IStackFrame[] stackFrames = thread.getStackFrames();
+			if(!isPartiallyCommon(stackFrames)) {
+				IStackFrame[] frames = reverse(stackFrames);
+				int i = 0;
+				Iterator<StackFrameModel> it = callStack.iterator();
+				while(it.hasNext() && i < frames.length) {
+					StackFrameModel s = it.next();
+					if(s.getStackFrame() != frames[i]) {
+						it.remove();
+						setChanged();
+						notifyObservers(new Event<StackFrameModel>(Event.Type.REMOVE_FRAME, s));
+					}
+					i++;
+				}
+				
+			}
+			handle(stackFrames);
 		});
 
 		for(int i = 0; i < countActive; i++)

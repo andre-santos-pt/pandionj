@@ -3,6 +3,7 @@ package pt.iscte.pandionj.figures;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
+import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
@@ -37,21 +38,22 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure, boolean addMethods) {
 		super(model, true);
 		assert extensionFigure != null;
-		
+
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;
 		layout.verticalSpacing = 2;
 		layout.marginHeight = 5;
 		layout.marginWidth = 5;
-		
+
 		extensionFigure.setOpaque(true);
 		extensionFigure.setBackgroundColor(ColorConstants.blue);
-		
+
 		fig = new RoundedRectangle();
 		fig.setLayoutManager(layout);
 		fig.setCornerDimensions(Constants.OBJECT_CORNER);
 		fig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
 		fig.setBackgroundColor(Constants.Colors.OBJECT);
+		getLayoutManager().setConstraint(fig, new GridData(SWT.DEFAULT, SWT.BEGINNING, false, false));
 
 		fig.add(extensionFigure);
 		fig.setToolTip(new Label(model.getTypeName()));
@@ -60,26 +62,36 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		objectContainer = new ObjectContainer(false);
 		objectContainer.setFigProvider(runtimeViewer.getFigureProvider());
 		objectContainer.setBackgroundColor(ColorConstants.yellow);
-		
-		StackFrameFigure sf = new StackFrameFigure(runtimeViewer, model.getRuntimeModel().getTopFrame(), objectContainer, true, true);
-		fig.add(sf);
 
-		if(addMethods)
-			addMethods(model);
-		
+		// TODO problema com registo de observadores
+		//		IStackFrameModel topFrame = model.getRuntimeModel().getTopFrame();
+		//		StackFrameFigure sf = new StackFrameFigure(runtimeViewer, topFrame, objectContainer, true, true);
+		//		fig.add(sf);
+
+		//		if(addMethods)
+		//			addMethods(model);
+
 		add(fig);
 		add(objectContainer);
-		
+
 		stack = new StackContainer();
 		fig.add(stack);
-	
+
 	}
 
 	public void addFrame(IStackFrameModel frame) {
+
+		if(stack.getChildren().isEmpty()) {
+			StackFrameFigure sf = new StackFrameFigure(RuntimeViewer.getInstance(), frame, objectContainer, true, true);
+			sf.setBackgroundColor(ColorConstants.orange);
+			sf.setOpaque(true);
+			stack.add(sf);
+		}
+
 		stack.addFrame(frame, RuntimeViewer.getInstance(), objectContainer, false);
 	}	
 
-	
+
 
 
 	private void addMethods(IObjectModel model) {
@@ -176,9 +188,9 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 					shell.getDisplay().sleep();
 		}
 	}
-	
-	
-//	private IWatchExpressionListener invocationListener = new IWatchExpressionListener() {
+
+
+	//	private IWatchExpressionListener invocationListener = new IWatchExpressionListener() {
 	//
 	//		@Override
 	//		public void watchEvaluationFinished(IWatchExpressionResult result) {

@@ -26,7 +26,7 @@ import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.ModelObserver;
 
 public class StackFrameFigure extends Figure {
-	private final IStackFrameModel frame;
+	final IStackFrameModel frame;
 	private GridLayout layout;
 	private FigureProvider figProvider;
 	private ObjectContainer objectContainer;
@@ -68,10 +68,11 @@ public class StackFrameFigure extends Figure {
 		}
 
 		updateLook(frame, false);
-		addFrameObserver(frame);
 		
-		// TODO repor ConcorrentMod
-//		frame.getRuntime().registerDisplayObserver((e) -> updateLook(frame, e.type == Event.Type.TERMINATION));
+//		if(!instance) // TODO not to register observers
+			addFrameObserver(frame);
+		
+			
 	}
 
 	private void addFrameObserver(IStackFrameModel frame) {

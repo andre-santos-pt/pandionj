@@ -118,15 +118,6 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			}
 		});
 
-		// TODO repor com RuntimeModel
-		//		model.getStackFrame().registerDisplayObserver(new Observer() {
-		//			@Override
-		//			public void update(Observable o, Object arg) {
-		//				setVisible(model.isWithinScope());
-		//			}
-		//		});
-		//		model.getRuntimeModel().registerDisplayObserver((o,a) -> setVisible(model.isWithinScope()));
-
 		if(Role.GATHERER.equals(role)) {
 			extraFigure = new Label("");
 			extraFigure.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);

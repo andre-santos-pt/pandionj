@@ -4,12 +4,15 @@ import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Graphics;
+import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
+import org.eclipse.draw2d.MouseEvent;
+import org.eclipse.draw2d.MouseMotionListener;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
-import org.eclipse.swt.graphics.PaletteData;
 import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.Constants;
@@ -17,15 +20,13 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 
 abstract class ImageFigure extends Figure {
 	IArrayModel<?> model;
-	PaletteData palette;
 	Object[] array;
 	boolean valid;
 	int width;
 	int height;
 
-	public ImageFigure(IArrayModel<?> model, PaletteData palette) {
+	public ImageFigure(IArrayModel<?> model) {
 		init(model);
-		this.palette = palette;
 	}
 
 	private void init(IArrayModel<?> model) {

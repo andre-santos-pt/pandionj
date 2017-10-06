@@ -21,6 +21,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -37,6 +38,7 @@ import org.eclipse.swt.widgets.Text;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.ObjectContainer;
 import pt.iscte.pandionj.figures.ObjectFigure;
@@ -56,6 +58,8 @@ public class RuntimeViewer extends Composite {
 	private ScrolledComposite scroll;
 	private Canvas canvas;
 	private Map<IReferenceModel, PolylineConnection> pointersMap;
+
+	private MenuItem clearItem;
 
 	RuntimeViewer(Composite parent) {
 		super(parent, SWT.BORDER);
@@ -113,10 +117,22 @@ public class RuntimeViewer extends Composite {
 	private void refresh(RuntimeModel model, RuntimeModel.Event<?> event) {
 		if(event.type == RuntimeModel.Event.Type.NEW_STACK)
 			rebuildStack(model);
+		else if(event.type == RuntimeModel.Event.Type.REMOVE_FRAME) {
+			StackFrameModel f = (StackFrameModel) event.arg;
+			stackFig.removeFrame(f);
+			for (IVariableModel<?> v : f.getAllVariables()) {
+				if(v instanceof IReferenceModel) {
+					PolylineConnection c = pointersMap.remove(v);
+					if(c != null)
+						rootFig.remove(c);
+				}
+			}
+		}
 		else if(event.type == RuntimeModel.Event.Type.NEW_FRAME) {
 			StackFrameModel frame = (StackFrameModel) event.arg;
 			if(frame.isInstance()) {
 				IObjectModel obj = frame.getThis();
+				
 				ObjectFigure fig = objectContainer.findObject(obj);
 				if(fig != null)
 					fig.addFrame(frame);
@@ -128,19 +144,24 @@ public class RuntimeViewer extends Composite {
 		}
 		stackFig.getLayoutManager().layout(stackFig);
 		updateLayout();
+		
+		clearItem.setEnabled(model.isTerminated());
 	}
 
 	
 	private void rebuildStack(RuntimeModel model) {
+		clear();
+		IStackFrameModel staticVars = model.getStaticVars();
+		stackFig.addFrame(staticVars, this, objectContainer, true);
+	}
+
+	private void clear() {
 		for(PolylineConnection p : pointersMap.values())
 			rootFig.remove(p);
 		
 		pointersMap.clear();
-		
 		stackFig.removeAll();
 		objectContainer.removeAll();
-		IStackFrameModel staticVars = model.getStaticVars();
-		stackFig.addFrame(staticVars, this, objectContainer, true);
 	}
 	
 	
@@ -252,10 +273,26 @@ public class RuntimeViewer extends Composite {
 			}
 		});
 		
+		clearItem = new MenuItem(menu, SWT.PUSH);
+		clearItem.setText(Constants.Messages.CLEAR);
+		clearItem.setImage(PandionJUI.getImage("clear.gif"));
+		clearItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				clear();
+			}
+		});
 		canvas.setMenu(menu);
 	}
 
 
+	// TODO save image
+//	void saveImage() {
+//		ImageLoader imageLoader = new ImageLoader();
+//		imageLoader.data = new ImageData[] {ideaImageData};
+//		imageLoader.save("C:/temp/Idea_PureWhite.jpg",SWT.IMAGE_JPEG); 
+//	}
+	
 	void copyToClipBoard() {
 		Dimension size = rootFig.getPreferredSize();
 		Image image = new Image(Display.getDefault(), size.width, size.height);
