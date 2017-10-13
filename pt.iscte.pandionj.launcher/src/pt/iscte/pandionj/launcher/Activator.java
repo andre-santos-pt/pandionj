@@ -1,6 +1,9 @@
 package pt.iscte.pandionj.launcher;
+import java.util.HashMap;
+
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
@@ -27,13 +30,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.BundleContext;
-
-import pt.iscte.pandionj.extensibility.PandionJUI;
 
 public class Activator extends AbstractUIPlugin {
 	private static ILaunch launch;
@@ -49,7 +50,6 @@ public class Activator extends AbstractUIPlugin {
 					IThread thread = (IThread) e.getSource();
 
 					Display.getDefault().asyncExec(new Runnable() {
-
 						@Override
 						public void run() {
 							try {
@@ -67,26 +67,31 @@ public class Activator extends AbstractUIPlugin {
 								IWorkbench wb = PlatformUI.getWorkbench();
 								IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
 								IWorkbenchPage page = window.getActivePage();
-								IEditorPart editor = page.getActiveEditor();
-								IEditorInput editorInput = editor.getEditorInput();
-								if(editorInput instanceof FileEditorInput) {
-									FileEditorInput fInput = (FileEditorInput) editorInput;
-									if(fInput.getFile().equals(srcFile)) {
-										IDocumentProvider docProvider = ((ITextEditor)editor).getDocumentProvider();
-										IDocument document = docProvider.getDocument(editorInput);
-										annotationModel = docProvider.getAnnotationModel(fInput);
-										annotationModel.removeAnnotation(annotation);
-										try {
-											int offset = document.getLineOffset(line);
-											int length = document.getLineLength(line);
-											annotationModel.addAnnotation(annotation, new Position(offset, length));
-										} catch (BadLocationException e) {
-											e.printStackTrace();
-										}
-									}
+
+								HashMap<String, Object> map = new HashMap<>();
+								map.put(IMarker.LINE_NUMBER, new Integer(line+1));
+								IMarker marker = srcFile.createMarker(IMarker.TEXT);
+								marker.setAttributes(map);
+								IEditorPart openEditor = IDE.openEditor(page, marker);
+								IEditorInput editorInput = openEditor.getEditorInput();
+								marker.delete();
+
+								IDocumentProvider docProvider = ((ITextEditor) openEditor).getDocumentProvider();
+								IDocument document = docProvider.getDocument(editorInput);
+								if(annotationModel != null)
+									annotationModel.removeAnnotation(annotation);
+								annotationModel = docProvider.getAnnotationModel(editorInput);
+								try {
+									int offset = document.getLineOffset(line);
+									int length = document.getLineLength(line);
+									annotationModel.addAnnotation(annotation, new Position(offset, length));
+								} catch (BadLocationException e) {
+									e.printStackTrace();
 								}
 							} catch (DebugException e1) {
 								e1.printStackTrace();
+							} catch (CoreException e2) {
+								e2.printStackTrace();
 							}
 						}
 					});
@@ -94,10 +99,6 @@ public class Activator extends AbstractUIPlugin {
 				else if(e.getKind() == DebugEvent.TERMINATE) {
 					if(annotationModel != null)
 						annotationModel.removeAnnotation(annotation);
-
-					//					IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
-					//					window.getActivePage().getActiveEditor().getSite().getSelectionProvider().setSelection(StructuredSelection.EMPTY);
-					PandionJUI.activateEditor();
 				}
 			}
 		}
@@ -146,7 +147,7 @@ public class Activator extends AbstractUIPlugin {
 				e.printStackTrace();
 			}
 		}
-		showView(event);
+		//		showView(event);
 	}
 
 	static void stepInto(ExecutionEvent event) {
@@ -159,7 +160,7 @@ public class Activator extends AbstractUIPlugin {
 				e.printStackTrace();
 			}
 		}
-		showView(event);
+		//		showView(event);
 	}
 
 	static void stepOver(ExecutionEvent event) {
@@ -172,7 +173,7 @@ public class Activator extends AbstractUIPlugin {
 				e.printStackTrace();
 			}
 		}
-		showView(event);
+		//		showView(event);
 	}
 
 	static void stepReturn(ExecutionEvent event) {
@@ -185,7 +186,7 @@ public class Activator extends AbstractUIPlugin {
 				e.printStackTrace();
 			}
 		}
-		showView(event);
+		//		showView(event);
 	}
 
 	static void terminate(ExecutionEvent event) {
@@ -198,7 +199,7 @@ public class Activator extends AbstractUIPlugin {
 				e.printStackTrace();
 			}
 		}
-		showView(event);
+		//		showView(event);
 	}
 
 	private static void showView(ExecutionEvent event) {

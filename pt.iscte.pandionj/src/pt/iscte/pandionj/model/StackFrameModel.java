@@ -125,7 +125,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	public void update() throws DebugException {
 		handleVariables();
-		//		if(hasChanged()) {
 		step++;
 		stepPointer = step;
 		stepLines.put(step, lastLine);
@@ -426,9 +425,13 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 
 	public IObjectModel getThis() {
-		assert isInstance();
+		//assert isInstance();
+//		if(isObsolete())
+//			return null;
 		try {
-			return (IObjectModel) getRuntime().getObject(frame.getThis(), false, null);
+			IJavaObject obj = frame.getThis();
+			if(obj != null)
+				return (IObjectModel) getRuntime().getObject(obj, false, null);
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}

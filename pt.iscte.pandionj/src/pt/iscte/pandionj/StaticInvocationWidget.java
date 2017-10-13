@@ -263,7 +263,7 @@ public class StaticInvocationWidget extends Composite {
 	@Override
 	public boolean setFocus() {
 		paramBoxes[0].setFocus();
-		pack();
+//		pack();
 		return true;
 	}
 }

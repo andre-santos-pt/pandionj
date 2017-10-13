@@ -8,6 +8,7 @@ import java.util.List;
 import org.eclipse.core.resources.IFile;
 
 import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -71,6 +72,16 @@ public class MockStackFrame implements IStackFrameModel {
 	@Override
 	public String getExceptionType() {
 		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public boolean isInstance() {
+		return false;
+	}
+
+	@Override
+	public IObjectModel getThis() {
 		return null;
 	}
 }

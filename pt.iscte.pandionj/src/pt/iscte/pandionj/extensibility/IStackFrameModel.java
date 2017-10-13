@@ -28,6 +28,8 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 
 	boolean isObsolete();
 	boolean isExecutionFrame();
+	boolean isInstance();
+	IObjectModel getThis();
 	int getLineNumber();
 	boolean exceptionOccurred();
 	String getExceptionType();

@@ -38,7 +38,14 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
@@ -50,6 +57,7 @@ import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
+import pt.iscte.pandionj.InvocationArea;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 
@@ -115,7 +123,7 @@ public class LaunchCommand extends AbstractHandler {
 						offset = textSelection.getOffset();
 					}
 				}
-				
+
 				if(PandionJUI.hasCompilationErrors(file)) {
 					MessageDialog.openError(Display.getDefault().getActiveShell(),
 							"Compilation errors",
@@ -136,12 +144,12 @@ public class LaunchCommand extends AbstractHandler {
 					for(IType t : types)
 						if(withinSourceRange(t, offset))
 							type = t;
-					
+
 					if(type == null) {
 						showMethodMessage();
 						return null;
 					}
-					
+
 
 					final String agentArgs = type.getFullyQualifiedName().replace('.', '/');
 
@@ -187,9 +195,11 @@ public class LaunchCommand extends AbstractHandler {
 
 								if(selectedMethod.getParameterTypes().length != 0) {
 									final IType t = type;
-									PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
+
+									area.setMethod(file, selectedMethod, new InvocationAction() {
 										@Override
 										public void invoke(String expression) {
+											shell.setVisible(false);
 											args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
 											try {
 												launch(file, lineFinal, t, args, mainMethod);
@@ -198,6 +208,38 @@ public class LaunchCommand extends AbstractHandler {
 											}
 										}
 									});
+
+									shell.pack();
+									Rectangle screen = Display.getCurrent().getClientArea();
+									Point cursor = Display.getCurrent().getCursorLocation();
+									int w = screen.width-cursor.x-shell.getSize().x-20;
+									if(w < 0)
+										cursor = new Point(cursor.x + w, cursor.y);
+									shell.setLocation(cursor);
+									if(shell.getVisible())
+										shell.open();
+									else
+										shell.setVisible(true);
+
+									area.setFocus();
+
+									//									while (!shell.isDisposed()) {
+									//										if (!display.readAndDispatch())
+									//											display.sleep();
+									//									}
+
+									//									PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
+									//										@Override
+									//										public void invoke(String expression) {
+									//											args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
+									//											try {
+									//												launch(file, lineFinal, t, args, mainMethod);
+									//											} catch (CoreException e) {
+									//												e.printStackTrace();
+									//											}
+									//											
+									//										}
+									//									});
 								}
 								else {  // no params
 									if(PandionJUI.checkView()) {
@@ -221,13 +263,13 @@ public class LaunchCommand extends AbstractHandler {
 		ISourceRange sourceRange = member.getSourceRange();
 		return offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength();
 	}
-	
+
 	private static void showMethodMessage() {
 		MessageDialog.openError(Display.getDefault().getActiveShell(),
 				"Please select method",
 				"Place the cursor at a line of the body of a static method.");
 	}
-	
+
 	private void launch(IResource file, int line, IType type, String agentArgs, IMethod mainMethod)
 			throws CoreException {
 		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
@@ -262,5 +304,24 @@ public class LaunchCommand extends AbstractHandler {
 	}
 
 
+	private Shell shell;
+	private InvocationArea area;
+
+	public LaunchCommand() {
+		shell = new Shell(Display.getDefault(), SWT.APPLICATION_MODAL);
+		shell.setLayout(new FillLayout());
+		area = new InvocationArea(shell);
+		shell.addListener(SWT.Traverse, new Listener() {
+			public void handleEvent(Event event) {
+				switch (event.detail) {
+				case SWT.TRAVERSE_ESCAPE:
+					shell.setVisible(false);
+					event.detail = SWT.TRAVERSE_NONE;
+					event.doit = false;
+					break;
+				}
+			}
+		});
+	}
 }
 

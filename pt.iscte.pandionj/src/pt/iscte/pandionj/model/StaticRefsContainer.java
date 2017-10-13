@@ -11,6 +11,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
 
 import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -116,6 +117,16 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 
 	@Override
 	public String getExceptionType() {
+		return null;
+	}
+
+	@Override
+	public boolean isInstance() {
+		return false;
+	}
+
+	@Override
+	public IObjectModel getThis() {
 		return null;
 	}
 

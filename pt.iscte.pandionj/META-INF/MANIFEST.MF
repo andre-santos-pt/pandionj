@@ -16,6 +16,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.draw2d;bundle-version="3.10.100"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: pt.iscte.pandionj.extensibility,
+Export-Package: pt.iscte.pandionj,
+ pt.iscte.pandionj.extensibility,
  pt.iscte.pandionj.figures,
  pt.iscte.pandionj.model

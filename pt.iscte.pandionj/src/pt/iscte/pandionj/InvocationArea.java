@@ -15,12 +15,12 @@ import org.eclipse.swt.widgets.Label;
 
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 
-class InvocationArea extends Composite {
+public class InvocationArea extends Composite {
 	StackLayout layout;
 	Map<String, StaticInvocationWidget> invWidgetsMap;
 	Composite blank;
 
-	InvocationArea(Composite parent) {
+	public InvocationArea(Composite parent) {
 		super(parent, SWT.NONE);
 		layout = new StackLayout();
 		setLayout(layout);
@@ -42,7 +42,7 @@ class InvocationArea extends Composite {
 		return blank;
 	}
 
-	void setMethod(IFile file, IMethod method, InvocationAction a) {
+	public void setMethod(IFile file, IMethod method, InvocationAction a) {
 		String key = null;
 		try {
 			IType type = (IType) method.getParent();

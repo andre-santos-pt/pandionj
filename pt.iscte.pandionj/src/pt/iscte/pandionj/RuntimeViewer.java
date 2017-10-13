@@ -21,7 +21,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.VerifyEvent;
 import org.eclipse.swt.events.VerifyListener;
-import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.FillLayout;
@@ -29,19 +28,16 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
-import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.ObjectContainer;
-import pt.iscte.pandionj.figures.ObjectFigure;
 import pt.iscte.pandionj.figures.StackContainer;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
@@ -130,17 +126,8 @@ public class RuntimeViewer extends Composite {
 		}
 		else if(event.type == RuntimeModel.Event.Type.NEW_FRAME) {
 			StackFrameModel frame = (StackFrameModel) event.arg;
-			if(frame.isInstance()) {
-				IObjectModel obj = frame.getThis();
-				
-				ObjectFigure fig = objectContainer.findObject(obj);
-				if(fig != null)
-					fig.addFrame(frame);
-			}				
-			else {
+			if(!frame.isInstance())
 				stackFig.addFrame(frame, this, objectContainer, false);
-			}
-
 		}
 		stackFig.getLayoutManager().layout(stackFig);
 		updateLayout();
@@ -165,7 +152,7 @@ public class RuntimeViewer extends Composite {
 	}
 	
 	
-	private void updateLayout() {
+	public void updateLayout() {
 		org.eclipse.swt.graphics.Point prev = canvas.getSize();
 		Dimension size = rootFig.getPreferredSize();
 		canvas.setSize(size.width, size.height);
@@ -187,30 +174,10 @@ public class RuntimeViewer extends Composite {
 	}
 	
 	public void removePointer(IReferenceModel ref) {
-		PolylineConnection p = pointersMap.get(ref);
+		PolylineConnection p = pointersMap.remove(ref);
 		if(p != null)
 			rootFig.remove(p);
 	}
-
-
-
-
-//	class StackFigure extends Figure {
-//		public StackFigure() {
-//			GridLayout gridLayout = new GridLayout(1, true);
-//			gridLayout.verticalSpacing = Constants.OBJECT_PADDING*2;
-//			setLayoutManager(gridLayout);
-//			setOpaque(true);
-//		}
-//
-//		void addFrame(IStackFrameModel frame, boolean invisible) {
-//			if(frame.getLineNumber() != -1) {
-//				StackFrameFigure sv = new StackFrameFigure(RuntimeViewer.this, frame, objectFig, invisible, false);
-//				add(sv);
-//				getLayoutManager().setConstraint(sv, new org.eclipse.draw2d.GridData(SWT.FILL, SWT.DEFAULT, true, false));
-//			}
-//		}
-//	}
 
 
 

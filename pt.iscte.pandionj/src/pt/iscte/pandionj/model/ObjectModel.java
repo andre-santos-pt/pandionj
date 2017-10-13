@@ -218,23 +218,12 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	@Override
 	public String toString() {
-		//		try {
-		return "?toString?"; //invoke4("toString", new IJavaValue[0]).getValueString();
-		//		} catch (DebugException e) {
-		//			e.printStackTrace();
-		//			return super.toString();
-		//		}
-
-		//		try {
-		//			return "(" + getContent().getJavaType().getName() + ")";
-		//			//			String s = toStringValue() + " (" + object.getJavaType().getName() + ")";
-		//			//			for(Entry<String, ReferenceModel> e : references.entrySet())
-		//			//				s += "\t" + e.getKey() + " -> " + e.getValue().getContent().toString();
-		//			//			return s;
-		//		} catch (DebugException e) {
-		//			e.printStackTrace();
-		//			return super.toString();
-		//		}
+		try {
+			return getContent().getValueString();
+		} catch (DebugException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
@@ -565,7 +554,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			}
 			else {
 				DebugException exception = result.getException();
-				if(exception.getCause() instanceof InvocationException) {
+				if(exception != null && exception.getCause() instanceof InvocationException) {
 					InvocationException e = (InvocationException) exception.getCause();
 					ObjectReference exception2 = e.exception();
 				}

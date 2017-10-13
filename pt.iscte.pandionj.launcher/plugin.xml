@@ -102,13 +102,11 @@
       </key>
       <key
             commandId="pt.iscte.pandionj.launcher.stepover"
-            contextId="pt.iscte.pandionj.context"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F6">
       </key>
       <key
             commandId="pt.iscte.pandionj.launcher.stepreturn"
-            contextId="pt.iscte.pandionj.context"
             schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
             sequence="F7">
       </key>

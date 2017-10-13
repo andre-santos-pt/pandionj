@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -25,14 +24,12 @@ import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
-
 
 
 public class RuntimeModel
@@ -66,7 +63,7 @@ implements IRuntimeModel {
 	}
 
 	public void update(IJavaThread thread) throws DebugException {
-		if(launch != thread.getLaunch()) {
+		if(launch != thread.getLaunch()) {	
 			launch = thread.getLaunch();
 			callStack.clear();
 			objects.clear();
@@ -78,8 +75,6 @@ implements IRuntimeModel {
 			notifyObservers(new Event<List<StackFrameModel>>(Event.Type.NEW_STACK, getFilteredStackPath()));
 		}
 
-		
-		
 		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
 			if(o instanceof ArrayModel && o.update(step))
 				setChanged();
@@ -91,33 +86,15 @@ implements IRuntimeModel {
 								setChanged();
 						}
 						catch(DebugException e) {
-//							throw e; // TODO propagate exception
+							//							throw e; // TODO propagate exception
 						}
 					}
 				});
 			}
 		}
 
-		// TODO setStep static
-
 		PandionJView.getInstance().executeInternal(() -> {
-			IStackFrame[] stackFrames = thread.getStackFrames();
-			if(!isPartiallyCommon(stackFrames)) {
-				IStackFrame[] frames = reverse(stackFrames);
-				int i = 0;
-				Iterator<StackFrameModel> it = callStack.iterator();
-				while(it.hasNext() && i < frames.length) {
-					StackFrameModel s = it.next();
-					if(s.getStackFrame() != frames[i]) {
-						it.remove();
-						setChanged();
-						notifyObservers(new Event<StackFrameModel>(Event.Type.REMOVE_FRAME, s));
-					}
-					i++;
-				}
-				
-			}
-			handle(stackFrames);
+			handle(thread.getStackFrames());
 		});
 
 		for(int i = 0; i < countActive; i++)
@@ -132,16 +109,16 @@ implements IRuntimeModel {
 	private void handle(IStackFrame[] stackFrames) throws DebugException {
 		assert stackFrames != null;
 
-		IStackFrame[] revStackFrames = reverse(stackFrames);
-		if(isSubStack(revStackFrames)) {
-			for(int i = revStackFrames.length; i < callStack.size(); i++)
+		IStackFrame[] frames = reverse(stackFrames);
+		if(isSubStack(frames)) {
+			for(int i = frames.length; i < callStack.size(); i++)
 				callStack.get(i).setObsolete();
 
-			countActive = revStackFrames.length;
+			countActive = frames.length;
 		}
-		else if(isStackIncrement(revStackFrames)) {
-			for(int i = callStack.size(); i < revStackFrames.length; i++) {
-				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs);
+		else if(isStackIncrement(frames)) {
+			for(int i = callStack.size(); i < frames.length; i++) {
+				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) frames[i], staticRefs);
 				callStack.add(newFrame);
 				countActive++;
 				setChanged();
@@ -149,16 +126,28 @@ implements IRuntimeModel {
 			}
 		}
 		else {
-			callStack.clear();
-			for(int i = 0; i < revStackFrames.length; i++) {
-				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) revStackFrames[i], staticRefs);
-				callStack.add(newFrame);
+			int offset = 0;
+			while(offset < callStack.size() && offset < frames.length && 
+					callStack.get(offset).getStackFrame() == frames[offset]) {
+				offset++;
 			}
-			countActive = revStackFrames.length;
-			//			setChanged();
-			//			notifyObservers(new Event<List<StackFrameModel>>(Event.Type.NEW_STACK, getFilteredStackPath()));
-		}
 
+			for(int i = callStack.size() - offset; i > 0; i--) {
+				StackFrameModel s = callStack.remove(offset);
+				setChanged();
+				notifyObservers(new Event<StackFrameModel>(Event.Type.REMOVE_FRAME, s));
+			}
+
+			countActive = offset;
+			
+			for(int i = offset; i < frames.length; i++) {
+				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) frames[i], staticRefs);
+				callStack.add(newFrame);
+				countActive++;
+				setChanged();
+				notifyObservers(new Event<StackFrameModel>(Event.Type.NEW_FRAME, newFrame));	
+			}
+		}
 	}
 
 	public boolean isPartiallyCommon(IStackFrame[] stackFrames) {

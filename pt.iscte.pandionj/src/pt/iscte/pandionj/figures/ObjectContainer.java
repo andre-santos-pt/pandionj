@@ -73,7 +73,7 @@ public class ObjectContainer extends Figure {
 				GridLayout gridLayout = new GridLayout(2, false);
 				gridLayout.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP/2;
 				ext.setLayoutManager(gridLayout);
-				org.eclipse.draw2d.GridData alignTop = new org.eclipse.draw2d.GridData(SWT.LEFT, SWT.TOP, false, false);
+				org.eclipse.draw2d.GridData alignTop = new org.eclipse.draw2d.GridData(SWT.LEFT, SWT.CENTER, false, false);
 				gridLayout.setConstraint(fig, alignTop);
 
 				Container2d container2d = new Container2d((IArrayModel<?>) e);

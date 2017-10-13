@@ -1,5 +1,8 @@
 package pt.iscte.pandionj.figures;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
@@ -18,7 +21,6 @@ import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
-import pt.iscte.pandionj.extensibility.IRuntimeModel.Event;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -34,6 +36,7 @@ public class StackFrameFigure extends Figure {
 	private boolean invisible;
 	private boolean instance;
 	private Label label;
+	private List<IReferenceModel> pointers;
 	
 	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible, boolean instance) {
 		this.runtimeViewer = runtimeViewer;
@@ -42,6 +45,7 @@ public class StackFrameFigure extends Figure {
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
 		this.instance = instance;
+		this.pointers = new ArrayList<IReferenceModel>();
 		setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 4;
@@ -68,11 +72,7 @@ public class StackFrameFigure extends Figure {
 		}
 
 		updateLook(frame, false);
-		
-//		if(!instance) // TODO not to register observers
-			addFrameObserver(frame);
-		
-			
+		addFrameObserver(frame);
 	}
 
 	private void addFrameObserver(IStackFrameModel frame) {
@@ -89,8 +89,10 @@ public class StackFrameFigure extends Figure {
 						if(toRemove != null)
 							remove(toRemove);
 
-						if(event.arg instanceof IReferenceModel)
+						if(event.arg instanceof IReferenceModel) {
 							runtimeViewer.removePointer((IReferenceModel) event.arg);
+							pointers.remove((IReferenceModel) event.arg);
+						}
 					}
 					else if(event.type == StackEvent.Type.EXCEPTION) {
 						exception = ExceptionType.match((String) event.arg);
@@ -168,6 +170,7 @@ public class StackFrameFigure extends Figure {
 		Utils.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer);
 		runtimeViewer.addPointer(ref, pointer);
+		pointers.add(ref);
 	}
 
 	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
@@ -194,4 +197,11 @@ public class StackFrameFigure extends Figure {
 		return null;
 	}
 	
+	
+	public void removePointers() {
+		for (IReferenceModel r : pointers) {
+			runtimeViewer.removePointer(r);
+		}
+		pointers.clear();
+	}
 }

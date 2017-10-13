@@ -165,7 +165,6 @@ public class PandionJView extends ViewPart {
 				PandionJUI.executeUpdate(() -> {
 					if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 						IJavaThread thread = (IJavaThread) e.getSource();
-						//					executeInternal(() -> {
 						handleFrames(thread);
 						IStackFrame f = thread.getTopStackFrame();
 						if(f != null && f.getLineNumber() == -1)
@@ -220,14 +219,6 @@ public class PandionJView extends ViewPart {
 			});
 		}
 
-//		IStackFrame[] stackFrames = new IStackFrame[0];
-//		stackFrames = thread.getStackFrames();
-
-//		if(runtime == null || !runtime.isPartiallyCommon(stackFrames)) {
-//			runtime = new RuntimeModel();
-//			runtimeView.setInput(runtime);
-//		}
-
 		runtime.update(thread);
 
 		if(!runtime.isEmpty() && !runtime.isTerminated()) {
@@ -235,7 +226,7 @@ public class PandionJView extends ViewPart {
 			IFile sourceFile = frame.getSourceFile();
 			int lineNumber = frame.getLineNumber();
 			if(sourceFile != null && lineNumber != -1)
-				PandionJUI.navigateToLine(sourceFile, lineNumber);
+				;//PandionJUI.navigateToLine(sourceFile, lineNumber);
 		}
 	}
 
@@ -245,6 +236,7 @@ public class PandionJView extends ViewPart {
 			r.run();
 		}
 		catch(DebugException e) {
+			e.printStackTrace();
 			runtime.setTerminated();
 		}
 	}
@@ -254,6 +246,7 @@ public class PandionJView extends ViewPart {
 			return r.run();
 		}
 		catch(DebugException e) {
+			e.printStackTrace();
 			runtime.setTerminated();
 			return null;
 		}

@@ -26,15 +26,21 @@ import pt.iscte.pandionj.ParamsDialog;
 import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
+import pt.iscte.pandionj.extensibility.IRuntimeModel;
+import pt.iscte.pandionj.extensibility.IRuntimeModel.Event;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
 import pt.iscte.pandionj.extensibility.PandionJUI;
+import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.model.RuntimeModel;
+import pt.iscte.pandionj.model.StackFrameModel;
 
 public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	private RoundedRectangle fig;
 	private StackContainer stack;
 	private ObjectContainer objectContainer;
-
+	private StackFrameFigure attributes;
+	
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure, boolean addMethods) {
 		super(model, true);
 		assert extensionFigure != null;
@@ -46,7 +52,6 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		layout.marginWidth = 5;
 
 		extensionFigure.setOpaque(true);
-		extensionFigure.setBackgroundColor(ColorConstants.blue);
 
 		fig = new RoundedRectangle();
 		fig.setLayoutManager(layout);
@@ -61,16 +66,38 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		RuntimeViewer runtimeViewer = RuntimeViewer.getInstance();
 		objectContainer = new ObjectContainer(false);
 		objectContainer.setFigProvider(runtimeViewer.getFigureProvider());
-		objectContainer.setBackgroundColor(ColorConstants.yellow);
 
-		// TODO problema com registo de observadores
-		//		IStackFrameModel topFrame = model.getRuntimeModel().getTopFrame();
-		//		StackFrameFigure sf = new StackFrameFigure(runtimeViewer, topFrame, objectContainer, true, true);
-		//		fig.add(sf);
+		model.getRuntimeModel().registerDisplayObserver(new ModelObserver<IRuntimeModel.Event<?>>() {
+			
+			@Override
+			public void update(Event<?> e) {
+				if(e.type == IRuntimeModel.Event.Type.REMOVE_FRAME) {
+					IStackFrameModel f = (IStackFrameModel) e.arg;
+					stack.removeFrame(f);
+				}
+				else if(e.type == RuntimeModel.Event.Type.NEW_FRAME) {
+					StackFrameModel f = (StackFrameModel) e.arg;
+					if(f.getThis() == getModel())
+						addFrame(f);
+				}
+				else if(e.type == IRuntimeModel.Event.Type.STEP) {
+					IStackFrameModel f = model.getRuntimeModel().getTopFrame();
+					if(!(f.isInstance() && f.getThis() == getModel()) && attributes != null) {
+						stack.removePointers();
+//						stack.removeAll();
+						objectContainer.removeAll();
+						if(attributes != null)
+							attributes.setVisible(false);
+//						attributes = null;
+						runtimeViewer.updateLayout();
+					}
+				}
+			}
+		});
 
-		//		if(addMethods)
-		//			addMethods(model);
-
+//		if(addMethods)
+//			addMethods(model);
+		
 		add(fig);
 		add(objectContainer);
 
@@ -78,20 +105,36 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		fig.add(stack);
 
 	}
+	
 
 	public void addFrame(IStackFrameModel frame) {
 
-		if(stack.getChildren().isEmpty()) {
-			StackFrameFigure sf = new StackFrameFigure(RuntimeViewer.getInstance(), frame, objectContainer, true, true);
-			sf.setBackgroundColor(ColorConstants.orange);
-			sf.setOpaque(true);
-			stack.add(sf);
+		if(attributes == null) {
+			attributes = new StackFrameFigure(RuntimeViewer.getInstance(), frame, objectContainer, true, true);
+			attributes.setOpaque(true);
+			attributes.setBackgroundColor(ColorConstants.lightGray);
+//			sf.setBackgroundColor(Constants.Colors.OBJECT);
+			stack.add(attributes);
 		}
+		else
+			attributes.setVisible(true);
 
 		stack.addFrame(frame, RuntimeViewer.getInstance(), objectContainer, false);
+//		fig.setSize(fig.getPreferredSize());
+		getLayoutManager().invalidate();
+		getLayoutManager().layout(this);
 	}	
 
 
+	private void addMethodsMenu(IObjectModel model) {
+		for(IVisibleMethod m : model.getVisibleMethods()) {
+			Figure methodFig = new Figure();
+			methodFig.setLayoutManager(new FlowLayout());
+
+			Label but = new Label(m.getName() + (m.getNumberOfParameters() == 0 ? "()" : "(...)"));
+			FontManager.setFont(but, Constants.BUTTON_FONT_SIZE);
+		}
+	}
 
 
 	private void addMethods(IObjectModel model) {
