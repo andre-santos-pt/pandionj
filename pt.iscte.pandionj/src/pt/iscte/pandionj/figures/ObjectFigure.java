@@ -1,5 +1,8 @@
 package pt.iscte.pandionj.figures;
 
+import org.eclipse.draw2d.ActionEvent;
+import org.eclipse.draw2d.ActionListener;
+import org.eclipse.draw2d.Button;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
@@ -40,6 +43,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	private StackContainer stack;
 	private ObjectContainer objectContainer;
 	private StackFrameFigure attributes;
+	private Figure methodsFig;
 	
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure, boolean addMethods) {
 		super(model, true);
@@ -67,6 +71,8 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		objectContainer = new ObjectContainer(false);
 		objectContainer.setFigProvider(runtimeViewer.getFigureProvider());
 
+		addShowMethodListener();
+		
 		model.getRuntimeModel().registerDisplayObserver(new ModelObserver<IRuntimeModel.Event<?>>() {
 			
 			@Override
@@ -83,11 +89,11 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				else if(e.type == IRuntimeModel.Event.Type.STEP) {
 					IStackFrameModel f = model.getRuntimeModel().getTopFrame();
 					if(!(f.isInstance() && f.getThis() == getModel()) && attributes != null) {
-						stack.removePointers();
+//						stack.removePointers();
 //						stack.removeAll();
-						objectContainer.removeAll();
-						if(attributes != null)
-							attributes.setVisible(false);
+//						objectContainer.removeAll();
+//						if(attributes != null)
+//							attributes.setVisible(false);
 //						attributes = null;
 						runtimeViewer.updateLayout();
 					}
@@ -103,7 +109,25 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 		stack = new StackContainer();
 		fig.add(stack);
+		layout.setConstraint(stack, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 
+	}
+
+
+	private void addShowMethodListener() {
+		fig.addMouseListener(new MouseListener() {
+			public void mouseReleased(org.eclipse.draw2d.MouseEvent me) { }
+			public void mousePressed(org.eclipse.draw2d.MouseEvent me) { }
+			public void mouseDoubleClicked(org.eclipse.draw2d.MouseEvent me) {
+				if(methodsFig == null)
+					addMethods(getModel());
+				else {
+					fig.remove(methodsFig);
+					methodsFig = null;
+				}
+				invalidate();
+			}
+		});
 	}
 	
 
@@ -111,40 +135,35 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 		if(attributes == null) {
 			attributes = new StackFrameFigure(RuntimeViewer.getInstance(), frame, objectContainer, true, true);
-			attributes.setOpaque(true);
-			attributes.setBackgroundColor(ColorConstants.lightGray);
-//			sf.setBackgroundColor(Constants.Colors.OBJECT);
 			stack.add(attributes);
+			stack.getLayoutManager().setConstraint(attributes, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
+
 		}
-		else
-			attributes.setVisible(true);
 
 		stack.addFrame(frame, RuntimeViewer.getInstance(), objectContainer, false);
-//		fig.setSize(fig.getPreferredSize());
-		getLayoutManager().invalidate();
-		getLayoutManager().layout(this);
 	}	
 
 
-	private void addMethodsMenu(IObjectModel model) {
-		for(IVisibleMethod m : model.getVisibleMethods()) {
-			Figure methodFig = new Figure();
-			methodFig.setLayoutManager(new FlowLayout());
-
-			Label but = new Label(m.getName() + (m.getNumberOfParameters() == 0 ? "()" : "(...)"));
-			FontManager.setFont(but, Constants.BUTTON_FONT_SIZE);
-		}
-	}
-
 
 	private void addMethods(IObjectModel model) {
+		methodsFig = new Figure();
+		methodsFig.setLayoutManager(new GridLayout(1, false));
+//		methodsFig.setLayoutManager(new FlowLayout());
 		for(IVisibleMethod m : model.getVisibleMethods()) {
-			Figure methodFig = new Figure();
-			methodFig.setLayoutManager(new FlowLayout());
-
+			
 			Label but = new Label(m.getName() + (m.getNumberOfParameters() == 0 ? "()" : "(...)"));
 			FontManager.setFont(but, Constants.BUTTON_FONT_SIZE);
-
+			Button button = new Button(m.getName() + (m.getNumberOfParameters() == 0 ? "()" : "(...)"));
+			button.setToolTip(new Label("click to invoke method"));
+			button.addActionListener(new ActionListener() {
+				
+				@Override
+				public void actionPerformed(ActionEvent event) {
+					invoke(model, m);
+				}
+			});
+			
+			methodsFig.add(button);
 			but.addMouseListener(new MouseListener() {
 
 				@Override
@@ -153,33 +172,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 				@Override
 				public void mousePressed(org.eclipse.draw2d.MouseEvent arg0) {
-					Rectangle r = but.getBounds().getCopy();
-					//						org.eclipse.swt.graphics.Point p = graph.toDisplay(r.x,r.y);
-					org.eclipse.swt.graphics.Point p = new org.eclipse.swt.graphics.Point (400, 400);
-					if(m.getNumberOfParameters() == 0) {
-						model.invoke(m.getName(), new InvocationResult() {
-
-							@Override
-							public void valueReturn(Object o) {
-								System.out.println("CLICK: " + o);
-							}
-						});
-					}
-					else {
-						ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), m);
-						prompt.setLocation(p.x, p.y);
-						if(prompt.open()) {
-							String[] stringValues = prompt.getValues();
-							model.invoke(m.getName(), new InvocationResult() {
-								@Override
-								public void valueReturn(Object o) {
-									PandionJUI.executeUpdate(() -> {
-										new ResultDialog(Display.getDefault().getActiveShell(), 400, 400, o.toString()).open();
-									});
-								}
-							}, stringValues);
-						}
-					}
+					invoke(model, m);
 				}
 
 				@Override
@@ -187,13 +180,39 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 				}
 			});
-			methodFig.add(but);
-			fig.add(methodFig);
+//			methodFig.add(but);
 		}
+		fig.add(methodsFig);
 	}
 
 
+	private void invoke(IObjectModel model, IVisibleMethod m) {
+		org.eclipse.swt.graphics.Point p = new org.eclipse.swt.graphics.Point (400, 400);
+		if(m.getNumberOfParameters() == 0) {
+			model.invoke(m.getName(), new InvocationResult() {
 
+				@Override
+				public void valueReturn(Object o) {
+					System.out.println("CLICK: " + o);
+				}
+			});
+		}
+		else {
+			ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), m);
+			prompt.setLocation(p.x, p.y);
+			if(prompt.open()) {
+				String[] stringValues = prompt.getValues();
+				model.invoke(m.getName(), new InvocationResult() {
+					@Override
+					public void valueReturn(Object o) {
+						PandionJUI.executeUpdate(() -> {
+							new ResultDialog(Display.getDefault().getActiveShell(), 400, 400, o.toString()).open();
+						});
+					}
+				}, stringValues);
+			}
+		}
+	}
 
 
 

@@ -524,12 +524,16 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
-		Collection<IReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
-		if(!referencesTo.isEmpty()) {
-			String exp = referencesTo.iterator().next().getName() + "." + methodName + "(" + String.join(", ", args) + ")";
-
-			delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(listener));
+		
+		String exp = methodName + "(" + String.join(", ", args) + ")";
+		
+		if(!stackFrame.isInstance()) {
+			Collection<IReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
+			if(!referencesTo.isEmpty()) {
+				exp = referencesTo.iterator().next().getName() + "." + exp;
+			}
 		}
+		delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(listener));
 	}
 
 	private class ExpressionListener implements IWatchExpressionListener {

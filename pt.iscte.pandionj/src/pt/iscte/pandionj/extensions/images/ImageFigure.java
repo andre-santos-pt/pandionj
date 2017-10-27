@@ -69,9 +69,9 @@ abstract class ImageFigure extends Figure {
 	protected void paintFigure(Graphics g) {
 		Rectangle r = getBounds();
 		g.setLineWidth(1);
-		g.setForegroundColor(valid ? ColorConstants.lightGray : Constants.Colors.ERROR);
-		g.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);
-		g.drawRectangle(r.x, r.y, r.width-1, r.height-1);
+//		g.setForegroundColor(valid ? ColorConstants.lightGray : Constants.Colors.ERROR);
+//		g.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);
+//		g.drawRectangle(r.x, r.y, r.width-1, r.height-1);
 		if(valid) {
 			ImageData data = getImageData();
 			Image img = new Image(Display.getDefault(), data);

@@ -40,7 +40,7 @@ public class BinaryImageWidget implements IArrayWidgetExtension {
 			for(int y = 0; y < height; y++) {
 				Object[] line = (Object[]) array[y];
 				for(int x = 0; x < line.length && x < width; x++)
-					data.setPixel(x, y, (boolean) line[x] ? 1 : 0);
+					data.setPixel(x, y, (boolean) line[x] ? 0 : 1);
 			}
 			return data;
 		}

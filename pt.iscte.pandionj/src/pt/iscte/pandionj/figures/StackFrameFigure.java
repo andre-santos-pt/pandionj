@@ -141,7 +141,7 @@ public class StackFrameFigure extends Figure {
 		}
 	}
 	private void addVariable(IVariableModel<?> v, ExceptionType exception) {
-		if(v.isInstance() == instance) {
+		if(v.isInstance() == instance) { // && !(v instanceof IReferenceModel && !((IReferenceModel) v).getTags().isEmpty())) {
 			PandionJFigure<?> figure = figProvider.getFigure(v, true);
 			add(figure);
 
@@ -199,9 +199,8 @@ public class StackFrameFigure extends Figure {
 	
 	
 	public void removePointers() {
-		for (IReferenceModel r : pointers) {
+		for (IReferenceModel r : pointers)
 			runtimeViewer.removePointer(r);
-		}
 		pointers.clear();
 	}
 }

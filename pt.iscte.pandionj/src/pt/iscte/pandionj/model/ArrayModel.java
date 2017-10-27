@@ -95,6 +95,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		return getValues(getContent());
 	}
 
+	// TODO remove try catch
 	private static Object[] getValues(IJavaArray javaArray) {
 		try {
 			IJavaType compType = ((IJavaArrayType) javaArray.getJavaType()).getComponentType();

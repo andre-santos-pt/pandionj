@@ -9,6 +9,7 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.SWTGraphics;
+import org.eclipse.draw2d.ScalableLayeredPane;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -71,6 +72,7 @@ public class RuntimeViewer extends Composite {
 		scroll.setContent(canvas);
 		addMenu();
 
+//		rootFig = new ScalableLayeredPane();
 		rootFig = new Figure();
 		rootFig.setOpaque(true);
 		rootFig.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
@@ -92,7 +94,6 @@ public class RuntimeViewer extends Composite {
 
 		lws = new LightweightSystem(canvas);
 		lws.setContents(rootFig);
-		
 		pointersMap = new HashMap<>();
 	}
 

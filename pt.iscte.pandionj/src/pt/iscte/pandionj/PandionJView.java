@@ -236,7 +236,7 @@ public class PandionJView extends ViewPart {
 			r.run();
 		}
 		catch(DebugException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			runtime.setTerminated();
 		}
 	}
@@ -246,7 +246,7 @@ public class PandionJView extends ViewPart {
 			return r.run();
 		}
 		catch(DebugException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			runtime.setTerminated();
 			return null;
 		}
