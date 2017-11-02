@@ -27,14 +27,16 @@ import org.osgi.framework.Bundle;
 import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.InvocationWidget;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.ParserManager;
+import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.parser.VarParser;
 
 public interface PandionJUI {
 
 	interface InvocationAction {
-		void invoke(String expression);
+		void invoke(String expression, String[] paramValues);
 	}
 
 	static void promptInvocation(IFile file, IMethod m, InvocationAction a) {
@@ -145,6 +147,12 @@ public interface PandionJUI {
 		FontManager.setFont(fig, size);
 	}
 
+	static void terminateProcess() {
+		PandionJView.getInstance().terminateProcess();
+	}
 
+	static void openInvocation(IMethod method, InvocationAction action) {
+		InvocationWidget.open(method, action);
+	}
 	
 }

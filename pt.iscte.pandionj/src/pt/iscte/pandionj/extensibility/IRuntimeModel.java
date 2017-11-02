@@ -7,7 +7,7 @@ public interface IRuntimeModel extends IObservableModel<IRuntimeModel.Event<ISta
 
 	public class Event<T> {
 		public enum Type {
-			NEW_FRAME, NEW_STACK, REMOVE_FRAME, STEP, TERMINATION;
+			NEW_FRAME, NEW_STACK, REMOVE_FRAME, STEP, EVALUATION, TERMINATION;
 		}
 
 		public final Type type;

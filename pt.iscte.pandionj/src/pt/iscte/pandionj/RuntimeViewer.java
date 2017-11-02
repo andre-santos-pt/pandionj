@@ -9,6 +9,8 @@ import java.util.Map;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.SWTGraphics;
@@ -45,7 +47,10 @@ import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.ObjectContainer;
+import pt.iscte.pandionj.figures.PandionJFigure;
+import pt.iscte.pandionj.figures.ReferenceFigure;
 import pt.iscte.pandionj.figures.StackContainer;
+import pt.iscte.pandionj.model.ModelObserver;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
@@ -131,10 +136,11 @@ public class RuntimeViewer extends Composite {
 				StackFrameModel f = (StackFrameModel) event.arg;
 				stackFig.removeFrame(f);
 				
+				List<?> children = rootFig.getChildren();
 				for (IVariableModel<?> v : f.getAllVariables()) {
 					if(v instanceof IReferenceModel) {
 						PolylineConnection c = pointersMap.remove(v);
-						if(c != null)
+						if(c != null && children.contains(c))
 							rootFig.remove(c);
 					}
 				}
@@ -193,12 +199,48 @@ public class RuntimeViewer extends Composite {
 		rootFig.add(pointer);
 		pointersMap.put(ref, pointer);
 		pointersMapOwners.put(owner, pointer);
+//		pointer.setToolTip(new Label(ref.toString()));
 	}
 
+	
+	public void addPointer(IReferenceModel ref, ReferenceFigure figure, PandionJFigure<?> targetFig, ObjectContainer container, Object owner) {
+		assert ref != null;
+		IEntityModel target = ref.getModelTarget();
+		PolylineConnection pointer = new PolylineConnection();
+		pointer.setVisible(!target.isNull());
+		pointer.setSourceAnchor(figure.getAnchor());
+		if(target.isNull())
+			pointer.setSourceAnchor(figure.getAnchor());
+		else
+			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+		Utils.addArrowDecoration(pointer);
+		addPointerObserver(ref, pointer, container);
+		
+		addPointer(ref, pointer, owner);
+	}
+	
+	static void addPointerObserver(IReferenceModel ref, PolylineConnection pointer, ObjectContainer container) {
+		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
+			@Override
+			public void update(IEntityModel arg) {
+				IEntityModel target = ref.getModelTarget();
+				pointer.setVisible(!target.isNull());
+				if(!target.isNull()) {
+					PandionJFigure<?> targetFig = container.addObject(target);
+					pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+					Utils.addArrowDecoration(pointer);
+				}
+			}
+		});
+	}
+	
+
+	
+	
 	public void showPointer(IReferenceModel ref, boolean show) {
 		PolylineConnection p = pointersMap.get(ref);
 		if(p != null)
-			p.setVisible(show);
+			p.setVisible(show && !ref.getModelTarget().isNull());
 	}
 	
 	public void showPointers(Object owner, boolean show) {

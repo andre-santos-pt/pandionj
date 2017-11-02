@@ -6,9 +6,6 @@ import java.net.URL;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.NotEnabledException;
-import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -32,53 +29,67 @@ import org.eclipse.jdt.core.ISourceRange;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
-import pt.iscte.pandionj.InvocationArea;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 
 public class LaunchCommand extends AbstractHandler {
 	public static final String RUN_LAST_PARAM_ID = "pt.iscte.pandionj.launcher.runParameter";
 
-	//	private IJavaLineBreakpoint breakPoint;
 	private String args;
 
-	@Override
-	public boolean isEnabled() {
-		IWorkbench wb = PlatformUI.getWorkbench();
-		IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
-		IWorkbenchPage page = window.getActivePage();
-		IEditorPart editor = page.getActiveEditor();
-		if(editor == null)
-			return false;
-
-		IEditorInput input = editor.getEditorInput();
-		return !Activator.isExecutingLaunch() && input instanceof FileEditorInput && input.getName().endsWith(".java");
-	}
+//	private Shell shell;
+//	private InvocationArea area;
+//
+//	public LaunchCommand() {
+//		shell = new Shell(Display.getDefault(), SWT.APPLICATION_MODAL);
+//		shell.setLayout(new FillLayout());
+//		area = new InvocationArea(shell);
+//		shell.addListener(SWT.Traverse, new Listener() {
+//			public void handleEvent(Event event) {
+//				switch (event.detail) {
+//				case SWT.TRAVERSE_ESCAPE:
+//					shell.setVisible(false);
+//					event.detail = SWT.TRAVERSE_NONE;
+//					event.doit = false;
+//					break;
+//				}
+//			}
+//		});
+//	}
+	
+	
+	
+//	@Override
+//	public boolean isEnabled() {
+		//		IWorkbench wb = PlatformUI.getWorkbench();
+		//		IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+		//		IWorkbenchPage page = window.getActivePage();
+		//		IEditorPart editor = page.getActiveEditor();
+		//		if(editor == null)
+		//			return false;
+		//
+		//		IEditorInput input = editor.getEditorInput();
+		//		return !Activator.isExecutingLaunch() && input instanceof FileEditorInput && input.getName().endsWith(".java");
+//		return true;
+//	}
 
 	@Override
 	public void setEnabled(Object evaluationContext) {
@@ -91,174 +102,217 @@ public class LaunchCommand extends AbstractHandler {
 		boolean last = param != null && param.equals("true");
 
 		if(Activator.isExecutingLaunch()) {
-			try {
-				IHandlerService handlerService = (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
-				handlerService.executeCommand("org.eclipse.debug.ui.commands.RunToLine", null);
-			} 
-			catch (NotDefinedException | NotEnabledException | NotHandledException e) {
-
-			}
+			boolean terminate = MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Terminate", "Another program is executing, would you like to terminate it?");
+			if(terminate)
+				PandionJUI.terminateProcess();
+			else
+				return null;
+			//			try {
+			//				IHandlerService handlerService = (IHandlerService) PlatformUI.getWorkbench().getService(IHandlerService.class);
+			//				handlerService.executeCommand("org.eclipse.debug.ui.commands.RunToLine", null);
+			//			} 
+			//			catch (NotDefinedException | NotEnabledException | NotHandledException e) {
+			//
+			//			}
 		}
-		else {
-			try {
-				IWorkbench wb = PlatformUI.getWorkbench();
-				IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
-				IWorkbenchPage page = window.getActivePage();
+		try {
+			IWorkbench wb = PlatformUI.getWorkbench();
+			IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+			IWorkbenchPage page = window.getActivePage();
 
-				IEditorPart editor = page.getActiveEditor();
-				IEditorInput input = editor.getEditorInput();
-				IPath path = ((FileEditorInput)input).getPath();
-				IFile file =  ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
-				IJavaProject javaProj = JavaCore.create(file.getProject());
-				IPath p = file.getProjectRelativePath();
+			IEditorPart editor = page.getActiveEditor();
+			IEditorInput input = editor.getEditorInput();
+			IPath path = ((FileEditorInput)input).getPath();
+			IFile file =  ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+			IJavaProject javaProj = JavaCore.create(file.getProject());
+			IPath p = file.getProjectRelativePath();
 
-				int line = -1;
-				int offset = -1;
-				if (editor instanceof ITextEditor) {
-					ISelectionProvider selectionProvider = ((ITextEditor)editor).getSelectionProvider();
-					ISelection selection = selectionProvider.getSelection();
-					if (selection instanceof ITextSelection) {
-						ITextSelection textSelection = (ITextSelection) selection;
-						line = textSelection.getStartLine() + 1;
-						offset = textSelection.getOffset();
-					}
+			int line = -1;
+			int offset = -1;
+			if (editor instanceof ITextEditor) {
+				ISelectionProvider selectionProvider = ((ITextEditor)editor).getSelectionProvider();
+				ISelection selection = selectionProvider.getSelection();
+				if (selection instanceof ITextSelection) {
+					ITextSelection textSelection = (ITextSelection) selection;
+					line = textSelection.getStartLine() + 1;
+					offset = textSelection.getOffset();
 				}
+			}
 
-				if(PandionJUI.hasCompilationErrors(file)) {
-					MessageDialog.openError(Display.getDefault().getActiveShell(),
-							"Compilation errors",
-							"This file has compilation errors, please fix them before launching.");
+			if(PandionJUI.hasCompilationErrors(file)) {
+				MessageDialog.openError(Display.getDefault().getActiveShell(),
+						"Compilation errors",
+						"This file has compilation errors, please fix them before launching.");
+				return null;
+			}
+
+
+			final int lineFinal = line;
+			IJavaElement e = javaProj.findElement(p.removeFirstSegments(1));
+			if(e == null)
+				e = javaProj.findElement(new Path(p.lastSegment()));
+
+			if(e instanceof ICompilationUnit) {
+				ICompilationUnit unit = (ICompilationUnit) e;
+				IType[] types = unit.getTypes();
+				IType type = null;
+				for(IType t : types)
+					if(withinSourceRange(t, offset))
+						type = t;
+
+				if(type == null) {
+					showMethodMessage();
 					return null;
 				}
 
 
-				final int lineFinal = line;
-				IJavaElement e = javaProj.findElement(p.removeFirstSegments(1));
-				if(e == null)
-					e = javaProj.findElement(new Path(p.lastSegment()));
+				final String agentArgs = type.getFullyQualifiedName().replace('.', '/');
 
-				if(e instanceof ICompilationUnit) {
-					ICompilationUnit unit = (ICompilationUnit) e;
-					IType[] types = unit.getTypes();
-					IType type = null;
-					for(IType t : types)
-						if(withinSourceRange(t, offset))
-							type = t;
+				IMethod mainMethod = type.getMethod("main", new String[] {"[QString;"}); // TODO other cases
 
-					if(type == null) {
-						showMethodMessage();
-						return null;
+				// normal main()
+				if(mainMethod.exists() && mainMethod.isMainMethod() && PandionJUI.checkView()) {
+					launch(file, line, type, agentArgs, mainMethod);
+				}
+				else {
+					boolean launchInit = false;
+					for (IInitializer init : type.getInitializers()) {
+						if(withinSourceRange(init, offset)) {
+							launch(file, line, type, "", mainMethod); // FIXME estoira
+							launchInit = true;
+							break;
+						}
 					}
 
-
-					final String agentArgs = type.getFullyQualifiedName().replace('.', '/');
-
-					IMethod mainMethod = type.getMethod("main", new String[] {"[QString;"});
-
-					// normal main()
-					if(mainMethod.exists() && mainMethod.isMainMethod() && PandionJUI.checkView()) {
-						launch(file, line, type, agentArgs, mainMethod);
-					}
-					else {
-						boolean launchInit = false;
-						for (IInitializer init : type.getInitializers()) {
-							if(withinSourceRange(init, offset)) {
-								launch(file, line, type, "", mainMethod); // FIXME estoira
-								launchInit = true;
-								break;
+					if(!launchInit) {
+						// run last
+						if(last && args != null) {
+							if(PandionJUI.checkView()) {
+								String typeName = args.substring(0, args.indexOf('|'));
+								IType t = ((ICompilationUnit) e).getType(typeName);
+								launch(file, lineFinal, t, args, mainMethod);
 							}
 						}
-
-						if(!launchInit) {
-							// run last
-							if(last && args != null) {
-								if(PandionJUI.checkView()) {
-									String typeName = args.substring(0, args.indexOf('|'));
-									IType t = ((ICompilationUnit) e).getType(typeName);
-									launch(file, lineFinal, t, args, mainMethod);
+						else {
+							IMethod selectedMethod = null;
+							for (IMethod m : type.getMethods()) {
+								if(Modifier.isStatic(m.getFlags()) && withinSourceRange(m, offset)) {							
+									selectedMethod = m;
+									break;
 								}
 							}
-							else {
-								IMethod selectedMethod = null;
-								for (IMethod m : type.getMethods()) {
-									if(Modifier.isStatic(m.getFlags()) && withinSourceRange(m, offset)) {							
-										selectedMethod = m;
-										break;
-									}
-								}
-								if(selectedMethod == null) {
-									showMethodMessage();
-									return null;
-								}
+							if(selectedMethod == null) {
+								showMethodMessage();
+								return null;
+							}
+							String methodSig = getResolvedSignature(type, selectedMethod);
+							if(selectedMethod.getParameterTypes().length != 0) {
+								final IType t = type;
 
-								String methodSig = selectedMethod.getSignature().replaceAll("QString;", "Ljava/lang/String;");
-
-								if(selectedMethod.getParameterTypes().length != 0) {
-									final IType t = type;
-
-									area.setMethod(file, selectedMethod, new InvocationAction() {
-										@Override
-										public void invoke(String expression) {
-											shell.setVisible(false);
-											args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
-											try {
-												launch(file, lineFinal, t, args, mainMethod);
-											} catch (CoreException e) {
-												e.printStackTrace();
-											}
+								InvocationAction action = new InvocationAction() {
+									@Override
+									public void invoke(String expression, String[] paramValues) {
+//										shell.setVisible(false);
+										args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
+										try {
+											launch(file, lineFinal, t, args, mainMethod);
+										} catch (CoreException e) {
+											e.printStackTrace();
 										}
-									});
-
-									shell.pack();
-									Rectangle screen = Display.getCurrent().getClientArea();
-									Point cursor = Display.getCurrent().getCursorLocation();
-									int w = screen.width-cursor.x-shell.getSize().x-20;
-									if(w < 0)
-										cursor = new Point(cursor.x + w, cursor.y);
-									shell.setLocation(cursor);
-									if(shell.getVisible())
-										shell.open();
-									else
-										shell.setVisible(true);
-
-									area.setFocus();
-
-									//									while (!shell.isDisposed()) {
-									//										if (!display.readAndDispatch())
-									//											display.sleep();
-									//									}
-
-									//									PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
-									//										@Override
-									//										public void invoke(String expression) {
-									//											args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
-									//											try {
-									//												launch(file, lineFinal, t, args, mainMethod);
-									//											} catch (CoreException e) {
-									//												e.printStackTrace();
-									//											}
-									//											
-									//										}
-									//									});
-								}
-								else {  // no params
-									if(PandionJUI.checkView()) {
-										args = agentArgs + "|" + selectedMethod.getElementName() + "()" + "|" + methodSig;
-										launch(file, line, type, args, mainMethod);
 									}
+								};
+								PandionJUI.openInvocation(selectedMethod, action);
+								
+//								area.setMethod(file, selectedMethod, new InvocationAction() {
+//									@Override
+//									public void invoke(String expression) {
+//										shell.setVisible(false);
+//										args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
+//										try {
+//											launch(file, lineFinal, t, args, mainMethod);
+//										} catch (CoreException e) {
+//											e.printStackTrace();
+//										}
+//									}
+//								});
+
+//								shell.pack();
+//								Rectangle screen = Display.getCurrent().getClientArea();
+//								Point cursor = Display.getCurrent().getCursorLocation();
+//								int w = screen.width-cursor.x-shell.getSize().x-20;
+//								if(w < 0)
+//									cursor = new Point(cursor.x + w, cursor.y);
+//								shell.setLocation(cursor);
+//								if(shell.getVisible())
+//									shell.open();
+//								else
+//									shell.setVisible(true);
+//
+//								shell.setFocus();
+
+								//									while (!shell.isDisposed()) {
+								//										if (!display.readAndDispatch())
+								//											display.sleep();
+								//									}
+
+								//									PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
+								//										@Override
+								//										public void invoke(String expression) {
+								//											args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
+								//											try {
+								//												launch(file, lineFinal, t, args, mainMethod);
+								//											} catch (CoreException e) {
+								//												e.printStackTrace();
+								//											}
+								//											
+								//										}
+								//									});
+							}
+							else {  // no params
+								if(PandionJUI.checkView()) {
+									args = agentArgs + "|" + selectedMethod.getElementName() + "()" + "|" + methodSig;
+									launch(file, line, type, args, mainMethod);
 								}
 							}
 						}
 					}
 				}
 			}
-			catch (CoreException e) {
-				e.printStackTrace();
-			}
+		}
+		catch (CoreException e) {
+			e.printStackTrace();
 		}
 		return null;
 	}
 
+	private static String getResolvedSignature(IType type, IMethod method) throws JavaModelException {
+		String sig = "(";
+		for (String p : method.getParameterTypes()) {
+			sig += resolve(p, type);
+		}
+		sig += ")" + resolve(method.getReturnType(), type);
+		return sig;
+		
+	}
+
+	private static String resolve(String ret, IType type) throws JavaModelException {
+		if(!ret.matches("\\[*Q(.)+"))
+			return ret;
+		
+		int i = ret.indexOf('Q');
+		String q = ret.substring(i);
+		String[][] resolve = type.resolveType(Signature.getSignatureSimpleName(q));
+		String t = "";
+		if(resolve != null && resolve.length > 0) {
+			t += "L"; 
+			if(!resolve[0][0].isEmpty()) {
+				t += resolve[0][0].replace('.', '/');
+				t += "/";
+			}
+			t += resolve[0][1] + ";";
+		}
+		return t.isEmpty() ? ret : ret.substring(0, i) + t;
+	}
 	private static boolean withinSourceRange(IMember member, int offset) throws JavaModelException {
 		ISourceRange sourceRange = member.getSourceRange();
 		return offset >= sourceRange.getOffset() && offset <= sourceRange.getOffset()+sourceRange.getLength();
@@ -304,24 +358,6 @@ public class LaunchCommand extends AbstractHandler {
 	}
 
 
-	private Shell shell;
-	private InvocationArea area;
-
-	public LaunchCommand() {
-		shell = new Shell(Display.getDefault(), SWT.APPLICATION_MODAL);
-		shell.setLayout(new FillLayout());
-		area = new InvocationArea(shell);
-		shell.addListener(SWT.Traverse, new Listener() {
-			public void handleEvent(Event event) {
-				switch (event.detail) {
-				case SWT.TRAVERSE_ESCAPE:
-					shell.setVisible(false);
-					event.detail = SWT.TRAVERSE_NONE;
-					event.doit = false;
-					break;
-				}
-			}
-		});
-	}
+	
 }
 

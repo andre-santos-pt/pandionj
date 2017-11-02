@@ -156,39 +156,40 @@ public class StackFrameFigure extends Figure {
 				PandionJFigure<?> targetFig = null;
 				if(!target.isNull())
 					targetFig = objectContainer.addObject(target);
-				addPointer((ReferenceFigure) figure, ref, target, targetFig);
+				RuntimeViewer.getInstance().addPointer(ref, (ReferenceFigure) figure, targetFig, objectContainer, this);
+//				addPointer((ReferenceFigure) figure, ref, target, targetFig);
 				objectContainer.updateIllustration(ref, exception);
 			}
 		}
 	}
 
-	private void addPointer(ReferenceFigure figure, IReferenceModel ref, IEntityModel target, PandionJFigure<?> targetFig) {
-		PolylineConnection pointer = new PolylineConnection();
-		pointer.setVisible(!target.isNull());
-		pointer.setSourceAnchor(figure.getAnchor());
-		if(target.isNull())
-			pointer.setSourceAnchor(figure.getAnchor());
-		else
-			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
-		Utils.addArrowDecoration(pointer);
-		addPointerObserver(ref, pointer);
-		runtimeViewer.addPointer(ref, pointer, this);
-	}
-
-	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
-		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
-			@Override
-			public void update(IEntityModel arg) {
-				IEntityModel target = ref.getModelTarget();
-				pointer.setVisible(!target.isNull());
-				if(!target.isNull()) {
-					PandionJFigure<?> targetFig = objectContainer.addObject(target);
-					pointer.setTargetAnchor(targetFig.getIncommingAnchor());
-					Utils.addArrowDecoration(pointer);
-				}
-			}
-		});
-	}
+//	private void addPointer(ReferenceFigure figure, IReferenceModel ref, IEntityModel target, PandionJFigure<?> targetFig) {
+//		PolylineConnection pointer = new PolylineConnection();
+//		pointer.setVisible(!target.isNull());
+//		pointer.setSourceAnchor(figure.getAnchor());
+//		if(target.isNull())
+//			pointer.setSourceAnchor(figure.getAnchor());
+//		else
+//			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+//		Utils.addArrowDecoration(pointer);
+//		addPointerObserver(ref, pointer);
+//		runtimeViewer.addPointer(ref, pointer, this);
+//	}
+//
+//	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
+//		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
+//			@Override
+//			public void update(IEntityModel arg) {
+//				IEntityModel target = ref.getModelTarget();
+//				pointer.setVisible(!target.isNull());
+//				if(!target.isNull()) {
+//					PandionJFigure<?> targetFig = objectContainer.addObject(target);
+//					pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+//					Utils.addArrowDecoration(pointer);
+//				}
+//			}
+//		});
+//	}
 
 
 	public PandionJFigure<?> getVariableFigure(IVariableModel<?> v) {

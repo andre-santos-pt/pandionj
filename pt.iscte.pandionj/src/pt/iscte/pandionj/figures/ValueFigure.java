@@ -63,7 +63,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		String tooltip = model.isStatic() ? "static field" : "local variable";
 		
 		Label nameLabel = new Label(model.getName());
-		if(role != null)
+		if(role != Role.NONE)
 			tooltip += "\n(" + role.toString() + ")";
 		
 		nameLabel.setToolTip(new Label(tooltip));

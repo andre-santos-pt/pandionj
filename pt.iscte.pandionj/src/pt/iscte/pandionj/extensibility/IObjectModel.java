@@ -2,6 +2,7 @@ package pt.iscte.pandionj.extensibility;
 
 import java.util.List;
 
+import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 
 import com.google.common.collect.Multimap;
@@ -26,7 +27,7 @@ public interface IObjectModel extends IEntityModel {
 	Object getInstanceMethods();
 	
 	
-	List<IVisibleMethod> getVisibleMethods();
+	List<IMethod> getVisibleMethods();
 	boolean hasAttributeTags();
 	Multimap<String, String> getAttributeTags();
 	IType getType();

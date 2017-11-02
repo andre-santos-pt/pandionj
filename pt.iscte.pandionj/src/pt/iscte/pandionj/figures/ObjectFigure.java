@@ -1,8 +1,7 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
-
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.eclipse.draw2d.ActionEvent;
@@ -18,11 +17,13 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.MarginBorder;
-import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 
@@ -43,13 +44,18 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.model.PrimitiveType;
 import pt.iscte.pandionj.model.RuntimeModel;
 
 public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	
 	// TODO refactor to constants
 	private static final GridData COLLAPSE = new GridData(0, 0);
-	private static final GridData RIGHT_ALLIGN = new GridData(SWT.RIGHT, SWT.FILL, true, false);
+	private static final GridData CLOSE = new GridData(SWT.FILL, SWT.DEFAULT, true, false);
+	static {
+		CLOSE.heightHint = 5;
+	}
+	private static final GridData RIGHT_ALIGN = new GridData(SWT.RIGHT, SWT.FILL, false, false);
 	private static final GridData FILL = new GridData(SWT.FILL, SWT.FILL, true, true);
 	
 	
@@ -61,7 +67,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	private FigureProvider figureProvider;
 	private FieldsContainer fieldsContainer;
 	private Figure methodsFig;
-	private boolean terminated;
+	private boolean methodsEnabled;
 
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure) {
 		super(model, true);
@@ -82,15 +88,12 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		fig.setBackgroundColor(Constants.Colors.OBJECT);
 		fig.setOpaque(true);
 		getLayoutManager().setConstraint(fig, new GridData(SWT.DEFAULT, SWT.BEGINNING, false, false));
-
 		fig.add(extensionFigure);
 		//		fig.setToolTip(new Label(model.getTypeName()));
 
 		runtimeViewer = RuntimeViewer.getInstance();
 		figureProvider = runtimeViewer.getFigureProvider();
 		objectContainer = ObjectContainer.create(false);
-//		objectContainer.setOpaque(true);
-//		objectContainer.setBackgroundColor(ColorConstants.yellow);
 		objectContainer.setFigProvider(figureProvider);
 
 		addShowMethodListener();
@@ -115,9 +118,10 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 					boolean visible = f.isInstanceFrameOf(model);
 					fieldsContainer.showPrivateFields(visible);
 					setObjectContainerVisible(visible);
+//					getLayoutManager().layout(ObjectFigure.this);
 				}
 				else if(e.type == IRuntimeModel.Event.Type.TERMINATION) {
-					terminated = true;
+					methodsEnabled = false;
 					setMethodsEnabled(false);
 				}
 			}
@@ -150,10 +154,12 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	
 	
 	private void setMethodsEnabled(boolean enabled) {
+		methodsEnabled = enabled;
 		if(methodsFig != null) {
 			for(Object c : methodsFig.getChildren()) {
 				MethodWidget w = (MethodWidget) c;
 				w.setEnabled(enabled);
+				w.clear();
 			}
 			methodsFig.invalidate();
 		}
@@ -162,6 +168,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	
 	
 	class FieldsContainer extends Figure {
+		Figure visibleFields;
 		Figure hiddenFields;
 		GridData dim;
 		boolean visibilityOpen;
@@ -174,29 +181,29 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		}
 		
 		void showPrivateFields(boolean show) {
-//			if(!show && dim == null) {
-//				Dimension size = hiddenFields.getPreferredSize();
-//				dim = new GridData(size.width, size.height);
-//			}
-			getLayoutManager().setConstraint(hiddenFields, show ? new GridData(SWT.FILL, SWT.DEFAULT, true, true) : COLLAPSE);
-//			for(Figure f : hiddenLinks)
-//				f.setVisible(show);
+			if(!hiddenFields.getChildren().isEmpty())
+				getLayoutManager().setConstraint(hiddenFields, show ? new GridData(SWT.FILL, SWT.DEFAULT, true, true) : CLOSE);
+
 			for (IVariableModel<?> var : model.getFields()) {
 				if(var instanceof IReferenceModel && !var.isVisible())
 					runtimeViewer.showPointer((IReferenceModel) var, show);
 			}
-//			runtimeViewer.showPointers(this, true);
 			fig.getLayoutManager().layout(fig);
-//			invalidate();
 		}
 
 		void addFields(IObjectModel model, FigureProvider figureProvider) {
+			visibleFields = new Figure();
+			visibleFields.setLayoutManager(new GridLayout(1, false));
+
 			hiddenFields = new Figure();
 			hiddenFields.setOpaque(true);
 			hiddenFields.setBackgroundColor(ColorConstants.lightGray);
 			hiddenFields.setLayoutManager(new GridLayout(1, false));
 			getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 			
+			add(visibleFields);
+			add(hiddenFields);
+
 //			hiddenFields.addMouseListener(new MouseListener() {
 //				public void mouseReleased(MouseEvent me) {}
 //				public void mousePressed(MouseEvent me) {}
@@ -205,7 +212,6 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 //					showPrivateFields(visibilityOpen);
 //				}
 //			});
-			add(hiddenFields);
 			
 			List<IVariableModel<?>> fields = model.getFields();
 			for(IVariableModel<?> v : fields) {
@@ -213,11 +219,11 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				
 				if(!v.isVisible()) {
 					hiddenFields.add(fieldFig);
-					hiddenFields.getLayoutManager().setConstraint(fieldFig, RIGHT_ALLIGN);
+					hiddenFields.getLayoutManager().setConstraint(fieldFig, RIGHT_ALIGN);
 				}
 				else {
-					add(fieldFig);
-					getLayoutManager().setConstraint(fieldFig, RIGHT_ALLIGN);
+					visibleFields.add(fieldFig);
+					visibleFields.getLayoutManager().setConstraint(fieldFig, RIGHT_ALIGN);
 				}
 				if(v instanceof IReferenceModel) {
 					IReferenceModel ref = (IReferenceModel) v;
@@ -225,40 +231,15 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 					PandionJFigure<?> targetFig = null;
 					if(!target.isNull())
 						targetFig = objectContainer.addObject(target);
-					addPointer((ReferenceFigure) fieldFig, ref, target, targetFig);
+					RuntimeViewer.getInstance().addPointer(ref, (ReferenceFigure) fieldFig, targetFig, objectContainer, this);
 					objectContainer.updateIllustration(ref, null);
 				}
 			}
+			if(hiddenFields.getChildren().isEmpty())
+				getLayoutManager().setConstraint(hiddenFields, COLLAPSE);
+			
 			Dimension size = hiddenFields.getPreferredSize();
 			dim = new GridData(size.width, size.height);
-		}
-
-		void addPointer(ReferenceFigure figure, IReferenceModel ref, IEntityModel target, PandionJFigure<?> targetFig) {
-			PolylineConnection pointer = new PolylineConnection();
-			pointer.setVisible(!target.isNull());
-			pointer.setSourceAnchor(figure.getAnchor());
-			if(target.isNull())
-				pointer.setSourceAnchor(figure.getAnchor());
-			else
-				pointer.setTargetAnchor(targetFig.getIncommingAnchor());
-			Utils.addArrowDecoration(pointer);
-			addPointerObserver(ref, pointer);
-			runtimeViewer.addPointer(ref, pointer, this);
-		}
-
-		void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
-			ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
-				@Override
-				public void update(IEntityModel arg) {
-					IEntityModel target = ref.getModelTarget();
-					pointer.setVisible(!target.isNull());
-					if(!target.isNull()) {
-						PandionJFigure<?> targetFig = objectContainer.addObject(target);
-						pointer.setTargetAnchor(targetFig.getIncommingAnchor());
-						Utils.addArrowDecoration(pointer);
-					}
-				}
-			});
 		}
 	}
 	
@@ -286,11 +267,12 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		Button button;
 		Label resultLabel;
 
-		MethodWidget(IVisibleMethod method) {
+		MethodWidget(IMethod method) {
 			setLayoutManager(new FlowLayout());
-			button = new Button(method.getName() + (method.getNumberOfParameters() == 0 ? "()" : "(...)"));
+			button = new Button(shortSig(method));
+			button.setToolTip(new Label(longSig(method)));
 			FontManager.setFont(button, Constants.BUTTON_FONT_SIZE);
-			button.setEnabled(!terminated);
+			button.setEnabled(methodsEnabled);
 			add(button);
 			resultLabel = new Label();
 			add(resultLabel);
@@ -301,6 +283,18 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			});
 		}
 
+		private String shortSig(IMethod method) {
+			return method.getElementName() + (method.getNumberOfParameters() == 0 ? "()" : "(...)");
+		}
+
+		private String longSig(IMethod method) {
+			try {
+				return method.getElementName() + "(" + String.join(", ", method.getParameterNames()) + ")";
+			} catch (JavaModelException e) {
+				return method.getElementName() + "(...)";
+			}
+		}
+		
 		void clear() {
 			resultLabel.setText("");
 		}
@@ -317,7 +311,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	private void addMethods(IObjectModel model) {
 		methodsFig = new Figure();
 		methodsFig.setLayoutManager(new GridLayout(1, false));
-		for(IVisibleMethod m : model.getVisibleMethods()) {
+		for(IMethod m : model.getVisibleMethods()) {
 			MethodWidget w = new MethodWidget(m);
 			methodWidgets.add(w);
 			methodsFig.add(w);
@@ -327,80 +321,45 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	}
 
 
-	private void invoke(IObjectModel model, IVisibleMethod m, Label resultLabel) {
-		String[] stringValues = new String[0];
-		if(m.getNumberOfParameters() != 0) {
-			// TODO replace
-			ParamsDialog prompt = new ParamsDialog(Display.getDefault().getActiveShell(), m);
-			prompt.setLocation(100, 100);
-			if(prompt.open())
-				stringValues = prompt.getValues();
-			else
-				return;
-		}
-		model.invoke(m.getName(), new InvocationResult() {
-			public void valueReturn(Object o) {
-				PandionJUI.executeUpdate(() -> {
-					for(MethodWidget w : methodWidgets)
-						w.clear();
-					if(m.isPrimitiveValue()) {
-						String val = o.toString();
-						if(m.getReturnType().equals("char"))
-							val = "'" + val + "'";
-						resultLabel.setText(" = " + val);
-						//						MessageDialog.openInformation(null, m.getSignatureText(), o.toString());
-					}
-					else if(!m.getReturnType().equals("void")) {
-						RuntimeViewer.getInstance().addObject((IEntityModel) o);
-					}
-					//					getModel().getRuntimeModel().update();
-					getModel().getRuntimeModel().evaluationNotify();
-				});
-			}
-		}, stringValues);
+	private static String[] NO_PARAMS = new String[0];
+	
+	private void invoke(IObjectModel model, IMethod m, Label resultLabel) {
 
+		PandionJUI.InvocationAction action = new PandionJUI.InvocationAction() {
+			public void invoke(String expression, String[] paramValues) {
+				model.invoke(m.getElementName(), new InvocationResult() {
+					public void valueReturn(Object o) {
+						PandionJUI.executeUpdate(() -> {
+							for(MethodWidget w : methodWidgets)
+								w.clear();
+							try {
+								if(PrimitiveType.isPrimitive(Signature.getSignatureSimpleName(m.getReturnType()))) {
+									String val = o.toString();
+									if(m.getReturnType().equals("char"))
+										val = "'" + val + "'";
+									resultLabel.setText(" = " + val);
+								}
+								else if(!m.getReturnType().equals("V")) {
+									RuntimeViewer.getInstance().addObject((IEntityModel) o);
+								}
+							} catch (JavaModelException e) {
+								e.printStackTrace();
+							}
+							getModel().getRuntimeModel().evaluationNotify();
+						});
+					}
+				}, paramValues);
+			}
+		};
+		
+		if(m.getNumberOfParameters() != 0)
+			PandionJUI.openInvocation(m, action);
+		else
+			action.invoke("", NO_PARAMS);
 	}
 
 	public ConnectionAnchor getIncommingAnchor() {
+		// TODO fig.getInsets()
 		return new ChopboxAnchor(fig);
 	}
-
-
-
-
-
-	//	private class ResultDialog {
-	//		Shell shell;
-	//
-	//		ResultDialog(Shell parent, int x, int y, String exp) {
-	//			shell = new Shell(parent, SWT.PRIMARY_MODAL);
-	//			shell.setLayout(new FillLayout());
-	//			shell.setBackground(ColorConstants.white);
-	//			org.eclipse.swt.widgets.Label label = new org.eclipse.swt.widgets.Label(shell, SWT.BORDER);
-	//			FontManager.setFont(label, Constants.BUTTON_FONT_SIZE);
-	//			label.setText(exp);
-	//			label.addMouseListener(new MouseAdapter() {
-	//				public void mouseDown(MouseEvent e) {
-	//					shell.close();
-	//				}
-	//			});
-	//			shell.addKeyListener(new KeyAdapter() {
-	//				public void keyPressed(KeyEvent e) {
-	//					if(e.keyCode == SWT.CR || e.keyCode == SWT.ESC) {
-	//						shell.close();
-	//					}
-	//				}
-	//			});
-	//
-	//			shell.setLocation(x, y);
-	//			shell.pack();
-	//		}
-	//
-	//		void open() {
-	//			shell.open();
-	//			while(!shell.isDisposed())
-	//				if(!shell.getDisplay().readAndDispatch())
-	//					shell.getDisplay().sleep();
-	//		}
-	//	}
 }

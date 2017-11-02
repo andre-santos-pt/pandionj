@@ -1,7 +1,8 @@
 package pt.iscte.pandionj;
 
 
-import org.eclipse.core.resources.IFile;
+import java.util.Arrays;
+
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
@@ -21,21 +22,17 @@ import org.eclipse.swt.widgets.Label;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.PrimitiveType;
 
-public class StaticInvocationWidget extends Composite {
+public class StaticInvocationWidget2 extends Composite {
 
 	private String methodName;
 	private IMethod method;
 	private Combo[] paramBoxes; 
 	private String[] parameterTypes;
-	private IFile file;
-	private long fileStamp;
 	private Label info;
 
-	public StaticInvocationWidget(Composite parent, IFile file, IMethod method, InvocationAction action) {
+	public StaticInvocationWidget2(Composite parent, IMethod method, InvocationAction action) {
 		super(parent, SWT.NONE);
 		this.method = method;
-		this.file = file;
-		this.fileStamp = file.getModificationStamp();
 
 		methodName = method.getElementName();
 		parameterTypes = method.getParameterTypes();
@@ -118,14 +115,11 @@ public class StaticInvocationWidget extends Composite {
 				if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
 					paramBoxes[i].add(paramBoxes[i].getText());
 		}
-		if(fileStamp == file.getModificationStamp()) {
-			String exp = getInvocationExpression();
-			action.invoke(exp, null);
-		}
+		String exp = getInvocationExpression();
+		action.invoke(exp, getValues());
 	}
 
-	public void refreshItems(IFile file) {
-		fileStamp = file.getModificationStamp();
+	public void refreshItems() {
 		for(int i = 0; i < paramBoxes.length; i++)
 			addCombovalues(paramBoxes[i], parameterTypes[i]);
 	}

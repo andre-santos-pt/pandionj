@@ -108,7 +108,7 @@ implements IRuntimeModel {
 	public void evaluationNotify() throws DebugException {
 		updateActiveStack();
 		setChanged();
-		notifyObservers(new Event<IStackFrameModel>(Event.Type.STEP, getTopFrame()));
+		notifyObservers(new Event<IStackFrameModel>(Event.Type.EVALUATION, getTopFrame()));
 	}
 	
 	public void updateActiveStack() throws DebugException {

@@ -523,44 +523,47 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-	private static class VisibleMethod implements IVisibleMethod {
-		final String name;
-		final List<String> paramTypes;
-		String returnType;
-		VisibleMethod(IMethod method) {
-			name = method.getElementName();
-			paramTypes = new ArrayList<>();
-			String[] parameterTypes = method.getParameterTypes();
-			for(String pType : parameterTypes)
-				paramTypes.add(Signature.getSignatureQualifier(pType) + "." + Signature.getSignatureSimpleName(pType));
-
-			try {
-				returnType =  Signature.getSignatureSimpleName(method.getReturnType());
-			} catch (JavaModelException e) {
-				e.printStackTrace();
-			}
-		}
-		@Override
-		public String getName() {
-			return name;
-		}
-
-		@Override
-		public List<String> getParameterTypes() {
-			return paramTypes;
-		}
-
-		@Override
-		public String getReturnType() {
-			return returnType;
-		}
-	}
+//	private static class VisibleMethod implements IVisibleMethod {
+////		final String name;
+//		final IMethod method;
+//		final List<String> paramTypes;
+//		String returnType;
+//		VisibleMethod(IMethod method) {
+//			this.method = method;
+////			name = method.getElementName();
+//			paramTypes = new ArrayList<>();
+//			String[] parameterTypes = method.getParameterTypes();
+//			for(String pType : parameterTypes)
+//				paramTypes.add(Signature.getSignatureQualifier(pType) + "." + Signature.getSignatureSimpleName(pType));
+//
+//			try {
+//				returnType =  Signature.getSignatureSimpleName(method.getReturnType());
+//			} catch (JavaModelException e) {
+//				e.printStackTrace();
+//			}
+//		}
+//		@Override
+//		public String getName() {
+//			return method.getElementName();
+//		}
+//
+//		@Override
+//		public List<String> getParameterTypes() {
+//			return paramTypes;
+//		}
+//
+//		@Override
+//		public String getReturnType() {
+//			return returnType;
+//		}
+//	}
+	
 	@Override
-	public List<IVisibleMethod> getVisibleMethods() {
-		List<IVisibleMethod> list = new ArrayList<>();
+	public List<IMethod> getVisibleMethods() {
+		List<IMethod> list = new ArrayList<>();
 		for(IMethod m : getInstanceMethods())
 			if(isMethodVisible(m))
-				list.add(new VisibleMethod(m));
+				list.add(m);
 		return list;
 	}
 
@@ -622,7 +625,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			DebugException exception = result.getException();
 			if(ret != null) {
 				if(ret instanceof IJavaObject) {
-
 					IEntityModel object = getRuntimeModel().getObject((IJavaObject) ret, true, null);
 					listener.valueReturn(object);
 				}

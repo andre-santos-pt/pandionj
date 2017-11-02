@@ -43,7 +43,7 @@ import pt.iscte.pandionj.model.StackFrameModel;
 public class PandionJView extends ViewPart { 
 	private static PandionJView instance;
 
-	private ILaunch launch;
+	private ILaunch launch; 
 	private RuntimeModel runtime;
 	private IStackFrame exceptionFrame;
 	private String exception;
@@ -334,6 +334,15 @@ public class PandionJView extends ViewPart {
 				listener.valueReturn(result.getValue());
 			}
 		});
+	}
+
+	public void terminateProcess() {
+		try {
+			launch.terminate();
+		} catch (DebugException e) {
+			if(runtime != null)
+				runtime.setTerminated();
+		}
 	}
 
 
