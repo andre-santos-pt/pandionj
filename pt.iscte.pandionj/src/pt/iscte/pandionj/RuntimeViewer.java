@@ -1,6 +1,9 @@
 package pt.iscte.pandionj;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.draw2d.ColorConstants;
@@ -9,7 +12,6 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.SWTGraphics;
-import org.eclipse.draw2d.ScalableLayeredPane;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -34,6 +36,10 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
+
+import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -45,7 +51,7 @@ import pt.iscte.pandionj.model.StackFrameModel;
 
 public class RuntimeViewer extends Composite {
 	private static RuntimeViewer instance = null;
-	
+
 	private FigureProvider figProvider;
 	private Figure rootFig;
 	private StackContainer stackFig;
@@ -55,7 +61,9 @@ public class RuntimeViewer extends Composite {
 	private ScrolledComposite scroll;
 	private Canvas canvas;
 	private Map<IReferenceModel, PolylineConnection> pointersMap;
-
+	private Multimap<Object, PolylineConnection> pointersMapOwners;
+	private List<ObjectContainer> objectContainers;
+	
 	private MenuItem clearItem;
 
 	RuntimeViewer(Composite parent) {
@@ -72,7 +80,8 @@ public class RuntimeViewer extends Composite {
 		scroll.setContent(canvas);
 		addMenu();
 
-//		rootFig = new ScalableLayeredPane();
+		//		rootFig = new ScalableLayeredPane();
+		//		rootFig.setScale(1);
 		rootFig = new Figure();
 		rootFig.setOpaque(true);
 		rootFig.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
@@ -87,24 +96,27 @@ public class RuntimeViewer extends Composite {
 		org.eclipse.draw2d.GridData d = new org.eclipse.draw2d.GridData(SWT.BEGINNING, SWT.BEGINNING, true, true);
 		d.widthHint = Math.max(Constants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
 		rootGrid.setConstraint(stackFig, d);
-
-		objectContainer = new ObjectContainer(true);
+		
+		objectContainers = new ArrayList<>();
+		objectContainer = ObjectContainer.create(true);
 		rootFig.add(objectContainer);
 		rootGrid.setConstraint(objectContainer, new org.eclipse.draw2d.GridData(SWT.FILL, SWT.FILL, true, true));
 
 		lws = new LightweightSystem(canvas);
 		lws.setContents(rootFig);
 		pointersMap = new HashMap<>();
+		pointersMapOwners = ArrayListMultimap.create();
+		
 	}
 
 	public static RuntimeViewer getInstance() {
 		return instance;
 	}
-	
+
 	public FigureProvider getFigureProvider() {
 		return figProvider;
 	}
-	
+
 	public void setInput(RuntimeModel model) {
 		figProvider = new FigureProvider(model);
 		objectContainer.setFigProvider(figProvider);
@@ -112,31 +124,39 @@ public class RuntimeViewer extends Composite {
 	}
 
 	private void refresh(RuntimeModel model, RuntimeModel.Event<?> event) {
-		if(event.type == RuntimeModel.Event.Type.NEW_STACK)
-			rebuildStack(model);
-		else if(event.type == RuntimeModel.Event.Type.REMOVE_FRAME) {
-			StackFrameModel f = (StackFrameModel) event.arg;
-			stackFig.removeFrame(f);
-			for (IVariableModel<?> v : f.getAllVariables()) {
-				if(v instanceof IReferenceModel) {
-					PolylineConnection c = pointersMap.remove(v);
-					if(c != null)
-						rootFig.remove(c);
+		PandionJUI.executeUpdate(() -> {
+			if(event.type == RuntimeModel.Event.Type.NEW_STACK)
+				rebuildStack(model);
+			else if(event.type == RuntimeModel.Event.Type.REMOVE_FRAME) {
+				StackFrameModel f = (StackFrameModel) event.arg;
+				stackFig.removeFrame(f);
+				
+				for (IVariableModel<?> v : f.getAllVariables()) {
+					if(v instanceof IReferenceModel) {
+						PolylineConnection c = pointersMap.remove(v);
+						if(c != null)
+							rootFig.remove(c);
+					}
 				}
 			}
-		}
-		else if(event.type == RuntimeModel.Event.Type.NEW_FRAME) {
-			StackFrameModel frame = (StackFrameModel) event.arg;
-			if(!frame.isInstance())
-				stackFig.addFrame(frame, this, objectContainer, false);
-		}
-		stackFig.getLayoutManager().layout(stackFig);
-		updateLayout();
-		
-		clearItem.setEnabled(model.isTerminated());
+			else if(event.type == RuntimeModel.Event.Type.NEW_FRAME) {
+				StackFrameModel frame = (StackFrameModel) event.arg;
+				if(!frame.isInstance())
+					stackFig.addFrame(frame, this, objectContainer, false);
+			}
+			//		else if(event.type == RuntimeModel.Event.Type.NEW_OBJECT) {
+			//			IEntityModel e = (IEntityModel) event.arg;
+			//			System.out.println("new " + e);
+			//			objectContainer.addObject(e);
+			//		}
+			stackFig.getLayoutManager().layout(stackFig);
+			updateLayout();
+
+			clearItem.setEnabled(model.isTerminated());
+		});
 	}
 
-	
+
 	private void rebuildStack(RuntimeModel model) {
 		clear();
 		IStackFrameModel staticVars = model.getStaticVars();
@@ -146,32 +166,44 @@ public class RuntimeViewer extends Composite {
 	private void clear() {
 		for(PolylineConnection p : pointersMap.values())
 			rootFig.remove(p);
-		
+
 		pointersMap.clear();
+		pointersMapOwners.clear();
 		stackFig.removeAll();
 		objectContainer.removeAll();
 	}
-	
-	
+
+
 	public void updateLayout() {
 		org.eclipse.swt.graphics.Point prev = canvas.getSize();
 		Dimension size = rootFig.getPreferredSize();
 		canvas.setSize(size.width, size.height);
 		canvas.layout();
-		if(size.height > prev.y)
-			scroll.setOrigin(0, size.height);
-		
+//		if(size.height > prev.y)
+//			scroll.setOrigin(0, size.height);
+
 		org.eclipse.draw2d.GridData d = (org.eclipse.draw2d.GridData) rootGrid.getConstraint(stackFig);
 		d.widthHint = Math.max(Constants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
 		rootGrid.layout(rootFig);
-
 	}
-	
-	
-	public void addPointer(IReferenceModel ref, PolylineConnection pointer) {
+
+
+	public void addPointer(IReferenceModel ref, PolylineConnection pointer, Object owner) {
 		assert pointer != null;
 		rootFig.add(pointer);
 		pointersMap.put(ref, pointer);
+		pointersMapOwners.put(owner, pointer);
+	}
+
+	public void showPointer(IReferenceModel ref, boolean show) {
+		PolylineConnection p = pointersMap.get(ref);
+		if(p != null)
+			p.setVisible(show);
+	}
+	
+	public void showPointers(Object owner, boolean show) {
+		for(PolylineConnection pointer : pointersMapOwners.get(owner))
+			pointer.setVisible(show);
 	}
 	
 	public void removePointer(IReferenceModel ref) {
@@ -179,10 +211,31 @@ public class RuntimeViewer extends Composite {
 		if(p != null)
 			rootFig.remove(p);
 	}
-
-
-
 	
+	public void removePointers(Object owner) {
+		for(PolylineConnection pointer : pointersMapOwners.get(owner))
+			rootFig.remove(pointer);
+		
+		pointersMapOwners.removeAll(owner);
+	}
+
+
+	public void addObject(IEntityModel e) {
+		PandionJUI.executeUpdate(() -> {
+			objectContainer.addObject(e);
+			updateLayout();
+		});
+	}
+
+	public void addObjectContainer(ObjectContainer c) {
+		objectContainers.add(c);
+	}
+	
+	public List<ObjectContainer> getObjectContainers() {
+		return Collections.unmodifiableList(objectContainers);
+	}
+	
+
 	private void addMenu() {
 		Menu menu = new Menu(canvas);
 		MenuItem item = new MenuItem(menu, SWT.PUSH);
@@ -194,8 +247,8 @@ public class RuntimeViewer extends Composite {
 				copyToClipBoard();
 			}
 		});
-		
-		
+
+
 		MenuItem setArrayItem = new MenuItem(menu, SWT.PUSH);
 		setArrayItem.setText(Constants.Messages.SET_ARRAY_MAX + " (current: " + PandionJView.getMaxArrayLength() + ")");
 		setArrayItem.setImage(PandionJUI.getImage("array.gif"));
@@ -206,8 +259,8 @@ public class RuntimeViewer extends Composite {
 				Shell shell = new Shell(display, SWT.APPLICATION_MODAL);
 				shell.setLayout(new FillLayout());
 				shell.setLocation(Display.getDefault().getCursorLocation());
-//				Label label = new Label(shell, SWT.NONE);
-//				label.setText("Maximum array length display");
+				//				Label label = new Label(shell, SWT.NONE);
+				//				label.setText("Maximum array length display");
 				Text text = new Text(shell, SWT.BORDER);
 				text.setText(PandionJView.getMaxArrayLength() + "");
 				text.addVerifyListener(new VerifyListener() {
@@ -233,14 +286,14 @@ public class RuntimeViewer extends Composite {
 				shell.pack();
 				shell.open();
 				while (!shell.isDisposed()) {
-				    if (!display.readAndDispatch()) {
-				        display.sleep();
-				     }
+					if (!display.readAndDispatch()) {
+						display.sleep();
+					}
 				}
 
 			}
 		});
-		
+
 		clearItem = new MenuItem(menu, SWT.PUSH);
 		clearItem.setText(Constants.Messages.CLEAR);
 		clearItem.setImage(PandionJUI.getImage("clear.gif"));
@@ -251,16 +304,27 @@ public class RuntimeViewer extends Composite {
 			}
 		});
 		canvas.setMenu(menu);
+
+
+		//		canvas.addKeyListener(new KeyAdapter() {
+		//			@Override
+		//			public void keyPressed(KeyEvent e) {
+		//				if(e.keyCode == SWT.CR) {
+		//					rootFig.setScale(rootFig.getScale()*1.1);
+		//					requestLayout();
+		//				}
+		//			}
+		//		});
 	}
 
 
 	// TODO save image
-//	void saveImage() {
-//		ImageLoader imageLoader = new ImageLoader();
-//		imageLoader.data = new ImageData[] {ideaImageData};
-//		imageLoader.save("C:/temp/Idea_PureWhite.jpg",SWT.IMAGE_JPEG); 
-//	}
-	
+	//	void saveImage() {
+	//		ImageLoader imageLoader = new ImageLoader();
+	//		imageLoader.data = new ImageData[] {ideaImageData};
+	//		imageLoader.save("C:/temp/Idea_PureWhite.jpg",SWT.IMAGE_JPEG); 
+	//	}
+
 	void copyToClipBoard() {
 		Dimension size = rootFig.getPreferredSize();
 		Image image = new Image(Display.getDefault(), size.width, size.height);
@@ -274,4 +338,14 @@ public class RuntimeViewer extends Composite {
 	}
 
 	
+
+	
+	
+	
+
+
+
+
+
+
 }

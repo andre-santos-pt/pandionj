@@ -57,7 +57,8 @@ public class NewJavaFileCommand extends AbstractHandler {
 	}
 
 	private InputStream openContentStream() {
-		String contents = "class Test {" + System.getProperty("line.separator") + "}";
+		String contents = "";
+		contents += "class Test {" + System.getProperty("line.separator") + "}";
 		return new ByteArrayInputStream(contents.getBytes());
 	}
 	

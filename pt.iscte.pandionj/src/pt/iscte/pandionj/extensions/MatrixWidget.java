@@ -70,8 +70,8 @@ public class MatrixWidget implements IArrayWidgetExtension{
 			layout.marginWidth = 10;
 			setLayoutManager(layout);
 
-			setBackgroundColor(ColorConstants.white);
-			setOpaque(true);
+//			setBackgroundColor(ColorConstants.white);
+//			setOpaque(true);
 
 			model.registerDisplayObserver(this);
 

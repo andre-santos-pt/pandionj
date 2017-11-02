@@ -230,13 +230,13 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		IVariableModel<?> newVar = null;
 
 		if(value instanceof IJavaObject) {
-			ReferenceModel refElement = new ReferenceModel(jv, isInstance, info, this);
+			ReferenceModel refElement = new ReferenceModel(jv, isInstance, true, info, this);
 			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
 			refElement.setTags(tags);
 			newVar = refElement;
 		}
 		else {
-			newVar = new ValueModel(jv, isInstance, info, this);
+			newVar = new ValueModel(jv, isInstance, true, info, this);
 		}
 		return newVar;
 	}
@@ -273,7 +273,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			if(frame.isStaticInitializer())
 				return frame.getDeclaringTypeName() + " (static initializer)";
 			else if(frame.isConstructor())
-				return "new " + frame.getReferenceType().getName() + "(" + String.join(", ", args) + ")";
+				return "new " + toSimpleName(frame.getReferenceType().getName()) + "(" + String.join(", ", args) + ")";
 			else {
 				String ret = frame.getMethodName() + "(" + String.join(", ", args) + ")";
 				if(returnValue != null)
@@ -284,6 +284,13 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			//			e.printStackTrace();
 			return super.toString();
 		}
+	}
+	
+	private static  String toSimpleName(String name) {
+		if(name.indexOf('.') == -1)
+			return name;
+		else
+			return name.substring(name.lastIndexOf('.')+1);
 	}
 
 	private String valueToString(IJavaValue value) {
@@ -424,18 +431,27 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		return vars;
 	}
 
-	public IObjectModel getThis() {
-		//assert isInstance();
-//		if(isObsolete())
-//			return null;
+//	public IObjectModel getThis() {
+//		//assert isInstance();
+////		if(isObsolete())
+////			return null;
+//		try {
+//			IJavaObject obj = frame.getThis();
+//			if(obj != null)
+//				return (IObjectModel) getRuntime().getObject(obj, false, null);
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//		}
+//		return null;
+//	}
+	
+	public boolean isInstanceFrameOf(IObjectModel model) {
 		try {
 			IJavaObject obj = frame.getThis();
-			if(obj != null)
-				return (IObjectModel) getRuntime().getObject(obj, false, null);
+			return obj != null && obj.getUniqueId() == ((ObjectModel) model).getContent().getUniqueId();
 		} catch (DebugException e) {
-			e.printStackTrace();
+			return false;
 		}
-		return null;
 	}
 
 

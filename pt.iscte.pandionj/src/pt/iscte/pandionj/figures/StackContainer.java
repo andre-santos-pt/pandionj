@@ -30,14 +30,10 @@ public class StackContainer extends Figure {
 			if(((StackFrameFigure)o).frame == frame)
 				f = (Figure) o;
 		
-		if(f != null)
+		if(f != null) {
 			remove(f);
+			RuntimeViewer.getInstance().removePointers(f);
+		}
 	}
-	
-	public void removePointers() {
-		for(Object o : getChildren())
-			((StackFrameFigure) o).removePointers();
-	}
-
 	
 }

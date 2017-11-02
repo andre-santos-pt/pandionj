@@ -25,6 +25,6 @@ public class StringWidget implements IObjectWidgetExtension {
 
 	@Override
 	public boolean includeMethod(String methodName) {
-		return methodName.matches("length|isEmpty|charAt|substring|trim");
+		return methodName.matches("length|isEmpty|charAt|substring|concat|trim");
 	}
 }

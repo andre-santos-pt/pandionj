@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
@@ -20,15 +21,16 @@ implements IVariableModel<O> {
 	private String name;
 	private boolean isInstance;
 	private boolean isStatic;
+	private boolean isVisible;
 	
 	private List<StepValue> history;
 
 	private int stepInit;
 	private int scopeEnd;
-	
+
 	private int stepPointer;
 
-	
+
 	private class StepValue {
 		final T value;
 		final int step;
@@ -43,34 +45,30 @@ implements IVariableModel<O> {
 			return "(" + value + ", " + step + ")";
 		}
 	}
-	
-	public VariableModel(IJavaVariable variable, boolean isInstance, StackFrameModel stackFrame) throws DebugException {
-		this(variable, isInstance, stackFrame.getRuntime());
+
+	public VariableModel(IJavaVariable variable, boolean isInstance, boolean isVisible, StackFrameModel stackFrame) throws DebugException {
+		this(variable, isInstance, isVisible, stackFrame.getRuntime());
 		this.stackFrame = stackFrame;	
 	}
 
 	@SuppressWarnings("unchecked")
-	public VariableModel(IJavaVariable variable, boolean isInstance, RuntimeModel runtime) throws DebugException {
+	public VariableModel(IJavaVariable variable, boolean isInstance, boolean isVisible, RuntimeModel runtime) throws DebugException {
 		super(runtime);
 		assert variable != null;
-		
+
+		T val = (T) variable.getValue();
 		this.variable = variable;
-		history = new ArrayList<>();
-
-//		try {
-			this.type = variable.getReferenceTypeName();
-			this.name = variable.getName();
-			this.isInstance = isInstance; // !variable.isLocal() ?
-			this.isStatic = variable.isStatic();
-			T val = (T) variable.getValue();
-			StepValue sv = new StepValue(val, runtime.getRunningStep());
-			history.add(sv);
-			stepPointer = 0;
-
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//		}
+		this.name = variable.getName();
 		
+		if(!((IJavaValue) val).isNull())
+			this.type = variable.getReferenceTypeName();
+		this.isInstance = isInstance; // !variable.isLocal() ?
+		this.isVisible = isVisible;
+		this.isStatic = variable.isStatic();
+		history = new ArrayList<>();
+		StepValue sv = new StepValue(val, runtime.getRunningStep());
+		history.add(sv);
+		stepPointer = 0;
 		this.stepInit = runtime.getRunningStep();
 		this.scopeEnd = Integer.MAX_VALUE;
 	}
@@ -79,19 +77,19 @@ implements IVariableModel<O> {
 		return stackFrame;
 	}
 
-//	public boolean isWithinScope() {
-//		if(stackFrame == null)
-//			return true;
-//		else
-//			return stepInit <= stackFrame.getStepPointer() && stackFrame.getStepPointer() <= scopeEnd;
-//	}
-	
+	//	public boolean isWithinScope() {
+	//		if(stackFrame == null)
+	//			return true;
+	//		else
+	//			return stepInit <= stackFrame.getStepPointer() && stackFrame.getStepPointer() <= scopeEnd;
+	//	}
+
 	public void setOutOfScope() {
 		this.scopeEnd = getRuntimeModel().getRunningStep();
 		setChanged();
 		notifyObservers();
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean update(int step) {
@@ -120,7 +118,7 @@ implements IVariableModel<O> {
 	public boolean isInstance() {
 		return isInstance;
 	}
-	
+
 	public boolean isStatic() {
 		return isStatic;
 	}
@@ -133,6 +131,11 @@ implements IVariableModel<O> {
 		return false;
 	}
 	
+	@Override
+	public boolean isVisible() {
+		return isVisible;
+	}
+
 	public String getTypeName() {
 		return type;
 	}
@@ -169,7 +172,7 @@ implements IVariableModel<O> {
 			hist.add(sv.value.toString());
 		return hist;
 	}
-	
+
 	@Override
 	public IJavaVariable getJavaVariable() {
 		return variable;

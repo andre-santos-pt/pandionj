@@ -20,7 +20,7 @@ public class StringCharArray implements IArrayWidgetExtension {
 	public IFigure createFigure(IArrayModel e) {
 		Label label = new Label();
 		label.setBorder(new MarginBorder(5));
-		PandionJUI.setFont(label, 14);
+		PandionJUI.setFont(label, 18);
 		updateLabel(e, label);
 		e.registerDisplayObserver((a) -> updateLabel(e, label));
 		return label;

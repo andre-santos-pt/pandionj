@@ -1,8 +1,5 @@
 package pt.iscte.pandionj.figures;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
@@ -36,7 +33,6 @@ public class StackFrameFigure extends Figure {
 	private boolean invisible;
 	private boolean instance;
 	private Label label;
-	private List<IReferenceModel> pointers;
 	
 	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible, boolean instance) {
 		this.runtimeViewer = runtimeViewer;
@@ -45,7 +41,7 @@ public class StackFrameFigure extends Figure {
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
 		this.instance = instance;
-		this.pointers = new ArrayList<IReferenceModel>();
+		
 		setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 4;
@@ -91,7 +87,6 @@ public class StackFrameFigure extends Figure {
 
 						if(event.arg instanceof IReferenceModel) {
 							runtimeViewer.removePointer((IReferenceModel) event.arg);
-							pointers.remove((IReferenceModel) event.arg);
 						}
 					}
 					else if(event.type == StackEvent.Type.EXCEPTION) {
@@ -119,7 +114,14 @@ public class StackFrameFigure extends Figure {
 			else if(model.exceptionOccurred()) {
 				setBackgroundColor(Constants.Colors.INST_POINTER);
 				setBorder(new LineBorder(Constants.Colors.ERROR, Constants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
-				paintNullRefs();
+				
+				
+				if(model.getExceptionType().equals(NullPointerException.class.getName()))
+					paintNullRefs();
+				
+				Label labelExc = new Label(Constants.Messages.prettyException(model.getExceptionType()));
+				labelExc.setForegroundColor(Constants.Colors.ERROR);
+				setToolTip(labelExc);
 			}
 			else if(model.isExecutionFrame())
 				setBackgroundColor(Constants.Colors.INST_POINTER);
@@ -140,6 +142,7 @@ public class StackFrameFigure extends Figure {
 			}
 		}
 	}
+	
 	private void addVariable(IVariableModel<?> v, ExceptionType exception) {
 		if(v.isInstance() == instance) { // && !(v instanceof IReferenceModel && !((IReferenceModel) v).getTags().isEmpty())) {
 			PandionJFigure<?> figure = figProvider.getFigure(v, true);
@@ -169,8 +172,7 @@ public class StackFrameFigure extends Figure {
 			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
 		Utils.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer);
-		runtimeViewer.addPointer(ref, pointer);
-		pointers.add(ref);
+		runtimeViewer.addPointer(ref, pointer, this);
 	}
 
 	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
@@ -195,12 +197,5 @@ public class StackFrameFigure extends Figure {
 				return (PandionJFigure<?>) object;
 		}
 		return null;
-	}
-	
-	
-	public void removePointers() {
-		for (IReferenceModel r : pointers)
-			runtimeViewer.removePointer(r);
-		pointers.clear();
 	}
 }

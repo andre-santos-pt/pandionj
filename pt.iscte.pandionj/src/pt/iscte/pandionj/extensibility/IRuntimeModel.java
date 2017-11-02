@@ -1,10 +1,13 @@
 package pt.iscte.pandionj.extensibility;
 
-public interface IRuntimeModel extends IObservableModel<IRuntimeModel.Event<?>> {
+import org.eclipse.debug.core.DebugException;
+import org.eclipse.jdt.debug.core.IJavaObject;
+
+public interface IRuntimeModel extends IObservableModel<IRuntimeModel.Event<IStackFrameModel>> {
 
 	public class Event<T> {
 		public enum Type {
-			NEW_FRAME, NEW_STACK, REMOVE_FRAME, STEP, TERMINATION, NEW_OBJECT;
+			NEW_FRAME, NEW_STACK, REMOVE_FRAME, STEP, TERMINATION;
 		}
 
 		public final Type type;
@@ -17,4 +20,7 @@ public interface IRuntimeModel extends IObservableModel<IRuntimeModel.Event<?>> 
 	}
 	
 	IStackFrameModel getTopFrame();
+	IEntityModel getObject(IJavaObject obj, boolean loose, IReferenceModel model);
+//	void update() throws DebugException;
+	void evaluationNotify() throws DebugException;
 }

@@ -119,4 +119,9 @@ public class MockReference implements IReferenceModel {
 		return null;
 	}
 
+	@Override
+	public boolean isVisible() {
+		return true;
+	}
+
 }

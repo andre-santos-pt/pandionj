@@ -170,4 +170,9 @@ implements IArrayIndexModel {
 	public IRuntimeModel getRuntimeModel() {
 		return model.getRuntimeModel();
 	}
+
+	@Override
+	public boolean isVisible() {
+		return model.isVisible();
+	}
 }

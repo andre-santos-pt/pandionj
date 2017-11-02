@@ -42,6 +42,7 @@ public interface IVariableModel<O> extends IObservableModel<O> {
 	VariableInfo getVariableRole();
 	
 	boolean isStatic();
+	boolean isVisible();
 	void setOutOfScope();
 	boolean update(int step);
 	IJavaVariable getJavaVariable();

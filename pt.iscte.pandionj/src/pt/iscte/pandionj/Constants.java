@@ -50,7 +50,7 @@ public interface Constants {
 
 	int STACKFRAME_LINE_WIDTH = 3;
 
-	int STACKCOLUMN_MIN_WIDTH = 150;
+	int STACKCOLUMN_MIN_WIDTH = 100;
 	int STACK_TO_OBJECTS_GAP = 30;
 
 	
@@ -102,6 +102,14 @@ public interface Constants {
 		String SET_ARRAY_MAX = "Set array maximum length";
 		String PRESS_TO_INVOKE = "press Enter do execute";
 		String CLEAR = "Clear";
+		
+		static String prettyException(String name) {
+			String excName = name.substring(name.lastIndexOf('.')+1);
+			if(excName.endsWith("Exception"))
+				excName = excName.substring(0, excName.length()-"Exception".length());
+			
+			return String.join(" ", excName.split("(?<!(^|[A-Z]))(?=[A-Z])|(?<!^)(?=[A-Z][a-z])"));
+		}
 	}
 	
 

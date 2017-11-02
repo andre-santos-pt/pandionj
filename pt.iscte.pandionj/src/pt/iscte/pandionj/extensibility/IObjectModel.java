@@ -7,7 +7,7 @@ import org.eclipse.jdt.core.IType;
 import com.google.common.collect.Multimap;
 
 public interface IObjectModel extends IEntityModel {
-	String getTypeName();
+//	String getTypeName();
 	IArrayModel getArray(String fieldName);
 	String getStringValue();
 	
@@ -30,5 +30,6 @@ public interface IObjectModel extends IEntityModel {
 	boolean hasAttributeTags();
 	Multimap<String, String> getAttributeTags();
 	IType getType();
+	List<IVariableModel<?>> getFields();
 	
 }

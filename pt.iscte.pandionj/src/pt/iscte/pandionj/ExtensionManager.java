@@ -45,12 +45,12 @@ public class ExtensionManager {
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
 		arrayExtensions.put("@string", new StringCharArray());
 		arrayExtensions.put("@matrix", new MatrixWidget());
-		arrayExtensions.put("@grayimage", new GrayscaleImageWidget());
+		arrayExtensions.put("@grayscaleimage", new GrayscaleImageWidget());
 		arrayExtensions.put("@binaryimage", new BinaryImageWidget());
 		arrayExtensions.put("@color", new ColorRGBArray());
 		arrayExtensions.put("@colorimage", new ColorImageWidget());
 		arrayExtensions.put("@hist", new HistogramWidget());
-		
+
 
 		objectExtensions = new ArrayList<>();
 		objectExtensions.add(new NumberWidget());
@@ -78,9 +78,11 @@ public class ExtensionManager {
 			return new TagExtension(m.getAttributeTags());
 
 		IType type = m.getType();
-		for(IObjectWidgetExtension ext : ExtensionManager.objectExtensions)
-			if(ext.accept(type))
-				return ext;
+		if(type != null) {
+			for(IObjectWidgetExtension ext : ExtensionManager.objectExtensions)
+				if(ext.accept(type))
+					return ext;
+		}
 		return IObjectWidgetExtension.NULL_EXTENSION;
 	}
 

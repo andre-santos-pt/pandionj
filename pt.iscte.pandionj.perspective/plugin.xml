@@ -23,6 +23,13 @@
             name="New Java File"
             project="false">
       </wizard>
+      <wizard
+            class="pt.iscte.pandionj.perspective.wizards.NewPackageWizard"
+            icon="icons/package.gif"
+            id="pt.iscte.perspective.wizards.NewPackageWizard"
+            name="New Java Package"
+            project="false">
+      </wizard>
    </extension>
    <extension
          point="org.eclipse.ui.menus">

@@ -50,7 +50,7 @@ public class ParserManager {
 			tagParserCache.put(f, tagParser);
 			
 //			System.out.println(r.toText());
-//			System.out.println(tagParser);
+			System.out.println(tagParser);
 		}
 		return r;
 	}
@@ -59,7 +59,7 @@ public class ParserManager {
 	public static Collection<String> getAttributeTags(IFile file, String className, String attName) {
 		getVarParserResult(file); // loads if not loaded
 		TagParser tagParser = tagParserCache.get(file);
-		return tagParser.getAttributeTags(className, attName);
+		return tagParser == null ? Collections.emptyList() : tagParser.getAttributeTags(className, attName);
 	}
 			
 	public static Collection<String> getTags(IFile file, String varName, int line, boolean isField) {

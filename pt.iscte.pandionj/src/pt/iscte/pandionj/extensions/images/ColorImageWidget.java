@@ -58,8 +58,8 @@ public class ColorImageWidget implements IArrayWidgetExtension {
 				Object[] line = (Object[]) array[y];
 				for(int x = 0; x < line.length && x < width; x++) {
 					int v = (int) line[x];
-					int r = v >> 16;
-					int g = (v & 0xFF00) >> 8;
+					int r = (v >> 16) & 0xFF;
+					int g = (v >> 8) & 0xFF;
 					int b = v & 0xFF;
 					int pixel = palette.getPixel(new RGB(r,g,b));
 					data.setPixel(x, y, pixel);

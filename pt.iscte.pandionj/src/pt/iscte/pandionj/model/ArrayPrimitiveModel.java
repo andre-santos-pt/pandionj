@@ -15,7 +15,7 @@ public class ArrayPrimitiveModel extends ArrayModel<IValueModel> {
 	}
 
 	IValueModel createElement(IJavaVariable var) throws DebugException {
-		return new ValueModel(var, false, null, getRuntimeModel());
+		return new ValueModel(var, false, true, null, getRuntimeModel());
 	}
 	
 	public boolean isDecimal() {

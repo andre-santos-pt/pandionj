@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Text;
  * OR with the extension that matches the expected one (java).
  */
 
-public class NewFileWizardPage extends WizardPage {
+public class NewFolderWizardPage extends WizardPage {
 
 	private Text fileText;
 
@@ -29,10 +29,10 @@ public class NewFileWizardPage extends WizardPage {
 	 * 
 	 * @param pageName
 	 */
-	public NewFileWizardPage(IStructuredSelection selection) {
+	public NewFolderWizardPage(IStructuredSelection selection) {
 		super("wizardPage");
-		setTitle("New Java file");
-		setDescription("Java files must have .java extension.");
+		setTitle("New Java package");
+		setDescription("Java packages typically do not use uppercase characters.");
 		this.selection = selection;
 	}
 
@@ -49,7 +49,7 @@ public class NewFileWizardPage extends WizardPage {
 		Object s = selection.getFirstElement();
 		
 		Label label = new Label(container, SWT.NULL);
-		label.setText("&File name:");
+		label.setText("&Package name:");
 
 		fileText = new Text(container, SWT.BORDER | SWT.SINGLE);
 		gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -76,8 +76,8 @@ public class NewFileWizardPage extends WizardPage {
 				return;
 			Object obj = ssel.getFirstElement();
 		}
-		fileText.setText("Example.java");
-		fileText.setSelection(0, "Example.java".length()-".java".length());
+		fileText.setText("pack");
+		fileText.setSelection(0, "pack".length());
 	}
 
 
@@ -86,23 +86,15 @@ public class NewFileWizardPage extends WizardPage {
 	 */
 
 	private void dialogChanged() {
-		String fileName = getFileName();
+		String fileName = fileText.getText();
 
 		if (fileName.length() == 0) {
-			updateStatus("File name must be specified");
+			updateStatus("Package name must be specified");
 			return;
 		}
-		if (fileName.replace('\\', '/').indexOf('/', 1) > 0) {
-			updateStatus("File name must be valid");
+		if (!fileName.matches("[a-zA-Z]+(\\.[a-zA-Z]+)*")) {
+			updateStatus("Package name must be valid");
 			return;
-		}
-		int dotLoc = fileName.lastIndexOf('.');
-		if (dotLoc != -1) {
-			String ext = fileName.substring(dotLoc + 1);
-			if (ext.equalsIgnoreCase("java") == false) {
-				updateStatus("File extension must be \"java\"");
-				return;
-			}
 		}
 		updateStatus(null);
 	}
@@ -112,9 +104,7 @@ public class NewFileWizardPage extends WizardPage {
 		setPageComplete(message == null);
 	}
 
-	public String getFileName() {
-		return fileText.getText();
+	public String[] getPath() {
+		return fileText.getText().split("\\.");
 	}
-
-
 }

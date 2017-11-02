@@ -1,7 +1,6 @@
 package pt.iscte.pandionj;
 
 
-import java.awt.Label;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -9,7 +8,6 @@ import java.util.WeakHashMap;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MarginBorder;
-import org.eclipse.draw2d.geometry.Insets;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
@@ -87,7 +85,7 @@ public class FigureProvider  {
 			else if(model instanceof IObjectModel) {
 				IObjectModel oModel = (IObjectModel) model; 
 				IFigure extensionFigure = ExtensionManager.getObjectExtension(oModel).createFigure(oModel);
-				fig = new ObjectFigure(oModel, extensionFigure, true);
+				fig = new ObjectFigure(oModel, extensionFigure);
 			}
 		}
 		assert fig != null : model;

@@ -29,14 +29,14 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	private VariableInfo info;
 	private Collection<String> tags;
 	
-	ReferenceModel(IJavaVariable variable, boolean isInstance, VariableInfo info, StackFrameModel stackFrame) throws DebugException {
-		super(variable, isInstance, stackFrame);
+	ReferenceModel(IJavaVariable variable, boolean isInstance, boolean isVisible, VariableInfo info, StackFrameModel stackFrame) throws DebugException {
+		super(variable, isInstance, isVisible, stackFrame);
 		this.info = info;
 		init(variable);
 	}
 
-	ReferenceModel(IJavaVariable variable, boolean isInstance, VariableInfo info, RuntimeModel runtime) throws DebugException {
-		super(variable, isInstance, runtime);
+	ReferenceModel(IJavaVariable variable, boolean isInstance, boolean isVisible, VariableInfo info, RuntimeModel runtime) throws DebugException {
+		super(variable, isInstance, isVisible, runtime);
 		this.info = info;
 		init(variable);
 	}

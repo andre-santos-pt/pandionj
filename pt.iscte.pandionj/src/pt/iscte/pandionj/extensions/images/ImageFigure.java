@@ -32,7 +32,7 @@ abstract class ImageFigure extends Figure {
 	private void init(IArrayModel<?> model) {
 		setLayoutManager(new FlowLayout());
 		setBackgroundColor(ColorConstants.white);
-		setBorder(new LineBorder(ColorConstants.gray));
+//		setBorder(new LineBorder(ColorConstants.gray));
 		setOpaque(true);
 
 		this.model = model;

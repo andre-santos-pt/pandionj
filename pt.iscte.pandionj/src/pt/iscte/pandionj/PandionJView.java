@@ -12,6 +12,7 @@ import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.debug.core.model.IWatchExpressionResult;
+import org.eclipse.debug.core.model.RuntimeProcess;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.debug.core.IJavaExceptionBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
@@ -102,17 +103,6 @@ public class PandionJView extends ViewPart {
 	}
 
 
-	//	private static class InitPanel extends Composite {
-	//
-	//	public InitPanel(Composite parent) {
-	//		super(parent, SWT.NONE);
-	//		labelInit = new Label(labelComposite, SWT.WRAP);
-	//		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);
-	//		labelInit.setText(Constants.Messages.START);
-	//		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-	//	}
-	//		
-	//	}
 
 	private void createWidgets(Composite parent) {
 		stackLayout = new StackLayout();
@@ -164,13 +154,27 @@ public class PandionJView extends ViewPart {
 				DebugEvent e = events[0];
 				PandionJUI.executeUpdate(() -> {
 					if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
-						IJavaThread thread = (IJavaThread) e.getSource();
-						handleFrames(thread);
+						IJavaThread thread = (IJavaThread) e.getSource();		
 						IStackFrame f = thread.getTopStackFrame();
-						if(f != null && f.getLineNumber() == -1)
-							thread.resume();
+						Object sourceElement = f.getLaunch().getSourceLocator().getSourceElement(f);
+
+						if(sourceElement != null) {
+							if(sourceElement instanceof IFile) {
+								handleFrames(thread);
+							}
+							if(f != null && f.getLineNumber() == -1)
+								thread.resume(); // to jump over injected code
+						}
+						else {
+							thread.stepReturn();
+							//							thread.stepOver();
+						}
 					}
-					else if(e.getKind() == DebugEvent.TERMINATE) {
+					else if(e.getKind() == DebugEvent.CHANGE && e.getDetail() == DebugEvent.CONTENT) {
+						runtime = new RuntimeModel();
+						runtimeView.setInput(runtime);
+					}
+					else if(e.getKind() == DebugEvent.TERMINATE && e.getSource() instanceof RuntimeProcess) {
 						runtime.setTerminated();
 					}
 				});
@@ -196,7 +200,7 @@ public class PandionJView extends ViewPart {
 			if(!runtime.isEmpty()) {
 				StackFrameModel frame = runtime.getFrame(exceptionFrame);
 				int line = exceptionFrame.getLineNumber();
-				frame.processException(exception, line);  
+				frame.processException(exception, line);
 			}
 		}); 
 	}
@@ -204,13 +208,13 @@ public class PandionJView extends ViewPart {
 	// must be invoked under executeInternal(..)
 	private void handleFrames(IJavaThread thread) throws DebugException {
 		assert thread != null;
-		
+
 		if(thread.getLaunch() != launch) {
 			launch = thread.getLaunch();
 			runtime = new RuntimeModel();
 			runtimeView.setInput(runtime);
 		}
-		
+
 		contextService.activateContext(Constants.CONTEXT_ID);
 		if(stackLayout.topControl != runtimeView) {
 			Display.getDefault().syncExec(() -> {
@@ -236,7 +240,7 @@ public class PandionJView extends ViewPart {
 			r.run();
 		}
 		catch(DebugException e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 			runtime.setTerminated();
 		}
 	}
@@ -246,7 +250,7 @@ public class PandionJView extends ViewPart {
 			return r.run();
 		}
 		catch(DebugException e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 			runtime.setTerminated();
 			return null;
 		}

@@ -14,13 +14,13 @@ implements IValueModel {
 	private Role role;
 	private VariableInfo info;
 	
-	public ValueModel(IJavaVariable variable, boolean isInstance, VariableInfo var, StackFrameModel stackFrame) throws DebugException {
-		super(variable, isInstance, stackFrame);
+	public ValueModel(IJavaVariable variable, boolean isInstance, boolean isVisible, VariableInfo var, StackFrameModel stackFrame) throws DebugException {
+		super(variable, isInstance, isVisible, stackFrame);
 		init(var);
 	}
 	
-	public ValueModel(IJavaVariable variable, boolean isInstance, VariableInfo var, RuntimeModel runtime) throws DebugException {
-		super(variable, isInstance, runtime);
+	public ValueModel(IJavaVariable variable, boolean isInstance, boolean isVisible, VariableInfo var, RuntimeModel runtime) throws DebugException {
+		super(variable, isInstance, isVisible, runtime);
 		assert variable.getValue() instanceof IJavaPrimitiveValue;
 		init(var);
 	}

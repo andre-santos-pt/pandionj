@@ -81,7 +81,10 @@ public class MockStackFrame implements IStackFrameModel {
 	}
 
 	@Override
-	public IObjectModel getThis() {
-		return null;
+	public boolean isInstanceFrameOf(IObjectModel model) {
+		// TODO Auto-generated method stub
+		return false;
 	}
+
+	
 }

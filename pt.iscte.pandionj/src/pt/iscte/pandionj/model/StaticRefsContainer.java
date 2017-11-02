@@ -126,10 +126,9 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	}
 
 	@Override
-	public IObjectModel getThis() {
-		return null;
+	public boolean isInstanceFrameOf(IObjectModel model) {
+		return false;
 	}
-
 	
 	
 }

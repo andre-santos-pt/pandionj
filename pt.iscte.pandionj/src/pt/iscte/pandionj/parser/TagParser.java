@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.LineComment;
 import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.PackageDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
@@ -110,8 +111,11 @@ public class TagParser {
 			ASTNode parent = node.getParent();
 			Scope scope = new Scope(cunit.getLineNumber(parent.getStartPosition()), getEndLine(parent, cunit));
 			TypeDeclaration dec = (TypeDeclaration) node.getParent();
-
-			String type = !Modifier.isStatic(node.getModifiers()) ? dec.getName().getFullyQualifiedName() : null; 
+			String qName = dec.getName().getFullyQualifiedName();
+			PackageDeclaration packageDec = cunit.getPackage();
+			if(packageDec != null)
+				qName = packageDec.getName().getFullyQualifiedName() + "." + qName;
+			String type = !Modifier.isStatic(node.getModifiers()) ? qName : null; 
 			VariableTags tags = new VariableTags(varName, type, line, scope, true);
 			variables.add(tags);
 			return false;

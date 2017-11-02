@@ -33,13 +33,13 @@ import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
 public class RuntimeModel
-extends DisplayUpdateObservable<IRuntimeModel.Event<?>>
+extends DisplayUpdateObservable<IRuntimeModel.Event<IStackFrameModel>>
 implements IRuntimeModel {
 
 	private ILaunch launch;
 	private List<StackFrameModel> callStack;
-	private Map<Long, IEntityModel> objects;
-	private Map<Long, IEntityModel> looseObjects;
+	private Map<Long, EntityModel<?>> objects;
+	private Map<Long, EntityModel<?>> looseObjects;
 	private StaticRefsContainer staticRefs;
 
 	private int countActive;
@@ -72,38 +72,52 @@ implements IRuntimeModel {
 			terminated = false;
 			countActive = 0;
 			setChanged();
-			notifyObservers(new Event<List<StackFrameModel>>(Event.Type.NEW_STACK, getFilteredStackPath()));
+			notifyObservers(new Event<IStackFrameModel>(Event.Type.NEW_STACK, null));
 		}
 
-		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
-			if(o instanceof ArrayModel && o.update(step))
-				setChanged();
-			else if(o instanceof ObjectModel) {
-				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
-					public void visit(IEntityModel object, ObjectModel parent, int index, int depth, String field) {
-						try {
-							if(object != null && ((EntityModel<?>) object).update(step))
-								setChanged();
-						}
-						catch(DebugException e) {
-							//							throw e; // TODO propagate exception
-						}
-					}
-				});
-			}
-		}
+//		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
+//			if(o instanceof ArrayModel && o.update(step))
+//				setChanged();
+//			else if(o instanceof ObjectModel) {
+//				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
+//					public void visit(IEntityModel object, ObjectModel parent, int index, int depth, String field) {
+//						try {
+//							if(object != null && ((EntityModel<?>) object).update(step))
+//								setChanged();
+//						}
+//						catch(DebugException e) {
+//							//							throw e; // TODO propagate exception
+//						}
+//					}
+//				});
+//			}
+//		}
 
 		PandionJView.getInstance().executeInternal(() -> {
 			handle(thread.getStackFrames());
 		});
 
-		for(int i = 0; i < countActive; i++)
-			callStack.get(i).update();
+		updateActiveStack();
 
 		step++;
 		setChanged();
-		notifyObservers(new Event<Object>(Event.Type.STEP, null));
+		notifyObservers(new Event<IStackFrameModel>(Event.Type.STEP, getTopFrame()));
 
+	}
+
+	public void evaluationNotify() throws DebugException {
+		updateActiveStack();
+		setChanged();
+		notifyObservers(new Event<IStackFrameModel>(Event.Type.STEP, getTopFrame()));
+	}
+	
+	public void updateActiveStack() throws DebugException {
+		for(int i = 0; i < countActive; i++)
+			callStack.get(i).update();
+		
+		for(EntityModel<?> m : new ArrayList<EntityModel<?>>(objects.values())) // to avoid concurrent modification
+			m.update(0);
+		
 	}
 
 	private void handle(IStackFrame[] stackFrames) throws DebugException {
@@ -122,7 +136,7 @@ implements IRuntimeModel {
 				callStack.add(newFrame);
 				countActive++;
 				setChanged();
-				notifyObservers(new Event<StackFrameModel>(Event.Type.NEW_FRAME, newFrame));	
+				notifyObservers(new Event<IStackFrameModel>(Event.Type.NEW_FRAME, newFrame));	
 			}
 		}
 		else {
@@ -135,17 +149,17 @@ implements IRuntimeModel {
 			for(int i = callStack.size() - offset; i > 0; i--) {
 				StackFrameModel s = callStack.remove(offset);
 				setChanged();
-				notifyObservers(new Event<StackFrameModel>(Event.Type.REMOVE_FRAME, s));
+				notifyObservers(new Event<IStackFrameModel>(Event.Type.REMOVE_FRAME, s));
 			}
 
 			countActive = offset;
-			
+
 			for(int i = offset; i < frames.length; i++) {
 				StackFrameModel newFrame = new StackFrameModel(this, (IJavaStackFrame) frames[i], staticRefs);
 				callStack.add(newFrame);
 				countActive++;
 				setChanged();
-				notifyObservers(new Event<StackFrameModel>(Event.Type.NEW_FRAME, newFrame));	
+				notifyObservers(new Event<IStackFrameModel>(Event.Type.NEW_FRAME, newFrame));	
 			}
 		}
 	}
@@ -229,7 +243,7 @@ implements IRuntimeModel {
 			frame.setObsolete();
 
 		setChanged();
-		notifyObservers(new Event<Object>(Event.Type.TERMINATION, null));
+		notifyObservers(new Event<IStackFrameModel>(Event.Type.TERMINATION, null));
 	}
 
 	public boolean isTerminated() {
@@ -245,7 +259,7 @@ implements IRuntimeModel {
 		assert !obj.isNull();
 
 		return PandionJView.getInstance().executeInternal(() -> {
-			IEntityModel e = objects.get(obj.getUniqueId());
+			EntityModel<?> e = objects.get(obj.getUniqueId());
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType) {
 					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
@@ -268,11 +282,11 @@ implements IRuntimeModel {
 
 				if(loose) {
 					looseObjects.put(obj.getUniqueId(), e);
+//					setChanged();
+//					notifyObservers(new Event<IEntityModel>(Event.Type.NEW_OBJECT, e));
 				}
 				else {
 					objects.put(obj.getUniqueId(), e);
-					setChanged();
-					notifyObservers(new Event<IEntityModel>(Event.Type.NEW_OBJECT, e));
 				}
 			}
 			return e;
@@ -323,5 +337,7 @@ implements IRuntimeModel {
 
 		return list;
 	}
+
+
 
 }

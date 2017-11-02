@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.figures;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,6 +11,8 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.PolylineConnection;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
@@ -20,7 +23,6 @@ import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
-import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.figures.PandionJFigure.Extension;
 import pt.iscte.pandionj.model.ModelObserver;
@@ -51,12 +53,43 @@ public class ObjectContainer extends Figure {
 
 	FigureProvider figProvider;
 	boolean useExtensions;
-	
-	public ObjectContainer(boolean useExtensions) {
+
+	private ObjectContainer(boolean useExtensions) {
 		this.useExtensions = useExtensions;
 		setBackgroundColor(ColorConstants.white);
 		setOpaque(true);
 		setLayoutManager(new GridLayout(1, true));
+	}
+
+
+	public static ObjectContainer create(boolean useExtensions) {
+		ObjectContainer c = new ObjectContainer(useExtensions);
+		RuntimeViewer.getInstance().addObjectContainer(c);
+		return c;
+	}
+
+
+	//	public void setVisible(boolean visible) {
+	//		super.setVisible(visible);
+	//		RuntimeViewer.getInstance().showPointers(this, visible); // 2D pointers
+	//	}
+
+	public void setPointersVisible(boolean visible) {
+		RuntimeViewer.getInstance().showPointers(this, visible); // 2D pointers
+	}
+
+	public void setVisible(Collection<IReferenceModel> refs, boolean visible) {
+		for(IReferenceModel r : refs)
+			setVisible(r, visible);
+	}
+
+	public void setVisible(IReferenceModel ref, boolean visible) {
+		IEntityModel t = ref.getModelTarget();
+		if(!t.isNull()) {
+			PandionJFigure<?> f = getDeepChild(t);
+			if(f != null)
+				f.setVisible(visible);
+		}
 	}
 
 	public void setFigProvider(FigureProvider figProvider) {
@@ -64,10 +97,16 @@ public class ObjectContainer extends Figure {
 	}
 
 	public PandionJFigure<?> addObject(IEntityModel e) {
-		PandionJFigure<?> fig = getDeepChild(e);
+		PandionJFigure<?> fig = null;
+		for(ObjectContainer oc : RuntimeViewer.getInstance().getObjectContainers()) {
+			fig = oc.getDeepChild(e);
+			if(fig != null)
+				break;
+		}
+
 		if(fig == null) {
 			fig = figProvider.getFigure(e, useExtensions);
-			
+
 			if(e instanceof IArrayModel && ((IArrayModel<?>) e).isReferenceType() && fig instanceof ArrayReferenceFigure) {
 				Extension ext = new Extension(fig, e);
 				GridLayout gridLayout = new GridLayout(2, false);
@@ -78,8 +117,6 @@ public class ObjectContainer extends Figure {
 
 				Container2d container2d = new Container2d((IArrayModel<?>) e);
 				ext.add(container2d);
-				//					gridLayout.setConstraint(container2d, alignTop);
-
 				IArrayModel<IReferenceModel> a = (IArrayModel<IReferenceModel>) e;
 				Iterator<Integer> it = a.getValidModelIndexes();
 				while(it.hasNext()) {
@@ -88,22 +125,22 @@ public class ObjectContainer extends Figure {
 				}
 				add(ext);
 			}
-//			else if(e instanceof IObjectModel) {
-//				Extension ext = new Extension(fig, e);
-//				GridLayout gridLayout = new GridLayout(2, false);
-//				gridLayout.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP;
-//				ext.setLayoutManager(gridLayout);
-//				org.eclipse.draw2d.GridData alignTop = new org.eclipse.draw2d.GridData(SWT.LEFT, SWT.TOP, false, false);
-//				gridLayout.setConstraint(fig, alignTop);
-//				
-//				Figure container =  new Figure();
-//				container.setLayoutManager(new GridLayout(1, false));
-//				container.setBackgroundColor(ColorConstants.orange);
-//				container.setOpaque(true);
-//				ext.add(container);
-//				
-//				add(ext);
-//			}
+			//			else if(e instanceof IObjectModel) {
+			//				Extension ext = new Extension(fig, e);
+			//				GridLayout gridLayout = new GridLayout(2, false);
+			//				gridLayout.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP;
+			//				ext.setLayoutManager(gridLayout);
+			//				org.eclipse.draw2d.GridData alignTop = new org.eclipse.draw2d.GridData(SWT.LEFT, SWT.TOP, false, false);
+			//				gridLayout.setConstraint(fig, alignTop);
+			//				
+			//				Figure container =  new Figure();
+			//				container.setLayoutManager(new GridLayout(1, false));
+			//				container.setBackgroundColor(ColorConstants.orange);
+			//				container.setOpaque(true);
+			//				ext.add(container);
+			//				
+			//				add(ext);
+			//			}
 			else {					
 				add(fig);
 			}
@@ -136,7 +173,7 @@ public class ObjectContainer extends Figure {
 
 		Utils.addArrowDecoration(pointer);
 		addPointerObserver2d(ref, pointer, container, index);
-		RuntimeViewer.getInstance().addPointer(ref, pointer);
+		RuntimeViewer.getInstance().addPointer(ref, pointer, this);
 	}
 
 	private void addPointerObserver2d(IReferenceModel ref, PolylineConnection pointer, Container2d container, int index) {
@@ -213,11 +250,25 @@ public class ObjectContainer extends Figure {
 		return null;
 	}
 
-	public ObjectFigure findObject(IObjectModel obj) {
+	public Dimension getVisibleBounds() {
+		int w = 0;
+		int h = 0;
 		for (Object object : getChildren()) {
-			if(object instanceof ObjectFigure && ((ObjectFigure) object).getModel() == obj)
-				return (ObjectFigure) object;
+			IFigure f = (IFigure) object;
+			if(f.isVisible()) {
+				Rectangle r = f.getBounds();
+				w = Math.max(w, r.x+r.width);
+				h = Math.max(h, r.y+r.height);
+			}
 		}
-		return null;
+		return new Dimension(w, h);
 	}
+
+	//	public ObjectFigure findObject(IObjectModel obj) {
+	//		for (Object object : getChildren()) {
+	//			if(object instanceof ObjectFigure && ((ObjectFigure) object).getModel() == obj)
+	//				return (ObjectFigure) object;
+	//		}
+	//		return null;
+	//	}
 }

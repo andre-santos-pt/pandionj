@@ -20,12 +20,13 @@ public class PandionJPerspective implements IPerspectiveFactory {
 	public void createInitialLayout(IPageLayout factory) {
 		setupPrefs();
 		factory.setEditorAreaVisible(true);
-		factory.setFixed(true);
+		factory.setFixed(false);
 		
 		factory.addStandaloneView("org.eclipse.jdt.ui.PackageExplorer", false, IPageLayout.LEFT, 0.15f, factory.getEditorArea());
 		factory.addView("pt.iscte.pandionj.view", IPageLayout.RIGHT, 0.5f, factory.getEditorArea());
 		factory.addStandaloneView(IConsoleConstants.ID_CONSOLE_VIEW, false, IPageLayout.BOTTOM, 0.8f, "pt.iscte.pandionj.view");
 		factory.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.JavaProjectWizard");
+		factory.addNewWizardShortcut("pt.iscte.perspective.wizards.NewPackageWizard");
 		factory.addNewWizardShortcut("pt.iscte.perspective.wizards.NewFileWizard");
 	}
 	

@@ -24,7 +24,7 @@ public class ArrayReferenceModel extends ArrayModel<IReferenceModel> {
 	}
 
 	IReferenceModel createElement(IJavaVariable var) throws DebugException {
-		return new ReferenceModel(var, true, null, getRuntimeModel());
+		return new ReferenceModel(var, true, false, null, getRuntimeModel());
 	}
 
 	@Override
