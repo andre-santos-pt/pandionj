@@ -125,22 +125,6 @@ public class ObjectContainer extends Figure {
 				}
 				add(ext);
 			}
-			//			else if(e instanceof IObjectModel) {
-			//				Extension ext = new Extension(fig, e);
-			//				GridLayout gridLayout = new GridLayout(2, false);
-			//				gridLayout.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP;
-			//				ext.setLayoutManager(gridLayout);
-			//				org.eclipse.draw2d.GridData alignTop = new org.eclipse.draw2d.GridData(SWT.LEFT, SWT.TOP, false, false);
-			//				gridLayout.setConstraint(fig, alignTop);
-			//				
-			//				Figure container =  new Figure();
-			//				container.setLayoutManager(new GridLayout(1, false));
-			//				container.setBackgroundColor(ColorConstants.orange);
-			//				container.setOpaque(true);
-			//				ext.add(container);
-			//				
-			//				add(ext);
-			//			}
 			else {					
 				add(fig);
 			}

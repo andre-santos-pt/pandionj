@@ -1,7 +1,5 @@
 package pt.iscte.pandionj.extensions.images;
 
-import java.awt.Color;
-
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;

@@ -7,10 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.debug.core.DebugException;
-import org.eclipse.jdt.debug.core.IJavaArray;
-import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
@@ -19,35 +16,22 @@ import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.parser.BlockInfo;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> implements IReferenceModel {
 	private NullModel nullModel;
-	private boolean isPrimitiveArray;
 	private VariableInfo info;
-	private Collection<String> tags;
+	private Collection<String> tags = Collections.emptyList();
 	
 	ReferenceModel(IJavaVariable variable, boolean isInstance, boolean isVisible, VariableInfo info, StackFrameModel stackFrame) throws DebugException {
 		super(variable, isInstance, isVisible, stackFrame);
 		this.info = info;
-		init(variable);
 	}
 
 	ReferenceModel(IJavaVariable variable, boolean isInstance, boolean isVisible, VariableInfo info, RuntimeModel runtime) throws DebugException {
 		super(variable, isInstance, isVisible, runtime);
 		this.info = info;
-		init(variable);
-	}
-
-	private void init(IJavaVariable var) {
-		tags = Collections.emptyList();
-		PandionJUI.execute(() -> {
-			isPrimitiveArray = 
-					var.getValue() instanceof IJavaArray &&
-					!(((IJavaArrayType) var.getJavaType()).getComponentType() instanceof IJavaReferenceType); 
-		});
 	}
 
 	public IEntityModel getModelTarget() {
@@ -71,9 +55,9 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	}
 
 
-	public boolean isPrimitiveArray() {
-		return isPrimitiveArray;
-	}
+//	public boolean isPrimitiveArray() {
+//		return isPrimitiveArray;
+//	}
 
 	@Override
 	public String toString() {

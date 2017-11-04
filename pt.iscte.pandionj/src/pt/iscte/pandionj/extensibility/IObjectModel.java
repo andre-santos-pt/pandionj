@@ -15,7 +15,6 @@ public interface IObjectModel extends IEntityModel {
 	int getInt(String fieldName);
 	
 	
-	// ?
 	interface InvocationResult {
 		default void valueReturn(Object o) { }
 	}
@@ -24,7 +23,7 @@ public interface IObjectModel extends IEntityModel {
 	
 	
 	String toStringValue();
-	Object getInstanceMethods();
+	List<IMethod> getInstanceMethods();
 	
 	
 	List<IMethod> getVisibleMethods();

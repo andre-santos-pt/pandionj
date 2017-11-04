@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.model;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaObject;
 
 import pt.iscte.pandionj.extensibility.IEntityModel;
@@ -19,5 +20,9 @@ implements IEntityModel {
 	@Override
 	public T getContent() {
 		return entity;
+	}
+	
+	public boolean isAllocated() throws DebugException {
+		return getContent().isAllocated();
 	}
 }

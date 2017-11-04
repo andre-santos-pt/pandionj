@@ -25,7 +25,7 @@ public class PandionJBreakpointListener implements IJavaBreakpointListener {
 			}
 		}
 		else if (breakpoint instanceof IJavaExceptionBreakpoint) {
-			pjView.handleExceptionBreakpoint(thread, (IJavaExceptionBreakpoint) breakpoint);
+			pjView.handleExceptionBreakpoint(thread, ((IJavaExceptionBreakpoint) breakpoint).getExceptionTypeName());
 			return IJavaBreakpointListener.SUSPEND;
 		}
 		return IJavaBreakpointListener.DONT_SUSPEND;

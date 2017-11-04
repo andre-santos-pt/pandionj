@@ -55,7 +55,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	static {
 		CLOSE.heightHint = 5;
 	}
-	private static final GridData RIGHT_ALIGN = new GridData(SWT.RIGHT, SWT.FILL, false, false);
+	private static final GridData RIGHT_ALIGN = new GridData(SWT.RIGHT, SWT.FILL, true, false);
 	private static final GridData FILL = new GridData(SWT.FILL, SWT.FILL, true, true);
 	
 	
@@ -199,7 +199,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			hiddenFields.setOpaque(true);
 			hiddenFields.setBackgroundColor(ColorConstants.lightGray);
 			hiddenFields.setLayoutManager(new GridLayout(1, false));
-			getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
+//			getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 			
 			add(visibleFields);
 			add(hiddenFields);

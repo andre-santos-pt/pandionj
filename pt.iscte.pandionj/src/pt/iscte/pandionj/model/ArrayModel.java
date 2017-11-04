@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaType;
@@ -98,25 +99,27 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	// TODO remove try catch
 	private static Object[] getValues(IJavaArray javaArray) {
 		try {
-			IJavaType compType = ((IJavaArrayType) javaArray.getJavaType()).getComponentType();
+			String compType = getComponentType(javaArray);
+//			boolean isPrimitive = getDimensions(javaArray) == 1 && PrimitiveType.isPrimitive(compType);
+//			IJavaType compType = ((IJavaArrayType) javaArray.getJavaType()).getComponentType();
 			IJavaValue[] values = javaArray.getValues();
 			Object[] array = new Object[javaArray.getLength()];
-
-			if(compType instanceof IJavaArrayType) {
-				for(int i = 0; i < array.length; i++) {
-					IJavaValue val = values[i];
-					if(!val.isNull())
-						array[i] = getValues((IJavaArray) val);
-				}
-			}	
-			else {
-				PrimitiveType primitive = PrimitiveType.match(compType.getName());
+			
+			if(getDimensions(javaArray) == 1) {
+				PrimitiveType primitive = PrimitiveType.match(compType);
 				if(primitive == null) {
 					for(int j = 0; j < values.length; j++)
 						array[j] = values[j].isNull() ? null : values[j].getValueString();
 				}
 				else {
 					primitive.fillPrimitiveWrapperValues(javaArray.getValues(), array);
+				}
+			}	
+			else {
+				for(int i = 0; i < array.length; i++) {
+					IJavaValue val = values[i];
+					if(!val.isNull())
+						array[i] = getValues((IJavaArray) val); // TODO erro cast
 				}
 			}
 			return array;
@@ -261,16 +264,19 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 
 	private static int getDimensions(IJavaArray array)  throws DebugException  {
+//		int d = 0;
+//		
+//		IJavaType t = array.getJavaType();
+//		while(t instanceof IJavaArrayType) {
+//			d++;
+//			t = ((IJavaArrayType) t).getComponentType();
+//		}
+//		return d;
+		String sig = array.getJavaType().getSignature();
 		int d = 0;
-		//		try {
-		IJavaType t = array.getJavaType();
-		while(t instanceof IJavaArrayType) {
+		for(int i = 0; sig.charAt(i) == '['; i++)
 			d++;
-			t = ((IJavaArrayType) t).getComponentType();
-		}
-		//		} catch (DebugException e) {
-		//			e.printStackTrace();
-		//		}
+		
 		return d;
 	}
 
@@ -284,16 +290,14 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	}
 
 	static String getComponentType(IJavaArray array) throws DebugException {
-		//		try {
-		IJavaType t = array.getJavaType();
-		while(t instanceof IJavaArrayType) {
-			t = ((IJavaArrayType) t).getComponentType();
-		}
-		return t.getName();
-		//		} catch (DebugException e) {
-		//			e.printStackTrace();
-		//			return null;
-		//		}
+//		IJavaType t = array.getJavaType();
+//		while(t instanceof IJavaArrayType) {
+//			t = ((IJavaArrayType) t).getComponentType();
+//		}
+//		return t.getName();
+		String sig = array.getJavaType().getSignature();
+		sig = sig.substring(getDimensions(array));
+		return Signature.getSignatureSimpleName(sig);
 	}
 
 

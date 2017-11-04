@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
+import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
@@ -30,6 +31,7 @@ import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaReferenceType;
+import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
@@ -41,6 +43,7 @@ import com.sun.jdi.InvocationException;
 import com.sun.jdi.ObjectReference;
 
 import pt.iscte.pandionj.ExtensionManager;
+import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
@@ -610,13 +613,16 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				exp = referencesTo.iterator().next().getName() + "." + exp;
 			}
 		}
-		delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(listener));
+		IJavaThread thread = (IJavaThread) stackFrame.getStackFrame().getThread();
+		delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(listener, thread));
 	}
 
 	private class ExpressionListener implements IWatchExpressionListener {
 		InvocationResult listener;
-		ExpressionListener(InvocationResult listener) {
+		IJavaThread thread;
+		ExpressionListener(InvocationResult listener, IJavaThread thread) {
 			this.listener = listener;
+			this.thread = thread;
 		}
 
 		@Override
@@ -633,7 +639,9 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				//				processInvocationResult((IJavaValue) result.getValue()); 
 			}
 			else if(exception != null) {
-				System.out.println("EXC: " + exception);
+				String exc = ((InvocationException)exception.getCause()).exception().referenceType().name();
+				System.out.println("EXC: " + exc);
+				PandionJView.getInstance().handleExceptionBreakpoint(thread, exc);
 				if(exception.getCause() instanceof InvocationException) {
 					InvocationException e = (InvocationException) exception.getCause();
 					System.out.println("- " + e.exception().referenceType());

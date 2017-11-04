@@ -115,8 +115,16 @@ implements IRuntimeModel {
 		for(int i = 0; i < countActive; i++)
 			callStack.get(i).update();
 		
+		List<Long> toRemove = new ArrayList<>();
+		
 		for(EntityModel<?> m : new ArrayList<EntityModel<?>>(objects.values())) // to avoid concurrent modification
-			m.update(0);
+			if(m.isAllocated())
+				m.update(0);
+			else
+				toRemove.add(m.getContent().getUniqueId());
+		
+		for(Long id : toRemove)
+			objects.remove(id);
 		
 	}
 
@@ -262,8 +270,12 @@ implements IRuntimeModel {
 			EntityModel<?> e = objects.get(obj.getUniqueId());
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType) {
-					IJavaType componentType = ((IJavaArrayType) obj.getJavaType()).getComponentType();
-					if(componentType instanceof IJavaReferenceType)
+					IJavaArrayType javaArrayType = (IJavaArrayType) obj.getJavaType();
+					IJavaArray array = (IJavaArray) obj;
+					boolean refType = array.getSignature().startsWith("[L") || array.getSignature().startsWith("[[");
+//					IJavaType componentType = javaArrayType.getComponentType();
+//					if(componentType instanceof IJavaReferenceType)
+					if(refType)
 						e = new ArrayReferenceModel((IJavaArray) obj, this, model);
 					else
 						e = new ArrayPrimitiveModel((IJavaArray) obj, this, model);

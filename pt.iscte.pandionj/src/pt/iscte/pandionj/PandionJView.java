@@ -8,6 +8,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
@@ -112,7 +113,7 @@ public class PandionJView extends ViewPart {
 		parent.setBackground(Constants.Colors.VIEW_BACKGROUND);
 
 		Composite labelComposite = new Composite(parent, SWT.BORDER);
-		Image image = PandionJUI.getImage("logo_small.jpg");
+		Image image = PandionJUI.getImage("pandionj.png");
 		Label imageLabel = new Label(labelComposite, SWT.NONE);
 		imageLabel.setImage(image);
 		imageLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
@@ -156,12 +157,14 @@ public class PandionJView extends ViewPart {
 					if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 						IJavaThread thread = (IJavaThread) e.getSource();		
 						IStackFrame f = thread.getTopStackFrame();
-						Object sourceElement = f.getLaunch().getSourceLocator().getSourceElement(f);
+						ISourceLocator sourceLocator = f.getLaunch().getSourceLocator();
+						Object sourceElement = sourceLocator == null ? null : sourceLocator.getSourceElement(f);
 
 						if(sourceElement != null) {
-							if(sourceElement instanceof IFile) {
+							if(sourceElement instanceof IFile)
 								handleFrames(thread);
-							}
+							else
+								thread.stepReturn();
 							if(f != null && f.getLineNumber() == -1)
 								thread.resume(); // to jump over injected code
 						}
@@ -191,10 +194,10 @@ public class PandionJView extends ViewPart {
 		});
 	}
 
-	void handleExceptionBreakpoint(IJavaThread thread, IJavaExceptionBreakpoint exceptionBreakPoint) {
+	public void handleExceptionBreakpoint(IJavaThread thread, String exceptionName) {
 		PandionJUI.executeUpdate(() -> {
 			thread.terminateEvaluation();
-			exception = exceptionBreakPoint.getExceptionTypeName();
+			exception = exceptionName;
 			exceptionFrame = thread.getTopStackFrame();
 			handleFrames(thread);
 			if(!runtime.isEmpty()) {
