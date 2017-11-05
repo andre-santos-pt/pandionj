@@ -23,8 +23,10 @@ public class ArrayReferenceModel extends ArrayModel<IReferenceModel> {
 		}
 	}
 
-	IReferenceModel createElement(IJavaVariable var) throws DebugException {
-		return new ReferenceModel(var, true, false, null, getRuntimeModel());
+	IReferenceModel createElement(IJavaVariable var, int index) throws DebugException {
+		ReferenceModel r = new ReferenceModel(var, true, false, null, getRuntimeModel());
+		r.setIndex(index);
+		return r;
 	}
 
 	@Override

@@ -7,17 +7,19 @@ import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.draw2d.Border;
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IArrayModel;
+import pt.iscte.pandionj.extensibility.IRuntimeModel;
 
 public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<E>> {
 	private final int N;
@@ -31,7 +33,13 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		N = Math.min(model.getLength(), PandionJView.getMaxArrayLength());
 		positions = new ArrayList<>(N);
 		positionsFig = createPositionsFig();
+		getLayoutManager().setConstraint(positionsFig, new GridData(SWT.DEFAULT, SWT.BEGINNING, false, false));
 		add(positionsFig);
+		model.getRuntimeModel().registerDisplayObserver((e) -> {
+			if(e.type == IRuntimeModel.Event.Type.STEP) {
+				positionsFig.setBackgroundColor(Constants.Colors.OBJECT);
+			}
+		});
 	}
 
 	abstract Figure createValueLabel(E e);
@@ -75,21 +83,10 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		return fig;
 	}
 	
-
-//	public Rectangle getPositionBounds(int i) {
-//		Rectangle r = getBounds();
-//		if(i >= 0 && i < model.getLength()){
-//			if(i < positions.size() - 2){
-//				r = positions.get(i).getBounds();
-//			}else if( i == model.getLength() - 1){
-//				r = positions.get(positions.size() - 1).getBounds();
-//			}else{
-//				r = positions.get(positions.size() - 2).getBounds();
-//			}
-//		}
-//		translateToAbsolute(r);
-//		return r;
-//	}
+	@Override
+	public void setBackgroundColor(Color color) {
+		positionsFig.setBackgroundColor(color);
+	}
 
 	public Rectangle getPositionBounds(int i, boolean horizontal) {
 		Rectangle r = getBounds();

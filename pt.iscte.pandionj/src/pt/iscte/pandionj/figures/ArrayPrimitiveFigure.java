@@ -30,7 +30,6 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 	@Override
 	GridData createIndexLabelGridData() {
 		return new GridData(SWT.CENTER, SWT.BEGINNING, false, false);
-				//		return new GridData(POSITION_WIDTH, POSITION_WIDTH/);
 	}
 	
 	public ConnectionAnchor getIncommingAnchor() {

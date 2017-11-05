@@ -1,8 +1,9 @@
 package pt.iscte.pandionj.figures;
 
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.draw2d.ActionEvent;
 import org.eclipse.draw2d.ActionListener;
@@ -18,21 +19,18 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.MouseListener;
-import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.graphics.Color;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FigureProvider;
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.ParamsDialog;
 import pt.iscte.pandionj.RuntimeViewer;
-import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
@@ -41,24 +39,13 @@ import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel.Event;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.extensibility.IVisibleMethod;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.ModelObserver;
 import pt.iscte.pandionj.model.PrimitiveType;
 import pt.iscte.pandionj.model.RuntimeModel;
 
 public class ObjectFigure extends PandionJFigure<IObjectModel> {
-	
-	// TODO refactor to constants
-	private static final GridData COLLAPSE = new GridData(0, 0);
-	private static final GridData CLOSE = new GridData(SWT.FILL, SWT.DEFAULT, true, false);
-	static {
-		CLOSE.heightHint = 5;
-	}
-	private static final GridData RIGHT_ALIGN = new GridData(SWT.RIGHT, SWT.FILL, true, false);
-	private static final GridData FILL = new GridData(SWT.FILL, SWT.FILL, true, true);
-	
-	
+
 	private RoundedRectangle fig;
 	private StackContainer stack;
 	private ObjectContainer objectContainer;
@@ -72,7 +59,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure) {
 		super(model, true);
 		assert extensionFigure != null;
-
+		methodsEnabled = true;
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;
 		layout.verticalSpacing = 2;
@@ -93,8 +80,6 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 		runtimeViewer = RuntimeViewer.getInstance();
 		figureProvider = runtimeViewer.getFigureProvider();
-		objectContainer = ObjectContainer.create(false);
-		objectContainer.setFigProvider(figureProvider);
 
 		addShowMethodListener();
 
@@ -108,17 +93,17 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				else if(e.type == RuntimeModel.Event.Type.NEW_FRAME) {
 					IStackFrameModel f = e.arg;
 					if(f.isInstanceFrameOf(model)) {
+						fieldsContainer.showPrivateFields();
+						setObjectContainerVisible();
 						stack.addFrame(f, RuntimeViewer.getInstance(), objectContainer, false);
-						setObjectContainerVisible(true);
 					}
 				}
 				else if(e.type == IRuntimeModel.Event.Type.STEP) {
 					IStackFrameModel f = e.arg;
-					setMethodsEnabled(!f.isInstance());
-					boolean visible = f.isInstanceFrameOf(model);
-					fieldsContainer.showPrivateFields(visible);
-					setObjectContainerVisible(visible);
-//					getLayoutManager().layout(ObjectFigure.this);
+					methodsEnabled = !f.isInstanceFrameOf(model);
+					setMethodsEnabled(methodsEnabled);
+					fig.setBackgroundColor(Constants.Colors.OBJECT);
+					// TODO update illustration?
 				}
 				else if(e.type == IRuntimeModel.Event.Type.TERMINATION) {
 					methodsEnabled = false;
@@ -128,31 +113,24 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		});
 
 		add(fig);
-		add(objectContainer);
 
 		fieldsContainer = new FieldsContainer();
 		fig.add(fieldsContainer);
 		layout.setConstraint(fieldsContainer, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
-		
+
 		stack = new StackContainer();
 		fig.add(stack);
 		layout.setConstraint(stack, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
-
-		setObjectContainerVisible(false);
 	}
 
-	private void setObjectContainerVisible(boolean visible) {
-		for (IVariableModel<?> var : model.getFields()) {
-			if(var instanceof IReferenceModel)
-				objectContainer.setVisible((IReferenceModel) var, var.isVisible() || visible);
+	private void setObjectContainerVisible() {
+		if(objectContainer == null) {
+			objectContainer = ObjectContainer.create(true);
+			add(objectContainer);
 		}
-		objectContainer.setPointersVisible(visible);
-		Dimension dim = objectContainer.getVisibleBounds();
-		getLayoutManager().setConstraint(objectContainer, new GridData(dim.width, dim.height)); 
-//		getLayoutManager().setConstraint(objectContainer, visible ? FILL : COLLAPSE);
 	}
-	
-	
+
+
 	private void setMethodsEnabled(boolean enabled) {
 		methodsEnabled = enabled;
 		if(methodsFig != null) {
@@ -165,28 +143,38 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		}
 	}
 
-	
-	
+	@Override
+	public void setBackgroundColor(Color color) {
+		fig.setBackgroundColor(color);
+	}
+
 	class FieldsContainer extends Figure {
 		Figure visibleFields;
 		Figure hiddenFields;
 		GridData dim;
 		boolean visibilityOpen;
-		
+
 		public FieldsContainer() {
 			setLayoutManager(new GridLayout(1, false)); 
 			addFields(model, figureProvider);
-			showPrivateFields(false);
+			//			showPrivateFields(false);
 			visibilityOpen = false;
 		}
-		
-		void showPrivateFields(boolean show) {
-			if(!hiddenFields.getChildren().isEmpty())
-				getLayoutManager().setConstraint(hiddenFields, show ? new GridData(SWT.FILL, SWT.DEFAULT, true, true) : CLOSE);
+
+		void showPrivateFields() {
+			if(hiddenFields == null)
+				return;
+
+			getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, true));
 
 			for (IVariableModel<?> var : model.getFields()) {
-				if(var instanceof IReferenceModel && !var.isVisible())
-					runtimeViewer.showPointer((IReferenceModel) var, show);
+				if(!var.isVisible()) {
+					PandionJFigure<?> fieldFig = figureProvider.getFigure(var, false);
+					hiddenFields.add(fieldFig);
+					hiddenFields.getLayoutManager().setConstraint(fieldFig, new GridData(SWT.RIGHT, SWT.FILL, true, false));
+					setObjectContainerVisible();
+					objectContainer.addObjectAndPointer((IReferenceModel) var, ((ReferenceFigure) fieldFig).getAnchor());
+				}
 			}
 			fig.getLayoutManager().layout(fig);
 		}
@@ -194,56 +182,46 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		void addFields(IObjectModel model, FigureProvider figureProvider) {
 			visibleFields = new Figure();
 			visibleFields.setLayoutManager(new GridLayout(1, false));
-
-			hiddenFields = new Figure();
-			hiddenFields.setOpaque(true);
-			hiddenFields.setBackgroundColor(ColorConstants.lightGray);
-			hiddenFields.setLayoutManager(new GridLayout(1, false));
-//			getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
-			
+			getLayoutManager().setConstraint(visibleFields, new GridData(SWT.FILL, SWT.DEFAULT, true, true));
 			add(visibleFields);
-			add(hiddenFields);
 
-//			hiddenFields.addMouseListener(new MouseListener() {
-//				public void mouseReleased(MouseEvent me) {}
-//				public void mousePressed(MouseEvent me) {}
-//				public void mouseDoubleClicked(MouseEvent me) {
-//					visibilityOpen = !visibilityOpen;
-//					showPrivateFields(visibilityOpen);
-//				}
-//			});
-			
+			int countNotVisible = 0;
 			List<IVariableModel<?>> fields = model.getFields();
 			for(IVariableModel<?> v : fields) {
-				PandionJFigure<?> fieldFig = figureProvider.getFigure(v, false);
-				
-				if(!v.isVisible()) {
-					hiddenFields.add(fieldFig);
-					hiddenFields.getLayoutManager().setConstraint(fieldFig, RIGHT_ALIGN);
-				}
-				else {
+				if(v.isVisible()) {
+					PandionJFigure<?> fieldFig = figureProvider.getFigure(v, false);
 					visibleFields.add(fieldFig);
-					visibleFields.getLayoutManager().setConstraint(fieldFig, RIGHT_ALIGN);
+					visibleFields.getLayoutManager().setConstraint(fieldFig, new GridData(SWT.RIGHT, SWT.FILL, true, false));
+					if(v instanceof IReferenceModel) {
+						setObjectContainerVisible();
+						objectContainer.addObjectAndPointer((IReferenceModel) v, ((ReferenceFigure) fieldFig).getAnchor());
+					}
 				}
-				if(v instanceof IReferenceModel) {
-					IReferenceModel ref = (IReferenceModel) v;
-					IEntityModel target = ref.getModelTarget();
-					PandionJFigure<?> targetFig = null;
-					if(!target.isNull())
-						targetFig = objectContainer.addObject(target);
-					RuntimeViewer.getInstance().addPointer(ref, (ReferenceFigure) fieldFig, targetFig, objectContainer, this);
-					objectContainer.updateIllustration(ref, null);
-				}
+				else
+					countNotVisible++;
 			}
-			if(hiddenFields.getChildren().isEmpty())
-				getLayoutManager().setConstraint(hiddenFields, COLLAPSE);
-			
-			Dimension size = hiddenFields.getPreferredSize();
-			dim = new GridData(size.width, size.height);
+
+			if(countNotVisible != 0) {
+				hiddenFields = new Figure();
+				hiddenFields.setOpaque(true);
+				hiddenFields.setBackgroundColor(ColorConstants.lightGray);
+				hiddenFields.setLayoutManager(new GridLayout(1, false));
+				getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, true));
+				add(hiddenFields);
+
+				//hiddenFields.addMouseListener(new MouseListener() {
+				//				public void mouseReleased(MouseEvent me) {}
+				//				public void mousePressed(MouseEvent me) {}
+				//				public void mouseDoubleClicked(MouseEvent me) {
+				//					visibilityOpen = !visibilityOpen;
+				//					showPrivateFields(visibilityOpen);
+				//				}
+				//			});
+			}
 		}
 	}
-	
-	
+
+
 	private void addShowMethodListener() {
 		methodWidgets = new ArrayList<ObjectFigure.MethodWidget>();
 		fig.addMouseListener(new MouseListener() {
@@ -294,7 +272,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				return method.getElementName() + "(...)";
 			}
 		}
-		
+
 		void clear() {
 			resultLabel.setText("");
 		}
@@ -305,7 +283,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		}
 	}
 
-	
+
 
 
 	private void addMethods(IObjectModel model) {
@@ -322,7 +300,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 
 	private static String[] NO_PARAMS = new String[0];
-	
+
 	private void invoke(IObjectModel model, IMethod m, Label resultLabel) {
 
 		PandionJUI.InvocationAction action = new PandionJUI.InvocationAction() {
@@ -351,7 +329,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				}, paramValues);
 			}
 		};
-		
+
 		if(m.getNumberOfParameters() != 0)
 			PandionJUI.openInvocation(m, action);
 		else

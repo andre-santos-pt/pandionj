@@ -78,7 +78,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		comp.add(valueLabel);
 		add(comp);
 		
-		layout.setConstraint(comp, new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
+		layout.setConstraint(comp, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 
 		if(Role.FIXED_VALUE.equals(role) || Role.FIXED_ARRAY_INDEX.equals(role)) {
 			valueLabel.setBorder(new LineBorder(Constants.Colors.CONSTANT, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));

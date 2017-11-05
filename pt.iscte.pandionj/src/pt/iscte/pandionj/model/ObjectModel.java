@@ -94,6 +94,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	private void addFields(IJavaObject object) throws DebugException {
+		int refCount = 0;
 		for(IVariable v : object.getVariables()) {
 			IJavaVariable var = (IJavaVariable) v;
 
@@ -104,6 +105,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				boolean visible = isFieldVisible(f);
 				if(value instanceof IJavaObject) {
 					ReferenceModel refModel = new ReferenceModel(var, true, visible, null, getRuntimeModel());
+					refModel.setIndex(refCount++);
 					refModel.registerObserver(new ModelObserver() {
 						public void update(Object arg) {
 							setChanged();
@@ -644,29 +646,10 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				PandionJView.getInstance().handleExceptionBreakpoint(thread, exc);
 				if(exception.getCause() instanceof InvocationException) {
 					InvocationException e = (InvocationException) exception.getCause();
-					System.out.println("- " + e.exception().referenceType());
 					ObjectReference exception2 = e.exception();
 				}
 			}
 		}
-
-		//		private void processInvocationResult(IJavaValue ret) {
-		//			if(ret instanceof IJavaObject) {
-		//				EntityModel<? extends IJavaObject> object = getRuntimeModel().getObject((IJavaObject) ret, true);
-		//				System.out.println(ret + " == " + object);
-		//			}
-		//			else if(ret instanceof IJavaPrimitiveValue) {
-		//				PandionJUI.executeUpdate(() -> {
-		//					try {
-		//						//					new ResultDialog(Display.getDefault().getActiveShell(), p.x, p.y, m.getElementName() + "(" + args + ") = " + ret.getValueString()).open();
-		//						new ResultDialog(Display.getDefault().getActiveShell(), 400, 400, ret.getValueString()).open();
-		//					} catch (DebugException e) {
-		//						e.printStackTrace();
-		//					}
-		//				});
-		//			}
-		//			getRuntimeModel().refresh();
-		//		}
 	};
 
 	// TODO: attribute tags

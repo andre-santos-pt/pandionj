@@ -49,8 +49,7 @@ public class ParserManager {
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
 			
-//			System.out.println(r.toText());
-			System.out.println(tagParser);
+//			System.out.println(tagParser);
 		}
 		return r;
 	}

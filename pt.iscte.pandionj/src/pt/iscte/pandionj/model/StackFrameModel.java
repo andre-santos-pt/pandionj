@@ -201,7 +201,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		IJavaValue value = (IJavaValue) jv.getValue();
 
 		if(jv.isStatic()) {
-			if(!staticRefs.existsVar(this, varName)) {
+			if(!staticRefs.existsVar(this, varName) && jv.isPublic()) { // TODO review public
 				IVariableModel<?> newVar = createVar(jv, false, value);
 				staticRefs.add(this, newVar);
 			}

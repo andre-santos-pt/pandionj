@@ -41,13 +41,13 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 	private void initArray(IJavaArray array, int length) throws DebugException {
 		for(int i = 0; i < length - 1; i++)
-			elementsModel.add(createElement((IJavaVariable) array.getVariable(i)));
+			elementsModel.add(createElement((IJavaVariable) array.getVariable(i), i));
 
 		if(length > 0)
-			elementsModel.add(createElement((IJavaVariable) array.getVariable(array.getLength()-1)));
+			elementsModel.add(createElement((IJavaVariable) array.getVariable(array.getLength()-1), array.getLength()-1));
 	}
 
-	abstract T createElement(IJavaVariable var) throws DebugException;
+	abstract T createElement(IJavaVariable var, int index) throws DebugException;
 
 	public T getElementModel(int index) {
 		if(index >= 0 && index < elementsModel.size()-1)

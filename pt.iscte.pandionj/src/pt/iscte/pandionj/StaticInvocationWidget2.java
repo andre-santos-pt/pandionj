@@ -1,8 +1,6 @@
 package pt.iscte.pandionj;
 
 
-import java.util.Arrays;
-
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;

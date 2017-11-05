@@ -8,4 +8,5 @@ public interface IReferenceModel extends IVariableModel<IEntityModel> {
 	Collection<IArrayIndexModel> getIndexVars();
 	Collection<IArrayIndexModel> getFixedIndexes();
 	Collection<String> getTags();
+	int getIndex();
 }

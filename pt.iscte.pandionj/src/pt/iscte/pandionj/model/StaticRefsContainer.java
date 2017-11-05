@@ -20,43 +20,33 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	// la.la.Class.VAR -> 
 	private Map<String, IVariableModel<?>> map;
 	private RuntimeModel runtime;
-	
+
 	public StaticRefsContainer(RuntimeModel runtime) {
 		this.runtime = runtime;
 		map = new HashMap<>();
 	}
-	
+
 	public boolean existsVar(StackFrameModel stackFrameModel, String varName) throws DebugException {
 		return get(stackFrameModel, varName) != null;
 	}
-	
+
 	public void add(StackFrameModel frame, IVariableModel<?> v) throws DebugException  {
-//		try {
-			String id = frame.getStackFrame().getDeclaringTypeName() + "." + v.getName();
-			map.put(id,v);
-			setChanged();
-			notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE,v));
-//		}
-//		catch (DebugException e) {
-//			e.printStackTrace();
-//		}
+		String id = frame.getStackFrame().getDeclaringTypeName() + "." + v.getName();
+		map.put(id,v);
+		setChanged();
+		notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE,v));
 	}
-	
+
 	public IVariableModel<?> get(StackFrameModel frame, String varName) throws DebugException {
-//		try {
-			String id = frame.getStackFrame().getDeclaringTypeName() + "." + varName;
-			return map.get(id);
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//		}
-//		return null;
+		String id = frame.getStackFrame().getDeclaringTypeName() + "." + varName;
+		return map.get(id);
 	}
 
 	@Override
 	public Collection<IVariableModel<?>> getStackVariables() {
 		if(runtime.isEmpty())
 			return Collections.emptyList();
-		
+
 		StackFrameModel topFrame = runtime.getTopFrame();
 		try {
 			String type = topFrame.getStackFrame().getDeclaringTypeName();
@@ -129,6 +119,6 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	public boolean isInstanceFrameOf(IObjectModel model) {
 		return false;
 	}
-	
-	
+
+
 }

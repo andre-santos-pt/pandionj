@@ -31,7 +31,7 @@ class ObserverContainer<A> {
 		if (!changed)
 			return;
 		
-		for(ModelObserver<A> o : obs)
+		for(ModelObserver<A> o : new ArrayList<>(obs))
 			o.update(arg);
 
 		clearChanged();

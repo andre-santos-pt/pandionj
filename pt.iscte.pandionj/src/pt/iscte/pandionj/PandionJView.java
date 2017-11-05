@@ -157,6 +157,8 @@ public class PandionJView extends ViewPart {
 					if(e.getKind() == DebugEvent.SUSPEND && e.getDetail() == DebugEvent.STEP_END && exception == null) {
 						IJavaThread thread = (IJavaThread) e.getSource();		
 						IStackFrame f = thread.getTopStackFrame();
+						if(f == null)
+							return;
 						ISourceLocator sourceLocator = f.getLaunch().getSourceLocator();
 						Object sourceElement = sourceLocator == null ? null : sourceLocator.getSourceElement(f);
 

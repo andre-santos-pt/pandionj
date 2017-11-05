@@ -18,12 +18,20 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 
 public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 	private List<Anchor> anchors;
+	private ObjectContainer objectContainer;
 
 	public ArrayReferenceFigure(IArrayModel<IReferenceModel> model) {
 		super(model, false);
 		anchors = new ArrayList<>(positions.size());
 		for(Position p : positions)
 			anchors.add(new Anchor(this, p));
+		
+		objectContainer = ObjectContainer.create(true);
+		add(objectContainer);
+		
+		List<IReferenceModel> elements = model.getModelElements();
+		for (int i = 0; i < elements.size(); i++)
+			objectContainer.addObjectAndPointer(elements.get(i), getAnchor(i));
 	}
 
 	public int convertToPositionFigureIndex(int i) {
@@ -36,7 +44,6 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 		assert getModel().isValidModelIndex(modelIndex);
 		AbstractArrayFigure<IReferenceModel>.Position position = positions.get(convertToPositionFigureIndex(modelIndex));
 		return ((ReferenceLabel) position.valueLabel).getAnchor();
-//		return anchors.get(convertToPositionFigureIndex(modelIndex));
 	}
 
 	private static class Anchor extends AbstractConnectionAnchor {

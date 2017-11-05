@@ -7,10 +7,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
-import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.SWTGraphics;
@@ -48,7 +47,6 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.ObjectContainer;
 import pt.iscte.pandionj.figures.PandionJFigure;
-import pt.iscte.pandionj.figures.ReferenceFigure;
 import pt.iscte.pandionj.figures.StackContainer;
 import pt.iscte.pandionj.model.ModelObserver;
 import pt.iscte.pandionj.model.RuntimeModel;
@@ -124,7 +122,6 @@ public class RuntimeViewer extends Composite {
 
 	public void setInput(RuntimeModel model) {
 		figProvider = new FigureProvider(model);
-		objectContainer.setFigProvider(figProvider);
 		model.registerObserver((e) -> refresh(model, e));
 	}
 
@@ -194,7 +191,7 @@ public class RuntimeViewer extends Composite {
 	}
 
 
-	public void addPointer(IReferenceModel ref, PolylineConnection pointer, Object owner) {
+	private void addPointer(IReferenceModel ref, PolylineConnection pointer, Object owner) {
 		assert pointer != null;
 		rootFig.add(pointer);
 		pointersMap.put(ref, pointer);
@@ -203,19 +200,18 @@ public class RuntimeViewer extends Composite {
 	}
 
 	
-	public void addPointer(IReferenceModel ref, ReferenceFigure figure, PandionJFigure<?> targetFig, ObjectContainer container, Object owner) {
+	public void addPointer(IReferenceModel ref, ConnectionAnchor sourceAnchor, ConnectionAnchor targetAnchor, ObjectContainer container, Object owner) {
 		assert ref != null;
 		IEntityModel target = ref.getModelTarget();
 		PolylineConnection pointer = new PolylineConnection();
 		pointer.setVisible(!target.isNull());
-		pointer.setSourceAnchor(figure.getAnchor());
-		if(target.isNull())
-			pointer.setSourceAnchor(figure.getAnchor());
-		else
-			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
+		pointer.setSourceAnchor(sourceAnchor);
+//		if(target.isNull())
+			pointer.setTargetAnchor(target.isNull() ? sourceAnchor : targetAnchor);
+//		else
+//			pointer.setTargetAnchor(targetAnchor);
 		Utils.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer, container);
-		
 		addPointer(ref, pointer, owner);
 	}
 	
@@ -226,7 +222,7 @@ public class RuntimeViewer extends Composite {
 				IEntityModel target = ref.getModelTarget();
 				pointer.setVisible(!target.isNull());
 				if(!target.isNull()) {
-					PandionJFigure<?> targetFig = container.addObject(target);
+					PandionJFigure<?> targetFig = container.addObject(target, ref.getIndex());
 					pointer.setTargetAnchor(targetFig.getIncommingAnchor());
 					Utils.addArrowDecoration(pointer);
 				}

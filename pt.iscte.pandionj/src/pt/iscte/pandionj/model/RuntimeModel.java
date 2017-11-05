@@ -270,11 +270,8 @@ implements IRuntimeModel {
 			EntityModel<?> e = objects.get(obj.getUniqueId());
 			if(e == null) {
 				if(obj.getJavaType() instanceof IJavaArrayType) {
-					IJavaArrayType javaArrayType = (IJavaArrayType) obj.getJavaType();
 					IJavaArray array = (IJavaArray) obj;
 					boolean refType = array.getSignature().startsWith("[L") || array.getSignature().startsWith("[[");
-//					IJavaType componentType = javaArrayType.getComponentType();
-//					if(componentType instanceof IJavaReferenceType)
 					if(refType)
 						e = new ArrayReferenceModel((IJavaArray) obj, this, model);
 					else

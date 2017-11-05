@@ -121,8 +121,9 @@ public interface Constants {
 
 	int COMBO_WIDTH = 75;
 	
-	GridData RIGHT_ALIGN = new GridData(SWT.RIGHT, SWT.DEFAULT, false, false);
-
+	GridData TOP_ALIGN = new GridData(SWT.DEFAULT, SWT.BEGINNING, false, false);
+	
+	
 	static GridLayout getOneColGridLayout() {
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;

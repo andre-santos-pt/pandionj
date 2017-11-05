@@ -1,6 +1,7 @@
 package pt.iscte.pandionj.figures;
 
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
@@ -8,14 +9,12 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
-import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ExceptionType;
 import pt.iscte.pandionj.FigureProvider;
 import pt.iscte.pandionj.RuntimeViewer;
-import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
@@ -147,50 +146,12 @@ public class StackFrameFigure extends Figure {
 		if(v.isInstance() == instance) { // && !(v instanceof IReferenceModel && !((IReferenceModel) v).getTags().isEmpty())) {
 			PandionJFigure<?> figure = figProvider.getFigure(v, true);
 			add(figure);
-
 			layout.setConstraint(figure, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 
-			if(v instanceof IReferenceModel) {
-				IReferenceModel ref = (IReferenceModel) v;
-				IEntityModel target = ref.getModelTarget();
-				PandionJFigure<?> targetFig = null;
-				if(!target.isNull())
-					targetFig = objectContainer.addObject(target);
-				RuntimeViewer.getInstance().addPointer(ref, (ReferenceFigure) figure, targetFig, objectContainer, this);
-//				addPointer((ReferenceFigure) figure, ref, target, targetFig);
-				objectContainer.updateIllustration(ref, exception);
-			}
+			if(v instanceof IReferenceModel)
+				objectContainer.addObjectAndPointer((IReferenceModel) v, ((ReferenceFigure) figure).getAnchor());
 		}
 	}
-
-//	private void addPointer(ReferenceFigure figure, IReferenceModel ref, IEntityModel target, PandionJFigure<?> targetFig) {
-//		PolylineConnection pointer = new PolylineConnection();
-//		pointer.setVisible(!target.isNull());
-//		pointer.setSourceAnchor(figure.getAnchor());
-//		if(target.isNull())
-//			pointer.setSourceAnchor(figure.getAnchor());
-//		else
-//			pointer.setTargetAnchor(targetFig.getIncommingAnchor());
-//		Utils.addArrowDecoration(pointer);
-//		addPointerObserver(ref, pointer);
-//		runtimeViewer.addPointer(ref, pointer, this);
-//	}
-//
-//	private void addPointerObserver(IReferenceModel ref, PolylineConnection pointer) {
-//		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
-//			@Override
-//			public void update(IEntityModel arg) {
-//				IEntityModel target = ref.getModelTarget();
-//				pointer.setVisible(!target.isNull());
-//				if(!target.isNull()) {
-//					PandionJFigure<?> targetFig = objectContainer.addObject(target);
-//					pointer.setTargetAnchor(targetFig.getIncommingAnchor());
-//					Utils.addArrowDecoration(pointer);
-//				}
-//			}
-//		});
-//	}
-
 
 	public PandionJFigure<?> getVariableFigure(IVariableModel<?> v) {
 		for (Object object : getChildren()) {

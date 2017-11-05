@@ -14,7 +14,7 @@ public class ArrayPrimitiveModel extends ArrayModel<IValueModel> {
 		super(array, runtime);
 	}
 
-	IValueModel createElement(IJavaVariable var) throws DebugException {
+	IValueModel createElement(IJavaVariable var, int index) throws DebugException {
 		return new ValueModel(var, false, true, null, getRuntimeModel());
 	}
 	

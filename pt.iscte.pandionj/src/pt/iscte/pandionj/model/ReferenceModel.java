@@ -23,6 +23,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	private NullModel nullModel;
 	private VariableInfo info;
 	private Collection<String> tags = Collections.emptyList();
+	private int index = -1;
 	
 	ReferenceModel(IJavaVariable variable, boolean isInstance, boolean isVisible, VariableInfo info, StackFrameModel stackFrame) throws DebugException {
 		super(variable, isInstance, isVisible, stackFrame);
@@ -148,5 +149,14 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	@Override
 	public Role getRole() {
 		return Role.NONE;
+	}
+
+	@Override
+	public int getIndex() {
+		return index;
+	}
+	
+	public void setIndex(int index) {
+		this.index = index;
 	}
 }

@@ -3,12 +3,14 @@ package pt.iscte.pandionj.figures;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.swt.SWT;
+import org.eclipse.draw2d.GridData;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 
 public class StackContainer extends Figure {
+	
 	public StackContainer() {
 		GridLayout gridLayout = new GridLayout(1, true);
 		gridLayout.verticalSpacing = Constants.OBJECT_PADDING*2;
@@ -20,7 +22,7 @@ public class StackContainer extends Figure {
 		if(frame.getLineNumber() != -1) {
 			StackFrameFigure sv = new StackFrameFigure(runtimeViewer, frame, objectContainer, invisible, false);
 			add(sv);
-			getLayoutManager().setConstraint(sv, new org.eclipse.draw2d.GridData(SWT.FILL, SWT.DEFAULT, true, false));
+			getLayoutManager().setConstraint(sv, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 		}
 	}
 	
