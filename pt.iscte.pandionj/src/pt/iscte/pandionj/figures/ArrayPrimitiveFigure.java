@@ -2,6 +2,7 @@ package pt.iscte.pandionj.figures;
 
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
 
+import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;

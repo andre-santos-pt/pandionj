@@ -55,28 +55,6 @@ public class LaunchCommand extends AbstractHandler {
 
 	private String args;
 
-//	private Shell shell;
-//	private InvocationArea area;
-//
-//	public LaunchCommand() {
-//		shell = new Shell(Display.getDefault(), SWT.APPLICATION_MODAL);
-//		shell.setLayout(new FillLayout());
-//		area = new InvocationArea(shell);
-//		shell.addListener(SWT.Traverse, new Listener() {
-//			public void handleEvent(Event event) {
-//				switch (event.detail) {
-//				case SWT.TRAVERSE_ESCAPE:
-//					shell.setVisible(false);
-//					event.detail = SWT.TRAVERSE_NONE;
-//					event.doit = false;
-//					break;
-//				}
-//			}
-//		});
-//	}
-	
-	
-	
 //	@Override
 //	public boolean isEnabled() {
 		//		IWorkbench wb = PlatformUI.getWorkbench();
@@ -165,9 +143,7 @@ public class LaunchCommand extends AbstractHandler {
 					return null;
 				}
 
-
 				final String agentArgs = type.getFullyQualifiedName().replace('.', '/');
-
 				IMethod mainMethod = type.getMethod("main", new String[] {"[QString;"}); // TODO other cases
 
 				// normal main()
@@ -222,51 +198,6 @@ public class LaunchCommand extends AbstractHandler {
 									}
 								};
 								PandionJUI.openInvocation(selectedMethod, action);
-								
-//								area.setMethod(file, selectedMethod, new InvocationAction() {
-//									@Override
-//									public void invoke(String expression) {
-//										shell.setVisible(false);
-//										args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
-//										try {
-//											launch(file, lineFinal, t, args, mainMethod);
-//										} catch (CoreException e) {
-//											e.printStackTrace();
-//										}
-//									}
-//								});
-
-//								shell.pack();
-//								Rectangle screen = Display.getCurrent().getClientArea();
-//								Point cursor = Display.getCurrent().getCursorLocation();
-//								int w = screen.width-cursor.x-shell.getSize().x-20;
-//								if(w < 0)
-//									cursor = new Point(cursor.x + w, cursor.y);
-//								shell.setLocation(cursor);
-//								if(shell.getVisible())
-//									shell.open();
-//								else
-//									shell.setVisible(true);
-//
-//								shell.setFocus();
-
-								//									while (!shell.isDisposed()) {
-								//										if (!display.readAndDispatch())
-								//											display.sleep();
-								//									}
-
-								//									PandionJUI.promptInvocation(file, selectedMethod, new InvocationAction() {
-								//										@Override
-								//										public void invoke(String expression) {
-								//											args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
-								//											try {
-								//												launch(file, lineFinal, t, args, mainMethod);
-								//											} catch (CoreException e) {
-								//												e.printStackTrace();
-								//											}
-								//											
-								//										}
-								//									});
 							}
 							else {  // no params
 								if(PandionJUI.checkView()) {

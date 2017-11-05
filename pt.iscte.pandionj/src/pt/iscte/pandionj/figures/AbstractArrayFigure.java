@@ -36,7 +36,7 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		getLayoutManager().setConstraint(positionsFig, new GridData(SWT.DEFAULT, SWT.BEGINNING, false, false));
 		add(positionsFig);
 		model.getRuntimeModel().registerDisplayObserver((e) -> {
-			if(e.type == IRuntimeModel.Event.Type.STEP) {
+			if(e.type == IRuntimeModel.Event.Type.STEP || e.type == IRuntimeModel.Event.Type.EVALUATION) {
 				positionsFig.setBackgroundColor(Constants.Colors.OBJECT);
 			}
 		});

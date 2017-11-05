@@ -105,6 +105,9 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 					fig.setBackgroundColor(Constants.Colors.OBJECT);
 					// TODO update illustration?
 				}
+				else if(e.type == IRuntimeModel.Event.Type.EVALUATION) {
+					fig.setBackgroundColor(Constants.Colors.OBJECT);
+				}
 				else if(e.type == IRuntimeModel.Event.Type.TERMINATION) {
 					methodsEnabled = false;
 					setMethodsEnabled(false);

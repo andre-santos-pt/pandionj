@@ -41,7 +41,7 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 	}
 	
 	public ConnectionAnchor getAnchor(int modelIndex) {
-		assert getModel().isValidModelIndex(modelIndex);
+		assert getModel().isValidModelIndex(modelIndex) : modelIndex;
 		AbstractArrayFigure<IReferenceModel>.Position position = positions.get(convertToPositionFigureIndex(modelIndex));
 		return ((ReferenceLabel) position.valueLabel).getAnchor();
 	}

@@ -128,5 +128,10 @@ public class MockReference implements IReferenceModel {
 	public int getIndex() {
 		return -1;
 	}
+	
+	@Override
+	public void setIndex(int i) {
+		
+	}
 
 }

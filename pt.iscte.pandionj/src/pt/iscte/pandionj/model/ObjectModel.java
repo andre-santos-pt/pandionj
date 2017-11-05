@@ -34,6 +34,9 @@ import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultiset;
@@ -53,6 +56,7 @@ import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.IVisibleMethod;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 
 
 // TODO debug Exception
@@ -94,7 +98,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	private void addFields(IJavaObject object) throws DebugException {
-		int refCount = 0;
+
 		for(IVariable v : object.getVariables()) {
 			IJavaVariable var = (IJavaVariable) v;
 
@@ -103,15 +107,10 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				IJavaValue value = (IJavaValue) var.getValue();
 				IField f = jType.getField(name);
 				boolean visible = isFieldVisible(f);
+				VariableModel<?, ?> varModel = null;
 				if(value instanceof IJavaObject) {
 					ReferenceModel refModel = new ReferenceModel(var, true, visible, null, getRuntimeModel());
-					refModel.setIndex(refCount++);
-					refModel.registerObserver(new ModelObserver() {
-						public void update(Object arg) {
-							setChanged();
-							notifyObservers(name);
-						}
-					});
+					varModel = refModel;
 
 					if(jType != null) {
 						IResource resource = jType.getResource();
@@ -121,30 +120,36 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 						}
 					}
 					references.put(name, refModel);
-					fields.add(refModel);
 				}
 				else {
-					ValueModel valModel = new ValueModel(var, true, visible, null, getRuntimeModel());
-					valModel.registerObserver(new ModelObserver() {
-						public void update(Object arg) {
-							setChanged();
-							notifyObservers(name);
-						}
-					});
-					fields.add(valModel);
-					//						values.put(name, val);
+					varModel = new ValueModel(var, true, visible, null, getRuntimeModel());
 				}
+
+				varModel.registerObserver(new ModelObserver() {
+					public void update(Object arg) {
+						setChanged();
+						notifyObservers(name);
+					}
+				});
+				fields.add(varModel);
 
 				if(!value.isNull() &&  var.getReferenceTypeName().equals(object.getReferenceTypeName()))
 					refsOfSameType.add(var.getName());
 			}
 		}
-		
+
 		fields.sort((a,b) -> {
-			if(a.isVisible() && !b.isVisible()) 		return -1;
+			if(a.isVisible() && !b.isVisible()) 			return -1;
 			else if(b.isVisible() && !a.isVisible()) 	return 1;
-			else										return 0;
+			else											return 0;
 		});
+
+		int refCount = 0;
+		for(IVariableModel<?> var : fields) {
+			if(var instanceof IReferenceModel) {
+				((IReferenceModel) var).setIndex(refCount++);
+			}
+		}
 	}
 
 	public IType getType() {
@@ -528,41 +533,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
-//	private static class VisibleMethod implements IVisibleMethod {
-////		final String name;
-//		final IMethod method;
-//		final List<String> paramTypes;
-//		String returnType;
-//		VisibleMethod(IMethod method) {
-//			this.method = method;
-////			name = method.getElementName();
-//			paramTypes = new ArrayList<>();
-//			String[] parameterTypes = method.getParameterTypes();
-//			for(String pType : parameterTypes)
-//				paramTypes.add(Signature.getSignatureQualifier(pType) + "." + Signature.getSignatureSimpleName(pType));
-//
-//			try {
-//				returnType =  Signature.getSignatureSimpleName(method.getReturnType());
-//			} catch (JavaModelException e) {
-//				e.printStackTrace();
-//			}
-//		}
-//		@Override
-//		public String getName() {
-//			return method.getElementName();
-//		}
-//
-//		@Override
-//		public List<String> getParameterTypes() {
-//			return paramTypes;
-//		}
-//
-//		@Override
-//		public String getReturnType() {
-//			return returnType;
-//		}
-//	}
-	
 	@Override
 	public List<IMethod> getVisibleMethods() {
 		List<IMethod> list = new ArrayList<>();
@@ -616,13 +586,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			}
 		}
 		IJavaThread thread = (IJavaThread) stackFrame.getStackFrame().getThread();
-		delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(listener, thread));
+		delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(exp, listener, thread));
 	}
 
 	private class ExpressionListener implements IWatchExpressionListener {
+		String expression;
 		InvocationResult listener;
 		IJavaThread thread;
-		ExpressionListener(InvocationResult listener, IJavaThread thread) {
+		ExpressionListener(String expression, InvocationResult listener, IJavaThread thread) {
+			this.expression = expression;
 			this.listener = listener;
 			this.thread = thread;
 		}
@@ -641,14 +613,27 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				//				processInvocationResult((IJavaValue) result.getValue()); 
 			}
 			else if(exception != null) {
-				String exc = ((InvocationException)exception.getCause()).exception().referenceType().name();
-				System.out.println("EXC: " + exc);
-				PandionJView.getInstance().handleExceptionBreakpoint(thread, exc);
-				if(exception.getCause() instanceof InvocationException) {
-					InvocationException e = (InvocationException) exception.getCause();
-					ObjectReference exception2 = e.exception();
-				}
+				String trimExpression = trimExpression(expression);
+				String exceptionType = ((InvocationException)exception.getCause()).exception().referenceType().name();
+				PandionJUI.executeUpdate(() -> {
+					MessageDialog.openError(Display.getDefault().getActiveShell(), "Exception occurred", exceptionType + 
+							"\nSuggestion: execute " + trimExpression + " through code statements step by step.");
+				});
+//				System.out.println("EXC: " + exceptionType);
+				//				PandionJView.getInstance().handleExceptionBreakpoint(thread, exc);
+//				if(exception.getCause() instanceof InvocationException) {
+//					InvocationException e = (InvocationException) exception.getCause();
+//					ObjectReference exception2 = e.exception();
+//					
+//				}
 			}
+		}
+		
+		String trimExpression(String expression) {
+			if(expression.indexOf('.') != -1)
+				expression = expression.substring(expression.indexOf('.')+1);
+			
+			return expression;
 		}
 	};
 
