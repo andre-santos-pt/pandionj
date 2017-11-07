@@ -264,20 +264,8 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 
 	private static int getDimensions(IJavaArray array)  throws DebugException  {
-//		int d = 0;
-//		
-//		IJavaType t = array.getJavaType();
-//		while(t instanceof IJavaArrayType) {
-//			d++;
-//			t = ((IJavaArrayType) t).getComponentType();
-//		}
-//		return d;
 		String sig = array.getJavaType().getSignature();
-		int d = 0;
-		for(int i = 0; sig.charAt(i) == '['; i++)
-			d++;
-		
-		return d;
+		return Signature.getArrayCount(sig);
 	}
 
 	public String getComponentType() {
@@ -290,20 +278,14 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	}
 
 	static String getComponentType(IJavaArray array) throws DebugException {
-//		IJavaType t = array.getJavaType();
-//		while(t instanceof IJavaArrayType) {
-//			t = ((IJavaArrayType) t).getComponentType();
-//		}
-//		return t.getName();
 		String sig = array.getJavaType().getSignature();
-		sig = sig.substring(getDimensions(array));
-		return Signature.getSignatureSimpleName(sig);
+		return Signature.getSignatureSimpleName(Signature.getElementType(sig));
 	}
 
 
 	@Override
 	public boolean isMatrix() {
-		if(getDimensions() < 2)
+		if(dimensions < 2)
 			return false;
 
 		Object[] values = getValues();
@@ -319,22 +301,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		return true;
 	}
 
-	public boolean isMatrix2() {
-		if(getDimensions() < 2)
-			return false;
-
-		Object[] values = getValues();
-		for(Object o : values)
-			if(o == null)
-				return false;
-
-		for(int i = 0; i < values.length-1; i++) {
-			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
-				return false;
-		}
-
-		return true;
-	}
+	
 
 	public Dimension getMatrixDimension() throws DebugException {
 		if(!isMatrix())

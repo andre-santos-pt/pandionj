@@ -616,7 +616,14 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				String trimExpression = trimExpression(expression);
 				String exceptionType = ((InvocationException)exception.getCause()).exception().referenceType().name();
 				PandionJUI.executeUpdate(() -> {
-					MessageDialog.openError(Display.getDefault().getActiveShell(), "Exception occurred", exceptionType + 
+					if(exceptionType.equals(IllegalArgumentException.class.getName()))
+						MessageDialog.openError(Display.getDefault().getActiveShell(), "Illegal arguments",
+								trimExpression + " was invoked with illegal argument values.");
+					else if(exceptionType.equals(IllegalStateException.class.getName()))
+						MessageDialog.openError(Display.getDefault().getActiveShell(), "Illegal object state",
+								"the current state of the object does not allow the operation " + trimExpression);
+					else
+						MessageDialog.openError(Display.getDefault().getActiveShell(), "Exception occurred", exceptionType + 
 							"\nSuggestion: execute " + trimExpression + " through code statements step by step.");
 				});
 //				System.out.println("EXC: " + exceptionType);

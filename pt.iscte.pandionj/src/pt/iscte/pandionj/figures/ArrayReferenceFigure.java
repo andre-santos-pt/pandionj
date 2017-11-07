@@ -3,6 +3,7 @@ package pt.iscte.pandionj.figures;
 import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import org.eclipse.draw2d.AbstractConnectionAnchor;
@@ -30,17 +31,18 @@ public class ArrayReferenceFigure extends AbstractArrayFigure<IReferenceModel> {
 		add(objectContainer);
 		
 		List<IReferenceModel> elements = model.getModelElements();
-		for (int i = 0; i < elements.size(); i++)
-			objectContainer.addObjectAndPointer(elements.get(i), getAnchor(i));
+		Iterator<Integer> it = model.getValidModelIndexes();
+		for(IReferenceModel e : elements)
+			objectContainer.addObjectAndPointer(e, getAnchor(it.next()));
 	}
 
-	public int convertToPositionFigureIndex(int i) {
+	private int convertToPositionFigureIndex(int i) {
 		assert getModel().isValidModelIndex(i);
 		int len = getModel().getLength();
 		return len > 0 && i == len-1 ? positions.size()-1 : i;
 	}
 	
-	public ConnectionAnchor getAnchor(int modelIndex) {
+	private ConnectionAnchor getAnchor(int modelIndex) {
 		assert getModel().isValidModelIndex(modelIndex) : modelIndex;
 		AbstractArrayFigure<IReferenceModel>.Position position = positions.get(convertToPositionFigureIndex(modelIndex));
 		return ((ReferenceLabel) position.valueLabel).getAnchor();

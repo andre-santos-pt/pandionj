@@ -1,9 +1,7 @@
 package pt.iscte.pandionj.figures;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.eclipse.draw2d.ActionEvent;
 import org.eclipse.draw2d.ActionListener;
@@ -17,10 +15,11 @@ import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MarginBorder;
+import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.RoundedRectangle;
-import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
@@ -119,6 +118,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 		fieldsContainer = new FieldsContainer();
 		fig.add(fieldsContainer);
+		fig.setToolTip(new Label("double-click to show methods"));
 		layout.setConstraint(fieldsContainer, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 
 		stack = new StackContainer();
@@ -165,11 +165,12 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		}
 
 		void showPrivateFields() {
-			if(hiddenFields == null)
+			if(hiddenFields == null || visibilityOpen)
 				return;
 
+			visibilityOpen = true;
 			getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, true));
-
+			hiddenFields.setToolTip(new Label("hidden fields"));
 			for (IVariableModel<?> var : model.getFields()) {
 				if(!var.isVisible()) {
 					PandionJFigure<?> fieldFig = figureProvider.getFigure(var, false);
@@ -180,14 +181,15 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				}
 			}
 			fig.getLayoutManager().layout(fig);
+			runtimeViewer.updateLayout();
 		}
 
 		void addFields(IObjectModel model, FigureProvider figureProvider) {
 			visibleFields = new Figure();
 			visibleFields.setLayoutManager(new GridLayout(1, false));
 			getLayoutManager().setConstraint(visibleFields, new GridData(SWT.FILL, SWT.DEFAULT, true, true));
-			add(visibleFields);
-
+			visibleFields.setToolTip(new Label("visible fields"));
+			
 			int countNotVisible = 0;
 			List<IVariableModel<?>> fields = model.getFields();
 			for(IVariableModel<?> v : fields) {
@@ -203,23 +205,29 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				else
 					countNotVisible++;
 			}
+			
+			if(!visibleFields.getChildren().isEmpty())
+				add(visibleFields);
 
 			if(countNotVisible != 0) {
 				hiddenFields = new Figure();
 				hiddenFields.setOpaque(true);
 				hiddenFields.setBackgroundColor(ColorConstants.lightGray);
+				hiddenFields.setBorder(new LineBorder(ColorConstants.gray, 1, SWT.LINE_DASH));
 				hiddenFields.setLayoutManager(new GridLayout(1, false));
-				getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, true));
+				hiddenFields.setToolTip(new Label("double-click to show hidden fields"));
+				GridData gridData = new GridData(SWT.FILL, SWT.DEFAULT, true, true);
+				gridData.heightHint = 10;
+				getLayoutManager().setConstraint(hiddenFields, gridData);
 				add(hiddenFields);
-
-				//hiddenFields.addMouseListener(new MouseListener() {
-				//				public void mouseReleased(MouseEvent me) {}
-				//				public void mousePressed(MouseEvent me) {}
-				//				public void mouseDoubleClicked(MouseEvent me) {
-				//					visibilityOpen = !visibilityOpen;
-				//					showPrivateFields(visibilityOpen);
-				//				}
-				//			});
+				
+				hiddenFields.addMouseListener(new MouseListener() {
+					public void mouseReleased(MouseEvent me) {}
+					public void mousePressed(MouseEvent me) {}
+					public void mouseDoubleClicked(MouseEvent me) {
+						showPrivateFields();
+					}
+				});
 			}
 		}
 	}
@@ -231,12 +239,16 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			public void mouseReleased(org.eclipse.draw2d.MouseEvent me) { }
 			public void mousePressed(org.eclipse.draw2d.MouseEvent me) { }
 			public void mouseDoubleClicked(org.eclipse.draw2d.MouseEvent me) {
-				if(methodsFig == null)
+				if(methodsFig == null) {
 					addMethods(getModel());
+					fig.setToolTip(new Label("double-click to hide methods"));
+				}
 				else {
 					fig.remove(methodsFig);
 					methodsFig = null;
+					fig.setToolTip(new Label("double-click to show methods"));
 				}
+				runtimeViewer.updateLayout();
 				invalidate();
 			}
 		});
@@ -270,7 +282,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 		private String longSig(IMethod method) {
 			try {
-				return method.getElementName() + "(" + String.join(", ", method.getParameterNames()) + ")";
+				return Signature.getSignatureSimpleName(method.getReturnType()) + " " + method.getElementName() + "(" + String.join(", ", method.getParameterNames()) + ")";
 			} catch (JavaModelException e) {
 				return method.getElementName() + "(...)";
 			}

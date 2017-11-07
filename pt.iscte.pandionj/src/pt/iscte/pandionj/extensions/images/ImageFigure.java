@@ -1,21 +1,25 @@
 package pt.iscte.pandionj.extensions.images;
 
+
+import java.io.File;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.Graphics;
-import org.eclipse.draw2d.Label;
-import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.MouseEvent;
-import org.eclipse.draw2d.MouseMotionListener;
+import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 
 abstract class ImageFigure extends Figure {
@@ -32,13 +36,43 @@ abstract class ImageFigure extends Figure {
 	private void init(IArrayModel<?> model) {
 		setLayoutManager(new FlowLayout());
 		setBackgroundColor(ColorConstants.white);
-//		setBorder(new LineBorder(ColorConstants.gray));
+		//		setBorder(new LineBorder(ColorConstants.gray));
 		setOpaque(true);
 
 		this.model = model;
 		this.model.registerDisplayObserver((a) -> update(a));
 
 		update(model.getValues());
+		addMouseListener(new MouseListener() {
+			@Override
+			public void mouseReleased(MouseEvent me) {
+			}
+
+			@Override
+			public void mousePressed(MouseEvent me) {
+			}
+
+			@Override
+			public void mouseDoubleClicked(MouseEvent me) {
+				Shell shell = Display.getDefault().getActiveShell();
+				if(MessageDialog.openQuestion(shell, "Save image", "Save image to file?")) {
+					DirectoryDialog dialog = new DirectoryDialog(shell);
+					//					   FileDialog dialog = new FileDialog(shell, SWT.OPEN);
+					//					   dialog.setFilterExtensions(new String [] {"*.png"});
+					//					   dialog.setFilterPath("c:\\temp");
+					String result = dialog.open();
+					if(result != null) {
+						ImageData data = getImageData();
+						Image img = new Image(Display.getDefault(), data);
+						ImageLoader loader = new ImageLoader();
+						loader.data = new ImageData[] {img.getImageData()};
+						loader.save(result + File.separator + "image.png", SWT.IMAGE_PNG);
+						img.dispose();
+					}
+				}
+			}
+		});
+
 	}
 
 	public void update(Object arg) {
@@ -68,10 +102,6 @@ abstract class ImageFigure extends Figure {
 	@Override
 	protected void paintFigure(Graphics g) {
 		Rectangle r = getBounds();
-		g.setLineWidth(1);
-//		g.setForegroundColor(valid ? ColorConstants.lightGray : Constants.Colors.ERROR);
-//		g.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);
-//		g.drawRectangle(r.x, r.y, r.width-1, r.height-1);
 		if(valid) {
 			ImageData data = getImageData();
 			Image img = new Image(Display.getDefault(), data);

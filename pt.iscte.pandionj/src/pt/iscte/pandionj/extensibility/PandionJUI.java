@@ -140,9 +140,15 @@ public interface PandionJUI {
 	}
 
 	static Color getColor(int r, int g, int b) {
-		return ColorManager.getColor(r, g, b);
+		return ColorManager.getColor(truncate(r), truncate(g), truncate(b));
 	}
 	
+	static int truncate(int r) {
+		if(r < 0) return 0;
+		if(r > 255) return 255;
+		else return r;
+	}
+
 	static void setFont(Figure fig, int size) {
 		FontManager.setFont(fig, size);
 	}
