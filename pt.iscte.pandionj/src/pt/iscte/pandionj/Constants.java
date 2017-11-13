@@ -102,6 +102,7 @@ public interface Constants {
 		String SET_ARRAY_MAX = "Set array maximum length";
 		String PRESS_TO_INVOKE = "press Enter do execute";
 		String CLEAR = "Clear";
+		String INVOKE = "Invoke";
 		
 		static String prettyException(String name) {
 			String excName = name.substring(name.lastIndexOf('.')+1);

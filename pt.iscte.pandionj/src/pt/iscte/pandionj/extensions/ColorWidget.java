@@ -8,6 +8,7 @@ import org.eclipse.jdt.core.IType;
 
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 
 public class ColorWidget implements IObjectWidgetExtension {
 
@@ -24,7 +25,7 @@ public class ColorWidget implements IObjectWidgetExtension {
 		int b = (value >> 0) & 0xFF;
 		Label label = new Label(r + ", " + g + ", " + b);
 		label.setOpaque(true);
-		label.setBackgroundColor(new org.eclipse.swt.graphics.Color(null, r, g, b));
+		label.setBackgroundColor(PandionJUI.getColor(r, g, b));
 		return label;
 	}
 	

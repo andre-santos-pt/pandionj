@@ -58,7 +58,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	public ObjectFigure(IObjectModel model, IFigure extensionFigure) {
 		super(model, true);
 		assert extensionFigure != null;
-		methodsEnabled = true;
+		methodsEnabled = false;
 		GridLayout layout = new GridLayout(1, false);
 		layout.horizontalSpacing = 0;
 		layout.verticalSpacing = 2;
@@ -189,7 +189,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			visibleFields.setLayoutManager(new GridLayout(1, false));
 			getLayoutManager().setConstraint(visibleFields, new GridData(SWT.FILL, SWT.DEFAULT, true, true));
 			visibleFields.setToolTip(new Label("visible fields"));
-			
+
 			int countNotVisible = 0;
 			List<IVariableModel<?>> fields = model.getFields();
 			for(IVariableModel<?> v : fields) {
@@ -205,7 +205,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				else
 					countNotVisible++;
 			}
-			
+
 			if(!visibleFields.getChildren().isEmpty())
 				add(visibleFields);
 
@@ -220,7 +220,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				gridData.heightHint = 10;
 				getLayoutManager().setConstraint(hiddenFields, gridData);
 				add(hiddenFields);
-				
+
 				hiddenFields.addMouseListener(new MouseListener() {
 					public void mouseReleased(MouseEvent me) {}
 					public void mousePressed(MouseEvent me) {}
@@ -264,10 +264,12 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			setLayoutManager(new FlowLayout());
 			button = new Button(shortSig(method));
 			button.setToolTip(new Label(longSig(method)));
+			button.setForegroundColor(ColorConstants.black);
 			FontManager.setFont(button, Constants.BUTTON_FONT_SIZE);
 			button.setEnabled(methodsEnabled);
 			add(button);
 			resultLabel = new Label();
+			resultLabel.setForegroundColor(ColorConstants.black);
 			add(resultLabel);
 			button.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent event) {

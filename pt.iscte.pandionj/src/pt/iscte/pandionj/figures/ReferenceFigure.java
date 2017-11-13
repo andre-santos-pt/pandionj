@@ -2,6 +2,7 @@ package pt.iscte.pandionj.figures;
 
 import java.util.Collection;
 
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
@@ -25,7 +26,7 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		layout.verticalSpacing = 0;
 		setLayoutManager(layout);
 		label = new Label(model.getName());
-
+		label.setForegroundColor(ColorConstants.black);
 		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
 		
 		// TODO classname

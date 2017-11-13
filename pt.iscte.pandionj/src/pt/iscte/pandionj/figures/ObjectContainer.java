@@ -28,7 +28,7 @@ public class ObjectContainer extends Figure {
 	
 	private ObjectContainer(boolean useExtensions) {
 		this.useExtensions = useExtensions;
-		setBackgroundColor(ColorConstants.white);
+//		setBackgroundColor(ColorConstants.white);
 		setOpaque(true);
 		setLayoutManager(new GridLayout(1, true));
 		indexes = new HashMap<>();

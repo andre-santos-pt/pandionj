@@ -14,8 +14,6 @@ import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.debug.core.model.RuntimeProcess;
-import org.eclipse.jdt.core.IMethod;
-import org.eclipse.jdt.debug.core.IJavaExceptionBreakpoint;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.action.Action;
@@ -25,6 +23,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -37,7 +36,6 @@ import org.eclipse.ui.part.ViewPart;
 import pt.iscte.pandionj.FontManager.Style;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
@@ -53,15 +51,18 @@ public class PandionJView extends ViewPart {
 	private PandionJBreakpointListener breakpointListener;
 
 	private StackLayout stackLayout;
-	private Label labelInit;
-	private InvocationArea invocationArea;
+//	private Label labelInit;
+//	private InvocationArea invocationArea;
 	private RuntimeViewer runtimeView;
-
+	private Composite parent;
+	
 	private IContextService contextService;
 
 	private IToolBarManager toolBar;
 
 	private static int arrayMax = 10;
+
+	private Composite introScreen;
 
 	public PandionJView() {
 		instance = this;
@@ -106,45 +107,53 @@ public class PandionJView extends ViewPart {
 
 
 	private void createWidgets(Composite parent) {
-		stackLayout = new StackLayout();
-		stackLayout.marginHeight = 0;
-		stackLayout.marginWidth = 0;
-		parent.setLayout(stackLayout);
-		parent.setBackground(Constants.Colors.VIEW_BACKGROUND);
+		this.parent = parent;
+		String toolTipVersion = "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
+		setTitleToolTip(toolTipVersion);
+		
+//		stackLayout = new StackLayout();
+//		stackLayout.marginHeight = 0;
+//		stackLayout.marginWidth = 0;
+//		stackLayout.topControl = createIntroScreen(parent);
+//		parent.setLayout(stackLayout);
+		
+		parent.setLayout(new GridLayout());
+		
+		introScreen = createIntroScreen(parent);
+//		parent.setBackground(Constants.Colors.VIEW_BACKGROUND);
 
-		Composite labelComposite = new Composite(parent, SWT.BORDER);
+
+//		runtimeView = new RuntimeViewer(parent);
+//		runtimeView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+
+//		invocationArea = new InvocationArea(parent);
+		
+	}
+
+	private Composite createIntroScreen(Composite parent) {
+		Composite introComp = new Composite(parent, SWT.NONE);
+		introComp.setLayoutData(new GridData(GridData.FILL_BOTH));
+		introComp.setLayout(new GridLayout());
+		
 		Image image = PandionJUI.getImage("pandionj.png");
-		Label imageLabel = new Label(labelComposite, SWT.NONE);
+		Label imageLabel = new Label(introComp, SWT.NONE);
 		imageLabel.setImage(image);
 		imageLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-		String toolTipVersion = "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
-		imageLabel.setToolTipText(toolTipVersion);
-
-		labelComposite.setLayout(new GridLayout());
-		labelInit = new Label(labelComposite, SWT.WRAP);
+		
+	
+		Label versionLabel = new Label(introComp, SWT.NONE);
+		versionLabel.setText(getTitleToolTip());
+		versionLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
+		
+		Label labelInit = new Label(introComp, SWT.WRAP);
 		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);
 		labelInit.setText(Constants.Messages.START);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-		stackLayout.topControl = labelComposite;
-
-		runtimeView = new RuntimeViewer(parent);
-		runtimeView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-		invocationArea = new InvocationArea(parent);
-
-		setToolTipVersion();
+		return introComp;
 	}
 
-	private void setToolTipVersion() {
-		String toolTipVersion = "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
-		setTitleToolTip(toolTipVersion);
-		labelInit.setToolTipText(toolTipVersion);
-	}
 
-	@Override
 	public void setFocus() {
-		//		area.setFocus();
-
 	}
 
 
@@ -213,20 +222,30 @@ public class PandionJView extends ViewPart {
 	// must be invoked under executeInternal(..)
 	private void handleFrames(IJavaThread thread) throws DebugException {
 		assert thread != null;
-
+		
+		if(introScreen != null) {
+			introScreen.dispose();
+			introScreen = null;
+		}
+		
 		if(thread.getLaunch() != launch) {
 			launch = thread.getLaunch();
 			runtime = new RuntimeModel();
+			if(runtimeView != null)
+				runtimeView.dispose();
+			runtimeView = new RuntimeViewer(parent);
 			runtimeView.setInput(runtime);
+			runtimeView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+			runtimeView.requestLayout();
 		}
 
 		contextService.activateContext(Constants.CONTEXT_ID);
-		if(stackLayout.topControl != runtimeView) {
-			Display.getDefault().syncExec(() -> {
-				stackLayout.topControl = runtimeView;
-				runtimeView.requestLayout();
-			});
-		}
+//		if(stackLayout.topControl != runtimeView) {
+//			Display.getDefault().syncExec(() -> {
+//				stackLayout.topControl = runtimeView;
+//				parent.requestLayout();
+//			});
+//		}
 
 		runtime.update(thread);
 
@@ -262,13 +281,13 @@ public class PandionJView extends ViewPart {
 	}
 
 
-	public void promptInvocation(IFile file, IMethod method, InvocationAction action) {
-		stackLayout.topControl = invocationArea;
-		invocationArea.setMethod(file, method, action);
-		//		invocationArea.requestLayout();
-		invocationArea.getParent().layout();
-		invocationArea.setFocus();
-	}
+//	public void promptInvocation(IFile file, IMethod method, InvocationAction action) {
+//		stackLayout.topControl = invocationArea;
+//		invocationArea.setMethod(file, method, action);
+//		//		invocationArea.requestLayout();
+//		invocationArea.getParent().layout();
+//		invocationArea.setFocus();
+//	}
 
 
 
@@ -343,7 +362,8 @@ public class PandionJView extends ViewPart {
 
 	public void terminateProcess() {
 		try {
-			launch.terminate();
+			if(launch != null)
+				launch.terminate();
 		} catch (DebugException e) {
 			if(runtime != null)
 				runtime.setTerminated();

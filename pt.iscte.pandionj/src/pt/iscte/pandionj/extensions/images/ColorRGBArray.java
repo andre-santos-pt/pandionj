@@ -47,6 +47,7 @@ public class ColorRGBArray implements IArrayWidgetExtension {
 			colorFig.setSize(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
 			add(colorFig);
 			text = new Label();
+			text.setForegroundColor(ColorConstants.black);
 			add(text);
 		}
 

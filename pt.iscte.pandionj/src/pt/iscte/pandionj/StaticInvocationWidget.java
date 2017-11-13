@@ -1,7 +1,11 @@
 package pt.iscte.pandionj;
 
 
-import org.eclipse.core.resources.IFile;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
@@ -11,6 +15,8 @@ import org.eclipse.jdt.core.Signature;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -23,117 +29,118 @@ import pt.iscte.pandionj.model.PrimitiveType;
 
 public class StaticInvocationWidget extends Composite {
 
+	private static final RowLayout rowLayout;
+	private static final GridLayout comboLayout;
+
+	private static Map<String, List<List<String>>> cache;
+
+	static {
+		rowLayout = new RowLayout();
+		rowLayout.spacing = 5;
+		rowLayout.marginTop = Constants.MARGIN;
+		rowLayout.marginLeft = Constants.MARGIN;
+
+		comboLayout = new GridLayout(1, false);
+		comboLayout.marginWidth = 3;
+		comboLayout.marginHeight = 3;
+		comboLayout.verticalSpacing = 1;
+
+		cache = new HashMap<>();
+	}
+
 	private String methodName;
 	private IMethod method;
+	private InvokeDialog invokeDialog;
 	private Combo[] paramBoxes; 
 	private String[] parameterTypes;
-	private IFile file;
-	private long fileStamp;
-	private Label info;
 
-	public StaticInvocationWidget(Composite parent, IFile file, IMethod method, InvocationAction action) {
+	public StaticInvocationWidget(Composite parent, InvokeDialog invokeDialog, IMethod method, InvocationAction action) {
 		super(parent, SWT.NONE);
+		this.invokeDialog = invokeDialog;
+		
 		this.method = method;
-		this.file = file;
-		this.fileStamp = file.getModificationStamp();
+
+		setLayout(rowLayout);
 
 		methodName = method.getElementName();
 		parameterTypes = method.getParameterTypes();
+		Label label = new Label(this, SWT.NONE);
+		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
+		label.setText(method.getElementName() + " (");
+		paramBoxes = new Combo[method.getNumberOfParameters()];
 		String[] parameterNames = null;
 		try {
 			parameterNames = method.getParameterNames();
 		} catch (JavaModelException e1) {
 			e1.printStackTrace();
 		}
-		RowLayout rowLayout = new RowLayout();
-		rowLayout.spacing = 5;
-		rowLayout.marginTop = Constants.MARGIN;
-		rowLayout.marginLeft = Constants.MARGIN;
-
-		setLayout(rowLayout);
-		Label label = new Label(this, SWT.NONE);
-		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
-
-		label.setText(method.getElementName() + " (");
-		paramBoxes = new Combo[method.getNumberOfParameters()];
-		GridLayout fillLayout = new GridLayout(1, false);
-		fillLayout.marginWidth = 3;
-		fillLayout.marginHeight = 3;
-		fillLayout.verticalSpacing = 1;
-		
 		for(int i = 0; i < parameterTypes.length; i++) {
 			if(i != 0) {
 				Label comma = new Label(this, SWT.NONE);
 				FontManager.setFont(comma, Constants.VAR_FONT_SIZE);
 				comma.setText(", ");
 			}
-			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
-			Composite comboComp = new Composite(this, SWT.NONE);
-			comboComp.setLayout(fillLayout);
-			Combo combo = new Combo(comboComp, SWT.DROP_DOWN);
-			comboComp.setToolTipText(pType);
-			int comboWidth = pType.equals(String.class.getSimpleName()) ? Constants.COMBO_STRING_WIDTH : Constants.COMBO_WIDTH; 
-			combo.setLayoutData(new GridData(comboWidth, SWT.DEFAULT));
-			
-			Label varName = new Label(comboComp, SWT.NONE);
-			varName.setText(parameterNames[i]);
-			FontManager.setFont(varName, Constants.MESSAGE_FONT_SIZE);
-			varName.setForeground(Constants.Colors.ROLE_ANNOTATIONS);
-			
-			addCombovalues(combo, parameterTypes[i]);
-
-			if(combo.getItemCount() == 0)
-				combo.setText(defaultItem(pType));
-
-			paramBoxes[i] = combo;
-
-			int ii = i;
-			combo.addKeyListener(new KeyAdapter() {
-				public void keyPressed(KeyEvent e) {
-					if((e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) && allValid()) {
-						invokeOrNext(action, ii);
-					}
-				}
-				@Override
-				public void keyReleased(KeyEvent e) {
-					boolean valid = valid(combo, pType);
-					combo.getParent().setBackground(valid ? null : Constants.Colors.ERROR);
-					varName.setForeground(valid ? Constants.Colors.ROLE_ANNOTATIONS : Constants.Colors.VIEW_BACKGROUND);
-					comboComp.setToolTipText(valid ? pType : pType + ": inserted value not compatible");
-					info.setVisible(allValid());
-				}
-			});
+			paramBoxes[i] = createCombo(invokeDialog, parameterNames[i], parameterTypes[i]);
 		}
 		Label close = new Label(this, SWT.NONE);
 		FontManager.setFont(close, Constants.VAR_FONT_SIZE);
 		close.setText(")");
-		info = new Label(this, SWT.NONE);
-		info.setText(Constants.Messages.PRESS_TO_INVOKE);
-		info.setForeground(Constants.Colors.CONSTANT);
+
+		addCacheValues(paramBoxes);
+		checkValidity();
 	}
 
-	private void invokeOrNext(InvocationAction action, int i) {
-		for(int j = 0; j < paramBoxes.length; j++) {
-			if(PrimitiveType.isPrimitiveSig(parameterTypes[i]))
-				if(!containsItem(paramBoxes[i], paramBoxes[i].getText()))
-					paramBoxes[i].add(paramBoxes[i].getText());
-		}
-		if(fileStamp == file.getModificationStamp()) {
-			String exp = getInvocationExpression();
-			action.invoke(exp, null);
-		}
+	private Combo createCombo(InvokeDialog invokeDialog, String paramName, String paramType) {
+		String pType = Signature.getSignatureSimpleName(paramType);
+		Composite comboComp = new Composite(this, SWT.NONE);
+		comboComp.setLayout(comboLayout);
+		Combo combo = new Combo(comboComp, SWT.DROP_DOWN);
+		combo.setToolTipText(pType);
+		int comboWidth = pType.equals(String.class.getSimpleName()) ? Constants.COMBO_STRING_WIDTH : Constants.COMBO_WIDTH; 
+		combo.setLayoutData(new GridData(comboWidth, SWT.DEFAULT));
+
+		Label varName = new Label(comboComp, SWT.NONE);
+		varName.setText(paramName);
+		FontManager.setFont(varName, Constants.MESSAGE_FONT_SIZE);
+		varName.setForeground(Constants.Colors.ROLE_ANNOTATIONS);
+		varName.setToolTipText(pType);
+		addRefCombovalues(combo, paramType);
+
+		if(combo.getItemCount() == 0)
+			combo.setText(defaultItem(pType));
+
+		combo.addKeyListener(new KeyAdapter() {
+			//				public void keyPressed(KeyEvent e) {
+			//					if((e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR) && allValid()) {
+			//						invokeOrNext(action, ii);
+			//					}
+			//				}
+			@Override
+			public void keyReleased(KeyEvent e) {
+				boolean valid = valid(combo, pType);
+				varName.setForeground(valid ? Constants.Colors.ROLE_ANNOTATIONS : Constants.Colors.ERROR);
+				varName.setToolTipText(valid ? pType : pType + ": inserted value not compatible");
+				checkValidity();
+			}
+		});
+		combo.addSelectionListener(new SelectionAdapter() {
+
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				checkValidity();
+			}
+		});
+		return combo;
 	}
 
-	public void refreshItems(IFile file) {
-		fileStamp = file.getModificationStamp();
-		for(int i = 0; i < paramBoxes.length; i++)
-			addCombovalues(paramBoxes[i], parameterTypes[i]);
+	private void checkValidity() {
+		boolean allvalid = allValid();
+		invokeDialog.setValid(allvalid, allvalid ? getInvocationExpression() : null, getValues());
 	}
-
-	private void addCombovalues(Combo combo, String paramType) {
+	
+	
+	private void addRefCombovalues(Combo combo, String paramType) {
 		if(!PrimitiveType.isPrimitiveSig(paramType)) {
-			String sel = combo.getText();
-			combo.removeAll();
 			combo.add("null");
 			IType owner = (IType) method.getParent();
 			try {
@@ -146,10 +153,32 @@ public class StaticInvocationWidget extends Composite {
 			} catch (JavaModelException e1) {
 				e1.printStackTrace();
 			}
-			if(sel.isEmpty())
-				combo.select(0);
-			else
-				combo.setText(sel);
+		}
+	}
+
+	private void addCacheValues(Combo[] combos) {
+		String key = getMethodKey(method);
+		List<List<String>> list = cache.get(key);
+		if(list != null) {
+			assert list.size() == combos.length;
+			for(int i = 0; i < combos.length; i++) {
+				List<String> values = list.get(i);
+				for(String v : values)
+					if(!containsItem(combos[i], v))
+						combos[i].add(v);
+
+				if(values.size() > 0)
+					combos[i].select(combos[i].getItemCount()-1);
+				else if(combos[i].getItemCount() > 0)
+					combos[i].select(0);
+			}
+		}
+		else {
+			for(Combo combo : combos) {
+				int n = combo.getItemCount();
+				if(n > 0)
+					combo.select(n-1);
+			}
 		}
 	}
 
@@ -175,10 +204,10 @@ public class StaticInvocationWidget extends Composite {
 	}
 
 	private boolean valid(Combo combo, String pType) {
-		return validValue(combo.getText(), pType) ||  containsItem(combo, combo.getText());
+		return validValue(combo.getText(), pType, combo) ||  containsItem(combo, combo.getText());
 	}
 
-	private boolean validValue(String val, String pType) {
+	private boolean validValue(String val, String pType, Combo combo) {
 		try {
 			if(pType.equals(String.class.getSimpleName())) return val.matches("(\"(.)*\")|null");
 			else if(pType.equals(char.class.getName())) return val.matches("'.'");
@@ -220,13 +249,10 @@ public class StaticInvocationWidget extends Composite {
 		return values;
 	}
 
+
 	public String getInvocationExpression() {
 		String[] values = getValues();
 		String[] parameterTypes = method.getParameterTypes();
-
-		for(int i = 0; i < values.length; i++)
-			if(!contains(paramBoxes[i].getItems(), values[i]))
-				paramBoxes[i].add(values[i]);
 
 		for(int i = 0; i < values.length; i++) {
 			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
@@ -248,17 +274,45 @@ public class StaticInvocationWidget extends Composite {
 	}
 
 
-	private static boolean contains(String[] items, String s) {
-		for(String i : items)
-			if(i.equals(s))
-				return true;
-
-		return false;
-	}
+//	private static boolean contains(String[] items, String s) {
+//		for(String i : items)
+//			if(i.equals(s))
+//				return true;
+//
+//		return false;
+//	}
 
 	@Override
 	public boolean setFocus() {
 		paramBoxes[0].setFocus();
 		return true;
+	}
+
+	private String getMethodKey(IMethod method) {
+		try {
+			IType type = (IType) method.getParent();
+			return type.getFullyQualifiedName() + "|" + method.getElementName() + method.getSignature();
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	void setCache(String[] values) {
+		String key = getMethodKey(method);
+		List<List<String>> comboValues = cache.get(key);
+		if(comboValues == null) {
+			comboValues = new ArrayList<>();
+			for(int i = 0; i < method.getNumberOfParameters(); i++)
+				comboValues.add(new ArrayList<>());
+			cache.put(key, comboValues);
+		}
+		for(int i = 0; i < values.length; i++) {
+			List<String> list = comboValues.get(i); 
+			if(list.contains(values[i]))
+				list.remove(values[i]);
+
+			list.add(values[i]);
+		}
 	}
 }

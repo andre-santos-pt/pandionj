@@ -14,6 +14,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.window.Window;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
@@ -27,10 +28,9 @@ import org.osgi.framework.Bundle;
 import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.InvocationWidget;
+import pt.iscte.pandionj.InvokeDialog;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.ParserManager;
-import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.parser.VarParser;
 
 public interface PandionJUI {
@@ -39,14 +39,14 @@ public interface PandionJUI {
 		void invoke(String expression, String[] paramValues);
 	}
 
-	static void promptInvocation(IFile file, IMethod m, InvocationAction a) {
-		PandionJView view = PandionJView.getInstance();
-		if(view == null)
-			view = openViewDialog();
-
-		if(view != null && m.getNumberOfParameters() != 0)
-			view.promptInvocation(file, m, a);
-	}
+//	static void promptInvocation(IFile file, IMethod m, InvocationAction a) {
+//		PandionJView view = PandionJView.getInstance();
+//		if(view == null)
+//			view = openViewDialog();
+//
+//		if(view != null && m.getNumberOfParameters() != 0)
+//			view.promptInvocation(file, m, a);
+//	}
 
 	static PandionJView openViewDialog() {
 		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", Constants.Messages.RUN_DIALOG)) {
@@ -158,7 +158,13 @@ public interface PandionJUI {
 	}
 
 	static void openInvocation(IMethod method, InvocationAction action) {
-		InvocationWidget.open(method, action);
+		InvokeDialog dialog = new InvokeDialog(Display.getDefault().getActiveShell(), method, action);
+//		dialog.setMethod(method, action);
+		dialog.open();
+//		if(dialog.open() == Window.OK)
+//			System.out.println("???");
+		
+//		InvocationWidget.open(method, action);
 	}
 	
 }

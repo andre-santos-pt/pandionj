@@ -23,6 +23,7 @@ class ValueLabel extends Label {
 		setOpaque(true);
 		FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
 		setSize(model.isDecimal() || model.isBoolean() ? Constants.POSITION_WIDTH*2 : Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
+		setForegroundColor(ColorConstants.black);
 		setBackgroundColor(Constants.Colors.VARIABLE_BOX);
 		setBorder(new LineBorder(ColorConstants.black, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
 		updateValue();

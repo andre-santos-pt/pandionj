@@ -63,6 +63,8 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		String tooltip = model.isStatic() ? "static field" : "local variable";
 		
 		Label nameLabel = new Label(model.getName());
+		nameLabel.setForegroundColor(ColorConstants.black);
+		FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
 		if(role != Role.NONE)
 			tooltip += "\n(" + role.toString() + ")";
 		
@@ -70,7 +72,6 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		
 		comp.add(nameLabel);
 
-		FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
 
 		valueLabel = new ValueLabel(model);
 		Dimension size = valueLabel.getSize();
