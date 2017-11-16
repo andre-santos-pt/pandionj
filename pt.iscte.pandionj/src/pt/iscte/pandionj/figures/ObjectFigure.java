@@ -177,7 +177,8 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 					hiddenFields.add(fieldFig);
 					hiddenFields.getLayoutManager().setConstraint(fieldFig, new GridData(SWT.RIGHT, SWT.FILL, true, false));
 					setObjectContainerVisible();
-					objectContainer.addObjectAndPointer((IReferenceModel) var, ((ReferenceFigure) fieldFig).getAnchor());
+					if(var instanceof IReferenceModel)
+						objectContainer.addObjectAndPointer((IReferenceModel) var, ((ReferenceFigure) fieldFig).getAnchor());
 				}
 			}
 			fig.getLayoutManager().layout(fig);

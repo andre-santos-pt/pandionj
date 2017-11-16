@@ -133,7 +133,9 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			layout.setConstraint(extraFigure, new GridData(SWT.RIGHT, SWT.DEFAULT, false, false));
 		}
 		else if(Role.STEPPER.equals(role) || Role.ARRAY_ITERATOR.equals(role)) {
-			setBorder(new ArrowBorder(model.getVariableRole().getDirection()));
+			Direction direction = model.getVariableRole().getDirection();
+			if(direction != Direction.NONE)
+				setBorder(new ArrowBorder(direction));
 		}
 	}
 
@@ -248,7 +250,6 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 
 		@Override
 		public void paint(IFigure figure, Graphics graphics, Insets insets) {
-			graphics.setLineStyle(SWT.LINE_DOT);
 			graphics.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);
 			Rectangle r = figure.getBounds();
 			int startY = direction == Direction.FORWARD ? 2 : 1 + (Constants.POSITION_WIDTH/3)*2;

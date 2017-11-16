@@ -12,30 +12,9 @@ import pt.iscte.pandionj.parser.VarParser;
 
 public class ParserManager {
 
-//	private static Map<IFile, ParserResult> cache = new WeakHashMap<>();
 	private static Map<IFile, Long> modStamps = new WeakHashMap<>();
-
 	private static Map<IFile, VarParser> cacheParser = new WeakHashMap<>();
-
-	
 	private static Map<IFile, TagParser> tagParserCache = new WeakHashMap<>();
-	
-//	public static ParserResult getParserResult(IFile f) {
-//		ParserResult r = cache.get(f);
-//		if(r == null || f.getModificationStamp() != modStamps.get(f)) {
-//			r = ParserAPI.parseFile(f.getRawLocation().toString());
-////			ILog log = Platform.getLog(Platform.getBundle(Constants.PLUGIN_ID));
-////			log.log(new Status(Status.INFO, Constants.PLUGIN_ID, Status.OK, "Parsed " + f.getLocation().toString() + " " + r.lineExceptions.toString(), null));
-//			cache.put(f, r);
-//			modStamps.put(f, f.getModificationStamp());
-//			
-//			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
-//			tagParser.run();
-//			tagParserCache.put(f, tagParser);
-//		}
-//		return r;
-//	}
-	
 	
 	public static VarParser getVarParserResult(IFile f) {
 		VarParser r = cacheParser.get(f);

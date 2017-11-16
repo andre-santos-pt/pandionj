@@ -31,6 +31,7 @@ import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.InvokeDialog;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.ParserManager;
+import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.parser.VarParser;
 
 public interface PandionJUI {
@@ -135,6 +136,7 @@ public interface PandionJUI {
 		Display.getDefault().asyncExec(() -> {
 //			System.out.println("UPDATE " + r.hashCode());
 			PandionJView.getInstance().executeInternal(r);
+			RuntimeViewer.getInstance().updateLayout();
 //			System.out.println("/UPDATE " + r.hashCode());
 		});
 	}

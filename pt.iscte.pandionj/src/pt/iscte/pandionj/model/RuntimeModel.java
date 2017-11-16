@@ -1,16 +1,24 @@
 package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 import java.util.stream.Collectors;
 
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IStackFrame;
+import org.eclipse.debug.core.model.IWatchExpressionDelegate;
+import org.eclipse.debug.core.model.IWatchExpressionListener;
+import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
@@ -25,10 +33,13 @@ import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.PandionJView;
+import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
@@ -75,23 +86,23 @@ implements IRuntimeModel {
 			notifyObservers(new Event<IStackFrameModel>(Event.Type.NEW_STACK, null));
 		}
 
-//		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
-//			if(o instanceof ArrayModel && o.update(step))
-//				setChanged();
-//			else if(o instanceof ObjectModel) {
-//				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
-//					public void visit(IEntityModel object, ObjectModel parent, int index, int depth, String field) {
-//						try {
-//							if(object != null && ((EntityModel<?>) object).update(step))
-//								setChanged();
-//						}
-//						catch(DebugException e) {
-//							//							throw e; // TODO propagate exception
-//						}
-//					}
-//				});
-//			}
-//		}
+		//		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
+		//			if(o instanceof ArrayModel && o.update(step))
+		//				setChanged();
+		//			else if(o instanceof ObjectModel) {
+		//				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
+		//					public void visit(IEntityModel object, ObjectModel parent, int index, int depth, String field) {
+		//						try {
+		//							if(object != null && ((EntityModel<?>) object).update(step))
+		//								setChanged();
+		//						}
+		//						catch(DebugException e) {
+		//							//							throw e; // TODO propagate exception
+		//						}
+		//					}
+		//				});
+		//			}
+		//		}
 
 		PandionJView.getInstance().executeInternal(() -> {
 			handle(thread.getStackFrames());
@@ -105,27 +116,44 @@ implements IRuntimeModel {
 
 	}
 
+	public void evaluate(String expression, InvocationResult listener) {
+		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+		StackFrameModel stackFrame = getTopFrame();
+
+		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());	
+		delegate.evaluateExpression(expression , stackFrame.getStackFrame(), new IWatchExpressionListener() {
+			public void watchEvaluationFinished(IWatchExpressionResult result) {
+				listener.valueReturn(result.getValue());
+				try {
+					evaluationNotify();
+				} catch (DebugException e) {
+					e.printStackTrace();
+				}
+			}
+		});
+	}
+
 	public void evaluationNotify() throws DebugException {
 		updateActiveStack();
 		setChanged();
 		notifyObservers(new Event<IStackFrameModel>(Event.Type.EVALUATION, getTopFrame()));
 	}
-	
+
 	public void updateActiveStack() throws DebugException {
 		for(int i = 0; i < countActive; i++)
 			callStack.get(i).update();
-		
+
 		List<Long> toRemove = new ArrayList<>();
-		
+
 		for(EntityModel<?> m : new ArrayList<EntityModel<?>>(objects.values())) // to avoid concurrent modification
 			if(m.isAllocated())
 				m.update(0);
 			else
 				toRemove.add(m.getContent().getUniqueId());
-		
+
 		for(Long id : toRemove)
 			objects.remove(id);
-		
+
 	}
 
 	private void handle(IStackFrame[] stackFrames) throws DebugException {
@@ -215,6 +243,16 @@ implements IRuntimeModel {
 		return callStack.get(countActive-1);
 	}
 
+	public StackFrameModel getFirstVisibleFrame() {
+		assert !isEmpty();
+		for(int i = 0; i < countActive; i++) {
+			StackFrameModel f = callStack.get(i);
+			if(f.getLineNumber() != -1)
+				return f;
+		}
+		return null;
+	}
+
 	public int getSize() {
 		return countActive;
 	}
@@ -291,8 +329,8 @@ implements IRuntimeModel {
 
 				if(loose) {
 					looseObjects.put(obj.getUniqueId(), e);
-//					setChanged();
-//					notifyObservers(new Event<IEntityModel>(Event.Type.NEW_OBJECT, e));
+					//					setChanged();
+					//					notifyObservers(new Event<IEntityModel>(Event.Type.NEW_OBJECT, e));
 				}
 				else {
 					objects.put(obj.getUniqueId(), e);
@@ -347,6 +385,87 @@ implements IRuntimeModel {
 		return list;
 	}
 
+	public List<String> findReferencePaths(IEntityModel target) {
+		StackFrameModel firstVisibleFrame = getFirstVisibleFrame();
+		if(firstVisibleFrame == null)
+			return Collections.emptyList();
+		
+		Collection<IReferenceModel> refs = firstVisibleFrame.getReferenceVariables();
+		Collection<IEntityModel> visited = new ArrayList<IEntityModel>();
+		Stack<String> stack = new Stack<String>();
+		List<String> paths = new ArrayList<String>();
+		
+		for(IReferenceModel r : refs)
+			findReferencePathsRec(target, r, visited, stack, paths);
+		
+		return paths;
+	}
 
 
+	private static void findReferencePathsRec(IEntityModel target, IReferenceModel r, Collection<IEntityModel> visited, Stack<String> stack, List<String> paths) {
+		IEntityModel e = r.getModelTarget();
+		if(e.isNull() || visited.contains(e))
+			return;
+		
+//		String s = r.getName();
+//		int index = r.getIndex();
+//		if(index != -1)
+//			s += "[" + index + "]";
+
+		visited.add(e);
+		stack.add(r.getName());
+		
+		if(e == target) {
+			String path = String.join(".", stack);
+			path = path.replaceAll("\\.\\[", "[");
+			paths.add(path);
+			return;
+		}
+		
+		if(e instanceof ObjectModel) {
+			ObjectModel o = (ObjectModel) e;
+			for(IReferenceModel or : o.getReferenceFields())
+				findReferencePathsRec(target, or, visited, stack, paths);
+		}
+		else if(e instanceof ArrayReferenceModel) {
+			ArrayReferenceModel array = (ArrayReferenceModel) e;
+			for (IReferenceModel ar : array.getModelElements())
+				findReferencePathsRec(target, ar, visited, stack, paths);
+		}
+		stack.pop();
+	}
+
+	// TODO for GC
+	public Collection<IEntityModel> findReachableObjects() {
+		StackFrameModel firstVisibleFrame = getFirstVisibleFrame();
+		if(firstVisibleFrame == null)
+			return Collections.emptyList();
+		
+		Collection<IReferenceModel> refs = firstVisibleFrame.getReferenceVariables();
+		Collection<IEntityModel> visited = new ArrayList<IEntityModel>();
+		
+		for(IReferenceModel r : refs)
+			findReachableObjectsRec(r, visited);
+		
+		return visited;
+	}
+
+	private static void findReachableObjectsRec(IReferenceModel r, Collection<IEntityModel> visited) {
+		IEntityModel e = r.getModelTarget();
+		if(e.isNull() || visited.contains(e))
+			return;
+		
+		visited.add(e);
+		
+		if(e instanceof ObjectModel) {
+			ObjectModel o = (ObjectModel) e;
+			for(IReferenceModel or : o.getReferenceFields())
+				findReachableObjectsRec(or, visited);
+		}
+		else if(e instanceof ArrayReferenceModel) {
+			ArrayReferenceModel array = (ArrayReferenceModel) e;
+			for (IReferenceModel ar : array.getModelElements())
+				findReachableObjectsRec(ar, visited);
+		}
+	}
 }

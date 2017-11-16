@@ -240,12 +240,6 @@ public class PandionJView extends ViewPart {
 		}
 
 		contextService.activateContext(Constants.CONTEXT_ID);
-//		if(stackLayout.topControl != runtimeView) {
-//			Display.getDefault().syncExec(() -> {
-//				stackLayout.topControl = runtimeView;
-//				parent.requestLayout();
-//			});
-//		}
 
 		runtime.update(thread);
 
@@ -346,19 +340,19 @@ public class PandionJView extends ViewPart {
 	}
 
 
-	public void evaluate(String expression, InvocationResult listener) {
-		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-		StackFrameModel stackFrame = runtime.getTopFrame();
-
-		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());	
-		delegate.evaluateExpression(expression , stackFrame.getStackFrame(), new IWatchExpressionListener() {
-
-			@Override
-			public void watchEvaluationFinished(IWatchExpressionResult result) {
-				listener.valueReturn(result.getValue());
-			}
-		});
-	}
+//	public static void evaluate(String expression, InvocationResult listener) {
+//		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
+//		StackFrameModel stackFrame = runtime.getTopFrame();
+//
+//		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());	
+//		delegate.evaluateExpression(expression , stackFrame.getStackFrame(), new IWatchExpressionListener() {
+//
+//			@Override
+//			public void watchEvaluationFinished(IWatchExpressionResult result) {
+//				listener.valueReturn(result.getValue());
+//			}
+//		});
+//	}
 
 	public void terminateProcess() {
 		try {

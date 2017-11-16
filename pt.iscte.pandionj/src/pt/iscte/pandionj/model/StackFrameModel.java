@@ -247,7 +247,16 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		findReferences(stackVars, object, refs);
 		return refs;
 	}
-
+	
+	// TODO reference path
+//	public String getReferencePath(IEntityModel object) {
+//	
+//	}
+//
+//	private static void getReferencePath(IEntityModel object) {
+//		
+//	}
+	
 	private static void findReferences(Map<String, IVariableModel<?>> map, IEntityModel object, List<IReferenceModel> refs) {
 		for (IVariableModel<?> e : map.values()) {
 			if(e instanceof ReferenceModel && ((ReferenceModel) e).getModelTarget().equals(object))
@@ -420,14 +429,15 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 
 	@Override
-	public Collection<IVariableModel<?>> getStackVariables() {
+	public Collection<IVariableModel<?>> getAllVariables() {
 		return Collections.unmodifiableCollection(stackVars.values());
 	}
 
-	public Collection<IVariableModel<?>> getAllVariables() {
-		ArrayList<IVariableModel<?>> vars = new ArrayList<>();
-		//		vars.addAll(staticVars.values());
-		vars.addAll(stackVars.values());
+	public Collection<IReferenceModel> getReferenceVariables() {
+		ArrayList<IReferenceModel> vars = new ArrayList<>();
+		for(IVariableModel<?> v : stackVars.values())
+			if(v instanceof IReferenceModel)
+				vars.add((IReferenceModel)v);
 		return vars;
 	}
 

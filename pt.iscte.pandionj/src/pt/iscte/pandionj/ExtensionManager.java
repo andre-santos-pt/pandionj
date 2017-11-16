@@ -53,7 +53,7 @@ public class ExtensionManager {
 
 
 		objectExtensions = new ArrayList<>();
-		objectExtensions.add(new NumberWidget());
+//		objectExtensions.add(new NumberWidget());
 		objectExtensions.add(new StringWidget());
 		objectExtensions.add(new ColorWidget());
 		objectExtensions.add(new IterableWidget());

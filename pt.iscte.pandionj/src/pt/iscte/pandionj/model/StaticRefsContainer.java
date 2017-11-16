@@ -43,7 +43,7 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	}
 
 	@Override
-	public Collection<IVariableModel<?>> getStackVariables() {
+	public Collection<IVariableModel<?>> getAllVariables() {
 		if(runtime.isEmpty())
 			return Collections.emptyList();
 

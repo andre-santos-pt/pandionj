@@ -9,16 +9,18 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 
 // TODO dangling refs
-class ArrayIndexBound extends DisplayUpdateObservable implements IArrayIndexModel.IBound {
+class ArrayIndexBound extends DisplayUpdateObservable<Integer> implements IArrayIndexModel.IBound {
 	String expression;
 	IArrayIndexModel.BoundType type;
 	Integer value;
-
+	RuntimeModel runtime;
+	
 	static Map<String, Integer> expressionCache = new WeakHashMap<>();
 	
 	public ArrayIndexBound(String expression, IArrayIndexModel.BoundType type, RuntimeModel runtime) {
 		assert expression != null;
 		assert type != null;
+		this.runtime = runtime;
 		this.expression = expression;
 		this.type = type;
 		this.value = expressionCache.get(expression);
@@ -26,7 +28,7 @@ class ArrayIndexBound extends DisplayUpdateObservable implements IArrayIndexMode
 	}
 
 	private void eval() {
-		PandionJView.getInstance().evaluate(expression, new InvocationResult() {
+		runtime.evaluate(expression, new InvocationResult() {
 			@Override
 			public void valueReturn(Object o) {
 				try {

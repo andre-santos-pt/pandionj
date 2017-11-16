@@ -88,6 +88,7 @@ public class MatrixWidget implements IArrayWidgetExtension{
 					for(Object e : line) {
 						String text = e == null ? "null" : (e instanceof Object[] ? Arrays.deepToString((Object[]) e) : e.toString());
 						Label label = new Label(text);
+						label.setForegroundColor(ColorConstants.black);
 						add(label);
 					}
 				}

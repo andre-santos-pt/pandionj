@@ -62,7 +62,7 @@ public class StackFrameFigure extends Figure {
 		}
 		
 		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
-		for (IVariableModel<?> v : frame.getStackVariables()) {
+		for (IVariableModel<?> v : frame.getAllVariables()) {
 			addVariable(v, exception);
 		}
 
@@ -92,7 +92,7 @@ public class StackFrameFigure extends Figure {
 						exception = ExceptionType.match((String) event.arg);
 					}
 
-					for (IVariableModel<?> v : frame.getStackVariables()) {
+					for (IVariableModel<?> v : frame.getAllVariables()) {
 						if(v instanceof IReferenceModel) {
 							IReferenceModel ref = (IReferenceModel) v;
 							objectContainer.updateIllustration(ref, exception);

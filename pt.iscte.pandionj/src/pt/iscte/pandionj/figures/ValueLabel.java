@@ -29,7 +29,7 @@ class ValueLabel extends Label {
 		updateValue();
 		model.registerDisplayObserver((a) -> updateValue());
 		model.getRuntimeModel().registerDisplayObserver((e) -> {
-			if(e.type == IRuntimeModel.Event.Type.STEP) {
+			if(e.type == IRuntimeModel.Event.Type.STEP || e.type == IRuntimeModel.Event.Type.EVALUATION) {
 				updateBackground();
 			}
 		});

@@ -16,6 +16,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
+import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
@@ -98,7 +99,9 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	private void addFields(IJavaObject object) throws DebugException {
-
+		if(jType == null)
+			return;
+		
 		for(IVariable v : object.getVariables()) {
 			IJavaVariable var = (IJavaVariable) v;
 
@@ -570,6 +573,13 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return Collections.unmodifiableList(fields);
 	}
 
+	public List<IReferenceModel> getReferenceFields() {
+		List<IReferenceModel> refs = new ArrayList<IReferenceModel>();
+		for(IVariableModel<?> f : fields)
+			if(f instanceof IReferenceModel)
+				refs.add((IReferenceModel) f);
+		return refs;
+	}
 
 
 	public void invoke(String methodName, InvocationResult listener, String ... args) {
@@ -577,26 +587,34 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
 
-		String exp = methodName + "(" + String.join(", ", args) + ")";
+		List<String> refPaths = getRuntimeModel().findReferencePaths(this);
+		if(refPaths.isEmpty())
+			return;
 
-		if(!stackFrame.isInstance()) {
-			Collection<IReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
-			if(!referencesTo.isEmpty()) {
-				exp = referencesTo.iterator().next().getName() + "." + exp;
-			}
-		}
-		IJavaThread thread = (IJavaThread) stackFrame.getStackFrame().getThread();
-		delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(exp, listener, thread));
+		String exp = refPaths.get(0) + "." + methodName + "(" + String.join(", ", args) + ")";
+//System.out.println("INV: " + exp);
+		//		if(!stackFrame.isInstanceFrameOf(this)) {
+//			Collection<IReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
+//			if(!referencesTo.isEmpty()) {
+//				exp = referencesTo.iterator().next().getName() + "." + exp;
+//			}
+//		}
+//		else {
+//			List<String> refPaths = getRuntimeModel().findReferencePaths(this);
+//			if(!refPaths.isEmpty())
+//		}
+//		IJavaThread thread = (IJavaThread) stackFrame.getStackFrame().getThread();
+		IStackFrame context = getRuntimeModel().getFirstVisibleFrame().getStackFrame();
+		delegate.evaluateExpression(exp, context, new ExpressionListener(exp, listener));
+//		delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(exp, listener, thread));
 	}
 
 	private class ExpressionListener implements IWatchExpressionListener {
 		String expression;
 		InvocationResult listener;
-		IJavaThread thread;
-		ExpressionListener(String expression, InvocationResult listener, IJavaThread thread) {
+		ExpressionListener(String expression, InvocationResult listener) {
 			this.expression = expression;
 			this.listener = listener;
-			this.thread = thread;
 		}
 
 		@Override
@@ -626,13 +644,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 						MessageDialog.openError(Display.getDefault().getActiveShell(), "Exception occurred", exceptionType + 
 							"\nSuggestion: execute " + trimExpression + " through code statements step by step.");
 				});
-//				System.out.println("EXC: " + exceptionType);
-				//				PandionJView.getInstance().handleExceptionBreakpoint(thread, exc);
-//				if(exception.getCause() instanceof InvocationException) {
-//					InvocationException e = (InvocationException) exception.getCause();
-//					ObjectReference exception2 = e.exception();
-//					
-//				}
 			}
 		}
 		

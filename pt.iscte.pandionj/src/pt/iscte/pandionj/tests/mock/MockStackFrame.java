@@ -23,7 +23,7 @@ public class MockStackFrame implements IStackFrameModel {
 	}
 	
 	@Override
-	public Collection<IVariableModel<?>> getStackVariables() {
+	public Collection<IVariableModel<?>> getAllVariables() {
 		return Collections.unmodifiableCollection(elements);
 	}
 

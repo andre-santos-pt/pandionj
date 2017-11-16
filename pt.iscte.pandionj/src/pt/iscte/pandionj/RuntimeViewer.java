@@ -66,7 +66,7 @@ public class RuntimeViewer extends Composite {
 	private Map<IReferenceModel, PolylineConnection> pointersMap;
 	private Multimap<Object, PolylineConnection> pointersMapOwners;
 	private List<ObjectContainer> objectContainers;
-	
+
 	private MenuItem clearItem;
 
 	RuntimeViewer(Composite parent) {
@@ -87,7 +87,7 @@ public class RuntimeViewer extends Composite {
 		//		rootFig.setScale(1);
 		rootFig = new Figure();
 		rootFig.setOpaque(true);
-//		rootFig.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
+		//		rootFig.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		rootGrid = new GridLayout(2, false);
 		rootGrid.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP;
 		rootGrid.marginWidth = Constants.MARGIN;
@@ -99,7 +99,7 @@ public class RuntimeViewer extends Composite {
 		org.eclipse.draw2d.GridData d = new org.eclipse.draw2d.GridData(SWT.BEGINNING, SWT.BEGINNING, true, true);
 		d.widthHint = Math.max(Constants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
 		rootGrid.setConstraint(stackFig, d);
-		
+
 		objectContainers = new ArrayList<>();
 		objectContainer = ObjectContainer.create(true);
 		rootFig.add(objectContainer);
@@ -109,7 +109,7 @@ public class RuntimeViewer extends Composite {
 		lws.setContents(rootFig);
 		pointersMap = new HashMap<>();
 		pointersMapOwners = ArrayListMultimap.create();
-		
+
 	}
 
 	public static RuntimeViewer getInstance() {
@@ -132,14 +132,12 @@ public class RuntimeViewer extends Composite {
 			else if(event.type == RuntimeModel.Event.Type.REMOVE_FRAME) {
 				StackFrameModel f = (StackFrameModel) event.arg;
 				stackFig.removeFrame(f);
-				
+
 				List<?> children = rootFig.getChildren();
-				for (IVariableModel<?> v : f.getAllVariables()) {
-					if(v instanceof IReferenceModel) {
-						PolylineConnection c = pointersMap.remove(v);
-						if(c != null && children.contains(c))
-							rootFig.remove(c);
-					}
+				for (IReferenceModel v : f.getReferenceVariables()) {
+					PolylineConnection c = pointersMap.remove(v);
+					if(c != null && children.contains(c))
+						rootFig.remove(c);
 				}
 			}
 			else if(event.type == RuntimeModel.Event.Type.NEW_FRAME) {
@@ -178,16 +176,19 @@ public class RuntimeViewer extends Composite {
 
 
 	public void updateLayout() {
-		org.eclipse.swt.graphics.Point prev = canvas.getSize();
+		//		org.eclipse.swt.graphics.Point prev = canvas.getSize();
 		Dimension size = rootFig.getPreferredSize();
+//		System.out.println("update " + size);
 		canvas.setSize(size.width, size.height);
-		canvas.layout();
-//		if(size.height > prev.y)
-//			scroll.setOrigin(0, size.height);
+		
+//		canvas.layout();
+		//		if(size.height > prev.y)
+		//			scroll.setOrigin(0, size.height);
 
 		org.eclipse.draw2d.GridData d = (org.eclipse.draw2d.GridData) rootGrid.getConstraint(stackFig);
 		d.widthHint = Math.max(Constants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
 		rootGrid.layout(rootFig);
+		requestLayout();
 	}
 
 
@@ -196,25 +197,25 @@ public class RuntimeViewer extends Composite {
 		rootFig.add(pointer);
 		pointersMap.put(ref, pointer);
 		pointersMapOwners.put(owner, pointer);
-//		pointer.setToolTip(new Label(ref.toString()));
+		//		pointer.setToolTip(new Label(ref.toString()));
 	}
 
-	
+
 	public void addPointer(IReferenceModel ref, ConnectionAnchor sourceAnchor, ConnectionAnchor targetAnchor, ObjectContainer container, Object owner) {
 		assert ref != null;
 		IEntityModel target = ref.getModelTarget();
 		PolylineConnection pointer = new PolylineConnection();
 		pointer.setVisible(!target.isNull());
 		pointer.setSourceAnchor(sourceAnchor);
-//		if(target.isNull())
-			pointer.setTargetAnchor(target.isNull() ? sourceAnchor : targetAnchor);
-//		else
-//			pointer.setTargetAnchor(targetAnchor);
+		//		if(target.isNull())
+		pointer.setTargetAnchor(target.isNull() ? sourceAnchor : targetAnchor);
+		//		else
+		//			pointer.setTargetAnchor(targetAnchor);
 		Utils.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer, container);
 		addPointer(ref, pointer, owner);
 	}
-	
+
 	static void addPointerObserver(IReferenceModel ref, PolylineConnection pointer, ObjectContainer container) {
 		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
 			@Override
@@ -229,31 +230,31 @@ public class RuntimeViewer extends Composite {
 			}
 		});
 	}
-	
 
-	
-	
+
+
+
 	public void showPointer(IReferenceModel ref, boolean show) {
 		PolylineConnection p = pointersMap.get(ref);
 		if(p != null)
 			p.setVisible(show && !ref.getModelTarget().isNull());
 	}
-	
+
 	public void showPointers(Object owner, boolean show) {
 		for(PolylineConnection pointer : pointersMapOwners.get(owner))
 			pointer.setVisible(show);
 	}
-	
+
 	public void removePointer(IReferenceModel ref) {
 		PolylineConnection p = pointersMap.remove(ref);
 		if(p != null)
 			rootFig.remove(p);
 	}
-	
+
 	public void removePointers(Object owner) {
 		for(PolylineConnection pointer : pointersMapOwners.get(owner))
 			rootFig.remove(pointer);
-		
+
 		pointersMapOwners.removeAll(owner);
 	}
 
@@ -268,11 +269,11 @@ public class RuntimeViewer extends Composite {
 	public void addObjectContainer(ObjectContainer c) {
 		objectContainers.add(c);
 	}
-	
+
 	public List<ObjectContainer> getObjectContainers() {
 		return Collections.unmodifiableList(objectContainers);
 	}
-	
+
 
 	private void addMenu() {
 		Menu menu = new Menu(canvas);
@@ -375,11 +376,11 @@ public class RuntimeViewer extends Composite {
 		gc.dispose();
 	}
 
-	
 
-	
-	
-	
+
+
+
+
 
 
 

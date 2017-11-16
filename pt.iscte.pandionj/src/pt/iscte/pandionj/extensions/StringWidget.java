@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.extensions;
 
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IType;
@@ -20,6 +21,7 @@ public class StringWidget implements IObjectWidgetExtension {
 	public IFigure createFigure(IObjectModel e) {
 		Label label = new Label("\"" + e.getStringValue() + "\"");
 		FontManager.setFont(label, Constants.VALUE_FONT_SIZE);
+		label.setForegroundColor(ColorConstants.black);
 		return label;
 	}
 
