@@ -120,5 +120,10 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 		return false;
 	}
 
+	@Override
+	public Collection<IReferenceModel> getReferenceVariables() {
+		throw new UnsupportedOperationException();
+	}
+
 
 }

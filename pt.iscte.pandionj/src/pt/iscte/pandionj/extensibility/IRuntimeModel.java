@@ -21,6 +21,5 @@ public interface IRuntimeModel extends IObservableModel<IRuntimeModel.Event<ISta
 	
 	IStackFrameModel getTopFrame();
 	IEntityModel getObject(IJavaObject obj, boolean loose, IReferenceModel model);
-//	void update() throws DebugException;
 	void evaluationNotify() throws DebugException;
 }

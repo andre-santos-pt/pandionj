@@ -6,14 +6,11 @@ import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IDebugEventSetListener;
-import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.model.IStackFrame;
-import org.eclipse.debug.core.model.IWatchExpressionDelegate;
-import org.eclipse.debug.core.model.IWatchExpressionListener;
-import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.debug.core.model.RuntimeProcess;
+import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jface.action.Action;
@@ -21,20 +18,16 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
 
 import pt.iscte.pandionj.FontManager.Style;
-import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
@@ -50,9 +43,6 @@ public class PandionJView extends ViewPart {
 	private IDebugEventSetListener debugEventListener;
 	private PandionJBreakpointListener breakpointListener;
 
-	private StackLayout stackLayout;
-//	private Label labelInit;
-//	private InvocationArea invocationArea;
 	private RuntimeViewer runtimeView;
 	private Composite parent;
 	
@@ -104,30 +94,12 @@ public class PandionJView extends ViewPart {
 		instance = null;
 	}
 
-
-
 	private void createWidgets(Composite parent) {
 		this.parent = parent;
 		String toolTipVersion = "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
 		setTitleToolTip(toolTipVersion);
-		
-//		stackLayout = new StackLayout();
-//		stackLayout.marginHeight = 0;
-//		stackLayout.marginWidth = 0;
-//		stackLayout.topControl = createIntroScreen(parent);
-//		parent.setLayout(stackLayout);
-		
 		parent.setLayout(new GridLayout());
-		
 		introScreen = createIntroScreen(parent);
-//		parent.setBackground(Constants.Colors.VIEW_BACKGROUND);
-
-
-//		runtimeView = new RuntimeViewer(parent);
-//		runtimeView.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-
-//		invocationArea = new InvocationArea(parent);
-		
 	}
 
 	private Composite createIntroScreen(Composite parent) {
@@ -147,6 +119,7 @@ public class PandionJView extends ViewPart {
 		
 		Label labelInit = new Label(introComp, SWT.WRAP);
 		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);
+		labelInit.setForeground(ColorConstants.gray);
 		labelInit.setText(Constants.Messages.START);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		return introComp;
@@ -275,19 +248,6 @@ public class PandionJView extends ViewPart {
 	}
 
 
-//	public void promptInvocation(IFile file, IMethod method, InvocationAction action) {
-//		stackLayout.topControl = invocationArea;
-//		invocationArea.setMethod(file, method, action);
-//		//		invocationArea.requestLayout();
-//		invocationArea.getParent().layout();
-//		invocationArea.setFocus();
-//	}
-
-
-
-
-
-
 
 
 	private void populateToolBar() {
@@ -339,20 +299,6 @@ public class PandionJView extends ViewPart {
 		addToolbarAction(name, toggle, imageName, description, a);
 	}
 
-
-//	public static void evaluate(String expression, InvocationResult listener) {
-//		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
-//		StackFrameModel stackFrame = runtime.getTopFrame();
-//
-//		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());	
-//		delegate.evaluateExpression(expression , stackFrame.getStackFrame(), new IWatchExpressionListener() {
-//
-//			@Override
-//			public void watchEvaluationFinished(IWatchExpressionResult result) {
-//				listener.valueReturn(result.getValue());
-//			}
-//		});
-//	}
 
 	public void terminateProcess() {
 		try {

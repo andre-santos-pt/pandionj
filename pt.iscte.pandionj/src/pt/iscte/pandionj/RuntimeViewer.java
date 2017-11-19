@@ -43,7 +43,6 @@ import com.google.common.collect.Multimap;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
-import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.ObjectContainer;
 import pt.iscte.pandionj.figures.PandionJFigure;
@@ -83,11 +82,10 @@ public class RuntimeViewer extends Composite {
 		scroll.setContent(canvas);
 		addMenu();
 
-		//		rootFig = new ScalableLayeredPane();
-		//		rootFig.setScale(1);
+//				rootFig = new ScalableLayeredPane();
+//				((ScalableLayeredPane) rootFig).setScale(2);
 		rootFig = new Figure();
 		rootFig.setOpaque(true);
-		//		rootFig.setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		rootGrid = new GridLayout(2, false);
 		rootGrid.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP;
 		rootGrid.marginWidth = Constants.MARGIN;
@@ -145,11 +143,6 @@ public class RuntimeViewer extends Composite {
 				if(!frame.isInstance())
 					stackFig.addFrame(frame, this, objectContainer, false);
 			}
-			//		else if(event.type == RuntimeModel.Event.Type.NEW_OBJECT) {
-			//			IEntityModel e = (IEntityModel) event.arg;
-			//			System.out.println("new " + e);
-			//			objectContainer.addObject(e);
-			//		}
 			stackFig.getLayoutManager().layout(stackFig);
 			updateLayout();
 
@@ -207,10 +200,7 @@ public class RuntimeViewer extends Composite {
 		PolylineConnection pointer = new PolylineConnection();
 		pointer.setVisible(!target.isNull());
 		pointer.setSourceAnchor(sourceAnchor);
-		//		if(target.isNull())
 		pointer.setTargetAnchor(target.isNull() ? sourceAnchor : targetAnchor);
-		//		else
-		//			pointer.setTargetAnchor(targetAnchor);
 		Utils.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer, container);
 		addPointer(ref, pointer, owner);
@@ -230,9 +220,6 @@ public class RuntimeViewer extends Composite {
 			}
 		});
 	}
-
-
-
 
 	public void showPointer(IReferenceModel ref, boolean show) {
 		PolylineConnection p = pointersMap.get(ref);
@@ -273,7 +260,6 @@ public class RuntimeViewer extends Composite {
 	public List<ObjectContainer> getObjectContainers() {
 		return Collections.unmodifiableList(objectContainers);
 	}
-
 
 	private void addMenu() {
 		Menu menu = new Menu(canvas);
@@ -329,7 +315,6 @@ public class RuntimeViewer extends Composite {
 						display.sleep();
 					}
 				}
-
 			}
 		});
 
@@ -375,16 +360,6 @@ public class RuntimeViewer extends Composite {
 		image.dispose();
 		gc.dispose();
 	}
-
-
-
-
-
-
-
-
-
-
 
 
 }

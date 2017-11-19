@@ -75,7 +75,6 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		fig.setOpaque(true);
 		getLayoutManager().setConstraint(fig, new GridData(SWT.DEFAULT, SWT.BEGINNING, false, false));
 		fig.add(extensionFigure);
-		//		fig.setToolTip(new Label(model.getTypeName()));
 
 		runtimeViewer = RuntimeViewer.getInstance();
 		figureProvider = runtimeViewer.getFigureProvider();

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 
@@ -27,6 +28,14 @@ public class MockStackFrame implements IStackFrameModel {
 		return Collections.unmodifiableCollection(elements);
 	}
 
+	@Override
+	public Collection<IReferenceModel> getReferenceVariables() {
+		return elements.stream()
+				.filter((v) -> v instanceof IReferenceModel)
+				.map((e) -> (IReferenceModel) e)
+				.collect(Collectors.toList());
+	}
+	
 	@Override
 	public Collection<IReferenceModel> getReferencesTo(IEntityModel e) {
 		return Collections.emptyList();

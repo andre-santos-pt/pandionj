@@ -32,7 +32,7 @@ public class StackFrameFigure extends Figure {
 	private boolean invisible;
 	private boolean instance;
 	private Label label;
-	
+
 	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible, boolean instance) {
 		this.runtimeViewer = runtimeViewer;
 		this.frame = frame;
@@ -40,7 +40,7 @@ public class StackFrameFigure extends Figure {
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
 		this.instance = instance;
-		
+
 		setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 4;
@@ -60,7 +60,7 @@ public class StackFrameFigure extends Figure {
 				}
 			});
 		}
-		
+
 		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
 		for (IVariableModel<?> v : frame.getAllVariables()) {
 			addVariable(v, exception);
@@ -71,7 +71,7 @@ public class StackFrameFigure extends Figure {
 	}
 
 	private void addFrameObserver(IStackFrameModel frame) {
-		frame.registerObserver(new ModelObserver<StackEvent<?>>() {
+		frame.registerDisplayObserver(new ModelObserver<StackEvent<?>>() {
 			@Override
 			public void update(StackEvent<?> event) {
 				if(event != null) {
@@ -92,12 +92,8 @@ public class StackFrameFigure extends Figure {
 						exception = ExceptionType.match((String) event.arg);
 					}
 
-					for (IVariableModel<?> v : frame.getAllVariables()) {
-						if(v instanceof IReferenceModel) {
-							IReferenceModel ref = (IReferenceModel) v;
-							objectContainer.updateIllustration(ref, exception);
-						}
-					}
+					for (IReferenceModel ref : frame.getReferenceVariables())
+						objectContainer.updateIllustration(ref, exception);
 				}
 				updateLook(frame, false);
 			}
@@ -113,11 +109,11 @@ public class StackFrameFigure extends Figure {
 			else if(model.exceptionOccurred()) {
 				setBackgroundColor(Constants.Colors.INST_POINTER);
 				setBorder(new LineBorder(Constants.Colors.ERROR, Constants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
-				
-				
+
+
 				if(model.getExceptionType().equals(NullPointerException.class.getName()))
 					paintNullRefs();
-				
+
 				Label labelExc = new Label(Constants.Messages.prettyException(model.getExceptionType()));
 				labelExc.setForegroundColor(Constants.Colors.ERROR);
 				setToolTip(labelExc);
@@ -141,7 +137,7 @@ public class StackFrameFigure extends Figure {
 			}
 		}
 	}
-	
+
 	private void addVariable(IVariableModel<?> v, ExceptionType exception) {
 		if(v.isInstance() == instance) { // && !(v instanceof IReferenceModel && !((IReferenceModel) v).getTags().isEmpty())) {
 			PandionJFigure<?> figure = figProvider.getFigure(v, true);

@@ -1,7 +1,6 @@
 package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +13,6 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.model.IDebugElement;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
@@ -26,21 +24,16 @@ import org.eclipse.jdt.debug.core.IJavaArray;
 import org.eclipse.jdt.debug.core.IJavaArrayType;
 import org.eclipse.jdt.debug.core.IJavaDebugTarget;
 import org.eclipse.jdt.debug.core.IJavaObject;
-import org.eclipse.jdt.debug.core.IJavaReferenceType;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaThread;
-import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 
 import pt.iscte.pandionj.PandionJView;
-import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
-import pt.iscte.pandionj.extensibility.IObjectModel;
+import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
-import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
-import pt.iscte.pandionj.model.ObjectModel.SiblingVisitor;
 
 
 public class RuntimeModel
@@ -119,16 +112,17 @@ implements IRuntimeModel {
 	public void evaluate(String expression, InvocationResult listener) {
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		StackFrameModel stackFrame = getTopFrame();
-
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());	
-		delegate.evaluateExpression(expression , stackFrame.getStackFrame(), new IWatchExpressionListener() {
+		delegate.evaluateExpression(expression, stackFrame.getStackFrame(), new IWatchExpressionListener() {
 			public void watchEvaluationFinished(IWatchExpressionResult result) {
 				listener.valueReturn(result.getValue());
-				try {
-					evaluationNotify();
-				} catch (DebugException e) {
-					e.printStackTrace();
-				}
+//				setChanged();
+//				notifyObservers(new Event<IStackFrameModel>(Event.Type.EVALUATION, getTopFrame()));
+//				try {
+//					evaluationNotify();
+//				} catch (DebugException e) {
+//					e.printStackTrace();
+//				}
 			}
 		});
 	}

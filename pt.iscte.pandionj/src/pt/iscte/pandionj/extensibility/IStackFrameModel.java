@@ -9,6 +9,7 @@ import pt.iscte.pandionj.model.RuntimeModel;
 public interface IStackFrameModel extends IObservableModel<IStackFrameModel.StackEvent<?>> {
 
 	Collection<IVariableModel<?>> getAllVariables();
+	Collection<IReferenceModel> getReferenceVariables();
 	Collection<IReferenceModel> getReferencesTo(IEntityModel e);
 	RuntimeModel getRuntime();
 	String getInvocationExpression();

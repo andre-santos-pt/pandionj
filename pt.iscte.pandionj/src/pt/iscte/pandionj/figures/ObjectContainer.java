@@ -1,18 +1,14 @@
 package pt.iscte.pandionj.figures;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MarginBorder;
-import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Rectangle;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ExceptionType;
@@ -28,7 +24,6 @@ public class ObjectContainer extends Figure {
 	
 	private ObjectContainer(boolean useExtensions) {
 		this.useExtensions = useExtensions;
-//		setBackgroundColor(ColorConstants.white);
 		setOpaque(true);
 		setLayoutManager(new GridLayout(1, true));
 		indexes = new HashMap<>();
@@ -38,30 +33,6 @@ public class ObjectContainer extends Figure {
 		ObjectContainer c = new ObjectContainer(useExtensions);
 		RuntimeViewer.getInstance().addObjectContainer(c);
 		return c;
-	}
-
-
-	//	public void setVisible(boolean visible) {
-	//		super.setVisible(visible);
-	//		RuntimeViewer.getInstance().showPointers(this, visible); // 2D pointers
-	//	}
-
-	public void setPointersVisible(boolean visible) {
-		RuntimeViewer.getInstance().showPointers(this, visible); // 2D pointers
-	}
-
-	public void setVisible(Collection<IReferenceModel> refs, boolean visible) {
-		for(IReferenceModel r : refs)
-			setVisible(r, visible);
-	}
-
-	public void setVisible(IReferenceModel ref, boolean visible) {
-		IEntityModel t = ref.getModelTarget();
-		if(!t.isNull()) {
-			PandionJFigure<?> f = getChild(t);
-			if(f != null)
-				f.setVisible(visible);
-		}
 	}
 
 	public void addObjectAndPointer(IReferenceModel ref, ConnectionAnchor sourceAnchor) {
@@ -105,15 +76,11 @@ public class ObjectContainer extends Figure {
 	}
 
 	private PandionJFigure<?> locateFigureInContainers(IEntityModel e) {
-//		PandionJFigure<?> fig = null;
 		for(ObjectContainer oc : RuntimeViewer.getInstance().getObjectContainers()) {
 			for (Object object : oc.getChildren()) {
 				if(object instanceof PandionJFigure && ((PandionJFigure<?>) object).getModel() == e)
 					return (PandionJFigure<?>) object;
 			}
-//			fig = oc.getDeepChild(e);
-//			if(fig != null)
-//				return fig;
 		}
 		return null;
 	}
@@ -121,12 +88,9 @@ public class ObjectContainer extends Figure {
 
 	public void updateIllustration(IReferenceModel v, ExceptionType exception) {
 		IEntityModel target = v.getModelTarget();
-		PandionJFigure<?> fig = getChild(target);
+		PandionJFigure<?> fig = locateFigureInContainers(target); //getChild(target);
 		if(fig != null) {
-			if(handleIllustration(v, fig.getInnerFigure(), exception)) {
-				//								xyLayout.setConstraint(fig, new Rectangle(fig.getBounds().getLocation(), fig.getPreferredSize()));
-				//								xyLayout.layout(StackFrameViewer.this);
-			}
+			handleIllustration(v, fig.getInnerFigure(), exception);
 
 			if(target instanceof IArrayModel && ((IArrayModel<?>) target).isReferenceType()) {
 				IArrayModel<?> a = (IArrayModel<?>) target;
@@ -137,42 +101,58 @@ public class ObjectContainer extends Figure {
 	}
 
 
-	private boolean handleIllustration(IReferenceModel reference, IFigure targetFig, ExceptionType exception) {
+	private void handleIllustration(IReferenceModel reference, IFigure targetFig, ExceptionType exception) {
 		if(targetFig instanceof AbstractArrayFigure) {
 			if(reference.hasIndexVars()) {
 				IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig, exception);
 				targetFig.setBorder(b);
-				return true;
 			}
 			else {
 				targetFig.setBorder(new MarginBorder(IllustrationBorder.getInsets(targetFig, targetFig instanceof ArrayPrimitiveFigure)));
 			}
 		}
-		return false;
 	} 
 
-	private PandionJFigure<?> getChild(IEntityModel e) {
-		for (Object object : getChildren()) {
-			if(object instanceof PandionJFigure && ((PandionJFigure<?>) object).getModel() == e)
-				return (PandionJFigure<?>) object;
-		}
-		return null;
-	}
+//	public void setPointersVisible(boolean visible) {
+//	RuntimeViewer.getInstance().showPointers(this, visible); // 2D pointers
+//}
+//
+//public void setVisible(Collection<IReferenceModel> refs, boolean visible) {
+//	for(IReferenceModel r : refs)
+//		setVisible(r, visible);
+//}
+//
+//public void setVisible(IReferenceModel ref, boolean visible) {
+//	IEntityModel t = ref.getModelTarget();
+//	if(!t.isNull()) {
+//		PandionJFigure<?> f = getChild(t);
+//		if(f != null)
+//			f.setVisible(visible);
+//	}
+//}
 	
 	
-	public Dimension getVisibleBounds() {
-		int w = 0;
-		int h = 0;
-		for (Object object : getChildren()) {
-			IFigure f = (IFigure) object;
-			if(f.isVisible()) {
-				Rectangle r = f.getBounds();
-				w = Math.max(w, r.x+r.width);
-				h = Math.max(h, r.y+r.height);
-			}
-		}
-		return new Dimension(w, h);
-	}
+//	public Dimension getVisibleBounds() {
+//		int w = 0;
+//		int h = 0;
+//		for (Object object : getChildren()) {
+//			IFigure f = (IFigure) object;
+//			if(f.isVisible()) {
+//				Rectangle r = f.getBounds();
+//				w = Math.max(w, r.x+r.width);
+//				h = Math.max(h, r.y+r.height);
+//			}
+//		}
+//		return new Dimension(w, h);
+//	}
+
+//	private PandionJFigure<?> getChild(IEntityModel e) {
+//	for (Object object : getChildren()) {
+//		if(object instanceof PandionJFigure && ((PandionJFigure<?>) object).getModel() == e)
+//			return (PandionJFigure<?>) object;
+//	}
+//	return null;
+//}
 	
 //	private PandionJFigure<?> getDeepChild(IEntityModel e) {
 //		return getDeepChildRef(this, e);
