@@ -3,14 +3,18 @@ package pt.iscte.pandionj.extensibility;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.draw2d.geometry.Dimension;
+
 import pt.iscte.pandionj.model.PrimitiveType;
 
 public interface IArrayModel<T> extends IEntityModel {
 	int getLength();
 	int getDimensions();
 	String getComponentType();
-	Object[] getValues();
+	Object getValues();
 	boolean isMatrix();
+	Dimension getMatrixDimension();
+	
 	boolean isDecimal();
 	T getElementModel(int index);
 	List<T> getModelElements();

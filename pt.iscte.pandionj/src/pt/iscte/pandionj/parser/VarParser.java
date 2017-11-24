@@ -299,7 +299,8 @@ public class VarParser {
 
 
 		private void checkBounds(Expression exp) {
-			exp.accept(new BoundVisitor());
+			if(exp != null)
+				exp.accept(new BoundVisitor());
 		}
 
 		class BoundVisitor extends ASTVisitor {

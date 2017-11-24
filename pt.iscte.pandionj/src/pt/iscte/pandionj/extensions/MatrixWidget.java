@@ -20,42 +20,21 @@ import pt.iscte.pandionj.model.ModelObserver;
 public class MatrixWidget implements IArrayWidgetExtension{
 
 	@Override
-	public boolean accept(IArrayModel model) {
-		if(model.getDimensions() < 2)
-			return false;
-		return internalAccept(model.getValues());
+	public boolean accept(IArrayModel<?> model) {
+		return model.isMatrix();
 	}
-
-	private static boolean internalAccept(Object[] values) {
-		if(values.length == 0)
-			return true;
-
-		if(values[0] == null)
-			return false;
-		
-		int cols = ((Object[]) values[0]).length;
-
-		for(int y = 1; y < values.length; y++)
-			if(values[y] == null || ((Object[]) values[y]).length != cols)
-				return false;
-
-		return true;
-	}
-
 
 	@Override
-	public IFigure createFigure(IArrayModel model) {
+	public IFigure createFigure(IArrayModel<?> model) {
 		return new MatrixFigure(model);
 	}
 
 	public static class MatrixFigure extends Figure implements ModelObserver {
 		boolean valid;
-
+		IArrayModel model;
+		
 		public MatrixFigure(IArrayModel model) {
-			init(model);
-		}
-
-		private void init(IArrayModel model) {
+			this.model = model;
 			org.eclipse.draw2d.GridLayout layout;
 
 			Object[] m = (Object[]) model.getValues();
@@ -70,9 +49,6 @@ public class MatrixWidget implements IArrayWidgetExtension{
 			layout.marginWidth = 10;
 			setLayoutManager(layout);
 
-//			setBackgroundColor(ColorConstants.white);
-//			setOpaque(true);
-
 			model.registerDisplayObserver(this);
 
 			update(m);
@@ -81,7 +57,8 @@ public class MatrixWidget implements IArrayWidgetExtension{
 		public void update(Object arg) {
 			removeAll();
 			Object[] array = (Object[]) arg;
-			valid = internalAccept(array);
+//			valid = internalAccept(array);
+			valid = model.isMatrix();
 			if(valid) {
 				for(Object o : array) {
 					Object[] line = (Object[]) o;

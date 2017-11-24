@@ -18,6 +18,7 @@ class ReferenceLabel extends Figure {
 	private Point center;
 	private boolean dirty;
 	private boolean error;
+	private boolean isnull;
 	
 	public ReferenceLabel(IReferenceModel ref) {
 		this.ref = ref;
@@ -30,10 +31,16 @@ class ReferenceLabel extends Figure {
 			}
 		});
 		error = false;
+		updateNull();
+		ref.registerObserver((a) -> updateNull());
 	}
 
 	public void setError() {
 		error = true;
+	}
+	
+	private void updateNull() {
+		isnull = ref.getModelTarget().isNull();
 	}
 	
 	@Override
@@ -44,6 +51,9 @@ class ReferenceLabel extends Figure {
 	@Override
 	protected void paintFigure(Graphics g) {
 		super.paintFigure(g);
+//		if(ref.getRuntimeModel().isTerminated())
+//			return; // FIXME box disapears; cache result
+		
 		Rectangle r = getBounds();
 		Rectangle square = new Rectangle(r.getLocation().getTranslated(0, r.height/4), new Dimension(r.width/2, r.height/2));
 		center = new Point(square.x + square.width/2, square.y + square.height/2);
@@ -57,7 +67,8 @@ class ReferenceLabel extends Figure {
 		g.setBackgroundColor(error ? Constants.Colors.ERROR : ColorConstants.black);
 		g.fillOval(center.x-3, center.y-3, 7, 7);
 
-		if(ref.getModelTarget().isNull()) {
+//		if(ref.getModelTarget().isNull()) {
+		if(isnull) {
 			g.setForegroundColor(error ? Constants.Colors.ERROR : ColorConstants.black);
 			Point dest = center.getTranslated(20, 0);
 			g.drawLine(center, dest);

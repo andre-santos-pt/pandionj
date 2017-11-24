@@ -17,7 +17,6 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
 import org.eclipse.debug.core.model.IStackFrame;
-import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
@@ -27,27 +26,21 @@ import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
-import org.eclipse.jdt.debug.core.IJavaReferenceType;
-import org.eclipse.jdt.debug.core.IJavaThread;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.sun.jdi.InvocationException;
-import com.sun.jdi.ObjectReference;
 
 import pt.iscte.pandionj.ExtensionManager;
-import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
@@ -56,13 +49,11 @@ import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
-import pt.iscte.pandionj.extensibility.IVisibleMethod;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
 
 // TODO debug Exception
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
-	//	private Map<String, ValueModel> values;
 	private Map<String, ReferenceModel> references;
 	private List<String> refsOfSameType; // TODO from source
 
@@ -77,7 +68,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	public ObjectModel(IJavaObject object, IType type, RuntimeModel runtime) throws DebugException {
 		super(object, runtime);
-		//		assert type != null : object.toString(); // FIXME java.lang.AssertionError: sun.instrument.InstrumentationImpl (id=23)
 		jType = type;
 		init(object);
 	}
@@ -85,7 +75,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private void init(IJavaObject object) throws DebugException {
 		fields = new ArrayList<IVariableModel<?>>();
 		references = new LinkedHashMap<String, ReferenceModel>();
-		//		values = new LinkedHashMap<String, ValueModel>();
 		refsOfSameType = new ArrayList<>();
 		addFields(object);
 
@@ -206,51 +195,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return extension != IObjectWidgetExtension.NULL_EXTENSION;
 	}
 
-	//	public Set<String> getFieldNames() {
-	//		return Collections.unmodifiableSet(values.keySet());
-	//	}
-	//
-	//	public String getValue(String field) {
-	//		assert values.containsKey(field);
-	//		try {
-	//			IJavaValue val = values.get(field).getContent();
-	//			return val.getValueString();
-	//		} catch (DebugException e) {
-	//			e.printStackTrace();
-	//		}
-	//		return null;
-	//	}
-
 	public Map<String, ReferenceModel> getReferences() {
 		return Collections.unmodifiableMap(references);
-	}
-
-
-	public String toStringValue() {
-		try {
-			return ":" + Utils.toSimpleName(getContent().getReferenceTypeName());
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return "";
-		}
-		//		MethodInfo m = info.getMethod("toString");
-		//		if(m == null)
-		//			return "";
-		//		
-		//		IJavaValue val = invoke(m);
-		//		try {
-		//			return val == null ? "" : val.getValueString();
-		//		} catch (DebugException e) {
-		//			e.printStackTrace();
-		//			return "";
-		//		} 
-		//		try {
-		//			IValue val = model.evalMethod(this, "toString()", false);
-		//			return val != null ? val.getValueString() : "NULL";
-		//		} catch (DebugException e) {
-		//			e.printStackTrace();
-		//			return "NULL";
-		//		}
 	}
 
 	@Override
@@ -281,7 +227,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	@Override
 	public void setStep(int stepPointer) {
-		// TODO stepPointer
 
 	}
 

@@ -2,6 +2,7 @@ package pt.iscte.pandionj.extensions.images;
 
 
 import java.io.File;
+import java.lang.reflect.Array;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
@@ -24,7 +25,7 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 
 abstract class ImageFigure extends Figure {
 	IArrayModel<?> model;
-	Object[] array;
+	Object array;
 	boolean valid;
 	int width;
 	int height;
@@ -36,11 +37,10 @@ abstract class ImageFigure extends Figure {
 	private void init(IArrayModel<?> model) {
 		setLayoutManager(new FlowLayout());
 		setBackgroundColor(ColorConstants.white);
-		//		setBorder(new LineBorder(ColorConstants.gray));
 		setOpaque(true);
 
 		this.model = model;
-		this.model.registerDisplayObserver((a) -> update(a));
+		this.model.registerDisplayObserver((a) -> update(model.getValues()));
 
 		update(model.getValues());
 		addMouseListener(new MouseListener() {
@@ -75,12 +75,15 @@ abstract class ImageFigure extends Figure {
 
 	}
 
-	public void update(Object arg) {
-		array = (Object[]) arg;
+	public void update(Object array) {
+		this.array = array;
 		valid = model.isMatrix();
 		if(valid) {
-			width = ((Object[]) array[0]).length;
-			height = array.length;
+			Dimension dim = model.getMatrixDimension();
+			width = dim.width;
+			height = dim.height;
+//			width = Array.getLength(Array.get(array, 0));
+//			height = Array.getLength(array);
 		}
 		else {
 			width = 200;

@@ -36,12 +36,11 @@ public class BinaryImageWidget implements IArrayWidgetExtension {
 		}
 
 		protected ImageData getImageData() {
+			boolean[][] a = (boolean[][]) array;
 			ImageData data = new ImageData(width, height, 1, binaryPalette);
-			for(int y = 0; y < height; y++) {
-				Object[] line = (Object[]) array[y];
-				for(int x = 0; x < line.length && x < width; x++)
-					data.setPixel(x, y, (boolean) line[x] ? 0 : 1);
-			}
+			for(int y = 0; y < height; y++)
+				for(int x = 0; x < width && x < width; x++)
+					data.setPixel(x, y, a[y][x] ? 0 : 1);
 			return data;
 		}
 	}

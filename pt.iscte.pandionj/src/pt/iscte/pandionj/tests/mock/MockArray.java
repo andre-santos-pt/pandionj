@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import org.eclipse.draw2d.geometry.Dimension;
+
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -31,19 +33,23 @@ implements IArrayModel {
 	public boolean isNull() {
 		return false;
 	}
-	
+
 	@Override
 	public boolean isMatrix() {
 		return false;
 	}
-
+	@Override
+	public Dimension getMatrixDimension() {
+		// TODO Auto-generated method stub
+		return null;
+	}
 	@Override
 	public boolean isDecimal() {
 		return type.matches("double|float");
 	}
 
 	@Override
-	public Object[] getValues() {
+	public Object getValues() {
 		return values.toArray();
 	}
 

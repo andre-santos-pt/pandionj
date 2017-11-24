@@ -37,20 +37,23 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 		return new GrayscaleImageFigure(model);
 	}
 
-
 	static class GrayscaleImageFigure extends ImageFigure {
 		public GrayscaleImageFigure(IArrayModel<?> model) {
 			super(model);
 		}
 
 		protected ImageData getImageData() {
+			int[][] a = (int[][]) array;
 			ImageData data = new ImageData(width, height, 8, grayscalePalette);
 			for(int y = 0; y < height; y++) {
-				Object[] line = (Object[]) array[y];
-				for(int x = 0; x < line.length && x < width; x++)
-					data.setPixel(x, y, (int) line[x]);
+				for(int x = 0; x < width && x < width; x++)
+					data.setPixel(x, y, valid(a[y][x]) ? a[y][x] : 0);
 			}
 			return data;
+		}
+		
+		private static boolean valid(int v) {
+			return v >= 0 && v <= 255;
 		}
 	}
 }

@@ -27,7 +27,6 @@ import pt.iscte.pandionj.extensions.ColorWidget;
 import pt.iscte.pandionj.extensions.HistogramWidget;
 import pt.iscte.pandionj.extensions.IterableWidget;
 import pt.iscte.pandionj.extensions.MatrixWidget;
-import pt.iscte.pandionj.extensions.NumberWidget;
 import pt.iscte.pandionj.extensions.StringCharArray;
 import pt.iscte.pandionj.extensions.StringWidget;
 import pt.iscte.pandionj.extensions.images.BinaryImageWidget;

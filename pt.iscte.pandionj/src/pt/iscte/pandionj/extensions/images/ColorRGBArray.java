@@ -27,14 +27,9 @@ public class ColorRGBArray implements IArrayWidgetExtension {
 		return fig;
 	}
 
-
-
 	private void updateLabel(IArrayModel<?> e, ColorFigure fig) {
-		Object[] values = e.getValues();
-		int r = Integer.parseInt(values[0].toString());
-		int g = Integer.parseInt(values[1].toString());
-		int b = Integer.parseInt(values[2].toString());
-		fig.update(r, g, b);
+		int[] values = (int[]) e.getValues();
+		fig.update(values[0], values[1], values[2]);
 	}
 
 	private static class ColorFigure extends Figure {

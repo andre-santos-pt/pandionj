@@ -105,7 +105,7 @@ implements IVariableModel<O> {
 			}
 		}
 		catch(DebugException e) {
-			e.printStackTrace();
+			e.printStackTrace(); // TODO terminate
 		}
 		return false;
 	}

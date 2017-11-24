@@ -8,8 +8,7 @@ import org.eclipse.jdt.core.IType;
 import com.google.common.collect.Multimap;
 
 public interface IObjectModel extends IEntityModel {
-//	String getTypeName();
-	IArrayModel getArray(String fieldName);
+	IArrayModel<?> getArray(String fieldName);
 	String getStringValue();
 	
 	int getInt(String fieldName);
@@ -21,8 +20,6 @@ public interface IObjectModel extends IEntityModel {
 	
 	void invoke(String methodName, InvocationResult listener, String ... args);
 	
-	
-	String toStringValue();
 	List<IMethod> getInstanceMethods();
 	
 	

@@ -144,7 +144,7 @@ public class LaunchCommand extends AbstractHandler {
 				}
 
 				final String agentArgs = type.getFullyQualifiedName().replace('.', '/');
-				IMethod mainMethod = type.getMethod("main", new String[] {"[QString;"}); // TODO other cases
+				IMethod mainMethod = type.getMethod("main", new String[] {"[QString;"});
 
 				// normal main()
 				if(mainMethod.exists() && mainMethod.isMainMethod() && PandionJUI.checkView()) {

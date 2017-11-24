@@ -364,7 +364,8 @@ implements IRuntimeModel {
 		//			setChanged();
 		//			notifyObservers(Collections.emptyList());
 		//		}
-
+		setChanged();
+		notifyObservers(new Event<IStackFrameModel>(Event.Type.GARBAGE_COLLECTION, null));
 	}
 
 	public IStackFrameModel getStaticVars() {
@@ -429,7 +430,7 @@ implements IRuntimeModel {
 		stack.pop();
 	}
 
-	// TODO for GC
+	
 	public Collection<IEntityModel> findReachableObjects() {
 		StackFrameModel firstVisibleFrame = getFirstVisibleFrame();
 		if(firstVisibleFrame == null)

@@ -3,14 +3,19 @@ package pt.iscte.pandionj.extensions.images;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
-import org.eclipse.swt.graphics.RGB;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 
 public class ColorImageWidget implements IArrayWidgetExtension {
 
-	private static PaletteData palette = new PaletteData(0xFF , 0xFF00 , 0xFF0000);
+	private static final int redMask = 0xFF;
+	private static final int greenMask = 0xFF00;
+	private static final int blueMask = 0xFF0000;
+	private static final PaletteData palette = new PaletteData(redMask, greenMask, blueMask);
+	private static final int redShift = palette.redShift;
+	private static final int greenShift = palette.greenShift;
+	private static final int blueShift = palette.blueShift;
 
 	@Override
 	public boolean accept(IArrayModel<?> model) {
@@ -19,23 +24,6 @@ public class ColorImageWidget implements IArrayWidgetExtension {
 				model.getDimensions() == 2 && 
 				model.getLength() > 0 && 
 				model.isMatrix();
-//				checkPixels(model);
-	}
-
-
-	private boolean checkPixels(IArrayModel<?> model) {
-		Object[][][] values = (Object[][][]) model.getValues();
-
-		for(int y = 0; y < values.length; y++)
-			for(int x = 0; x < values[y].length; x++) {
-				if(values[y][x].length != 3)
-					return false;
-				for(int i = 0; i < 3; i++)
-					if((int) values[y][x][i] < 0 || (int) values[y][x][i] > 255)
-						return false;
-			}
-
-		return true;
 	}
 
 
@@ -51,20 +39,30 @@ public class ColorImageWidget implements IArrayWidgetExtension {
 		}
 
 		protected ImageData getImageData() {
+			int[][] a = (int[][]) array;
 			ImageData data = new ImageData(width, height, 24, palette);
 			for(int y = 0; y < height; y++) {
-				Object[] line = (Object[]) array[y];
-				for(int x = 0; x < line.length && x < width; x++) {
-					int v = (int) line[x];
+				for(int x = 0; x < width; x++) {
+					int v = a[y][x];
 					int r = (v >> 16) & 0xFF;
 					int g = (v >> 8) & 0xFF;
 					int b = v & 0xFF;
-					int pixel = palette.getPixel(new RGB(r,g,b));
+
+					int pixel = 0;
+					if(valid(r, g, b)) {
+						pixel |= (redShift < 0 ? r << -redShift : r >>> redShift) & redMask;
+						pixel |= (greenShift < 0 ? g << -greenShift : g >>> greenShift) & greenMask;
+						pixel |= (blueShift < 0 ? b << -blueShift : b >>> blueShift) & blueMask;
+					}
+					//					int pixel = valid(r,g,b) ? palette.getPixel(new RGB(r,g,b)) : palette.getPixel(new RGB(255, 0, 0));
 					data.setPixel(x, y, pixel);
 				}
-				
 			}
 			return data;
+		}
+
+		private static boolean valid(int r, int g, int b) {
+			return r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255;
 		}
 	}
 }

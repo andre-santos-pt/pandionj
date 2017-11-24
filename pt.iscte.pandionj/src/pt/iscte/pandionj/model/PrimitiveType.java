@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.model;
 
+import java.lang.reflect.Array;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.Signature;
@@ -13,6 +15,19 @@ public enum PrimitiveType {
 		public void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array) {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getByteValue();
+		}
+		
+		public void fillPrimitiveValues(Object array, IJavaValue[] values) {
+			for(int i = 0; i < values.length; i++)
+				Array.set(array, i, ((IJavaPrimitiveValue) values[i]).getByteValue());
+		}
+		
+		@Override
+		public Class<?> getArrayClass(int dimensions) {
+			if(dimensions == 1) return byte.class;
+			if(dimensions == 2) return byte[].class;
+			if(dimensions == 3) return byte[][].class;
+			return Object.class;
 		}
 		
 		@Override
@@ -32,6 +47,19 @@ public enum PrimitiveType {
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getShortValue();
 		}
 		
+		public void fillPrimitiveValues(Object array, IJavaValue[] values) {
+			for(int i = 0; i < values.length; i++)
+				Array.set(array, i, ((IJavaPrimitiveValue) values[i]).getShortValue());
+		}
+		
+		@Override
+		public Class<?> getArrayClass(int dimensions) {
+			if(dimensions == 1) return short.class;
+			if(dimensions == 2) return short[].class;
+			if(dimensions == 3) return short[][].class;
+			return Object.class;
+		}
+		
 		@Override
 		public Object getValue(IJavaValue val) {
 			return new Short(((IJavaPrimitiveValue) val).getShortValue());
@@ -49,6 +77,19 @@ public enum PrimitiveType {
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getIntValue();
 		}
 
+		public void fillPrimitiveValues(Object array, IJavaValue[] values) {
+			for(int i = 0; i < values.length; i++)
+				Array.set(array, i, ((IJavaPrimitiveValue) values[i]).getIntValue());
+		}
+		
+		@Override
+		public Class<?> getArrayClass(int dimensions) {
+			if(dimensions == 1) return int.class;
+			if(dimensions == 2) return int[].class;
+			if(dimensions == 3) return int[][].class;
+			return Object.class;
+		}
+		
 		@Override
 		public Object getValue(IJavaValue val) {
 			return new Integer(((IJavaPrimitiveValue) val).getIntValue());
@@ -64,6 +105,19 @@ public enum PrimitiveType {
 		public void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array) {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getLongValue();
+		}
+		
+		public void fillPrimitiveValues(Object array, IJavaValue[] values) {
+			for(int i = 0; i < values.length; i++)
+				Array.set(array, i, ((IJavaPrimitiveValue) values[i]).getLongValue());
+		}
+
+		@Override
+		public Class<?> getArrayClass(int dimensions) {
+			if(dimensions == 1) return long.class;
+			if(dimensions == 2) return long[].class;
+			if(dimensions == 3) return long[][].class;
+			return Object.class;
 		}
 		
 		@Override
@@ -82,6 +136,20 @@ public enum PrimitiveType {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getFloatValue();
 		}
+		
+		public void fillPrimitiveValues(Object array, IJavaValue[] values) {
+			for(int i = 0; i < values.length; i++)
+				Array.set(array, i, ((IJavaPrimitiveValue) values[i]).getFloatValue());
+		}
+		
+		@Override
+		public Class<?> getArrayClass(int dimensions) {
+			if(dimensions == 1) return float.class;
+			if(dimensions == 2) return float[].class;
+			if(dimensions == 3) return float[][].class;
+			return Object.class;
+		}
+		
 		@Override
 		public Object getValue(IJavaValue val) {
 			return new Float(((IJavaPrimitiveValue) val).getFloatValue());
@@ -96,6 +164,19 @@ public enum PrimitiveType {
 		public void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array) {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getDoubleValue();
+		}
+		
+		public void fillPrimitiveValues(Object array, IJavaValue[] values) {
+			for(int i = 0; i < values.length; i++)
+				Array.set(array, i, ((IJavaPrimitiveValue) values[i]).getDoubleValue());
+		}
+		
+		@Override
+		public Class<?> getArrayClass(int dimensions) {
+			if(dimensions == 1) return double.class;
+			if(dimensions == 2) return double[].class;
+			if(dimensions == 3) return double[][].class;
+			return Object.class;
 		}
 		
 		@Override
@@ -115,6 +196,19 @@ public enum PrimitiveType {
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getCharValue();
 		}
 		
+		public void fillPrimitiveValues(Object array, IJavaValue[] values) {
+			for(int i = 0; i < values.length; i++)
+				Array.set(array, i, ((IJavaPrimitiveValue) values[i]).getCharValue());
+		}
+		
+		@Override
+		public Class<?> getArrayClass(int dimensions) {
+			if(dimensions == 1) return char.class;
+			if(dimensions == 2) return char[].class;
+			if(dimensions == 3) return char[][].class;
+			return Object.class;
+		}
+		
 		@Override
 		public Object getValue(IJavaValue val) {
 			return new Character(((IJavaPrimitiveValue) val).getCharValue());
@@ -131,6 +225,20 @@ public enum PrimitiveType {
 			for(int i = 0; i < elements.length; i++)
 				array[i] = ((IJavaPrimitiveValue) elements[i]).getBooleanValue();
 		}
+		
+		public void fillPrimitiveValues(Object array, IJavaValue[] values) {
+			for(int i = 0; i < values.length; i++)
+				Array.set(array, i, ((IJavaPrimitiveValue) values[i]).getBooleanValue());
+		}
+		
+		@Override
+		public Class<?> getArrayClass(int dimensions) {
+			if(dimensions == 1) return boolean.class;
+			if(dimensions == 2) return boolean[].class;
+			if(dimensions == 3) return boolean[][].class;
+			return Object.class;
+		}
+		
 		@Override
 		public Object getValue(IJavaValue val) {
 			return new Boolean(((IJavaPrimitiveValue) val).getBooleanValue());
@@ -142,6 +250,7 @@ public enum PrimitiveType {
 		}
 	};
  	
+//	private final Class<?> clazz;
 	private final String type;
 	
 	private PrimitiveType() {
@@ -149,6 +258,10 @@ public enum PrimitiveType {
 	}
 	
 	public abstract void fillPrimitiveWrapperValues(IJavaValue[] elements, Object[] array);
+	
+	public abstract void fillPrimitiveValues(Object array, IJavaValue[] values);
+	
+	public abstract Class<?> getArrayClass(int dimensions);
 	
 	public abstract Object getValue(IJavaValue val);
 	
@@ -217,6 +330,9 @@ public enum PrimitiveType {
 		return v;
 
 	}
+
+
+	
 	
 //	static Object[] getPrimitiveWrapperValues(IJavaValue[] elements, String type) {
 //	Object[] array = new Object[elements.length];

@@ -10,12 +10,10 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.debug.core.IJavaArray;
-import org.eclipse.jdt.debug.core.IJavaArrayType;
-import org.eclipse.jdt.debug.core.IJavaType;
+import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
@@ -35,7 +33,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		elements = array.getValues();
 		dimensions = getDimensions(array);
 		componentType = getComponentType(array);
-		prev = getValues();
+		//		prev = getValues();
 		initArray(array, len);
 	}
 
@@ -84,125 +82,168 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		return i >= 0 && i < elementsModel.size() - 1 || getLength() > 0 && i == getLength()-1;
 	}
 
-
-
 	@Override
 	public void setStep(int stepPointer) {
 		for(T val : elementsModel)
 			val.setStep(stepPointer);
 	}
 
-	public Object[] getValues() {
-		return getValues(getContent());
+	//	public Object[] getValues() {
+	//		return getValues(getContent());
+	//	}
+
+//	private static Object[] getValues(IJavaArray javaArray) {
+//		try {
+//			String compType = getComponentType(javaArray);
+//			IJavaValue[] values = javaArray.getValues();
+//			Object[] array = new Object[javaArray.getLength()];
+//
+//			if(getDimensions(javaArray) == 1) {
+//				PrimitiveType primitive = PrimitiveType.match(compType);
+//				if(primitive == null) {
+//					for(int j = 0; j < values.length; j++)
+//						array[j] = values[j].isNull() ? null : values[j].getValueString();
+//				}
+//				else {
+//					primitive.fillPrimitiveWrapperValues(values, array);
+//				}
+//			}	
+//			else {
+//				for(int i = 0; i < array.length; i++) {
+//					IJavaValue val = values[i];
+//					if(!val.isNull())
+//						array[i] = getValues((IJavaArray) val);
+//				}
+//			}
+//			return array;
+//		}
+//		catch (DebugException e) {
+//			e.printStackTrace();
+//			return null;
+//			// TODO terminate
+//		}
+//	}
+
+	public Object getValues() {
+		return getValues2(getContent());
 	}
 
-	// TODO remove try catch
-	private static Object[] getValues(IJavaArray javaArray) {
+	private static Object getValues2(IJavaArray javaArray) {
 		try {
 			String compType = getComponentType(javaArray);
-//			boolean isPrimitive = getDimensions(javaArray) == 1 && PrimitiveType.isPrimitive(compType);
-//			IJavaType compType = ((IJavaArrayType) javaArray.getJavaType()).getComponentType();
+			int dimensions = getDimensions(javaArray);
+			PrimitiveType primitive = PrimitiveType.match(compType);
+
 			IJavaValue[] values = javaArray.getValues();
-			Object[] array = new Object[javaArray.getLength()];
-			
+			Object array = null;
+			if(primitive != null) {
+				Class<?> type = primitive.getArrayClass(dimensions); //getDimensions(javaArray) == 2 ? int[].class : int.class;
+				array = Array.newInstance(type, values.length);
+			}
+			else
+				array = Array.newInstance(Object.class, values.length);
+
+
 			if(getDimensions(javaArray) == 1) {
-				PrimitiveType primitive = PrimitiveType.match(compType);
 				if(primitive == null) {
 					for(int j = 0; j < values.length; j++)
-						array[j] = values[j].isNull() ? null : values[j].getValueString();
+						if(!values[j].isNull())
+							Array.set(array, j, values[j].getValueString());
 				}
 				else {
-					primitive.fillPrimitiveWrapperValues(javaArray.getValues(), array);
+					primitive.fillPrimitiveValues(array, values);
 				}
 			}	
 			else {
-				for(int i = 0; i < array.length; i++) {
+				for(int i = 0; i < values.length; i++) {
 					IJavaValue val = values[i];
 					if(!val.isNull())
-						array[i] = getValues((IJavaArray) val); // TODO erro cast
+						Array.set(array, i, getValues2((IJavaArray) val));
 				}
 			}
 			return array;
 		}
 		catch (DebugException e) {
 			e.printStackTrace();
-			return null;
+			return null; // TODO termination
 		}
 	}
 
-	public Object getMatrixValues() {
-		Class<?> type = Object.class;
-		PrimitiveType pType = PrimitiveType.match(componentType);
-		try {
-			type = Class.forName(componentType);
-		} catch (ClassNotFoundException e) {
-		}
+	//	public Object getMatrixValues() {
+	//		Class<?> type = Object.class;
+	//		PrimitiveType pType = PrimitiveType.match(componentType);
+	//		try {
+	//			type = Class.forName(componentType);
+	//		} catch (ClassNotFoundException e) {
+	//		}
+	//
+	//		try {
+	//			int[] dims = matrixDims();
+	//			Object array = Array.newInstance(type, dims);
+	//			IJavaArray javaArray = getContent();
+	//			IJavaValue[] values = javaArray.getValues();
+	//			for(int i = 0; i < dims[0]; i++) {
+	//				Object line = Array.get(array, i);
+	//
+	//				if(dims.length == 2) {
+	//					IJavaArray aLine = (IJavaArray) values[i];
+	//					for(int j = 0; j < dims[1]; j++) {
+	//						if(pType == null) {
+	//							
+	//						}
+	//						else {
+	//							Array.set(line, j, pType.getValue(aLine.getValue(j)));
+	//						}
+	//					}
+	//				}
+	//			}
+	//			return array;
+	//		}
+	//		catch(DebugException e) {
+	//			e.printStackTrace();
+	//		}
+	//		return null;
+	//	}
+	//
+	//	private int[] matrixDims() throws DebugException {
+	//		int[] dims = new int[getDimensions()];
+	//		IJavaArray javaArray = getContent();
+	//		IJavaValue[] values = javaArray.getValues();
+	//		dims[0] = values.length;
+	//		dims[1] = ((IJavaArray) values[0]).getLength();
+	//		
+	//		//		Object[] values = getValues();
+	//		//		for(Object o : values)
+	//		//			if(o == null)
+	//		//				return false;
+	//		//
+	//		//		for(int i = 0; i < values.length-1; i++) {
+	//		//			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
+	//		//				return false;
+	//		//		}
+	//
+	//		return dims;
+	//	}
 
-		try {
-			int[] dims = matrixDims();
-			Object array = Array.newInstance(type, dims);
-			IJavaArray javaArray = getContent();
-			IJavaValue[] values = javaArray.getValues();
-			for(int i = 0; i < dims[0]; i++) {
-				Object line = Array.get(array, i);
 
-				if(dims.length == 2) {
-					IJavaArray aLine = (IJavaArray) values[i];
-					for(int j = 0; j < dims[1]; j++) {
-						if(pType == null) {
-							// TODO
-						}
-						else {
-							Array.set(line, j, pType.getValue(aLine.getValue(j)));
-						}
-					}
-				}
-			}
-			return array;
-		}
-		catch(DebugException e) {
-			e.printStackTrace();
-		}
-		return null;
-	}
+	//	private Object[] prev;
 
-	private int[] matrixDims() throws DebugException {
-		int[] dims = new int[getDimensions()];
-		IJavaArray javaArray = getContent();
-		IJavaValue[] values = javaArray.getValues();
-		dims[0] = values.length;
-		dims[1] = ((IJavaArray) values[0]).getLength();
-		
-		//		Object[] values = getValues();
-		//		for(Object o : values)
-		//			if(o == null)
-		//				return false;
-		//
-		//		for(int i = 0; i < values.length-1; i++) {
-		//			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
-		//				return false;
-		//		}
-
-		return dims;
-	}
+	//	private static boolean diff(Object[] a, Object[] b, int dim) {
+	//		if(a.length == b.length) {
+	//			for(int i = 0; i < a.length; i++) {
+	//				if(a[i] != null && b[i] != null && a[i].equals(b[i])) {
+	//					if(dim > 1 && diff((Object[]) a, (Object[]) b, dim - 1))
+	//						return true;
+	//				}
+	//				else if(a[i] != b[i])
+	//					return true;
+	//			}
+	//			return false;
+	//		}
+	//		return true;
+	//	}
 
 
-	private Object[] prev;
-
-	private static boolean diff(Object[] a, Object[] b, int dim) {
-		if(a.length == b.length) {
-			for(int i = 0; i < a.length; i++) {
-				if(a[i] != null && b[i] != null && a[i].equals(b[i])) {
-					if(dim > 1 && diff((Object[]) a, (Object[]) b, dim - 1))
-						return true;
-				}
-				else if(a[i] != b[i])
-					return true;
-			}
-			return false;
-		}
-		return true;
-	}
 
 	//	private static boolean diff2(IJavaValue[] a, IJavaValue[] b, int dim) {
 	//		try {
@@ -225,27 +266,46 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	//	}
 
 	public final boolean update(int step) {
-		for(T e : elementsModel)
-			if(e.update(step))
-				setChanged();
 
-		//		int len = Math.min(getLength(), Constants.ARRAY_LENGTH_LIMIT);
-		//		for(int i = 0; i < len; i++)	
-		//			if(updateInternal(i, step))
+		// updates values if primitive, updates only references otherwise
+		for(T e : elementsModel)
+			e.update(step);
+
+
+
+
+		//			if(e.update(step))
 		//				setChanged();
 
-		if(!hasChanged() && getDimensions() > 1) {
-			Object[] newValues = getValues(getContent());
-			if(diff(prev, newValues, getDimensions()))
-				setChanged();
-			prev = newValues;
-		}
-		else
-			prev = getValues(getContent());
+		// TODO repor
+		//		if(!hasChanged() && getDimensions() > 1) {
+		//			
+		//			
+		//			Object newValues = getValues2();
+		//			if(!Arrays.deepEquals(prev, (Object[]) newValues))
+		//				setChanged();
+		//				
+		////			Object[] newValues = getValues(getContent());
+		//			if(diff(prev, newValues, getDimensions()))
+		//			prev = newValues;
+		//		}
+		//		else
+		//			prev = getValues(getContent());
 
-		boolean hasChanged = hasChanged();
-		notifyObservers(prev);
-		return hasChanged;
+		//		if(!hasChanged() && getDimensions() > 1) {
+		//			Object[] newValues = getValues(getContent());
+		//			if(diff(prev, newValues, getDimensions()))
+		//				setChanged();
+		//			prev = newValues;
+		//		}
+		//		else
+		//			prev = getValues(getContent());
+
+		//		boolean hasChanged = hasChanged();
+		//		notifyObservers(prev); // TODO repor
+		setChanged();
+		notifyObservers();
+		return true;
 	}
 
 	//	abstract boolean updateInternal(int i, int step);
@@ -288,31 +348,34 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		if(dimensions < 2)
 			return false;
 
-		Object[] values = getValues();
-		for(Object o : values)
-			if(o == null)
-				return false;
-
-		for(int i = 0; i < values.length-1; i++) {
-			if(((Object[]) values[i]).length != ((Object[]) values[i+1]).length)
-				return false;
+		try {
+			for(int i = 0; i < elements.length-1; i++) {
+				if(elements[i].isNull() || elements[i+1].isNull())
+					return false;
+				else
+					if(((IJavaArray) elements[i]).getLength() != ((IJavaArray) elements[i+1]).getLength())
+						return false;
+			}
+		} catch (DebugException e) {
+			e.printStackTrace(); // TODO termination
 		}
 
 		return true;
 	}
 
-	
 
-	public Dimension getMatrixDimension() throws DebugException {
+
+	public Dimension getMatrixDimension() {
 		if(!isMatrix())
 			throw new IllegalStateException("not a matrix");
 
-		//		try {
-		return new Dimension(getLength(), getLength() == 0 ? 0 : ((IJavaArray) elements[0]).getLength());
-		//		} catch (DebugException e) {
-		//			e.printStackTrace();
-		//			return null;
-		//		}
+		try {
+			return new Dimension(getLength() == 0 ? 0 : ((IJavaArray) elements[0]).getLength(), getLength());
+		} catch (DebugException e) {
+			e.printStackTrace();
+			// TODO termination
+		}
+		return new Dimension(0, 0);
 	}
 
 	public List<T> getModelElements() {
