@@ -248,14 +248,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		return refs;
 	}
 	
-	// TODO reference path
-//	public String getReferencePath(IEntityModel object) {
-//	
-//	}
-//
-//	private static void getReferencePath(IEntityModel object) {
-//		
-//	}
 	
 	private static void findReferences(Map<String, IVariableModel<?>> map, IEntityModel object, List<IReferenceModel> refs) {
 		for (IVariableModel<?> e : map.values()) {

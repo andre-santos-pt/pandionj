@@ -15,10 +15,7 @@ public interface Constants {
 	
 	String IMAGE_FOLDER = "images";
 	
-//	int ARRAY_LENGTH_LIMIT = 10;
 	int STACK_LIMIT = 10; // TODO stack limit
-	
-	
 	
 	int MESSAGE_FONT_SIZE = 14;
 

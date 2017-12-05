@@ -10,6 +10,7 @@ import org.eclipse.draw2d.Label;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 
 public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
@@ -29,8 +30,7 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		label.setForegroundColor(ColorConstants.black);
 		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
 		
-		// TODO classname
-		String tooltip = model.isStatic() ? "static field" : "local variable";
+		String tooltip = Utils.getTooltip(model); 
 
 		Collection<String> tags = model.getTags();
 		if(!tags.isEmpty())

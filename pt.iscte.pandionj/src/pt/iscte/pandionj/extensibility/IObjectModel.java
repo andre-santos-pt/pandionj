@@ -2,15 +2,17 @@ package pt.iscte.pandionj.extensibility;
 
 import java.util.List;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 
 import com.google.common.collect.Multimap;
 
 public interface IObjectModel extends IEntityModel {
-	IArrayModel<?> getArray(String fieldName);
+	
 	String getStringValue();
 	
+	IArrayModel<?> getArray(String fieldName);
 	int getInt(String fieldName);
 	
 	

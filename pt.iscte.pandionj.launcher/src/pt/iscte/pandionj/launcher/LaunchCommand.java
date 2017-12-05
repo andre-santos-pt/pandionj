@@ -124,7 +124,7 @@ public class LaunchCommand extends AbstractHandler {
 				return null;
 			}
 
-
+			// FIXME not working if package-private class does not have same name has the file
 			final int lineFinal = line;
 			IJavaElement e = javaProj.findElement(p.removeFirstSegments(1));
 			if(e == null)

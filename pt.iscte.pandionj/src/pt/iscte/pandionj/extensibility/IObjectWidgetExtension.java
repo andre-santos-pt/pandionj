@@ -53,11 +53,13 @@ public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
 					return label;
 				}
 			}
-			label.setToolTip(new Label("returned by toString()"));
 			invokeToString(e, label);
+			label.setToolTip(new Label("returned by toString()"));
 			e.getRuntimeModel().registerDisplayObserver((event) -> {
-				if(event.type == IRuntimeModel.Event.Type.STEP ||event.type == IRuntimeModel.Event.Type.EVALUATION)
-					invokeToString(e, label);
+				if(event.type == IRuntimeModel.Event.Type.STEP ||event.type == IRuntimeModel.Event.Type.EVALUATION) {
+//					invokeToString(e, label);
+					label.setText(e.getStringValue());
+				}
 			});
 			return label;
 		}
@@ -66,7 +68,7 @@ public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
 			e.invoke("toString", new InvocationResult() { 
 				public void valueReturn(Object o) {
 					PandionJUI.executeUpdate(() -> {
-						label.setText(o.toString());
+						label.setText("?? " + o.toString());
 					});
 				}
 			});

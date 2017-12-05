@@ -5,6 +5,7 @@ import static pt.iscte.pandionj.Constants.ARROW_EDGE;
 
 import java.util.List;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
@@ -19,10 +20,13 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
+import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.swt.SWT;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
@@ -59,14 +63,13 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		
 		comp.setLayoutManager(compLayout);
 		
-		// TODO class name
-		String tooltip = model.isStatic() ? "static field" : "local variable";
+		String tooltip = Utils.getTooltip(model); 
 		
 		Label nameLabel = new Label(model.getName());
 		nameLabel.setForegroundColor(ColorConstants.black);
 		FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
 		if(role != Role.NONE)
-			tooltip += "\n(" + role.toString() + ")";
+			tooltip += "\nrole: " + role.toString();
 		
 		nameLabel.setToolTip(new Label(tooltip));
 		

@@ -40,7 +40,6 @@ implements IArrayModel {
 	}
 	@Override
 	public Dimension getMatrixDimension() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 	@Override
@@ -91,25 +90,21 @@ implements IArrayModel {
 
 	@Override
 	public Iterator getValidModelIndexes() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public List getModelElements() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public boolean isValidModelIndex(int i) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public IRuntimeModel getRuntimeModel() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 

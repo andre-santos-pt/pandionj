@@ -88,47 +88,11 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			val.setStep(stepPointer);
 	}
 
-	//	public Object[] getValues() {
-	//		return getValues(getContent());
-	//	}
-
-//	private static Object[] getValues(IJavaArray javaArray) {
-//		try {
-//			String compType = getComponentType(javaArray);
-//			IJavaValue[] values = javaArray.getValues();
-//			Object[] array = new Object[javaArray.getLength()];
-//
-//			if(getDimensions(javaArray) == 1) {
-//				PrimitiveType primitive = PrimitiveType.match(compType);
-//				if(primitive == null) {
-//					for(int j = 0; j < values.length; j++)
-//						array[j] = values[j].isNull() ? null : values[j].getValueString();
-//				}
-//				else {
-//					primitive.fillPrimitiveWrapperValues(values, array);
-//				}
-//			}	
-//			else {
-//				for(int i = 0; i < array.length; i++) {
-//					IJavaValue val = values[i];
-//					if(!val.isNull())
-//						array[i] = getValues((IJavaArray) val);
-//				}
-//			}
-//			return array;
-//		}
-//		catch (DebugException e) {
-//			e.printStackTrace();
-//			return null;
-//			// TODO terminate
-//		}
-//	}
-
 	public Object getValues() {
-		return getValues2(getContent());
+		return getValues(getContent());
 	}
 
-	private static Object getValues2(IJavaArray javaArray) {
+	private Object getValues(IJavaArray javaArray) {
 		try {
 			String compType = getComponentType(javaArray);
 			int dimensions = getDimensions(javaArray);
@@ -142,7 +106,6 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			}
 			else
 				array = Array.newInstance(Object.class, values.length);
-
 
 			if(getDimensions(javaArray) == 1) {
 				if(primitive == null) {
@@ -158,14 +121,15 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 				for(int i = 0; i < values.length; i++) {
 					IJavaValue val = values[i];
 					if(!val.isNull())
-						Array.set(array, i, getValues2((IJavaArray) val));
+						Array.set(array, i, getValues((IJavaArray) val));
 				}
 			}
 			return array;
 		}
 		catch (DebugException e) {
 			e.printStackTrace();
-			return null; // TODO termination
+			getRuntimeModel().setTerminated();
+			return new Object[0];
 		}
 	}
 
@@ -272,12 +236,9 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			e.update(step);
 
 
-
-
 		//			if(e.update(step))
 		//				setChanged();
 
-		// TODO repor
 		//		if(!hasChanged() && getDimensions() > 1) {
 		//			
 		//			
@@ -302,7 +263,8 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		//			prev = getValues(getContent());
 
 		//		boolean hasChanged = hasChanged();
-		//		notifyObservers(prev); // TODO repor
+		//		notifyObservers(prev);
+		
 		setChanged();
 		notifyObservers();
 		return true;
@@ -373,7 +335,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			return new Dimension(getLength() == 0 ? 0 : ((IJavaArray) elements[0]).getLength(), getLength());
 		} catch (DebugException e) {
 			e.printStackTrace();
-			// TODO termination
+			getRuntimeModel().setTerminated();
 		}
 		return new Dimension(0, 0);
 	}

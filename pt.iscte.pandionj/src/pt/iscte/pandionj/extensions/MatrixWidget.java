@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.extensions;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 
 import org.eclipse.draw2d.ColorConstants;
@@ -29,50 +30,50 @@ public class MatrixWidget implements IArrayWidgetExtension{
 		return new MatrixFigure(model);
 	}
 
-	public static class MatrixFigure extends Figure implements ModelObserver {
+	public static class MatrixFigure extends Figure {
 		boolean valid;
-		IArrayModel model;
+		IArrayModel<?> model;
 		
-		public MatrixFigure(IArrayModel model) {
+		public MatrixFigure(IArrayModel<?> model) {
 			this.model = model;
 			org.eclipse.draw2d.GridLayout layout;
-
-			Object[] m = (Object[]) model.getValues();
-			if(m.length == 0) {
+			Object array = model.getValues();
+			int nLines = Array.getLength(array);
+			if(nLines == 0) {
 				layout = new org.eclipse.draw2d.GridLayout(1,true);
 			}
 			else {
-				Object[] firstLine = (Object[]) m[0];
-				layout = new org.eclipse.draw2d.GridLayout(firstLine.length, true);
+				Object firstLine = Array.get(array, 0);
+				layout = new org.eclipse.draw2d.GridLayout(Array.getLength(firstLine), true);
 			}
 			layout.horizontalSpacing = 20;
 			layout.marginWidth = 10;
 			setLayoutManager(layout);
 
-			model.registerDisplayObserver(this);
-
-			update(m);
+			model.registerDisplayObserver((a) -> update());
+			update();
 		}
 
-		public void update(Object arg) {
+		private void update() {
 			removeAll();
-			Object[] array = (Object[]) arg;
 //			valid = internalAccept(array);
 			valid = model.isMatrix();
 			if(valid) {
-				for(Object o : array) {
-					Object[] line = (Object[]) o;
-					for(Object e : line) {
-						String text = e == null ? "null" : (e instanceof Object[] ? Arrays.deepToString((Object[]) e) : e.toString());
-						Label label = new Label(text);
+				Object[] array = (Object[]) model.getValues();
+				for(Object line : array) {
+					int len = Array.getLength(line);
+					for(int i = 0; i < len; i++) {
+						Object e = Array.get(line, i);
+//						String text = e == null ? "null" : (e instanceof Object[] ? Arrays.deepToString((Object[]) e) : e.toString());
+						Label label = new Label(e.toString()); // TODO array deepToString
 						label.setForegroundColor(ColorConstants.black);
 						add(label);
 					}
 				}
 			}
-			String text = Arrays.deepToString(array);
-			text = text.replaceAll("\\],", "],\n");
-			setToolTip(new Label(text));
+//			String text = Arrays.deepToString(array);
+//			text = text.replaceAll("\\],", "],\n");
+//			setToolTip(new Label(text));
 			getLayoutManager().layout(this);
 			repaint();
 		}

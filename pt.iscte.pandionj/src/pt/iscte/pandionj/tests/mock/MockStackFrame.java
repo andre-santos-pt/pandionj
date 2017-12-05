@@ -53,13 +53,11 @@ public class MockStackFrame implements IStackFrameModel {
 
 	@Override
 	public boolean isObsolete() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
 	@Override
 	public boolean isExecutionFrame() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 
@@ -70,7 +68,6 @@ public class MockStackFrame implements IStackFrameModel {
 	
 	@Override
 	public boolean exceptionOccurred() {
-		// TODO Auto-generated method stub
 		return false;
 	}
 	@Override
@@ -80,7 +77,6 @@ public class MockStackFrame implements IStackFrameModel {
 
 	@Override
 	public String getExceptionType() {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -91,7 +87,6 @@ public class MockStackFrame implements IStackFrameModel {
 
 	@Override
 	public boolean isInstanceFrameOf(IObjectModel model) {
-		// TODO Auto-generated method stub
 		return false;
 	}
 

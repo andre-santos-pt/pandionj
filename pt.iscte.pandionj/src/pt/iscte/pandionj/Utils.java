@@ -2,9 +2,14 @@ package pt.iscte.pandionj;
 
 import java.util.List;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
 import org.eclipse.draw2d.geometry.PointList;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
+import org.eclipse.jdt.debug.core.IJavaVariable;
+
+import pt.iscte.pandionj.extensibility.IVariableModel;
 
 public interface Utils {
 
@@ -51,4 +56,20 @@ public interface Utils {
 	//	decoration.setOpaque(true);
 	//	pointer.setTargetDecoration(decoration);	
 	//}
+	
+	static String getTooltip(IVariableModel<?> model) {
+		IJavaVariable javaVariable = model.getJavaVariable();
+		String owner = null;
+		if(javaVariable instanceof IJavaFieldVariable)
+			try {
+				owner = ((IJavaFieldVariable) javaVariable).getDeclaringType().getName();
+			} catch (DebugException e) { }
+		String tooltip = model.isStatic() ? "static field" : (owner == null ? "local variable" : "field");
+		
+		if(model.isStatic() && owner != null)
+			tooltip += " of " + owner;
+		
+		tooltip += " (" + model.getTypeName() + ")";
+		return tooltip;
+	}
 }

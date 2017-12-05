@@ -42,7 +42,6 @@ import com.sun.jdi.InvocationException;
 
 import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.ParserManager;
-import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
@@ -52,7 +51,7 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
 
-// TODO debug Exception
+@SuppressWarnings("restriction")
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
 	private Map<String, ReferenceModel> references;
 	private List<String> refsOfSameType; // TODO from source
@@ -199,25 +198,25 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return Collections.unmodifiableMap(references);
 	}
 
-	@Override
-	public String toString() {
-		try {
-			return getContent().getValueString();
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return null;
-		}
-	}
+//	@Override
+//	public String toString() {
+//		try {
+//			return getContent().getValueString();
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return null;
+//		}
+//	}
 
-	@Override
-	public int hashCode() {
-		try {
-			return (int) getContent().getUniqueId();
-		} catch (DebugException e) {
-			e.printStackTrace();
-			return super.hashCode();
-		}
-	}
+//	@Override
+//	public int hashCode() {
+//		try {
+//			return (int) getContent().getUniqueId();
+//		} catch (DebugException e) {
+//			e.printStackTrace();
+//			return super.hashCode();
+//		}
+//	}
 
 	@Override
 	public boolean equals(Object obj) {
@@ -600,7 +599,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	};
 
-	// TODO: attribute tags
 	public Multimap<String, String> getTags() {
 		Multimap<String,String> tags = ArrayListMultimap.create();
 
@@ -614,11 +612,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	@Override
 	public String getStringValue() {
-		try {
+		try { // TODO toString
 			return getContent().getValueString();
 		} catch (DebugException e) {
-			e.printStackTrace();
-			return "";
+			getRuntimeModel().setTerminated();
+			return null;
 		}
 	}
 
