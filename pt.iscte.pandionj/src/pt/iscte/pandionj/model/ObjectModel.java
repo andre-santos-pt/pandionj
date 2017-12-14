@@ -49,7 +49,7 @@ import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJUI;
-
+import pt.iscte.pandionj.model.RuntimeModel.ReferencePath;
 
 @SuppressWarnings("restriction")
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
@@ -83,7 +83,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 
 		extension = ExtensionManager.getObjectExtension(this);
-
 	}
 
 	private void addFields(IJavaObject object) throws DebugException {
@@ -93,7 +92,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		for(IVariable v : object.getVariables()) {
 			IJavaVariable var = (IJavaVariable) v;
 
-			if(!var.isStatic()) {
+			if(!var.isStatic() && !var.isSynthetic()) {
 				String name = var.getName();
 				IJavaValue value = (IJavaValue) var.getValue();
 				IField f = jType.getField(name);
@@ -218,10 +217,10 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 //		}
 //	}
 
-	@Override
-	public boolean equals(Object obj) {
-		return obj instanceof ObjectModel && ((ObjectModel) obj).hashCode() == hashCode();
-	}
+//	@Override
+//	public boolean equals(Object obj) {
+//		return obj instanceof ObjectModel && ((ObjectModel) obj).hashCode() == hashCode();
+//	}
 
 
 	@Override
@@ -489,30 +488,6 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return list;
 	}
 
-	//	private List<IVariableModel<?>> createVisibleFields() {
-	//		List<IVariableModel<?>> vars = new ArrayList<>();
-	//		try {
-	//			for (IField f : jType.getFields()) {
-	//				if(isFieldVisible(f)) {
-	//					IJavaFieldVariable field = getContent().getField(f.getElementName(), false);
-	//					VariableModel<?, ?> var = null;
-	//					if(field.getJavaType() instanceof IJavaReferenceType) {
-	//						var = new ReferenceModel(field, true, null, getRuntimeModel());
-	//					}
-	//					else {
-	//						var = new ValueModel(field, true, null, getRuntimeModel());
-	//					}
-	//					vars.add(var);
-	//				}
-	//			}
-	//		} catch (JavaModelException e) {
-	//			e.printStackTrace();
-	//		} catch (DebugException e) {
-	//			e.printStackTrace();
-	//		}
-	//		return vars;
-	//	}
-
 	public List<IVariableModel<?>> getFields() {
 		return Collections.unmodifiableList(fields);
 	}
@@ -531,26 +506,18 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
 
-		List<String> refPaths = getRuntimeModel().findReferencePaths(this);
-		if(refPaths.isEmpty())
-			return;
+//		List<String> refPaths = getRuntimeModel().findReferencePaths(this);
+//		if(refPaths.isEmpty())
+//			return;
 
-		String exp = refPaths.get(0) + "." + methodName + "(" + String.join(", ", args) + ")";
-//System.out.println("INV: " + exp);
-		//		if(!stackFrame.isInstanceFrameOf(this)) {
-//			Collection<IReferenceModel> referencesTo = stackFrame.getReferencesTo(this);
-//			if(!referencesTo.isEmpty()) {
-//				exp = referencesTo.iterator().next().getName() + "." + exp;
-//			}
-//		}
-//		else {
-//			List<String> refPaths = getRuntimeModel().findReferencePaths(this);
-//			if(!refPaths.isEmpty())
-//		}
-//		IJavaThread thread = (IJavaThread) stackFrame.getStackFrame().getThread();
+		ReferencePath refPath = getRuntimeModel().findReferencePaths(this);
+		if(refPath == null)
+			return;
+//		String exp = refPaths.get(0) + "." + methodName + "(" + String.join(", ", args) + ")";
+		String exp = refPath.referencePath + "." + methodName + "(" + String.join(", ", args) + ")";
+		
 		IStackFrame context = getRuntimeModel().getFirstVisibleFrame().getStackFrame();
-		delegate.evaluateExpression(exp, context, new ExpressionListener(exp, listener));
-//		delegate.evaluateExpression(exp , stackFrame.getStackFrame(), new ExpressionListener(exp, listener, thread));
+		delegate.evaluateExpression(exp, refPath.context, new ExpressionListener(exp, listener));
 	}
 
 	private class ExpressionListener implements IWatchExpressionListener {
@@ -567,12 +534,17 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			DebugException exception = result.getException();
 			if(ret != null) {
 				if(ret instanceof IJavaObject) {
-					IEntityModel object = getRuntimeModel().getObject((IJavaObject) ret, true, null);
-					listener.valueReturn(object);
+					IJavaObject obj = (IJavaObject) ret;
+					if(obj.isNull()) {
+						listener.valueReturn(null);
+					}
+					else {
+						IEntityModel object = getRuntimeModel().getObject((IJavaObject) ret, true, null);
+						listener.valueReturn(object);
+					}
 				}
 				else
-					listener.valueReturn(ret.toString());
-				//				processInvocationResult((IJavaValue) result.getValue()); 
+					listener.valueReturn(ret);
 			}
 			else if(exception != null) {
 				String trimExpression = trimExpression(expression);
@@ -612,7 +584,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	@Override
 	public String getStringValue() {
-		try { // TODO toString
+		try {
 			return getContent().getValueString();
 		} catch (DebugException e) {
 			getRuntimeModel().setTerminated();

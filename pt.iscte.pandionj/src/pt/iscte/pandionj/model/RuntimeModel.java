@@ -380,27 +380,70 @@ implements IRuntimeModel {
 		return list;
 	}
 
-	public List<String> findReferencePaths(IEntityModel target) {
+//	public List<String> findReferencePaths(IEntityModel target) {
+//		StackFrameModel firstVisibleFrame = getFirstVisibleFrame();
+//		if(firstVisibleFrame == null)
+//			return Collections.emptyList();
+//		
+//		StackFrameModel topFrame = getTopFrame();
+//		List<IReferenceModel> referencesTo = topFrame.getReferencesTo(target);
+//		if(!referencesTo.isEmpty()) {
+//			List<String> paths = new ArrayList<String>();
+//			paths.add(referencesTo.get(0).getName());
+//			return paths;
+//		}
+//			
+//		Collection<IReferenceModel> refs = firstVisibleFrame.getReferenceVariables();
+//		Collection<IEntityModel> visited = new ArrayList<IEntityModel>();
+//		Stack<String> stack = new Stack<String>();
+//		List<String> paths = new ArrayList<String>();
+//		
+//		for(IReferenceModel r : refs)
+//			findReferencePathsRec(target, r, visited, stack, paths);
+//		
+//		return paths;
+//	}
+
+	static class ReferencePath {
+		final String referencePath;
+		final IJavaStackFrame context;
+		
+		ReferencePath(String referencePath, IJavaStackFrame context) {
+			this.referencePath = referencePath;
+			this.context = context;
+		}
+		
+	}
+	
+	public ReferencePath findReferencePaths(IEntityModel target) {
 		StackFrameModel firstVisibleFrame = getFirstVisibleFrame();
 		if(firstVisibleFrame == null)
-			return Collections.emptyList();
+			return null;
 		
+		StackFrameModel topFrame = getTopFrame();
+		List<IReferenceModel> referencesTo = topFrame.getReferencesTo(target);
+		if(!referencesTo.isEmpty()) {
+			return new ReferencePath(referencesTo.get(0).getName(), topFrame.getStackFrame());
+		}
+			
 		Collection<IReferenceModel> refs = firstVisibleFrame.getReferenceVariables();
 		Collection<IEntityModel> visited = new ArrayList<IEntityModel>();
 		Stack<String> stack = new Stack<String>();
 		List<String> paths = new ArrayList<String>();
 		
-		for(IReferenceModel r : refs)
-			findReferencePathsRec(target, r, visited, stack, paths);
+		for(IReferenceModel r : refs) {
+			String path = findReferencePathsRec(target, r, visited, stack, paths);
+			if(path != null)
+				return new ReferencePath(path, firstVisibleFrame.getStackFrame());
+		}
 		
-		return paths;
+		return null;
 	}
 
-
-	private static void findReferencePathsRec(IEntityModel target, IReferenceModel r, Collection<IEntityModel> visited, Stack<String> stack, List<String> paths) {
+	private static String findReferencePathsRec(IEntityModel target, IReferenceModel r, Collection<IEntityModel> visited, Stack<String> stack, List<String> paths) {
 		IEntityModel e = r.getModelTarget();
 		if(e.isNull() || visited.contains(e))
-			return;
+			return null;
 		
 //		String s = r.getName();
 //		int index = r.getIndex();
@@ -413,21 +456,28 @@ implements IRuntimeModel {
 		if(e == target) {
 			String path = String.join(".", stack);
 			path = path.replaceAll("\\.\\[", "[");
-			paths.add(path);
-			return;
+//			paths.add(path);
+			return path;
 		}
 		
 		if(e instanceof ObjectModel) {
 			ObjectModel o = (ObjectModel) e;
-			for(IReferenceModel or : o.getReferenceFields())
-				findReferencePathsRec(target, or, visited, stack, paths);
+			for(IReferenceModel or : o.getReferenceFields()) {
+				String path = findReferencePathsRec(target, or, visited, stack, paths);
+				if(path != null)
+					return path;
+			}
 		}
 		else if(e instanceof ArrayReferenceModel) {
 			ArrayReferenceModel array = (ArrayReferenceModel) e;
-			for (IReferenceModel ar : array.getModelElements())
-				findReferencePathsRec(target, ar, visited, stack, paths);
+			for (IReferenceModel ar : array.getModelElements()) {
+				String path = findReferencePathsRec(target, ar, visited, stack, paths);
+				if(path != null)
+					return path;
+			}
 		}
 		stack.pop();
+		return null;
 	}
 
 	

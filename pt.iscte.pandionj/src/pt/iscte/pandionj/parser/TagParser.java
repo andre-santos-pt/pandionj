@@ -197,14 +197,11 @@ public class TagParser {
 			this.lastLine = lastLine;
 		}
 
-
 		boolean contains(int line) {
 			return line >= firstLine && line <= lastLine;
 		}
 
-		boolean isInnerScopeOf(Scope scope) {
-			return firstLine >= scope.firstLine && lastLine <= scope.lastLine;
-		}
+		
 
 		@Override
 		public String toString() {
@@ -213,9 +210,40 @@ public class TagParser {
 
 
 		@Override
-		public int compareTo(Scope s) {
-			return isInnerScopeOf(s) ? -1 : 1;
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + firstLine;
+			result = prime * result + lastLine;
+			return result;
 		}
 
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			Scope other = (Scope) obj;
+			if (firstLine != other.firstLine)
+				return false;
+			if (lastLine != other.lastLine)
+				return false;
+			return true;
+		}
+
+		boolean isInnerScopeOf(Scope scope) {
+			return firstLine > scope.firstLine && (lastLine < scope.lastLine || scope.lastLine == -1);
+		}
+
+		@Override
+		public int compareTo(Scope s) {
+			return firstLine - s.firstLine;
+			// TODO repor???
+//			return this.equals(s) ? 0 : (isInnerScopeOf(s) ? -1 : 1);
+		}
 	}
 }

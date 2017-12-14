@@ -2,7 +2,6 @@ package pt.iscte.pandionj.extensibility;
 
 import java.util.List;
 
-import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 

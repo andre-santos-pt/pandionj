@@ -22,6 +22,16 @@ public class StringWidget implements IObjectWidgetExtension {
 		Label label = new Label("\"" + e.getStringValue() + "\"");
 		FontManager.setFont(label, Constants.VALUE_FONT_SIZE);
 		label.setForegroundColor(ColorConstants.black);
+
+//		e.invoke("toString", new InvocationResult() {
+//			@Override
+//			public void valueReturn(Object o) {
+//				System.out.println("inv " + o);
+//				PandionJUI.executeUpdate(() -> {
+//					label.setText("\"" + e.getStringValue() + "\"");
+//				});
+//			}
+//		});
 		return label;
 	}
 

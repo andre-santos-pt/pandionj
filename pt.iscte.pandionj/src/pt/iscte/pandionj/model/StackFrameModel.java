@@ -176,11 +176,11 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			for(IVariable v : frame.getVariables()) {
 				if(v.getName().equals(varName))
 					contains = true;
-				else if(v.getName().equals("this")) {
-					for (IVariable iv : v.getValue().getVariables())
-						if(iv.getName().equals(varName))
-							contains = true;
-				}
+//				else if(v.getName().equals("this")) {
+//					for (IVariable iv : v.getValue().getVariables())
+//						if(iv.getName().equals(varName))
+//							contains = true;
+//				}
 			}
 			if(!contains) {
 				e.getValue().setOutOfScope();
@@ -193,11 +193,15 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 
 	private void handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
+		// TODO future: return on frame
 		if(jv.getClass().getSimpleName().equals("JDIReturnValueVariable")) {
 			runtime.setReturnOnFrame(this, (IJavaValue) jv.getValue());
 			return;
 		}
 		String varName = jv.getName();
+		if(isInstance)
+			varName = "this." + varName;
+		
 		IJavaValue value = (IJavaValue) jv.getValue();
 
 		if(jv.isStatic()) {
@@ -242,7 +246,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 
 
-	public Collection<IReferenceModel> getReferencesTo(IEntityModel object) {
+	public List<IReferenceModel> getReferencesTo(IEntityModel object) {
 		List<IReferenceModel> refs = new ArrayList<>(3);
 		findReferences(stackVars, object, refs);
 		return refs;
@@ -288,10 +292,14 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 	
 	private static  String toSimpleName(String name) {
-		if(name.indexOf('.') == -1)
-			return name;
-		else
-			return name.substring(name.lastIndexOf('.')+1);
+		String simple = name;
+		if(simple.indexOf('.') != -1)
+			simple = simple.substring(simple.lastIndexOf('.')+1);
+		
+		if(simple.indexOf('$') != -1)
+			simple = simple.substring(simple.lastIndexOf('$')+1);
+		
+		return simple;
 	}
 
 	private String valueToString(IJavaValue value) {

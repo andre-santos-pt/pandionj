@@ -23,8 +23,11 @@ import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.MessageBox;
 
 import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FigureProvider;
@@ -159,7 +162,6 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		public FieldsContainer() {
 			setLayoutManager(new GridLayout(1, false)); 
 			addFields(model, figureProvider);
-			//			showPrivateFields(false);
 			visibilityOpen = false;
 		}
 
@@ -335,7 +337,10 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 									resultLabel.setText(" = " + val);
 								}
 								else if(!m.getReturnType().equals("V")) {
-									RuntimeViewer.getInstance().addObject((IEntityModel) o);
+									if(o == null)
+										resultLabel.setText(" = null");
+									else
+										RuntimeViewer.getInstance().addObject((IEntityModel) o);
 								}
 							} catch (JavaModelException e) {
 								e.printStackTrace();
