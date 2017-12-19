@@ -5,7 +5,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
-import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public class CustomChopboxAnchor extends AbstractConnectionAnchor {
 
@@ -27,7 +27,7 @@ public class CustomChopboxAnchor extends AbstractConnectionAnchor {
 		r.resize(1, 1);
 
 		
-		double gap = Constants.POSITION_WIDTH*2;
+		double gap = PandionJConstants.POSITION_WIDTH*2;
 		getOwner().translateToAbsolute(r);
 		
 		Point c = calc.getCenter(r);

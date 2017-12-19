@@ -1,6 +1,6 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
+import static pt.iscte.pandionj.extensibility.PandionJConstants.POSITION_WIDTH;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -16,10 +16,10 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<E>> {
 	private final int N;
@@ -37,7 +37,7 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 		add(positionsFig);
 		model.getRuntimeModel().registerDisplayObserver((e) -> {
 			if(e.type == IRuntimeModel.Event.Type.STEP || e.type == IRuntimeModel.Event.Type.EVALUATION) {
-				positionsFig.setBackgroundColor(Constants.Colors.OBJECT);
+				positionsFig.setBackgroundColor(PandionJConstants.Colors.OBJECT);
 			}
 		});
 	}
@@ -49,14 +49,14 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 	private RoundedRectangle createPositionsFig() {
 		RoundedRectangle fig = new RoundedRectangle();
 		fig.setOpaque(false);
-		fig.setCornerDimensions(Constants.OBJECT_CORNER);
-		fig.setBackgroundColor(Constants.Colors.OBJECT);
+		fig.setCornerDimensions(PandionJConstants.OBJECT_CORNER);
+		fig.setBackgroundColor(PandionJConstants.Colors.OBJECT);
 		
 		GridLayout layout = new GridLayout(horizontal ? (model.getLength() > PandionJView.getMaxArrayLength() ? N + 1 : Math.max(1, N)) : 1, false);
 		layout.verticalSpacing = 0;
-		layout.horizontalSpacing = Constants.ARRAY_POSITION_SPACING;
-		layout.marginWidth = Constants.ARRAY_MARGIN;
-		layout.marginHeight = Constants.ARRAY_MARGIN;
+		layout.horizontalSpacing = PandionJConstants.ARRAY_POSITION_SPACING;
+		layout.marginWidth = PandionJConstants.ARRAY_MARGIN;
+		layout.marginHeight = PandionJConstants.ARRAY_MARGIN;
 		fig.setLayoutManager(layout);
 		
 		fig.setToolTip(new Label("length = " + model.getLength()));
@@ -95,18 +95,18 @@ public abstract class AbstractArrayFigure<E> extends PandionJFigure<IArrayModel<
 			;
 		else if(i < 0)
 			r = positions.get(0).getBounds().getTranslated(
-					horizontal ? -Constants.POSITION_WIDTH - Constants.ARRAY_MARGIN : 0, 
-					horizontal ? 0 : -Constants.POSITION_WIDTH);
+					horizontal ? -PandionJConstants.POSITION_WIDTH - PandionJConstants.ARRAY_MARGIN : 0, 
+					horizontal ? 0 : -PandionJConstants.POSITION_WIDTH);
 		else if(i >= len)
 			r = positions.get(N-1).getBounds().getTranslated(
-					horizontal ? Constants.POSITION_WIDTH + Constants.ARRAY_MARGIN : 0, 
-					horizontal ? 0 : Constants.POSITION_WIDTH);
+					horizontal ? PandionJConstants.POSITION_WIDTH + PandionJConstants.ARRAY_MARGIN : 0, 
+					horizontal ? 0 : PandionJConstants.POSITION_WIDTH);
 		else if(i == len - 1)
 			r = positions.get(N-1).getBounds();
 		else if(len > PandionJView.getMaxArrayLength() && i >= PandionJView.getMaxArrayLength()-1)
 			r = positions.get(N-1).getBounds().getTranslated(
-					horizontal ? -Constants.POSITION_WIDTH - Constants.ARRAY_POSITION_SPACING: 0, 
-					horizontal ? 0 : -Constants.POSITION_WIDTH);
+					horizontal ? -PandionJConstants.POSITION_WIDTH - PandionJConstants.ARRAY_POSITION_SPACING: 0, 
+					horizontal ? 0 : -PandionJConstants.POSITION_WIDTH);
 		else	 
 			r = positions.get(i).getBounds();
 		translateToAbsolute(r);

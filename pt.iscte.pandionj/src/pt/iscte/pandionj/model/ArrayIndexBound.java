@@ -3,7 +3,6 @@ package pt.iscte.pandionj.model;
 import java.util.Map;
 import java.util.WeakHashMap;
 
-import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;

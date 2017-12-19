@@ -1,7 +1,6 @@
 package pt.iscte.pandionj.figures;
 
 import org.eclipse.draw2d.ColorConstants;
-import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
@@ -11,17 +10,16 @@ import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.swt.SWT;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ExceptionType;
 import pt.iscte.pandionj.FigureProvider;
 import pt.iscte.pandionj.RuntimeViewer;
-import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;
 import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.ModelObserver;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.model.ModelObserver;
 
 public class StackFrameFigure extends Figure {
 	final IStackFrameModel frame;
@@ -41,7 +39,7 @@ public class StackFrameFigure extends Figure {
 		this.invisible = invisible;
 		this.instance = instance;
 
-		setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
+		setBackgroundColor(PandionJConstants.Colors.VIEW_BACKGROUND);
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 4;
 		layout.horizontalSpacing = 2;
@@ -103,25 +101,25 @@ public class StackFrameFigure extends Figure {
 	private void updateLook(IStackFrameModel model, boolean termination) {
 		if(!invisible) {
 			if(model.isObsolete() || termination) {
-				setBackgroundColor(Constants.Colors.OBSOLETE);
-				setBorder(new LineBorder(model.exceptionOccurred() ?  Constants.Colors.ERROR : ColorConstants.lightGray, 2, SWT.LINE_DASH));
+				setBackgroundColor(PandionJConstants.Colors.OBSOLETE);
+				setBorder(new LineBorder(model.exceptionOccurred() ?  PandionJConstants.Colors.ERROR : ColorConstants.lightGray, 2, SWT.LINE_DASH));
 			}
 			else if(model.exceptionOccurred()) {
-				setBackgroundColor(Constants.Colors.INST_POINTER);
-				setBorder(new LineBorder(Constants.Colors.ERROR, Constants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
+				setBackgroundColor(PandionJConstants.Colors.INST_POINTER);
+				setBorder(new LineBorder(PandionJConstants.Colors.ERROR, PandionJConstants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
 
 
 				if(model.getExceptionType().equals(NullPointerException.class.getName()))
 					paintNullRefs();
 
-				Label labelExc = new Label(Constants.Messages.prettyException(model.getExceptionType()));
-				labelExc.setForegroundColor(Constants.Colors.ERROR);
+				Label labelExc = new Label(PandionJConstants.Messages.prettyException(model.getExceptionType()));
+				labelExc.setForegroundColor(PandionJConstants.Colors.ERROR);
 				setToolTip(labelExc);
 			}
 			else if(model.isExecutionFrame())
-				setBackgroundColor(Constants.Colors.INST_POINTER);
+				setBackgroundColor(PandionJConstants.Colors.INST_POINTER);
 			else
-				setBackgroundColor(Constants.Colors.VIEW_BACKGROUND);
+				setBackgroundColor(PandionJConstants.Colors.VIEW_BACKGROUND);
 		}
 		layout.layout(this);
 		if(label != null && frame.getSourceFile() != null && frame.getLineNumber() != -1) 

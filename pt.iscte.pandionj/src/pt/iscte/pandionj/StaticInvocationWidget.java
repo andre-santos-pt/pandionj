@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.PrimitiveType;
 
@@ -37,8 +38,8 @@ public class StaticInvocationWidget extends Composite {
 	static {
 		rowLayout = new RowLayout();
 		rowLayout.spacing = 5;
-		rowLayout.marginTop = Constants.MARGIN;
-		rowLayout.marginLeft = Constants.MARGIN;
+		rowLayout.marginTop = PandionJConstants.MARGIN;
+		rowLayout.marginLeft = PandionJConstants.MARGIN;
 
 		comboLayout = new GridLayout(1, false);
 		comboLayout.marginWidth = 3;
@@ -65,7 +66,7 @@ public class StaticInvocationWidget extends Composite {
 		methodName = method.getElementName();
 		parameterTypes = method.getParameterTypes();
 		Label label = new Label(this, SWT.NONE);
-		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
+		FontManager.setFont(label, PandionJConstants.VAR_FONT_SIZE);
 		label.setText(method.getElementName() + " (");
 		paramBoxes = new Combo[method.getNumberOfParameters()];
 		String[] parameterNames = null;
@@ -77,13 +78,13 @@ public class StaticInvocationWidget extends Composite {
 		for(int i = 0; i < parameterTypes.length; i++) {
 			if(i != 0) {
 				Label comma = new Label(this, SWT.NONE);
-				FontManager.setFont(comma, Constants.VAR_FONT_SIZE);
+				FontManager.setFont(comma, PandionJConstants.VAR_FONT_SIZE);
 				comma.setText(", ");
 			}
 			paramBoxes[i] = createCombo(invokeDialog, parameterNames[i], parameterTypes[i]);
 		}
 		Label close = new Label(this, SWT.NONE);
-		FontManager.setFont(close, Constants.VAR_FONT_SIZE);
+		FontManager.setFont(close, PandionJConstants.VAR_FONT_SIZE);
 		close.setText(")");
 
 		addCacheValues(paramBoxes);
@@ -96,13 +97,13 @@ public class StaticInvocationWidget extends Composite {
 		comboComp.setLayout(comboLayout);
 		Combo combo = new Combo(comboComp, SWT.DROP_DOWN);
 		combo.setToolTipText(pType);
-		int comboWidth = pType.equals(String.class.getSimpleName()) ? Constants.COMBO_STRING_WIDTH : Constants.COMBO_WIDTH; 
+		int comboWidth = pType.equals(String.class.getSimpleName()) ? PandionJConstants.COMBO_STRING_WIDTH : PandionJConstants.COMBO_WIDTH; 
 		combo.setLayoutData(new GridData(comboWidth, SWT.DEFAULT));
 
 		Label varName = new Label(comboComp, SWT.NONE);
 		varName.setText(paramName);
-		FontManager.setFont(varName, Constants.MESSAGE_FONT_SIZE);
-		varName.setForeground(Constants.Colors.ROLE_ANNOTATIONS);
+		FontManager.setFont(varName, PandionJConstants.MESSAGE_FONT_SIZE);
+		varName.setForeground(PandionJConstants.Colors.ROLE_ANNOTATIONS);
 		varName.setToolTipText(pType);
 		addRefCombovalues(combo, paramType);
 
@@ -118,7 +119,7 @@ public class StaticInvocationWidget extends Composite {
 			@Override
 			public void keyReleased(KeyEvent e) {
 				boolean valid = valid(combo, pType);
-				varName.setForeground(valid ? Constants.Colors.ROLE_ANNOTATIONS : Constants.Colors.ERROR);
+				varName.setForeground(valid ? PandionJConstants.Colors.ROLE_ANNOTATIONS : PandionJConstants.Colors.ERROR);
 				varName.setToolTipText(valid ? pType : pType + ": inserted value not compatible");
 				checkValidity();
 			}

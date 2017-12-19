@@ -2,7 +2,6 @@ package pt.iscte.pandionj.extensions.images;
 
 
 import java.io.File;
-import java.lang.reflect.Array;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;

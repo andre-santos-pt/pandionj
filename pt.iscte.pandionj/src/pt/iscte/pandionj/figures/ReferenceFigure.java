@@ -8,10 +8,10 @@ import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.Label;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 
@@ -28,7 +28,7 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		setLayoutManager(layout);
 		label = new Label(model.getName());
 		label.setForegroundColor(ColorConstants.black);
-		FontManager.setFont(label, Constants.VAR_FONT_SIZE);
+		FontManager.setFont(label, PandionJConstants.VAR_FONT_SIZE);
 		
 		String tooltip = Utils.getTooltip(model); 
 
@@ -41,7 +41,7 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		add(label);
 		refLabel = new ReferenceLabel(model);
 		add(refLabel);
-		layout.setConstraint(refLabel, new GridData(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH));
+		layout.setConstraint(refLabel, new GridData(PandionJConstants.POSITION_WIDTH, PandionJConstants.POSITION_WIDTH));
 	}
 	
 	public ConnectionAnchor getAnchor() {

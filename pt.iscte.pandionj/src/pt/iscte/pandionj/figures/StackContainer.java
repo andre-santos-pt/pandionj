@@ -1,19 +1,19 @@
 package pt.iscte.pandionj.figures;
 
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.GridData;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.swt.SWT;
-import org.eclipse.draw2d.GridData;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public class StackContainer extends Figure {
 	
 	public StackContainer() {
 		GridLayout gridLayout = new GridLayout(1, true);
-		gridLayout.verticalSpacing = Constants.OBJECT_PADDING*2;
+		gridLayout.verticalSpacing = PandionJConstants.OBJECT_PADDING*2;
 		setLayoutManager(gridLayout);
 		setOpaque(true);
 	}

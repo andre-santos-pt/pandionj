@@ -1,4 +1,4 @@
-package pt.iscte.pandionj;
+package pt.iscte.pandionj.extensibility;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.GridData;
@@ -8,10 +8,14 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
-public interface Constants {
-	String PLUGIN_ID = Constants.class.getPackage().getName();
+import pt.iscte.pandionj.PandionJView;
+
+public interface PandionJConstants {
+	String PLUGIN_ID = PandionJView.class.getPackage().getName();
 	String CONTEXT_ID = PLUGIN_ID + ".context";
 	String VIEW_ID = PLUGIN_ID + ".view";
+	String ARRAYTAG_EXTENSION_ID = PLUGIN_ID + ".tags";
+	String TYPE_EXTENSION_ID = PLUGIN_ID + ".typewidgets";
 	
 	String IMAGE_FOLDER = "images";
 	
@@ -120,6 +124,8 @@ public interface Constants {
 	int COMBO_WIDTH = 75;
 	
 	GridData TOP_ALIGN = new GridData(SWT.DEFAULT, SWT.BEGINNING, false, false);
+
+	
 	
 	
 	static GridLayout getOneColGridLayout() {

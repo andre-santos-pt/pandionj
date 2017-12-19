@@ -5,7 +5,7 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
-import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public class PositionAnchor extends AbstractConnectionAnchor {
 	interface PointProvider {
@@ -34,13 +34,13 @@ public class PositionAnchor extends AbstractConnectionAnchor {
 		LEFT {
 			@Override
 			public Point getPoint(Rectangle r) { //TODO only for array
-				return new Point(r.x+Constants.POSITION_WIDTH, r.y + r.height/2);
+				return new Point(r.x+PandionJConstants.POSITION_WIDTH, r.y + r.height/2);
 			}
 		},
 		TOPLEFT {
 			@Override
 			public Point getPoint(Rectangle r) {
-				return new Point(r.x, r.y + Constants.OBJECT_PADDING);
+				return new Point(r.x, r.y + PandionJConstants.OBJECT_PADDING);
 			}
 		},
 		CENTER {

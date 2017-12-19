@@ -5,12 +5,12 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IType;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IObjectModel;
-import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
-public class StringWidget implements IObjectWidgetExtension {
+public class StringWidget implements ITypeWidgetExtension {
 
 	@Override
 	public boolean accept(IType objectType) {
@@ -20,18 +20,8 @@ public class StringWidget implements IObjectWidgetExtension {
 	@Override
 	public IFigure createFigure(IObjectModel e) {
 		Label label = new Label("\"" + e.getStringValue() + "\"");
-		FontManager.setFont(label, Constants.VALUE_FONT_SIZE);
+		FontManager.setFont(label, PandionJConstants.VALUE_FONT_SIZE);
 		label.setForegroundColor(ColorConstants.black);
-
-//		e.invoke("toString", new InvocationResult() {
-//			@Override
-//			public void valueReturn(Object o) {
-//				System.out.println("inv " + o);
-//				PandionJUI.executeUpdate(() -> {
-//					label.setText("\"" + e.getStringValue() + "\"");
-//				});
-//			}
-//		});
 		return label;
 	}
 

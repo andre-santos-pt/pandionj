@@ -8,10 +8,10 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 class ReferenceLabel extends Figure {
 	private IReferenceModel ref;
@@ -45,7 +45,7 @@ class ReferenceLabel extends Figure {
 	
 	@Override
 	public Dimension getPreferredSize(int wHint, int hHint) {
-		return new Dimension(Constants.POSITION_WIDTH/2, Constants.POSITION_WIDTH/2);
+		return new Dimension(PandionJConstants.POSITION_WIDTH/2, PandionJConstants.POSITION_WIDTH/2);
 	}
 
 	@Override
@@ -56,17 +56,17 @@ class ReferenceLabel extends Figure {
 		Rectangle square = new Rectangle(r.getLocation().getTranslated(0, r.height/4), new Dimension(r.width/2, r.height/2));
 		center = new Point(square.x + square.width/2, square.y + square.height/2);
 
-		g.setBackgroundColor(dirty ? Constants.Colors.HIGHLIGHT : Constants.Colors.VARIABLE_BOX);
+		g.setBackgroundColor(dirty ? PandionJConstants.Colors.HIGHLIGHT : PandionJConstants.Colors.VARIABLE_BOX);
 		g.fillRectangle(square);
 
-		g.setForegroundColor(ref.getRole() == Role.FIXED_VALUE ? Constants.Colors.CONSTANT : ColorConstants.black);
+		g.setForegroundColor(ref.getRole() == Role.FIXED_VALUE ? PandionJConstants.Colors.CONSTANT : ColorConstants.black);
 		g.drawRectangle(square);
 
-		g.setBackgroundColor(error ? Constants.Colors.ERROR : ColorConstants.black);
+		g.setBackgroundColor(error ? PandionJConstants.Colors.ERROR : ColorConstants.black);
 		g.fillOval(center.x-3, center.y-3, 7, 7);
 
 		if(isnull) {
-			g.setForegroundColor(error ? Constants.Colors.ERROR : ColorConstants.black);
+			g.setForegroundColor(error ? PandionJConstants.Colors.ERROR : ColorConstants.black);
 			Point dest = center.getTranslated(20, 0);
 			g.drawLine(center, dest);
 			g.drawLine(dest.getTranslated(-3, 5), dest.getTranslated(3, -5));

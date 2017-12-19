@@ -16,7 +16,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
-import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
@@ -39,15 +38,17 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
 import com.sun.jdi.InvocationException;
+import com.sun.jdi.ReferenceType;
 
 import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
-import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.RuntimeModel.ReferencePath;
 
@@ -63,7 +64,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private String leftField;
 	private String rightField;
 
-	private IObjectWidgetExtension extension;
+	private ITypeWidgetExtension extension;
 
 	public ObjectModel(IJavaObject object, IType type, RuntimeModel runtime) throws DebugException {
 		super(object, runtime);
@@ -190,7 +191,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	public boolean hasWidgetExtension() {
-		return extension != IObjectWidgetExtension.NULL_EXTENSION;
+		return extension != ITypeWidgetExtension.NULL_EXTENSION;
 	}
 
 	public Map<String, ReferenceModel> getReferences() {
@@ -474,7 +475,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 							);
 		}
 		catch (JavaModelException e) {
-			e.printStackTrace();
+//			e.printStackTrace();
 			return false;
 		}
 	}
@@ -516,7 +517,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 //		String exp = refPaths.get(0) + "." + methodName + "(" + String.join(", ", args) + ")";
 		String exp = refPath.referencePath + "." + methodName + "(" + String.join(", ", args) + ")";
 		
-		IStackFrame context = getRuntimeModel().getFirstVisibleFrame().getStackFrame();
+//		IStackFrame context = getRuntimeModel().getFirstVisibleFrame().getStackFrame();
 		delegate.evaluateExpression(exp, refPath.context, new ExpressionListener(exp, listener));
 	}
 
@@ -548,6 +549,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			}
 			else if(exception != null) {
 				String trimExpression = trimExpression(expression);
+				InvocationException cause = (InvocationException) exception.getCause();
+//				cause.printStackTrace();
+//				ObjectReference exception2 = cause.exception();
+				ReferenceType referenceType = cause.exception().referenceType();
+//				Field field = referenceType.fieldByName("NULL_CAUSE_MESSAGE");
+//				StackTraceElement[] stackTrace = ((InvocationException)exception.getCause()).getStackTrace();
+//				String message = ((InvocationException)exception.getCause()).getMessage();
+//				System.out.println(message);
+//				System.out.println(stackTrace[0].getClassName() + " " + stackTrace[0].getLineNumber());
 				String exceptionType = ((InvocationException)exception.getCause()).exception().referenceType().name();
 				PandionJUI.executeUpdate(() -> {
 					if(exceptionType.equals(IllegalArgumentException.class.getName()))
@@ -569,7 +579,11 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			
 			return expression;
 		}
-	};
+	}
+	
+	public void invokeToString(InvocationResult listener) {
+		invoke("toString", listener);
+	}
 
 	public Multimap<String, String> getTags() {
 		Multimap<String,String> tags = ArrayListMultimap.create();

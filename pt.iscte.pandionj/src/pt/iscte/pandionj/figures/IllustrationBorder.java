@@ -1,8 +1,8 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.ARRAY_POSITION_SPACING;
-import static pt.iscte.pandionj.Constants.ARROW_EDGE;
-import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
+import static pt.iscte.pandionj.extensibility.PandionJConstants.ARRAY_POSITION_SPACING;
+import static pt.iscte.pandionj.extensibility.PandionJConstants.ARROW_EDGE;
+import static pt.iscte.pandionj.extensibility.PandionJConstants.POSITION_WIDTH;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +19,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ExceptionType;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.Direction;
@@ -27,6 +26,7 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public class IllustrationBorder implements Border {
 
@@ -78,7 +78,7 @@ public class IllustrationBorder implements Border {
 			return new Insets(0, out, EXTRA, out);
 		}
 		else {
-			int out = Constants.POSITION_WIDTH + Constants.ARRAY_POSITION_SPACING * 2;
+			int out = PandionJConstants.POSITION_WIDTH + PandionJConstants.ARRAY_POSITION_SPACING * 2;
 			return new Insets(out, EXTRA, out, 0);
 		}
 	}
@@ -95,13 +95,13 @@ public class IllustrationBorder implements Border {
 
 	@Override
 	public void paint(IFigure figure, Graphics g, Insets insets) {
-		final Dimension POSITION_DIM = new Dimension(firstPositionBounds.width, Constants.POSITION_WIDTH);
+		final Dimension POSITION_DIM = new Dimension(firstPositionBounds.width, PandionJConstants.POSITION_WIDTH);
 		
 		drawOutOfBoundsPositions(figure, g);
 
 		final int pWidth = POSITION_DIM.width;
 
-		Font font = FontManager.getFont(Constants.VAR_FONT_SIZE-4);
+		Font font = FontManager.getFont(PandionJConstants.VAR_FONT_SIZE-4);
 		g.setFont(font);
 		for(IArrayIndexModel f : fixedVars) {
 			int i = f.getCurrentIndex();
@@ -116,13 +116,13 @@ public class IllustrationBorder implements Border {
 			if(horizontal)
 				from.translate(-textWidth/2, 0);
 			else
-				from.translate(-Math.min(textWidth/2, Constants.POSITION_WIDTH_V), 0);
+				from.translate(-Math.min(textWidth/2, PandionJConstants.POSITION_WIDTH_V), 0);
 					
-			g.setForegroundColor(Constants.Colors.CONSTANT);
+			g.setForegroundColor(PandionJConstants.Colors.CONSTANT);
 			g.drawText(varName, from);
 		}
 
-		font = FontManager.getFont(Constants.VAR_FONT_SIZE);
+		font = FontManager.getFont(PandionJConstants.VAR_FONT_SIZE);
 		g.setFont(font);
 		setIllustrationStyle(g);
 
@@ -136,10 +136,10 @@ public class IllustrationBorder implements Border {
 			if(horizontal)
 				from.translate(-textWidth/2, 0);
 			else
-				from.translate(-Math.min(textWidth/2, Constants.POSITION_WIDTH_V), -Constants.POSITION_WIDTH_V);
+				from.translate(-Math.min(textWidth/2, PandionJConstants.POSITION_WIDTH_V), -PandionJConstants.POSITION_WIDTH_V);
 			
 			g.drawText(varName, from);
-			drawHistory(g, v, Constants.Colors.ILLUSTRATION);
+			drawHistory(g, v, PandionJConstants.Colors.ILLUSTRATION);
 			
 			IBound bound = v.getBound();
 			Integer boundVal =  bound == null ? null : bound.getValue();
@@ -209,16 +209,16 @@ public class IllustrationBorder implements Border {
 			if(horizontal)
 				p = p.translate(0, EXTRA);
 			
-			g.fillOval(p.x, p.y, Constants.ILLUSTRATION_LINE_WIDTH+1, Constants.ILLUSTRATION_LINE_WIDTH+1);
+			g.fillOval(p.x, p.y, PandionJConstants.ILLUSTRATION_LINE_WIDTH+1, PandionJConstants.ILLUSTRATION_LINE_WIDTH+1);
 		}
 	}
 
 
 	private void setIllustrationStyle(Graphics g) {
-		g.setLineWidth(Constants.ILLUSTRATION_LINE_WIDTH);
+		g.setLineWidth(PandionJConstants.ILLUSTRATION_LINE_WIDTH);
 		g.setLineDashOffset(2.5f);
 		g.setLineStyle(Graphics.LINE_SOLID);
-		g.setForegroundColor(Constants.Colors.ILLUSTRATION);
+		g.setForegroundColor(PandionJConstants.Colors.ILLUSTRATION);
 	}
 
 
@@ -226,9 +226,9 @@ public class IllustrationBorder implements Border {
 		Point origin = arrayFigure.getPositionBounds(index, horizontal).getLocation();
 		
 		if(horizontal)
-			origin.translate(firstPositionBounds.width/2, firstPositionBounds.height + Constants.ARRAY_POSITION_SPACING);
+			origin.translate(firstPositionBounds.width/2, firstPositionBounds.height + PandionJConstants.ARRAY_POSITION_SPACING);
 		else {
-			origin.translate(-Constants.POSITION_WIDTH/2, firstPositionBounds.height/2);
+			origin.translate(-PandionJConstants.POSITION_WIDTH/2, firstPositionBounds.height/2);
 		}
 		return origin;
 	}
@@ -252,7 +252,7 @@ public class IllustrationBorder implements Border {
 		}
 
 		if(exception == ExceptionType.ARRAY_INDEX_OUT_BOUNDS)
-			g.setForegroundColor(Constants.Colors.ERROR);
+			g.setForegroundColor(PandionJConstants.Colors.ERROR);
 		else
 			g.setForegroundColor(ColorConstants.black);
 		
@@ -260,7 +260,7 @@ public class IllustrationBorder implements Border {
 			Point origin = firstLabelBounds.getLocation();
 			Point p;
 			if(horizontal){
-				p = new Point(origin.x - firstLabelBounds.width - Constants.ARRAY_MARGIN - 1, origin.y);
+				p = new Point(origin.x - firstLabelBounds.width - PandionJConstants.ARRAY_MARGIN - 1, origin.y);
 			}else{
 				p = new Point(origin.x, origin.y - firstLabelBounds.height);
 			}
@@ -273,9 +273,9 @@ public class IllustrationBorder implements Border {
 			
 			Point p;
 			if(horizontal){
-				p = new Point(origin.x + firstLabelBounds.width + Constants.ARRAY_MARGIN + 1, origin.y);
+				p = new Point(origin.x + firstLabelBounds.width + PandionJConstants.ARRAY_MARGIN + 1, origin.y);
 			}else{
-				p = new Point(origin.x, origin.y + firstLabelBounds.height + ARRAY_POSITION_SPACING*2 + Constants.ARRAY_MARGIN+1);
+				p = new Point(origin.x, origin.y + firstLabelBounds.height + ARRAY_POSITION_SPACING*2 + PandionJConstants.ARRAY_MARGIN+1);
 			}
 			
 			g.setLineStyle(Graphics.LINE_DOT);
@@ -308,11 +308,11 @@ public class IllustrationBorder implements Border {
 					direction == Direction.BACKWARD && bound.getType() == BoundType.OPEN;
 			
 			if(horizontal){
-				s = firstLabelBounds.width/2 + Constants.ARRAY_POSITION_SPACING; 
+				s = firstLabelBounds.width/2 + PandionJConstants.ARRAY_POSITION_SPACING; 
 				if(!b)
 					s = -s;
 			}else{ 
-				s = firstPositionBounds.height/2 + Constants.ARRAY_POSITION_SPACING;
+				s = firstPositionBounds.height/2 + PandionJConstants.ARRAY_POSITION_SPACING;
 				if(!b)
 					s = -s;
 			}

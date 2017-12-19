@@ -10,6 +10,7 @@ import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public interface Utils {
 
@@ -39,8 +40,8 @@ public interface Utils {
 		points.addPoint(0, 0);
 		points.addPoint(-1, 1);
 		decoration.setTemplate(points);
-		decoration.setScale(Constants.ARROW_EDGE, Constants.ARROW_EDGE);
-		decoration.setLineWidth(Constants.ARROW_LINE_WIDTH);
+		decoration.setScale(PandionJConstants.ARROW_EDGE, PandionJConstants.ARROW_EDGE);
+		decoration.setLineWidth(PandionJConstants.ARROW_LINE_WIDTH);
 		decoration.setOpaque(true);
 		pointer.setTargetDecoration(decoration);
 	}

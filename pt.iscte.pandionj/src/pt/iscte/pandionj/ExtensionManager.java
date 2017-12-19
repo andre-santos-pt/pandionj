@@ -9,6 +9,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.FlowLayout;
 import org.eclipse.draw2d.IFigure;
@@ -21,42 +25,44 @@ import com.google.common.collect.Multimap;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IObjectModel;
-import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
-import pt.iscte.pandionj.extensions.ColorAguia;
+import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
+import pt.iscte.pandionj.extensibility.ModelObserver;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensions.ColorWidget;
-import pt.iscte.pandionj.extensions.HistogramWidget;
 import pt.iscte.pandionj.extensions.IterableWidget;
-import pt.iscte.pandionj.extensions.MatrixWidget;
-import pt.iscte.pandionj.extensions.StringCharArray;
 import pt.iscte.pandionj.extensions.StringWidget;
-import pt.iscte.pandionj.extensions.images.BinaryImageWidget;
-import pt.iscte.pandionj.extensions.images.ColorImageWidget;
-import pt.iscte.pandionj.extensions.images.ColorRGBArray;
-import pt.iscte.pandionj.extensions.images.GrayscaleImageWidget;
-import pt.iscte.pandionj.model.ModelObserver;
 
 public class ExtensionManager {
 
 	private static Map<String, IArrayWidgetExtension> arrayExtensions;
-	private static List<IObjectWidgetExtension> objectExtensions;
+	private static List<ITypeWidgetExtension> objectExtensions;
 
 	static {
-		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
-		arrayExtensions.put("@string", new StringCharArray());
-		arrayExtensions.put("@matrix", new MatrixWidget());
-		arrayExtensions.put("@grayscaleimage", new GrayscaleImageWidget());
-		arrayExtensions.put("@binaryimage", new BinaryImageWidget());
-		arrayExtensions.put("@color", new ColorRGBArray());
-		arrayExtensions.put("@colorimage", new ColorImageWidget());
-		arrayExtensions.put("@hist", new HistogramWidget());
+		IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
+		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
+		IConfigurationElement[] extsArray = extensionRegistry.getConfigurationElementsFor(PandionJConstants.ARRAYTAG_EXTENSION_ID);
+		for(IConfigurationElement e : extsArray) {
+			try {
+				String name = e.getAttribute("name");
+				IArrayWidgetExtension ae = (IArrayWidgetExtension) e.createExecutableExtension("class");
+				arrayExtensions.put("@" + name, ae);
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
 
 		objectExtensions = new ArrayList<>();
-//		objectExtensions.add(new NumberWidget());
-		objectExtensions.add(new StringWidget());
-		objectExtensions.add(new ColorWidget());
-		objectExtensions.add(new IterableWidget());
-		objectExtensions.add(new ColorAguia());
+		IConfigurationElement[] extsObj = extensionRegistry.getConfigurationElementsFor(PandionJConstants.TYPE_EXTENSION_ID);
+		for(IConfigurationElement e : extsObj) {
+			try {
+				ITypeWidgetExtension tw = (ITypeWidgetExtension) e.createExecutableExtension("class");
+				objectExtensions.add(tw);
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
+		}		
 	}
 
 
@@ -72,17 +78,17 @@ public class ExtensionManager {
 	}
 
 
-	public static IObjectWidgetExtension getObjectExtension(IObjectModel m) {
+	public static ITypeWidgetExtension getObjectExtension(IObjectModel m) {
 		if(m.hasAttributeTags())
 			return new TagExtension(m.getAttributeTags());
 
 		IType type = m.getType();
 		if(type != null) {
-			for(IObjectWidgetExtension ext : ExtensionManager.objectExtensions)
+			for(ITypeWidgetExtension ext : ExtensionManager.objectExtensions)
 				if(ext.accept(type))
 					return ext;
 		}
-		return IObjectWidgetExtension.NULL_EXTENSION;
+		return ITypeWidgetExtension.NULL_EXTENSION;
 	}
 
 
@@ -90,7 +96,7 @@ public class ExtensionManager {
 	//		return new TagExtension(m.getAttributeTags());
 	//	}
 
-	static class TagExtension implements IObjectWidgetExtension {
+	static class TagExtension implements ITypeWidgetExtension {
 
 		private Multimap<String, String> tags;
 		private Multimap<String, IFigure> figs;
@@ -105,7 +111,7 @@ public class ExtensionManager {
 		@Override
 		public IFigure createFigure(IObjectModel m) {
 			// TODO observe ref change
-			m.registerDisplayObserver(new ModelObserver() {
+			m.registerDisplayObserver(new ModelObserver<Object>() {
 				@Override
 				public void update(Object arg) {
 					String attName = (String) arg;
@@ -129,7 +135,7 @@ public class ExtensionManager {
 
 		// FIXME field values on null / undefined fields
 		private void addChildFigures(IObjectModel m, String attName) {
-			IArrayModel array = m.getArray(attName);
+			IArrayModel<?> array = m.getArray(attName);
 			if(array != null) {
 				IArrayWidgetExtension ext = getArrayExtension(array, tags.get(attName));
 				if(ext != IArrayWidgetExtension.NULL_EXTENSION) {

@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 
 public class InvokeDialog extends Dialog {
@@ -35,7 +36,7 @@ public class InvokeDialog extends Dialog {
 
 	@Override
 	protected void createButtonsForButtonBar(Composite parent) {
-		invokeButton = createButton(parent, IDialogConstants.OK_ID, Constants.Messages.INVOKE, true);
+		invokeButton = createButton(parent, IDialogConstants.OK_ID, PandionJConstants.Messages.INVOKE, true);
 		createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
 	}
 

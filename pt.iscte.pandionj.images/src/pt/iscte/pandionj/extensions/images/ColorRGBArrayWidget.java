@@ -7,12 +7,12 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 
-import pt.iscte.pandionj.Constants;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
-public class ColorRGBArray implements IArrayWidgetExtension {
+public class ColorRGBArrayWidget implements IArrayWidgetExtension {
 
 	@Override
 	public boolean accept(IArrayModel<?> e) {
@@ -39,7 +39,7 @@ public class ColorRGBArray implements IArrayWidgetExtension {
 		ColorFigure() {
 			setLayoutManager(new GridLayout(2, false));
 			colorFig = new Figure();
-			colorFig.setSize(Constants.POSITION_WIDTH, Constants.POSITION_WIDTH);
+			colorFig.setSize(PandionJConstants.POSITION_WIDTH, PandionJConstants.POSITION_WIDTH);
 			add(colorFig);
 			text = new Label();
 			text.setForegroundColor(ColorConstants.black);
@@ -53,12 +53,12 @@ public class ColorRGBArray implements IArrayWidgetExtension {
 					b >= 0 && b <= 255;
 			colorFig.setOpaque(valid);
 			colorFig.setBackgroundColor(valid ? PandionJUI.getColor(r, g, b) : null);
-			colorFig.setBorder(new LineBorder(valid ? ColorConstants.black : Constants.Colors.ERROR));
+			colorFig.setBorder(new LineBorder(valid ? ColorConstants.black : PandionJConstants.Colors.ERROR));
 			if(valid)
 				colorFig.setToolTip(null);
 			else {
 				Label label = new Label("Invalid RGB values");
-				label.setForegroundColor(Constants.Colors.ERROR);
+				label.setForegroundColor(PandionJConstants.Colors.ERROR);
 				colorFig.setToolTip(label);
 			}
 			text.setText(r + ", " + g + ", " + b);

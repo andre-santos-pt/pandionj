@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
+   <extension-point id="tags" name="Custom tags" schema="schema/tags.exsd"/>
+   <extension-point id="typewidgets" name="Type Widgets" schema="schema/typewidgets.exsd"/>
    <extension
          point="org.eclipse.ui.views">
       <view
@@ -24,6 +26,26 @@
             name="PandionJ"
             parentId="org.eclipse.ui.contexts.window">
       </context>
+   </extension>
+   <extension
+         point="pt.iscte.pandionj.tags">
+      <array-tag
+            class="pt.iscte.pandionj.extensions.StringCharArray"
+            name="string">
+      </array-tag>
+      <array-tag
+            class="pt.iscte.pandionj.extensions.MatrixWidget"
+            name="matrix">
+      </array-tag>
+   </extension>
+   <extension
+         point="pt.iscte.pandionj.typewidgets">
+      <widget
+            class="pt.iscte.pandionj.extensions.StringWidget">
+      </widget>
+      <widget
+            class="pt.iscte.pandionj.extensions.IterableWidget">
+      </widget>
    </extension>
 
 </plugin>

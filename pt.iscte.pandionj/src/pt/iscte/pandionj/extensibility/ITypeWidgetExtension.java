@@ -5,11 +5,10 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
 
-public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
+public interface ITypeWidgetExtension extends IWidgetExtension<IObjectModel> {
 
 	boolean accept(IType objectType);
 
@@ -21,7 +20,7 @@ public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
 
 	IFigure ERROR = new Label("N/A");
 
-	abstract class MatchName implements IObjectWidgetExtension {
+	abstract class MatchName implements ITypeWidgetExtension {
 		private final String fullQualifiedName;
 
 		public MatchName(String fullQualifiedName) {
@@ -34,7 +33,7 @@ public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
 	}
 
 
-	IObjectWidgetExtension NULL_EXTENSION = new IObjectWidgetExtension() {
+	ITypeWidgetExtension NULL_EXTENSION = new ITypeWidgetExtension() {
 		@Override
 		public boolean accept(IType objectType) {
 			return false;
@@ -43,8 +42,8 @@ public interface IObjectWidgetExtension extends IWidgetExtension<IObjectModel> {
 		@Override
 		public IFigure createFigure(IObjectModel e) {
 			Label label = new Label();
-			label.setForegroundColor(Constants.Colors.OBJECT_HEADER_FONT);
-			FontManager.setFont(label, Constants.OBJECT_HEADER_FONT_SIZE);
+			label.setForegroundColor(PandionJConstants.Colors.OBJECT_HEADER_FONT);
+			FontManager.setFont(label, PandionJConstants.OBJECT_HEADER_FONT_SIZE);
 			IType type = e.getType();
 			if(type != null) {
 				IMethod method = type.getMethod("toString", new String[0]);

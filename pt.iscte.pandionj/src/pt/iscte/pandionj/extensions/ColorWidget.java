@@ -7,10 +7,10 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IType;
 
 import pt.iscte.pandionj.extensibility.IObjectModel;
-import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
+import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
-public class ColorWidget implements IObjectWidgetExtension {
+public class ColorWidget implements ITypeWidgetExtension {
 
 	@Override
 	public boolean accept(IType objectType) {

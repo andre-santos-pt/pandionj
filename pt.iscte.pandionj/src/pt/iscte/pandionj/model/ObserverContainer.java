@@ -3,6 +3,8 @@ package pt.iscte.pandionj.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import pt.iscte.pandionj.extensibility.ModelObserver;
+
 class ObserverContainer<A> {
 	private final List<ModelObserver<A>> obs;
 	private boolean changed;

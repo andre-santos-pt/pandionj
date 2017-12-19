@@ -10,12 +10,12 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MarginBorder;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.ExceptionType;
 import pt.iscte.pandionj.RuntimeViewer;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public class ObjectContainer extends Figure {
 
@@ -71,7 +71,7 @@ public class ObjectContainer extends Figure {
 			getLayoutManager().layout(this);
 		}
 		else
-			fig.setBackgroundColor(Constants.Colors.HIGHLIGHT);
+			fig.setBackgroundColor(PandionJConstants.Colors.HIGHLIGHT);
 		return fig;
 	}
 

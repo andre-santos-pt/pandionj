@@ -1,7 +1,5 @@
-package pt.iscte.pandionj.model;
+package pt.iscte.pandionj.extensibility;
 
 public interface ModelObserver<A> {
-
 	void update(A arg);
-
 }

@@ -3,6 +3,7 @@ package pt.iscte.pandionj.model;
 import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.extensibility.IObservableModel;
+import pt.iscte.pandionj.extensibility.ModelObserver;
 
 public class DisplayUpdateObservable<T> implements IObservableModel<T> {
 	

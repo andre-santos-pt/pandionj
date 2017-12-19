@@ -10,6 +10,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 
+import pt.iscte.pandionj.extensibility.PandionJConstants;
+
 public class FontManager {
 	public enum Style {
 		BOLD(SWT.BOLD), ITALIC(SWT.ITALIC);
@@ -34,7 +36,7 @@ public class FontManager {
 		String key = sizeZoom + Arrays.toString(styles);
 		Font f = instances.get(key);
 		if(f == null || f.isDisposed()) {
-			f = new Font(Display.getDefault(), Constants.FONT_FACE, sizeZoom, Style.toSwtStyle(styles));
+			f = new Font(Display.getDefault(), PandionJConstants.FONT_FACE, sizeZoom, Style.toSwtStyle(styles));
 			instances.put(key, f);
 		}
 		return f;

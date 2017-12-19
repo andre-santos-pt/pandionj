@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="pt.iscte.pandionj.tags">
+      <array-tag
+            class="pt.iscte.pandionj.extensions.images.BinaryImageWidget"
+            name="binaryimage">
+      </array-tag>
+      <array-tag
+            class="pt.iscte.pandionj.extensions.images.GrayscaleImageWidget"
+            name="grayscaleimage">
+      </array-tag>
+       <array-tag
+            class="pt.iscte.pandionj.extensions.images.ColorImageWidget"
+            name="colorimage">
+      </array-tag>
+        <array-tag
+            class="pt.iscte.pandionj.extensions.images.ColorRGBArrayWidget"
+            name="color">
+      </array-tag>
+   </extension>
+
+</plugin>

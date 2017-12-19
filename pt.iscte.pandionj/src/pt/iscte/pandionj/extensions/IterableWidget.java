@@ -1,17 +1,22 @@
 package pt.iscte.pandionj.extensions;
 
 import java.util.Collection;
+import java.util.Iterator;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
 import pt.iscte.pandionj.extensibility.IObjectModel;
-import pt.iscte.pandionj.extensibility.IObjectWidgetExtension;
-import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
+import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
+import pt.iscte.pandionj.extensibility.ModelObserver;
+import pt.iscte.pandionj.extensibility.PandionJUI;
+import pt.iscte.pandionj.model.ArrayReferenceModel;
 
-public class IterableWidget implements IObjectWidgetExtension {
+public class IterableWidget implements ITypeWidgetExtension {
 
 	@Override
 	public boolean accept(IType objectType) {
@@ -30,7 +35,7 @@ public class IterableWidget implements IObjectWidgetExtension {
 	@Override
 	public IFigure createFigure(IObjectModel e) {
 		Label label = new Label();
-		e.registerDisplayObserver(new ModelObserver() {
+		e.registerDisplayObserver(new ModelObserver<Object>() {
 			@Override
 			public void update(Object arg) {
 				eval(e, label);
@@ -41,27 +46,33 @@ public class IterableWidget implements IObjectWidgetExtension {
 	}
 
 	private static void eval(IObjectModel e, Label label) {
-		// TODO repor
-//		e.invoke3("toArray", new IJavaValue[0], new IWatchExpressionListener() {
-//			@Override
-//			public void watchEvaluationFinished(IWatchExpressionResult result) {
-//				IIndexedValue value = (IIndexedValue) result.getValue();
-//				try {
-//					IVariable[] positions = value.getSize() == 0 ? new IVariable[0] : value.getVariables(0, Math.min(value.getSize(), Constants.ARRAY_LENGTH_LIMIT));
-//					String s = "{";
-//					for(int i = 0; i < positions.length; i++)
-//						s += positions[i].getValue().getValueString() + ", ";
-//					s += "}";
-//					String toString = s;
-//					Display.getDefault().asyncExec(() -> {
-//						label.setText(toString);
-//					});
-//				} catch (DebugException e1) {
-//					e1.printStackTrace();
-//				}
-//
-//			}
-//		});
+		e.invoke("toArray", new InvocationResult() {
+			@Override
+			public void valueReturn(Object o) {
+				ArrayReferenceModel array = (ArrayReferenceModel) o;
+				Iterator<Integer> indexes = array.getValidModelIndexes();
+				
+				String s = "{";
+				Integer i = -1;
+				while(indexes.hasNext()) {
+					Integer j = indexes.next();
+					if(j != 0)
+						s += ", ";
+					else if(i+1 != j)
+						s += ", ..., ";
+					i = j;
+					try {
+						s += array.getElementString(i); // TODO problema com objetos (String)
+					} catch (DebugException e) {
+						s += "?";
+					}
+				}
+				String text = s + "}";
+				PandionJUI.executeUpdate(() -> {
+					label.setText(text);
+				});
+			}
+		});
 	}
 
 	@Override

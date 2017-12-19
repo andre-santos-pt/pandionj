@@ -43,11 +43,12 @@ import com.google.common.collect.Multimap;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.ModelObserver;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.figures.ObjectContainer;
 import pt.iscte.pandionj.figures.PandionJFigure;
 import pt.iscte.pandionj.figures.StackContainer;
-import pt.iscte.pandionj.model.ModelObserver;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
 
@@ -73,9 +74,9 @@ public class RuntimeViewer extends Composite {
 		instance = this;
 
 		setLayout(new FillLayout());
-		setBackground(Constants.Colors.VIEW_BACKGROUND);
+		setBackground(PandionJConstants.Colors.VIEW_BACKGROUND);
 		scroll = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL);
-		scroll.setBackground(Constants.Colors.VIEW_BACKGROUND);
+		scroll.setBackground(PandionJConstants.Colors.VIEW_BACKGROUND);
 		canvas = new Canvas(scroll, SWT.DOUBLE_BUFFERED);
 		canvas.setBackground(ColorConstants.white);
 		canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -87,15 +88,15 @@ public class RuntimeViewer extends Composite {
 		rootFig = new Figure();
 		rootFig.setOpaque(true);
 		rootGrid = new GridLayout(2, false);
-		rootGrid.horizontalSpacing = Constants.STACK_TO_OBJECTS_GAP;
-		rootGrid.marginWidth = Constants.MARGIN;
-		rootGrid.marginHeight = Constants.MARGIN;
+		rootGrid.horizontalSpacing = PandionJConstants.STACK_TO_OBJECTS_GAP;
+		rootGrid.marginWidth = PandionJConstants.MARGIN;
+		rootGrid.marginHeight = PandionJConstants.MARGIN;
 		rootFig.setLayoutManager(rootGrid);
 
 		stackFig = new StackContainer();
 		rootFig.add(stackFig);
 		org.eclipse.draw2d.GridData d = new org.eclipse.draw2d.GridData(SWT.BEGINNING, SWT.BEGINNING, true, true);
-		d.widthHint = Math.max(Constants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
+		d.widthHint = Math.max(PandionJConstants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
 		rootGrid.setConstraint(stackFig, d);
 
 		objectContainers = new ArrayList<>();
@@ -179,7 +180,7 @@ public class RuntimeViewer extends Composite {
 		//			scroll.setOrigin(0, size.height);
 
 		org.eclipse.draw2d.GridData d = (org.eclipse.draw2d.GridData) rootGrid.getConstraint(stackFig);
-		d.widthHint = Math.max(Constants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
+		d.widthHint = Math.max(PandionJConstants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
 		rootGrid.layout(rootFig);
 		requestLayout();
 	}
@@ -264,7 +265,7 @@ public class RuntimeViewer extends Composite {
 	private void addMenu() {
 		Menu menu = new Menu(canvas);
 		MenuItem item = new MenuItem(menu, SWT.PUSH);
-		item.setText(Constants.Messages.COPY_CLIPBOARD);
+		item.setText(PandionJConstants.Messages.COPY_CLIPBOARD);
 		item.setImage(PandionJUI.getImage("clipboard.gif"));
 		item.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -275,7 +276,7 @@ public class RuntimeViewer extends Composite {
 
 
 		MenuItem setArrayItem = new MenuItem(menu, SWT.PUSH);
-		setArrayItem.setText(Constants.Messages.SET_ARRAY_MAX + " (current: " + PandionJView.getMaxArrayLength() + ")");
+		setArrayItem.setText(PandionJConstants.Messages.SET_ARRAY_MAX + " (current: " + PandionJView.getMaxArrayLength() + ")");
 		setArrayItem.setImage(PandionJUI.getImage("array.gif"));
 		setArrayItem.addSelectionListener(new SelectionAdapter() {
 			@Override
@@ -301,7 +302,7 @@ public class RuntimeViewer extends Composite {
 						if(e.keyCode == SWT.CR) {
 							int val = Integer.parseInt(text.getText());
 							PandionJView.setArrayMaximumLength(val);
-							setArrayItem.setText(Constants.Messages.SET_ARRAY_MAX + " (current: " + val + ")");
+							setArrayItem.setText(PandionJConstants.Messages.SET_ARRAY_MAX + " (current: " + val + ")");
 							shell.close();
 						}
 						else if(e.keyCode == SWT.ESC) 
@@ -319,7 +320,7 @@ public class RuntimeViewer extends Composite {
 		});
 
 		clearItem = new MenuItem(menu, SWT.PUSH);
-		clearItem.setText(Constants.Messages.CLEAR);
+		clearItem.setText(PandionJConstants.Messages.CLEAR);
 		clearItem.setImage(PandionJUI.getImage("clear.gif"));
 		clearItem.addSelectionListener(new SelectionAdapter() {
 			@Override

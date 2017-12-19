@@ -15,6 +15,7 @@ import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObservableModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
 import pt.iscte.pandionj.figures.IllustrationBorder;
@@ -78,8 +79,7 @@ public class FigureProvider  {
 				}
 				else {
 					fig = new PandionJFigure.Extension(extFig, model);
-//					fig.setToolTip(new Label());
-					extFig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
+					extFig.setBorder(new MarginBorder(PandionJConstants.OBJECT_PADDING));
 				}
 			}
 			else if(model instanceof IObjectModel) {

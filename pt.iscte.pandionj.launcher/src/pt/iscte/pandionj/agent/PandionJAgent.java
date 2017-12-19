@@ -9,6 +9,7 @@ import java.security.ProtectionDomain;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
@@ -63,6 +64,11 @@ public class PandionJAgent {
 							CtClass retType = method.getReturnType();
 							
 							generateMain(cc, retType);
+							
+							// TODO: field for loose instances
+//							CtField f = new CtField(cp.get("java.lang.String"),"test",cc);
+//							f.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
+//							cc.addField(f);
 
 							byte[] byteCode = cc.toBytecode();	
 							cc.detach();
@@ -77,7 +83,7 @@ public class PandionJAgent {
 			}
 
 			private void generateMain(CtClass cc, CtClass retType) throws CannotCompileException, NotFoundException {
-				CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
+				CtMethod m = CtNewMethod.make("public static void main(String[] args) { }", cc);
 				cc.addMethod(m); 
 
 				String left = expression.replaceAll("\"", "\\\\\"");

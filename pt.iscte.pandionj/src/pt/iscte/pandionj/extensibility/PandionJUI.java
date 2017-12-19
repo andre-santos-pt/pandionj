@@ -25,7 +25,6 @@ import org.eclipse.ui.texteditor.ITextEditor;
 import org.osgi.framework.Bundle;
 
 import pt.iscte.pandionj.ColorManager;
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.InvokeDialog;
 import pt.iscte.pandionj.PandionJView;
@@ -49,9 +48,9 @@ public interface PandionJUI {
 //	}
 
 	static PandionJView openViewDialog() {
-		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", Constants.Messages.RUN_DIALOG)) {
+		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", PandionJConstants.Messages.RUN_DIALOG)) {
 			try {
-				return (PandionJView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(Constants.VIEW_ID);
+				return (PandionJView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(PandionJConstants.VIEW_ID);
 			} catch (PartInitException e) {
 				MessageDialog.openError(Display.getDefault().getActiveShell(), "Open PandionJ view", "View could not be opened.");
 			}
@@ -109,8 +108,8 @@ public interface PandionJUI {
 	 * Get image contained in the 'images' folder of the plugin
 	 */
 	static Image getImage(String name) {
-		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		URL imagePath = FileLocator.find(bundle, new Path(Constants.IMAGE_FOLDER + "/" + name), null);
+		Bundle bundle = Platform.getBundle(PandionJConstants.PLUGIN_ID);
+		URL imagePath = FileLocator.find(bundle, new Path(PandionJConstants.IMAGE_FOLDER + "/" + name), null);
 		ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
 		return imageDesc.createImage();
 	}

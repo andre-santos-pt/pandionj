@@ -1,6 +1,6 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.OBJECT_PADDING;
+import static pt.iscte.pandionj.extensibility.PandionJConstants.OBJECT_PADDING;
 
 import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ConnectionAnchor;
@@ -8,7 +8,6 @@ import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MarginBorder;
-
 
 import pt.iscte.pandionj.extensibility.IObservableModel;
 

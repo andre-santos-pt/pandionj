@@ -1,7 +1,6 @@
 package pt.iscte.pandionj.extensions;
 
 import java.lang.reflect.Array;
-import java.util.Arrays;
 
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
@@ -13,10 +12,9 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
-import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public class MatrixWidget implements IArrayWidgetExtension{
 
@@ -56,7 +54,6 @@ public class MatrixWidget implements IArrayWidgetExtension{
 
 		private void update() {
 			removeAll();
-//			valid = internalAccept(array);
 			valid = model.isMatrix();
 			if(valid) {
 				Object[] array = (Object[]) model.getValues();
@@ -64,16 +61,12 @@ public class MatrixWidget implements IArrayWidgetExtension{
 					int len = Array.getLength(line);
 					for(int i = 0; i < len; i++) {
 						Object e = Array.get(line, i);
-//						String text = e == null ? "null" : (e instanceof Object[] ? Arrays.deepToString((Object[]) e) : e.toString());
 						Label label = new Label(e.toString()); // TODO array deepToString
 						label.setForegroundColor(ColorConstants.black);
 						add(label);
 					}
 				}
 			}
-//			String text = Arrays.deepToString(array);
-//			text = text.replaceAll("\\],", "],\n");
-//			setToolTip(new Label(text));
 			getLayoutManager().layout(this);
 			repaint();
 		}
@@ -89,7 +82,7 @@ public class MatrixWidget implements IArrayWidgetExtension{
 			final int LEG = 5;
 			Rectangle r = getBounds();
 			g.setLineWidth(1);
-			g.setForegroundColor(valid ? ColorConstants.black : Constants.Colors.ERROR);
+			g.setForegroundColor(valid ? ColorConstants.black : PandionJConstants.Colors.ERROR);
 			
 			g.drawLine(r.x, r.y, r.x, r.y+r.height-1);
 			g.drawLine(r.x, r.y, r.x+LEG, r.y);
@@ -100,7 +93,7 @@ public class MatrixWidget implements IArrayWidgetExtension{
 			g.drawLine(r.x+r.width-1, r.y+r.height-1, r.x+r.width-1-LEG, r.y+r.height-1);
 
 			if(!valid) {
-				g.setForegroundColor(Constants.Colors.ERROR);
+				g.setForegroundColor(PandionJConstants.Colors.ERROR);
 				String text = "Invalid matrix";
 				int textWidth = FigureUtilities.getTextWidth(text, g.getFont());
 				Point p = r.getLocation().translate(r.width/2 - textWidth/2, 5);

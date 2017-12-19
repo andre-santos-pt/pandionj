@@ -28,6 +28,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
 
 import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.RuntimeModel;
 import pt.iscte.pandionj.model.StackFrameModel;
@@ -96,7 +97,7 @@ public class PandionJView extends ViewPart {
 
 	private void createWidgets(Composite parent) {
 		this.parent = parent;
-		String toolTipVersion = "Version " + Platform.getBundle(Constants.PLUGIN_ID).getVersion().toString();
+		String toolTipVersion = "Version " + Platform.getBundle(PandionJConstants.PLUGIN_ID).getVersion().toString();
 		setTitleToolTip(toolTipVersion);
 		parent.setLayout(new GridLayout());
 		introScreen = createIntroScreen(parent);
@@ -118,9 +119,9 @@ public class PandionJView extends ViewPart {
 		versionLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
 		
 		Label labelInit = new Label(introComp, SWT.WRAP);
-		FontManager.setFont(labelInit, Constants.MESSAGE_FONT_SIZE, Style.ITALIC);
+		FontManager.setFont(labelInit, PandionJConstants.MESSAGE_FONT_SIZE, Style.ITALIC);
 		labelInit.setForeground(ColorConstants.gray);
-		labelInit.setText(Constants.Messages.START);
+		labelInit.setText(PandionJConstants.Messages.START);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 		return introComp;
 	}
@@ -212,7 +213,7 @@ public class PandionJView extends ViewPart {
 			runtimeView.requestLayout();
 		}
 
-		contextService.activateContext(Constants.CONTEXT_ID);
+		contextService.activateContext(PandionJConstants.CONTEXT_ID);
 
 		runtime.update(thread);
 
@@ -252,7 +253,7 @@ public class PandionJView extends ViewPart {
 
 	private void populateToolBar() {
 		toolBar = getViewSite().getActionBars().getToolBarManager();
-		addToolbarAction("Run garbage collector", false, Constants.TRASH_ICON, Constants.Messages.TRASH, () -> runtime.simulateGC());
+		addToolbarAction("Run garbage collector", false, PandionJConstants.TRASH_ICON, PandionJConstants.Messages.TRASH, () -> runtime.simulateGC());
 
 		//		addToolbarAction("Zoom in", false, "zoomin.gif", null, () -> stackView.zoomIn());
 		//		addToolbarAction("Zoom out", false, "zoomout.gif", null, () -> stackView.zoomOut());

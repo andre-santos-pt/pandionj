@@ -1,6 +1,6 @@
 package pt.iscte.pandionj.figures;
 
-import static pt.iscte.pandionj.Constants.POSITION_WIDTH;
+import static pt.iscte.pandionj.extensibility.PandionJConstants.POSITION_WIDTH;
 
 import java.util.ArrayList;
 import java.util.Iterator;

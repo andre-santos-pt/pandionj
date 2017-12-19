@@ -23,13 +23,9 @@ import org.eclipse.draw2d.RoundedRectangle;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.MessageBox;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FigureProvider;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.RuntimeViewer;
@@ -41,8 +37,9 @@ import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel.Event;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.extensibility.ModelObserver;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.model.ModelObserver;
 import pt.iscte.pandionj.model.PrimitiveType;
 import pt.iscte.pandionj.model.RuntimeModel;
 
@@ -72,9 +69,9 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 		fig = new RoundedRectangle();
 		fig.setLayoutManager(layout);
-		fig.setCornerDimensions(Constants.OBJECT_CORNER);
-		fig.setBorder(new MarginBorder(Constants.OBJECT_PADDING));
-		fig.setBackgroundColor(Constants.Colors.OBJECT);
+		fig.setCornerDimensions(PandionJConstants.OBJECT_CORNER);
+		fig.setBorder(new MarginBorder(PandionJConstants.OBJECT_PADDING));
+		fig.setBackgroundColor(PandionJConstants.Colors.OBJECT);
 		fig.setOpaque(true);
 		getLayoutManager().setConstraint(fig, new GridData(SWT.DEFAULT, SWT.BEGINNING, false, false));
 		fig.add(extensionFigure);
@@ -103,11 +100,11 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 					IStackFrameModel f = e.arg;
 					methodsEnabled = !f.isInstanceFrameOf(model);
 					setMethodsEnabled(methodsEnabled);
-					fig.setBackgroundColor(Constants.Colors.OBJECT);
+					fig.setBackgroundColor(PandionJConstants.Colors.OBJECT);
 					// TODO update illustration?
 				}
 				else if(e.type == IRuntimeModel.Event.Type.EVALUATION) {
-					fig.setBackgroundColor(Constants.Colors.OBJECT);
+					fig.setBackgroundColor(PandionJConstants.Colors.OBJECT);
 				}
 				else if(e.type == IRuntimeModel.Event.Type.TERMINATION) {
 					methodsEnabled = false;
@@ -267,7 +264,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			button = new Button(shortSig(method));
 			button.setToolTip(new Label(longSig(method)));
 			button.setForegroundColor(ColorConstants.black);
-			FontManager.setFont(button, Constants.BUTTON_FONT_SIZE);
+			FontManager.setFont(button, PandionJConstants.BUTTON_FONT_SIZE);
 			button.setEnabled(methodsEnabled);
 			add(button);
 			resultLabel = new Label();

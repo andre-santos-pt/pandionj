@@ -1,11 +1,10 @@
 package pt.iscte.pandionj.figures;
 
 
-import static pt.iscte.pandionj.Constants.ARROW_EDGE;
+import static pt.iscte.pandionj.extensibility.PandionJConstants.ARROW_EDGE;
 
 import java.util.List;
 
-import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
@@ -20,21 +19,19 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.jdt.debug.core.IJavaFieldVariable;
-import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.swt.SWT;
 
-import pt.iscte.pandionj.Constants;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
-import pt.iscte.pandionj.model.ModelObserver;
+import pt.iscte.pandionj.extensibility.ModelObserver;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.model.PrimitiveType;
 
 public class ValueFigure extends PandionJFigure<IValueModel> {
-	private static final int ANNOTATION_FONT_SIZE = (int) Math.round(Constants.VAR_FONT_SIZE/1.5);
+	private static final int ANNOTATION_FONT_SIZE = (int) Math.round(PandionJConstants.VAR_FONT_SIZE/1.5);
 	
 	private ValueLabel valueLabel;
 	private IValueModel model;
@@ -67,7 +64,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		
 		Label nameLabel = new Label(model.getName());
 		nameLabel.setForegroundColor(ColorConstants.black);
-		FontManager.setFont(nameLabel, Constants.VAR_FONT_SIZE);
+		FontManager.setFont(nameLabel, PandionJConstants.VAR_FONT_SIZE);
 		if(role != Role.NONE)
 			tooltip += "\nrole: " + role.toString();
 		
@@ -85,8 +82,8 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 		layout.setConstraint(comp, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 
 		if(Role.FIXED_VALUE.equals(role) || Role.FIXED_ARRAY_INDEX.equals(role)) {
-			valueLabel.setBorder(new LineBorder(Constants.Colors.CONSTANT, Constants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
-			valueLabel.setForegroundColor(Constants.Colors.CONSTANT);
+			valueLabel.setBorder(new LineBorder(PandionJConstants.Colors.CONSTANT, PandionJConstants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
+			valueLabel.setForegroundColor(PandionJConstants.Colors.CONSTANT);
 		}
 
 		model.registerDisplayObserver(new ModelObserver<Object>() {
@@ -124,7 +121,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 
 		if(Role.GATHERER.equals(role)) {
 			extraFigure = new Label("");
-			extraFigure.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);
+			extraFigure.setForegroundColor(PandionJConstants.Colors.ROLE_ANNOTATIONS);
 			FontManager.setFont(extraFigure, ANNOTATION_FONT_SIZE);
 			add(extraFigure);
 			layout.setConstraint(extraFigure, new GridData(SWT.RIGHT, SWT.BEGINNING, false, false));
@@ -253,11 +250,11 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 
 		@Override
 		public void paint(IFigure figure, Graphics graphics, Insets insets) {
-			graphics.setForegroundColor(Constants.Colors.ROLE_ANNOTATIONS);
+			graphics.setForegroundColor(PandionJConstants.Colors.ROLE_ANNOTATIONS);
 			Rectangle r = figure.getBounds();
-			int startY = direction == Direction.FORWARD ? 2 : 1 + (Constants.POSITION_WIDTH/3)*2;
+			int startY = direction == Direction.FORWARD ? 2 : 1 + (PandionJConstants.POSITION_WIDTH/3)*2;
 			Point from = r.getLocation().getTranslated(r.width-6, startY);
-			Point to = from.getTranslated(0, Constants.POSITION_WIDTH / 4);
+			Point to = from.getTranslated(0, PandionJConstants.POSITION_WIDTH / 4);
 			if(direction == Direction.FORWARD) {
 				Point t = from;
 				from = to;
