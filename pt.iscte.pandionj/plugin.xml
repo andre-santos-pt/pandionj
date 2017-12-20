@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.4"?>
 <plugin>
-   <extension-point id="tags" name="Custom tags" schema="schema/tags.exsd"/>
+   <extension-point id="arraytags" name="Array tags" schema="schema/arraytags.exsd"/>
    <extension-point id="typewidgets" name="Type Widgets" schema="schema/typewidgets.exsd"/>
+   <extension-point id="valuetags" name="Value Tags" schema="schema/valuetags.exsd"/>
    <extension
          point="org.eclipse.ui.views">
       <view
@@ -28,7 +29,7 @@
       </context>
    </extension>
    <extension
-         point="pt.iscte.pandionj.tags">
+         point="pt.iscte.pandionj.arraytags">
       <array-tag
             class="pt.iscte.pandionj.extensions.StringCharArray"
             name="string">
@@ -46,6 +47,17 @@
       <widget
             class="pt.iscte.pandionj.extensions.IterableWidget">
       </widget>
+   </extension>
+   <extension
+         point="pt.iscte.pandionj.valuetags">
+      <value-tag
+            class="pt.iscte.pandionj.extensions.ColorARGBWidget"
+            name="color">
+      </value-tag>
+      <value-tag
+            class="pt.iscte.pandionj.extensions.BinaryWidget"
+            name="binary">
+      </value-tag>
    </extension>
 
 </plugin>

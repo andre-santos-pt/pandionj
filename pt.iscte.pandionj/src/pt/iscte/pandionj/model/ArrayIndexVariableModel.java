@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.model;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.debug.core.IJavaVariable;
@@ -174,5 +175,15 @@ implements IArrayIndexModel {
 	@Override
 	public boolean isVisible() {
 		return model.isVisible();
+	}
+
+	@Override
+	public Collection<String> getTags() {
+		return model.getTags();
+	}
+
+	@Override
+	public void setTags(Collection<String> tags) {
+		model.setTags(tags);
 	}
 }

@@ -2,8 +2,8 @@ package pt.iscte.pandionj;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -26,16 +26,18 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
+import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.extensibility.IValueWidgetExtension;
 import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
-import pt.iscte.pandionj.extensions.ColorWidget;
-import pt.iscte.pandionj.extensions.IterableWidget;
-import pt.iscte.pandionj.extensions.StringWidget;
 
 public class ExtensionManager {
 
 	private static Map<String, IArrayWidgetExtension> arrayExtensions;
+
 	private static List<ITypeWidgetExtension> objectExtensions;
+
+	private static Map<String, IValueWidgetExtension> valueExtensions;
 
 	static {
 		IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
@@ -51,7 +53,7 @@ public class ExtensionManager {
 				e1.printStackTrace();
 			}
 		}
-		
+
 
 		objectExtensions = new ArrayList<>();
 		IConfigurationElement[] extsObj = extensionRegistry.getConfigurationElementsFor(PandionJConstants.TYPE_EXTENSION_ID);
@@ -63,6 +65,20 @@ public class ExtensionManager {
 				e1.printStackTrace();
 			}
 		}		
+
+		valueExtensions = new HashMap<>();
+		
+		IConfigurationElement[] extsValue = extensionRegistry.getConfigurationElementsFor(PandionJConstants.VALUETAG_EXTENSION_ID);
+		for(IConfigurationElement e : extsValue) {
+			try {
+				String name = e.getAttribute("name");
+				IValueWidgetExtension ae = (IValueWidgetExtension) e.createExecutableExtension("class");
+				valueExtensions.put("@" + name, ae);
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
+		}
+
 	}
 
 
@@ -91,6 +107,15 @@ public class ExtensionManager {
 		return ITypeWidgetExtension.NULL_EXTENSION;
 	}
 
+	public static IValueWidgetExtension getValueExtension(IValueModel v, Collection<String> tags) {
+		for (String tag : tags) {
+			IValueWidgetExtension ext = valueExtensions.get(tag);
+			if(ext != null && ext.accept(v))
+				return ext;
+		}
+		
+		return IValueWidgetExtension.NULL_EXTENSION;
+	}
 
 	//	public static IObjectWidgetExtension createTagExtension(ObjectModel m) {
 	//		return new TagExtension(m.getAttributeTags());
@@ -155,6 +180,9 @@ public class ExtensionManager {
 	}
 
 	public static Set<String> validTags() {
-		return Collections.unmodifiableSet(arrayExtensions.keySet());
+		Set<String> validTags = new HashSet<String>();
+		validTags.addAll(arrayExtensions.keySet());
+		validTags.addAll(valueExtensions.keySet());
+		return validTags;
 	}
 }

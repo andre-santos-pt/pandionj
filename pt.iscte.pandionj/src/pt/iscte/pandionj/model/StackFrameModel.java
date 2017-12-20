@@ -21,6 +21,7 @@ import org.eclipse.jdt.debug.core.IJavaStackFrame;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
@@ -234,14 +235,18 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		IVariableModel<?> newVar = null;
 
 		if(value instanceof IJavaObject) {
-			ReferenceModel refElement = new ReferenceModel(jv, isInstance, true, info, this);
-			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
-			refElement.setTags(tags);
-			newVar = refElement;
+//			ReferenceModel refElement = new ReferenceModel(jv, isInstance, true, info, this);
+			newVar =  new ReferenceModel(jv, isInstance, true, info, this);
+//			refElement.setTags(tags);
+//			newVar = refElement;
 		}
 		else {
+//			ExtensionManager.getObjectExtension(v, tags)
 			newVar = new ValueModel(jv, isInstance, true, info, this);
 		}
+		Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
+		System.out.println(jv.getName() + " " + tags);
+		newVar.setTags(tags);
 		return newVar;
 	}
 

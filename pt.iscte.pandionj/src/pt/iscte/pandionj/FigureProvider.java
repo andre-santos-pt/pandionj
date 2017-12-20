@@ -1,6 +1,7 @@
 package pt.iscte.pandionj;
 
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObservableModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.extensibility.IValueWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.figures.ArrayPrimitiveFigure;
 import pt.iscte.pandionj.figures.ArrayReferenceFigure;
@@ -52,7 +54,10 @@ public class FigureProvider  {
 		PandionJFigure<?> fig = null;
 
 		if(model instanceof IValueModel) {
-			fig = new ValueFigure((IValueModel) model);
+			IValueModel v = (IValueModel) model;
+			IValueWidgetExtension valueExtension = ExtensionManager.getValueExtension(v, v.getTags());
+			fig = new PandionJFigure.Extension(valueExtension.createFigure(v), model);
+//			fig = new ValueFigure((IValueModel) model);
 		}
 		else if(model instanceof IReferenceModel) {
 			fig = new ReferenceFigure((IReferenceModel) model);

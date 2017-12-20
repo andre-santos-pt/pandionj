@@ -173,7 +173,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	public boolean hasAttributeTags() {
-		for(ReferenceModel r : references.values())
+		for(VariableModel<IJavaObject, IEntityModel> r : references.values())
 			if(r.hasTags())
 				return true;
 		return false;
@@ -183,7 +183,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public Multimap<String, String> getAttributeTags() {
 		Multimap<String, String> map = ArrayListMultimap.create();
 
-		for(ReferenceModel r : references.values()) {
+		for(VariableModel<IJavaObject, IEntityModel> r : references.values()) {
 			if(r.hasTags())
 				map.putAll(r.getName(), r.getTags());
 		}

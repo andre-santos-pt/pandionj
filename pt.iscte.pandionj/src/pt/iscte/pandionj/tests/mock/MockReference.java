@@ -134,4 +134,9 @@ public class MockReference implements IReferenceModel {
 		
 	}
 
+	@Override
+	public void setTags(Collection<String> tags) {
+		
+	}
+
 }

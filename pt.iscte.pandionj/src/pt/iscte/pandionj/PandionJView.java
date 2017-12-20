@@ -27,7 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.part.ViewPart;
 
-import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.extensibility.FontStyle;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.RuntimeModel;
@@ -119,7 +119,7 @@ public class PandionJView extends ViewPart {
 		versionLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
 		
 		Label labelInit = new Label(introComp, SWT.WRAP);
-		FontManager.setFont(labelInit, PandionJConstants.MESSAGE_FONT_SIZE, Style.ITALIC);
+		FontManager.setFont(labelInit, PandionJConstants.MESSAGE_FONT_SIZE, FontStyle.ITALIC);
 		labelInit.setForeground(ColorConstants.gray);
 		labelInit.setText(PandionJConstants.Messages.START);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));

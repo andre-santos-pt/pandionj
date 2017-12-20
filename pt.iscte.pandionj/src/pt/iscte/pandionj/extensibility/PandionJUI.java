@@ -15,6 +15,7 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
@@ -143,6 +144,9 @@ public interface PandionJUI {
 		return ColorManager.getColor(truncate(r), truncate(g), truncate(b));
 	}
 	
+	static Font getFont(int size, FontStyle...styles) {
+		return FontManager.getFont(size, styles);
+	}
 	static int truncate(int r) {
 		if(r < 0) return 0;
 		if(r > 255) return 255;

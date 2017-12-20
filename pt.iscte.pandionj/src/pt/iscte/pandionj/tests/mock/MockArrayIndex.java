@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.tests.mock;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.debug.core.IJavaVariable;
@@ -143,5 +145,15 @@ implements IArrayIndexModel {
 	@Override
 	public boolean isVisible() {
 		return true;
+	}
+
+	@Override
+	public Collection<String> getTags() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public void setTags(Collection<String> tags) {
+		
 	}
 }

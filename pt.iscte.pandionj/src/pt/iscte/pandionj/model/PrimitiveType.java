@@ -297,6 +297,9 @@ public enum PrimitiveType {
 		return false;
 	}
 	
+	public static boolean isInteger(String type) {
+		return type.matches("byte|short|int|long");
+	}
 	public static boolean isPrimitiveSig(String signature) {
 		return isPrimitive(Signature.getSignatureSimpleName(signature));
 	}

@@ -14,9 +14,10 @@ public interface PandionJConstants {
 	String PLUGIN_ID = PandionJView.class.getPackage().getName();
 	String CONTEXT_ID = PLUGIN_ID + ".context";
 	String VIEW_ID = PLUGIN_ID + ".view";
-	String ARRAYTAG_EXTENSION_ID = PLUGIN_ID + ".tags";
+	String ARRAYTAG_EXTENSION_ID = PLUGIN_ID + ".arraytags";
 	String TYPE_EXTENSION_ID = PLUGIN_ID + ".typewidgets";
-	
+	String VALUETAG_EXTENSION_ID =  PLUGIN_ID + ".valuetags";
+
 	String IMAGE_FOLDER = "images";
 	
 	int STACK_LIMIT = 10; // TODO stack limit

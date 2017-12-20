@@ -7,7 +7,6 @@ public interface IReferenceModel extends IVariableModel<IEntityModel> {
 	boolean hasIndexVars();
 	Collection<IArrayIndexModel> getIndexVars();
 	Collection<IArrayIndexModel> getFixedIndexes();
-	Collection<String> getTags();
 	int getIndex();
 	void setIndex(int i);
 }

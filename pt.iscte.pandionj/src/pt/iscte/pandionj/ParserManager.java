@@ -27,8 +27,6 @@ public class ParserManager {
 			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
-			
-//			System.out.println(tagParser);
 		}
 		return r;
 	}
@@ -41,6 +39,7 @@ public class ParserManager {
 	}
 			
 	public static Collection<String> getTags(IFile file, String varName, int line, boolean isField) {
+		getVarParserResult(file); // loads if not loaded
 		TagParser tagParser = tagParserCache.get(file);
 		if(tagParser == null)
 			return Collections.emptyList();

@@ -10,7 +10,7 @@ import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
-public class ColorWidget implements ITypeWidgetExtension {
+public class ColorAwtWidget implements ITypeWidgetExtension {
 
 	@Override
 	public boolean accept(IType objectType) {

@@ -22,7 +22,6 @@ import pt.iscte.pandionj.parser.VariableInfo;
 public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> implements IReferenceModel {
 	private NullModel nullModel;
 	private VariableInfo info;
-	private Collection<String> tags = Collections.emptyList();
 	private int index = -1;
 	
 	ReferenceModel(IJavaVariable variable, boolean isInstance, boolean isVisible, VariableInfo info, StackFrameModel stackFrame) throws DebugException {
@@ -56,28 +55,9 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	}
 
 
-//	public boolean isPrimitiveArray() {
-//		return isPrimitiveArray;
-//	}
-
 	@Override
 	public String toString() {
 		return getName() + " -> " + getModelTarget();
-	}
-
-	public void setTags(Collection<String> tags) {	
-		if(this.tags == Collections.EMPTY_LIST)
-			this.tags = new ArrayList<String>(tags.size());
-
-		this.tags.addAll(tags);
-	}
-
-	public Collection<String> getTags() {
-		return Collections.unmodifiableCollection(tags);
-	}
-
-	public boolean hasTags() {
-		return !tags.isEmpty();
 	}
 
 	public void setVariableRole(VariableInfo info) {

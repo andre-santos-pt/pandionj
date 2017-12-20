@@ -8,7 +8,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 
 import pt.iscte.pandionj.FontManager;
-import pt.iscte.pandionj.FontManager.Style;
+import pt.iscte.pandionj.extensibility.FontStyle;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
@@ -66,7 +66,7 @@ class ValueLabel extends Label {
 //			FontManager.setFont(this, Constants.VALUE_FONT_SIZE);
 	}
 	
-	private void setAutoFont(int size, String text, Style ... styles) {
+	private void setAutoFont(int size, String text, FontStyle ... styles) {
 		Font f = FontManager.getFont(size, styles);
 		while(FigureUtilities.getTextWidth(text, f) > PandionJConstants.POSITION_WIDTH-4 && size > 8) {
 			size--;
