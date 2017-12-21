@@ -1,4 +1,4 @@
-package pt.iscte.pandionj;
+package pt.iscte.pandionj.extensibility;
 
 public enum ExceptionType {
 	ARRAY_INDEX_OUT_BOUNDS(ArrayIndexOutOfBoundsException.class), 

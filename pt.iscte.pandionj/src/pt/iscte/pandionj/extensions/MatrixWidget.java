@@ -16,6 +16,7 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
 
+// TODO limitar dimensao
 public class MatrixWidget implements IArrayWidgetExtension{
 
 	@Override

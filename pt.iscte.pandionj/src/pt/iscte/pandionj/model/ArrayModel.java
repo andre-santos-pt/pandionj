@@ -27,7 +27,6 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	private int dimensions;
 	private String componentType;
 	private List<T> elementsModel;
-	private PrimitiveType primitiveType;
 	
 	ArrayModel(IJavaArray array, RuntimeModel runtime) throws DebugException {
 		super(array, runtime);
@@ -36,7 +35,6 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		elements = array.getValues();
 		dimensions = getDimensions(array);
 		componentType = getComponentType(array);
-		primitiveType = PrimitiveType.match(componentType);
 		initArray(array, len);
 	}
 
@@ -145,8 +143,6 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		return true;
 	}
 
-	//	abstract boolean updateInternal(int i, int step);
-
 	public int getLength() {
 		return elements.length;
 	}
@@ -156,7 +152,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	}
 
 	public String getElementString(int i) throws DebugException {
-		if(primitiveType == null) {
+//		if(primitiveType == null) {
 			IReferenceModel ref = (IReferenceModel) elementsModel.get(i);
 			IEntityModel target = ref.getModelTarget();
 			if(target.isNull())
@@ -165,9 +161,9 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 				return ((IObjectModel) target).getStringValue();
 			else
 				return target.toString();
-		}
-		else
-			return elements[i].getValueString();
+//		}
+//		else
+//			return elements[i].getValueString();
 	}
 
 
@@ -210,8 +206,6 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 		return true;
 	}
-
-
 
 	public Dimension getMatrixDimension() {
 		if(!isMatrix())

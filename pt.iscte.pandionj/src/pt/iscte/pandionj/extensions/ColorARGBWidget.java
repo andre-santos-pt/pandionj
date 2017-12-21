@@ -18,7 +18,7 @@ public class ColorARGBWidget implements IValueWidgetExtension {
 
 	@Override
 	public IFigure createFigure(IValueModel v) {
-		label = new Label("   "); 
+		label = new Label("      "); 
 		label.setOpaque(true);
 		label.setPreferredSize(PandionJConstants.POSITION_WIDTH, PandionJConstants.POSITION_WIDTH);
 		update(Integer.parseInt(v.getCurrentValue()));

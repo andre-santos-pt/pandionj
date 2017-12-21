@@ -62,7 +62,7 @@ public class IterableWidget implements ITypeWidgetExtension {
 						s += ", ..., ";
 					i = j;
 					try {
-						s += array.getElementString(i); // TODO problema com objetos (String)
+						s += array.getElementString(i); // FIXME problema index limite e com objetos (String)
 					} catch (DebugException e) {
 						s += "?";
 					}

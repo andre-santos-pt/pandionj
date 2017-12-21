@@ -232,18 +232,10 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		boolean isField = !jv.isLocal();
 		VariableInfo info = varParser != null ? varParser.locateVariable(varName, frame.getLineNumber(), isField) : null;
 		//		System.out.println(frame.getDeclaringTypeName() + " -- " +  frame.getMethodName() + " " + (jv.isStatic() ? "static " : "") + varName + ": " + info);
-		IVariableModel<?> newVar = null;
-
-		if(value instanceof IJavaObject) {
-//			ReferenceModel refElement = new ReferenceModel(jv, isInstance, true, info, this);
-			newVar =  new ReferenceModel(jv, isInstance, true, info, this);
-//			refElement.setTags(tags);
-//			newVar = refElement;
-		}
-		else {
-//			ExtensionManager.getObjectExtension(v, tags)
-			newVar = new ValueModel(jv, isInstance, true, info, this);
-		}
+		IVariableModel<?> newVar = value instanceof IJavaObject ?
+			new ReferenceModel(jv, isInstance, true, info, this) :
+			new ValueModel(jv, isInstance, true, info, this);
+		
 		Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
 		System.out.println(jv.getName() + " " + tags);
 		newVar.setTags(tags);

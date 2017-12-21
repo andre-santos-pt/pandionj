@@ -10,9 +10,9 @@ import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.swt.SWT;
 
-import pt.iscte.pandionj.ExceptionType;
 import pt.iscte.pandionj.FigureProvider;
 import pt.iscte.pandionj.RuntimeViewer;
+import pt.iscte.pandionj.extensibility.ExceptionType;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent;

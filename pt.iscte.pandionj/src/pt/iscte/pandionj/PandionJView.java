@@ -1,7 +1,18 @@
 package pt.iscte.pandionj;
 
+import java.io.InputStream;
+import java.util.Scanner;
+import java.util.Set;
+
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.ILogListener;
+import org.eclipse.core.runtime.IPath;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -17,15 +28,25 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.jface.text.ITextSelection;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbench;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.contexts.IContextService;
+import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.part.ViewPart;
+import org.eclipse.ui.texteditor.ITextEditor;
 
 import pt.iscte.pandionj.extensibility.FontStyle;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
@@ -46,7 +67,7 @@ public class PandionJView extends ViewPart {
 
 	private RuntimeViewer runtimeView;
 	private Composite parent;
-	
+
 	private IContextService contextService;
 
 	private IToolBarManager toolBar;
@@ -83,6 +104,53 @@ public class PandionJView extends ViewPart {
 		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
 
 		//		populateToolBar();
+
+//		if(System.getProperty("PandionJDebug") != null)
+//			Platform.addLogListener(new ILogListener() {
+//				@Override
+//				public void logging(IStatus status, String plugin) {
+//					Throwable throwable = status.getException();
+//					StackTraceElement[] stackTrace = throwable.getStackTrace();
+//					for(StackTraceElement e : stackTrace)
+//						if(e.getClassName().startsWith(PandionJConstants.PLUGIN_ID)) {
+//							status.getException().printStackTrace();
+//							IWorkbench wb = PlatformUI.getWorkbench();
+//							IWorkbenchWindow window = wb.getActiveWorkbenchWindow();
+//							IWorkbenchPage page = window.getActivePage();
+//							
+//							IEditorPart editor = page.getActiveEditor();
+//							IEditorInput input = editor.getEditorInput();
+//							int line = -1;
+//							if (editor instanceof ITextEditor) {
+//								ISelectionProvider selectionProvider = ((ITextEditor)editor).getSelectionProvider();
+//								ISelection selection = selectionProvider.getSelection();
+//								if (selection instanceof ITextSelection) {
+//									ITextSelection textSelection = (ITextSelection) selection;
+//									line = textSelection.getStartLine() + 1;
+//								}
+//							}
+//							IPath path = ((FileEditorInput)input).getPath();
+//							IFile file =  ResourcesPlugin.getWorkspace().getRoot().getFileForLocation(path);
+//							try {
+//								Scanner scanner = new Scanner(file.getContents());
+//								int i = 0;
+//								while(scanner.hasNextLine()) {
+//									 String nextLine = scanner.nextLine();
+//									i++;
+//									if(i == line) {
+//										System.err.println(">>>>" + nextLine);
+//										break;
+//									}
+//								}
+//								scanner.close();
+//							} catch (CoreException e1) {
+//								// TODO Auto-generated catch block
+//								e1.printStackTrace();
+//							}
+//							return;
+//						}
+//				}
+//			});
 	}
 
 
@@ -107,22 +175,25 @@ public class PandionJView extends ViewPart {
 		Composite introComp = new Composite(parent, SWT.NONE);
 		introComp.setLayoutData(new GridData(GridData.FILL_BOTH));
 		introComp.setLayout(new GridLayout());
-		
+
 		Image image = PandionJUI.getImage("pandionj.png");
 		Label imageLabel = new Label(introComp, SWT.NONE);
 		imageLabel.setImage(image);
 		imageLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-		
-	
+
 		Label versionLabel = new Label(introComp, SWT.NONE);
 		versionLabel.setText(getTitleToolTip());
 		versionLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
-		
+
 		Label labelInit = new Label(introComp, SWT.WRAP);
 		FontManager.setFont(labelInit, PandionJConstants.MESSAGE_FONT_SIZE, FontStyle.ITALIC);
 		labelInit.setForeground(ColorConstants.gray);
 		labelInit.setText(PandionJConstants.Messages.START);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+
+		Set<String> validTags = ExtensionManager.validTags();
+		introComp.setToolTipText(validTags.toString());
+
 		return introComp;
 	}
 
@@ -155,8 +226,14 @@ public class PandionJView extends ViewPart {
 						}
 						else {
 							thread.stepReturn();
-							//							thread.stepOver();
 						}
+
+						//						Job job = Job.create("Update table", (ICoreRunnable) monitor -> {
+						//							System.out.println("STEP");
+						//							thread.stepInto();
+						//						});
+						//						job.schedule(3000);
+
 					}
 					else if(e.getKind() == DebugEvent.CHANGE && e.getDetail() == DebugEvent.CONTENT) {
 						runtime = new RuntimeModel();
@@ -196,12 +273,12 @@ public class PandionJView extends ViewPart {
 	// must be invoked under executeInternal(..)
 	private void handleFrames(IJavaThread thread) throws DebugException {
 		assert thread != null;
-		
+
 		if(introScreen != null) {
 			introScreen.dispose();
 			introScreen = null;
 		}
-		
+
 		if(thread.getLaunch() != launch) {
 			launch = thread.getLaunch();
 			runtime = new RuntimeModel();

@@ -30,7 +30,7 @@ public class ArrayPrimitiveFigure extends AbstractArrayFigure<IValueModel> {
 	@Override
 	GridData createIndexLabelGridData() {
 		return new GridData(SWT.CENTER, SWT.BEGINNING, false, false);
-	}
+	}	
 	
 	public ConnectionAnchor getIncommingAnchor() {
 		return new CustomChopboxAnchor(this, (r) -> new Point(

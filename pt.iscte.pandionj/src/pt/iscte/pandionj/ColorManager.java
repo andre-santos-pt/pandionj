@@ -6,9 +6,6 @@ import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 
 public class ColorManager {
-	// fonts
-	// images
-
 	private static WeakHashMap<Integer, Color> cache = new WeakHashMap<Integer, Color>();
 
 	// TODO Color dispose

@@ -12,6 +12,7 @@ public interface IObjectModel extends IEntityModel {
 	String getStringValue();
 	
 	IArrayModel<?> getArray(String fieldName);
+	
 	int getInt(String fieldName);
 	
 	

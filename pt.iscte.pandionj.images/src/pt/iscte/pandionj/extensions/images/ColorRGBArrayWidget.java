@@ -12,6 +12,7 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
+// TODO alpha
 public class ColorRGBArrayWidget implements IArrayWidgetExtension {
 
 	@Override

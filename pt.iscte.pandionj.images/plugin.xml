@@ -2,7 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
    <extension
-         point="pt.iscte.pandionj.tags">
+         point="pt.iscte.pandionj.arraytags">
       <array-tag
             class="pt.iscte.pandionj.extensions.images.BinaryImageWidget"
             name="binaryimage">

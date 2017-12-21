@@ -40,7 +40,6 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 
 	public ValueFigure(IValueModel model) {
 		super(model, false);
-		this.model = model;
 		Role role = model.getRole();
 		
 		layout = new GridLayout(1, false);

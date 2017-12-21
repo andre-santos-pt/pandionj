@@ -34,10 +34,8 @@ import pt.iscte.pandionj.extensibility.PandionJConstants;
 public class ExtensionManager {
 
 	private static Map<String, IArrayWidgetExtension> arrayExtensions;
-
-	private static List<ITypeWidgetExtension> objectExtensions;
-
 	private static Map<String, IValueWidgetExtension> valueExtensions;
+	private static List<ITypeWidgetExtension> objectExtensions;
 
 	static {
 		IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
@@ -54,20 +52,7 @@ public class ExtensionManager {
 			}
 		}
 
-
-		objectExtensions = new ArrayList<>();
-		IConfigurationElement[] extsObj = extensionRegistry.getConfigurationElementsFor(PandionJConstants.TYPE_EXTENSION_ID);
-		for(IConfigurationElement e : extsObj) {
-			try {
-				ITypeWidgetExtension tw = (ITypeWidgetExtension) e.createExecutableExtension("class");
-				objectExtensions.add(tw);
-			} catch (CoreException e1) {
-				e1.printStackTrace();
-			}
-		}		
-
 		valueExtensions = new HashMap<>();
-		
 		IConfigurationElement[] extsValue = extensionRegistry.getConfigurationElementsFor(PandionJConstants.VALUETAG_EXTENSION_ID);
 		for(IConfigurationElement e : extsValue) {
 			try {
@@ -79,12 +64,19 @@ public class ExtensionManager {
 			}
 		}
 
+		objectExtensions = new ArrayList<>();
+		IConfigurationElement[] extsObj = extensionRegistry.getConfigurationElementsFor(PandionJConstants.TYPE_EXTENSION_ID);
+		for(IConfigurationElement e : extsObj) {
+			try {
+				ITypeWidgetExtension tw = (ITypeWidgetExtension) e.createExecutableExtension("class");
+				objectExtensions.add(tw);
+			} catch (CoreException e1) {
+				e1.printStackTrace();
+			}
+		}		
 	}
 
-
-	// TODO composite extension? (as TagExtension?)
 	public static IArrayWidgetExtension getArrayExtension(IArrayModel<?> m, Collection<String> tags) {
-
 		for (String tag : tags) {
 			IArrayWidgetExtension ext = arrayExtensions.get(tag);
 			if(ext != null && ext.accept(m))
@@ -94,6 +86,16 @@ public class ExtensionManager {
 	}
 
 
+	public static IValueWidgetExtension getValueExtension(IValueModel v, Collection<String> tags) {
+		for (String tag : tags) {
+			IValueWidgetExtension ext = valueExtensions.get(tag);
+			if(ext != null && ext.accept(v))
+				return ext;
+		}
+		
+		return IValueWidgetExtension.NULL_EXTENSION;
+	}
+	
 	public static ITypeWidgetExtension getObjectExtension(IObjectModel m) {
 		if(m.hasAttributeTags())
 			return new TagExtension(m.getAttributeTags());
@@ -107,20 +109,14 @@ public class ExtensionManager {
 		return ITypeWidgetExtension.NULL_EXTENSION;
 	}
 
-	public static IValueWidgetExtension getValueExtension(IValueModel v, Collection<String> tags) {
-		for (String tag : tags) {
-			IValueWidgetExtension ext = valueExtensions.get(tag);
-			if(ext != null && ext.accept(v))
-				return ext;
-		}
-		
-		return IValueWidgetExtension.NULL_EXTENSION;
+
+	public static Set<String> validTags() {
+		Set<String> validTags = new HashSet<String>();
+		validTags.addAll(arrayExtensions.keySet());
+		validTags.addAll(valueExtensions.keySet());
+		return validTags;
 	}
-
-	//	public static IObjectWidgetExtension createTagExtension(ObjectModel m) {
-	//		return new TagExtension(m.getAttributeTags());
-	//	}
-
+	
 	static class TagExtension implements ITypeWidgetExtension {
 
 		private Multimap<String, String> tags;
@@ -179,10 +175,5 @@ public class ExtensionManager {
 
 	}
 
-	public static Set<String> validTags() {
-		Set<String> validTags = new HashSet<String>();
-		validTags.addAll(arrayExtensions.keySet());
-		validTags.addAll(valueExtensions.keySet());
-		return validTags;
-	}
+	
 }
