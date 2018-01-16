@@ -195,18 +195,18 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	private void handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
 		// TODO future: return on frame
-		if(jv.getClass().getSimpleName().equals("JDIReturnValueVariable")) {
-			runtime.setReturnOnFrame(this, (IJavaValue) jv.getValue());
-			return;
-		}
+//		if(jv.getClass().getSimpleName().equals("JDIReturnValueVariable")) {
+//			runtime.setReturnOnFrame(this, (IJavaValue) jv.getValue());
+//			return;
+//		}
+		
 		String varName = jv.getName();
 		if(isInstance)
 			varName = "this." + varName;
 		
 		IJavaValue value = (IJavaValue) jv.getValue();
-
-		if(jv.isStatic()) {
-			if(!staticRefs.existsVar(this, varName) && jv.isPublic()) { // TODO review public
+		if(jv.isStatic() && !jv.isPrivate()) {
+			if(!staticRefs.existsVar(this, varName) ) { 
 				IVariableModel<?> newVar = createVar(jv, false, value);
 				staticRefs.add(this, newVar);
 			}
@@ -237,7 +237,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			new ValueModel(jv, isInstance, true, info, this);
 		
 		Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
-		System.out.println(jv.getName() + " " + tags);
 		newVar.setTags(tags);
 		return newVar;
 	}

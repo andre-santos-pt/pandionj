@@ -34,7 +34,7 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 	private static final int ANNOTATION_FONT_SIZE = (int) Math.round(PandionJConstants.VAR_FONT_SIZE/1.5);
 	
 	private ValueLabel valueLabel;
-	private IValueModel model;
+//	private IValueModel model;
 	private Figure extraFigure;
 	private GridLayout layout;
 
@@ -96,7 +96,10 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 					}
 					else if(Role.MOST_WANTED_HOLDER.equals(role)) {
 						List<String> history = model.getHistory();
-						String val = history.get(history.size()-2); // FIXME bug?
+						/* upon creation, the model has one element (initial);
+						 * because the update event is fired after modification, there is always at least 2 elements in history
+						 */
+						String val = history.get(history.size()-2); 
 						extraFigure.add(new HistoryLabel(val), 0);
 					}
 					layout();
@@ -207,8 +210,6 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			super(val);
 			FontManager.setFont(this, ANNOTATION_FONT_SIZE);
 			setForegroundColor(ColorConstants.gray);
-			// TODO text align center
-//			setLabelAlignment(PositionConstants.CENTER);
 			
 		}
 
@@ -219,11 +220,6 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			Rectangle r = getBounds();
 			g.drawLine(r.getTopLeft(), r.getBottomRight());
 		}
-
-//		@Override
-//		public Dimension getPreferredSize(int wHint, int hHint) {
-//			return new Dimension(valueLabel.getSize().width, Constants.POSITION_WIDTH/2);
-//		}
 	}
 
 	private class ArrowBorder implements Border {

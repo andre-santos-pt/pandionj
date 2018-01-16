@@ -83,8 +83,8 @@ public class RuntimeViewer extends Composite {
 		scroll.setContent(canvas);
 		addMenu();
 
-//				rootFig = new ScalableLayeredPane();
-//				((ScalableLayeredPane) rootFig).setScale(2);
+		//				rootFig = new ScalableLayeredPane();
+		//				((ScalableLayeredPane) rootFig).setScale(2);
 		rootFig = new Figure();
 		rootFig.setOpaque(true);
 		rootGrid = new GridLayout(2, false);
@@ -170,19 +170,14 @@ public class RuntimeViewer extends Composite {
 
 
 	public void updateLayout() {
-		//		org.eclipse.swt.graphics.Point prev = canvas.getSize();
-		Dimension size = rootFig.getPreferredSize();
-//		System.out.println("update " + size);
-		canvas.setSize(size.width, size.height);
-		
-//		canvas.layout();
-		//		if(size.height > prev.y)
-		//			scroll.setOrigin(0, size.height);
-
-		org.eclipse.draw2d.GridData d = (org.eclipse.draw2d.GridData) rootGrid.getConstraint(stackFig);
-		d.widthHint = Math.max(PandionJConstants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
-		rootGrid.layout(rootFig);
-		requestLayout();
+		if(!canvas.isDisposed()) {
+			Dimension size = rootFig.getPreferredSize();
+			canvas.setSize(size.width, size.height);
+			org.eclipse.draw2d.GridData d = (org.eclipse.draw2d.GridData) rootGrid.getConstraint(stackFig);
+			d.widthHint = Math.max(PandionJConstants.STACKCOLUMN_MIN_WIDTH, stackFig.getPreferredSize().width);
+			rootGrid.layout(rootFig);
+			requestLayout();
+		}
 	}
 
 
@@ -329,21 +324,9 @@ public class RuntimeViewer extends Composite {
 			}
 		});
 		canvas.setMenu(menu);
-
-
-		//		canvas.addKeyListener(new KeyAdapter() {
-		//			@Override
-		//			public void keyPressed(KeyEvent e) {
-		//				if(e.keyCode == SWT.CR) {
-		//					rootFig.setScale(rootFig.getScale()*1.1);
-		//					requestLayout();
-		//				}
-		//			}
-		//		});
 	}
 
 
-	// TODO save image
 	//	void saveImage() {
 	//		ImageLoader imageLoader = new ImageLoader();
 	//		imageLoader.data = new ImageData[] {ideaImageData};

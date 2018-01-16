@@ -22,6 +22,7 @@ import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.debug.core.model.IWatchExpressionResult;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
+import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
@@ -448,13 +449,13 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private boolean isMethodVisible(IMethod m) {
 		try {
 			int f = m.getFlags();
-			return 	extension.includeMethod(m.getElementName()) && 
-					(
-							!jType.isMember() && jType.getPackageFragment().isDefaultPackage() && 
-							(Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
-							||
-							Flags.isPublic(f)
-							);
+			return 	extension.includeMethod(m.getElementName()) && !jType.isMember() && isVisibleMember(m);
+//					(
+//							!jType.isMember() && jType.getPackageFragment().isDefaultPackage() && 
+//							(Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
+//							||
+//							Flags.isPublic(f)
+//							);
 		}
 		catch (JavaModelException e) {
 			e.printStackTrace();
@@ -465,14 +466,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private boolean isFieldVisible(IField m) {
 		try {
 			int f = m.getFlags();
-			return 	
-					!Flags.isStatic(f) &&
-					(
-							jType.getPackageFragment().isDefaultPackage() && 
-							(Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
-							||
-							Flags.isPublic(f)
-							);
+			return 	!Flags.isStatic(f) && isVisibleMember(m);
 		}
 		catch (JavaModelException e) {
 //			e.printStackTrace();
@@ -480,6 +474,16 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		}
 	}
 
+	static boolean isVisibleMember(IMember member) throws JavaModelException {
+		int f = member.getFlags();
+		IType jType = member.getDeclaringType();
+		return 
+			jType.getPackageFragment().isDefaultPackage() && (Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
+		||
+			Flags.isPublic(f);
+	
+	}
+	
 	@Override
 	public List<IMethod> getVisibleMethods() {
 		List<IMethod> list = new ArrayList<>();

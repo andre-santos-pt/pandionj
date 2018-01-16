@@ -154,7 +154,7 @@ public class LaunchCommand extends AbstractHandler {
 					boolean launchInit = false;
 					for (IInitializer init : type.getInitializers()) {
 						if(withinSourceRange(init, offset)) {
-							launch(file, line, type, "", mainMethod); // FIXME estoira
+							launch(file, line, type, agentArgs, mainMethod);
 							launchInit = true;
 							break;
 						}

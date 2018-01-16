@@ -9,7 +9,7 @@ import java.security.ProtectionDomain;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.CtField;
+import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
@@ -20,7 +20,7 @@ public class PandionJAgent {
 	private static String className;
 	private static String expression;
 	private static String methodSig;
-	
+
 	public static void premain(String agentArgs, Instrumentation inst) {
 		String[] split = agentArgs.split("\\|");
 		if(split.length != 3)
@@ -30,8 +30,6 @@ public class PandionJAgent {
 			expression = split[1];
 			methodSig = split[2];
 		}
-		int i = expression.indexOf("(");	
-		final String methodName = i == -1 ? "" : expression.substring(0, i);
 		inst.addTransformer(new ClassFileTransformer() {
 			@Override
 			public byte[] transform(ClassLoader classLoader, String s, Class<?> aClass, ProtectionDomain protectionDomain, byte[] bytes) throws IllegalClassFormatException {
@@ -49,26 +47,35 @@ public class PandionJAgent {
 							return null;
 						}
 						catch(NotFoundException e) {
-							CtMethod method = null;
-							try {
-								method = cc.getMethod(methodName, methodSig);
-							}
-							catch(NotFoundException ex) {
-								System.err.println("Could not find method: " + className + "." + methodName + " " + methodSig);
+							if(expression == null) {
 								CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
-								cc.addMethod(m); 
-								byte[] byteCode = cc.toBytecode();	
-								cc.detach();
-								return byteCode;
+								cc.addMethod(m);
+//								CtConstructor init = cc.getClassInitializer();
+//								init.insertAfter("System.out.print(\"\");");
 							}
-							CtClass retType = method.getReturnType();
-							
-							generateMain(cc, retType);
-							
-							// TODO: field for loose instances
-//							CtField f = new CtField(cp.get("java.lang.String"),"test",cc);
-//							f.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-//							cc.addField(f);
+							else {
+								int i = expression.indexOf("(");	
+								final String methodName = i == -1 ? "" : expression.substring(0, i);
+								CtMethod method = null;
+								try {
+									method = cc.getMethod(methodName, methodSig);
+								}
+								catch(NotFoundException ex) {
+									System.err.println("Could not find method: " + className + "." + methodName + " " + methodSig);
+									CtMethod m = CtNewMethod.make("public static void main(String[] args) {  }", cc);
+									cc.addMethod(m); 
+									byte[] byteCode = cc.toBytecode();	
+									cc.detach();
+									return byteCode;
+								}
+								CtClass retType = method.getReturnType();
+
+								generateMain(cc, retType);
+							}
+							// TODO future: field for loose instances
+							//							CtField f = new CtField(cp.get("java.lang.String"),"test",cc);
+							//							f.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
+							//							cc.addField(f);
 
 							byte[] byteCode = cc.toBytecode();	
 							cc.detach();
@@ -88,7 +95,7 @@ public class PandionJAgent {
 
 				String left = expression.replaceAll("\"", "\\\\\"");
 				String right = expression;
-				
+
 				if(retType.equals(CtClass.voidType)) {
 					m.insertAfter(expression + ";");
 				}
@@ -116,10 +123,10 @@ public class PandionJAgent {
 						inst = "System.out.println(\"" + left + " = \\\"\" + " + right + " + \"\\\"\");";
 					else
 						inst = "System.out.println(\"" + left + " = \" + " + right + ");";
-					
+
 					m.insertAfter(inst);
 				}
-				
+
 				m.insertAfter("System.exit(0);");
 			}
 

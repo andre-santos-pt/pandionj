@@ -94,30 +94,36 @@ public class TagParser {
 
 		@Override
 		public boolean visit(VariableDeclarationStatement node) {
-			VariableDeclarationFragment frag = (VariableDeclarationFragment) node.fragments().get(0);
-			String varName = frag.getName().getIdentifier();
-			int line = cunit.getLineNumber(node.getStartPosition());
-			Scope scope = new Scope(line, getEndLine(node.getParent(), cunit));
-			VariableTags tags = new VariableTags(varName, null, line, scope, false);
-			variables.add(tags);
+			List fragments = node.fragments();
+			for(Object o : fragments) {
+				VariableDeclarationFragment frag = (VariableDeclarationFragment) o;
+				String varName = frag.getName().getIdentifier();
+				int line = cunit.getLineNumber(frag.getStartPosition());
+				Scope scope = new Scope(line, getEndLine(node.getParent(), cunit));
+				VariableTags tags = new VariableTags(varName, null, line, scope, false);
+				variables.add(tags);
+			}
 			return super.visit(node);
 		}
 
 		@Override
 		public boolean visit(FieldDeclaration node) {
-			VariableDeclarationFragment frag = (VariableDeclarationFragment) node.fragments().get(0);
-			String varName = frag.getName().getIdentifier();
-			int line = cunit.getLineNumber(node.getStartPosition());
-			ASTNode parent = node.getParent();
-			Scope scope = new Scope(cunit.getLineNumber(parent.getStartPosition()), getEndLine(parent, cunit));
-			TypeDeclaration dec = (TypeDeclaration) node.getParent();
-			String qName = dec.getName().getFullyQualifiedName();
-			PackageDeclaration packageDec = cunit.getPackage();
-			if(packageDec != null)
-				qName = packageDec.getName().getFullyQualifiedName() + "." + qName;
-			String type = !Modifier.isStatic(node.getModifiers()) ? qName : null; 
-			VariableTags tags = new VariableTags(varName, type, line, scope, true);
-			variables.add(tags);
+			List fragments = node.fragments();
+			for(Object o : fragments) {
+				VariableDeclarationFragment frag = (VariableDeclarationFragment) o;
+				String varName = frag.getName().getIdentifier();
+				int line = cunit.getLineNumber(frag.getStartPosition());
+				ASTNode parent = node.getParent();
+				Scope scope = new Scope(cunit.getLineNumber(parent.getStartPosition()), getEndLine(parent, cunit));
+				TypeDeclaration dec = (TypeDeclaration) node.getParent();
+				String qName = dec.getName().getFullyQualifiedName();
+				PackageDeclaration packageDec = cunit.getPackage();
+				if(packageDec != null)
+					qName = packageDec.getName().getFullyQualifiedName() + "." + qName;
+				String type = !Modifier.isStatic(node.getModifiers()) ? qName : null; 
+				VariableTags tags = new VariableTags(varName, type, line, scope, true);
+				variables.add(tags);
+			}
 			return false;
 		}
 	}
@@ -134,14 +140,15 @@ public class TagParser {
 			comment = comment.substring(comment.indexOf('/')+2).trim();
 			String[] tags = comment.split("\\s+");
 
-			for (VariableTags t : variables)
+			for (VariableTags t : variables) {
 				if(t.declarationLine == line)
 					for(String tag : tags)
 						if(validTags.contains(tag))
 							t.addTag(tag);
+			}
 
 			return true;
-		}
+		}		
 	}
 
 	private static class VariableTags implements Comparable<VariableTags>{
@@ -201,7 +208,7 @@ public class TagParser {
 			return line >= firstLine && line <= lastLine;
 		}
 
-		
+
 
 		@Override
 		public String toString() {
@@ -243,7 +250,7 @@ public class TagParser {
 		public int compareTo(Scope s) {
 			return firstLine - s.firstLine;
 			// TODO repor???
-//			return this.equals(s) ? 0 : (isInnerScopeOf(s) ? -1 : 1);
+			//			return this.equals(s) ? 0 : (isInnerScopeOf(s) ? -1 : 1);
 		}
 	}
 }

@@ -26,6 +26,11 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 		map = new HashMap<>();
 	}
 
+	public void update(int step) {
+		for(IVariableModel<?> v : map.values())
+			v.update(step);
+	}
+	
 	public boolean existsVar(StackFrameModel stackFrameModel, String varName) throws DebugException {
 		return get(stackFrameModel, varName) != null;
 	}
@@ -124,6 +129,8 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	public Collection<IReferenceModel> getReferenceVariables() {
 		throw new UnsupportedOperationException();
 	}
+
+
 
 
 }

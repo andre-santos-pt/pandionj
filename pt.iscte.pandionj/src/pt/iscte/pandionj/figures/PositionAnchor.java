@@ -33,7 +33,7 @@ public class PositionAnchor extends AbstractConnectionAnchor {
 		},
 		LEFT {
 			@Override
-			public Point getPoint(Rectangle r) { //TODO only for array
+			public Point getPoint(Rectangle r) { // TODO only for array
 				return new Point(r.x+PandionJConstants.POSITION_WIDTH, r.y + r.height/2);
 			}
 		},

@@ -131,7 +131,6 @@ public class ExtensionManager {
 
 		@Override
 		public IFigure createFigure(IObjectModel m) {
-			// TODO observe ref change
 			m.registerDisplayObserver(new ModelObserver<Object>() {
 				@Override
 				public void update(Object arg) {
@@ -154,7 +153,6 @@ public class ExtensionManager {
 			return compositeFig;
 		}
 
-		// FIXME field values on null / undefined fields
 		private void addChildFigures(IObjectModel m, String attName) {
 			IArrayModel<?> array = m.getArray(attName);
 			if(array != null) {

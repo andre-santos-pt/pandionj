@@ -90,7 +90,7 @@ implements IRuntimeModel {
 		//								setChanged();
 		//						}
 		//						catch(DebugException e) {
-		//							//							throw e; // TODO propagate exception
+		//							//							throw e;
 		//						}
 		//					}
 		//				});
@@ -99,6 +99,7 @@ implements IRuntimeModel {
 
 		PandionJView.getInstance().executeInternal(() -> {
 			handle(thread.getStackFrames());
+			staticRefs.update(step);
 		});
 
 		updateActiveStack();

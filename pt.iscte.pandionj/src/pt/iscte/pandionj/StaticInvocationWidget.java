@@ -2,6 +2,7 @@ package pt.iscte.pandionj;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -196,7 +197,8 @@ public class StaticInvocationWidget extends Composite {
 		String[] parameterTypes = method.getParameterTypes();
 		boolean allValid = true;
 		for(int i = 0; i < paramBoxes.length; i++) {
-			boolean v = valid(paramBoxes[i], Signature.getSignatureSimpleName(parameterTypes[i]));
+			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
+			boolean v = valid(paramBoxes[i], pType);
 			if(!v)
 				allValid = false;
 		}
@@ -208,6 +210,18 @@ public class StaticInvocationWidget extends Composite {
 		return validValue(combo.getText(), pType, combo) ||  containsItem(combo, combo.getText());
 	}
 
+	private static final String INT_REGEX = "\\-?\\s*\\d+";
+	private static final String DOUBLE_REGEX = "\\-?\\s*\\d*\\.?\\d+";
+	
+	private static String regexArray(String compType) {
+		return "\\s*((\\{\\s*\\})|(\\{\\s*" + compType + "\\s*+(,\\s*" + compType + "\\s*)*\\s*\\}))\\s*";
+	}
+	
+	private static String regexIntArray = regexArray(INT_REGEX);
+	private static String regexDoubleArray = regexArray(DOUBLE_REGEX);
+	private static String regexBooleanArray = regexArray("(true|false)");
+	private static String regexCharArray = regexArray("'.'");
+	
 	private boolean validValue(String val, String pType, Combo combo) {
 		try {
 			if(pType.equals(String.class.getSimpleName())) return val.matches("(\"(.)*\")|null");
@@ -219,6 +233,12 @@ public class StaticInvocationWidget extends Composite {
 			else if(pType.equals(long.class.getName())) Long.parseLong(val);
 			else if(pType.equals(float.class.getName())) Float.parseFloat(val);
 			else if(pType.equals(double.class.getName())) Double.parseDouble(val);
+			
+			else if(pType.equals(int.class.getName() + "[]")) return val.matches(regexIntArray);
+			else if(pType.equals(double.class.getName() + "[]")) return val.matches(regexDoubleArray);
+			else if(pType.equals(boolean.class.getName() + "[]")) return val.matches(regexBooleanArray);
+			else if(pType.equals(char.class.getName() + "[]")) return val.matches(regexCharArray);
+			
 			else return false;
 		}
 		catch(RuntimeException e) {
@@ -264,12 +284,20 @@ public class StaticInvocationWidget extends Composite {
 	}
 
 	private String convertForTypedInvocation(String val, String pType) {
+		
 		if(pType.matches("byte|short|long"))
 			return "(" + pType + ")" + val;
 		if(pType.equals(float.class.getName()) && !val.endsWith("f"))
 			return val + "f";
 		else if(pType.equals(double.class.getName()) && val.indexOf('.') == -1)
 			return val + ".0";
+		
+		else if(pType.endsWith("[]") && val.contains("{"))
+			if(val.matches("\\s*\\{\\s*\\}\\s*"))
+				return "new " + pType.replace("[]", "[0]");
+			else
+				return "new " + pType + val;
+		
 		else
 			return val;
 	}

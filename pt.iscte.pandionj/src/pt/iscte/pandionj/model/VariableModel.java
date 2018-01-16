@@ -95,8 +95,8 @@ implements IVariableModel<O> {
 	@SuppressWarnings("unchecked")
 	@Override
 	public boolean update(int step) {
-		try { // TODO ObjectCollectedException?
-			StepValue current = history.get(history.size()-1); // FIXME
+		try {
+			StepValue current = history.get(history.size()-1);
 			boolean equals = variable.getValue().equals(current.value);
 			if(!equals) {
 				StepValue sv = new StepValue((T) variable.getValue(), step);
