@@ -222,6 +222,8 @@ public class StaticInvocationWidget extends Composite {
 	private static String regexBooleanArray = regexArray("(true|false)");
 	private static String regexCharArray = regexArray("'.'");
 	
+//	private static String regexIntMatrix = "\\s*(\\{\\s*\\}\\s*)|(\\{" + regexIntArray + "(," + regexIntArray + ")*" + "\\})\\s*";
+	
 	private boolean validValue(String val, String pType, Combo combo) {
 		try {
 			if(pType.equals(String.class.getSimpleName())) return val.matches("(\"(.)*\")|null");
@@ -238,6 +240,8 @@ public class StaticInvocationWidget extends Composite {
 			else if(pType.equals(double.class.getName() + "[]")) return val.matches(regexDoubleArray);
 			else if(pType.equals(boolean.class.getName() + "[]")) return val.matches(regexBooleanArray);
 			else if(pType.equals(char.class.getName() + "[]")) return val.matches(regexCharArray);
+			
+//			else if(pType.equals(int.class.getName() + "[][]")) return val.matches(regexIntMatrix);
 			
 			else return false;
 		}
@@ -292,24 +296,19 @@ public class StaticInvocationWidget extends Composite {
 		else if(pType.equals(double.class.getName()) && val.indexOf('.') == -1)
 			return val + ".0";
 		
-		else if(pType.endsWith("[]") && val.contains("{"))
+//		else if(pType.endsWith("[][]") && val.contains("{")) {
+//			return "new " + pType + " " + val;
+//		}
+		else if(pType.endsWith("[]") && val.contains("{")) {
 			if(val.matches("\\s*\\{\\s*\\}\\s*"))
 				return "new " + pType.replace("[]", "[0]");
 			else
 				return "new " + pType + val;
-		
+		}
 		else
 			return val;
 	}
 
-
-//	private static boolean contains(String[] items, String s) {
-//		for(String i : items)
-//			if(i.equals(s))
-//				return true;
-//
-//		return false;
-//	}
 
 	@Override
 	public boolean setFocus() {

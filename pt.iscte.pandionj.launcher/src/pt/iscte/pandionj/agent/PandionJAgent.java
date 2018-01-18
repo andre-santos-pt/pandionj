@@ -54,6 +54,7 @@ public class PandionJAgent {
 //								init.insertAfter("System.out.print(\"\");");
 							}
 							else {
+								System.out.println(expression);
 								int i = expression.indexOf("(");	
 								final String methodName = i == -1 ? "" : expression.substring(0, i);
 								CtMethod method = null;
@@ -98,6 +99,7 @@ public class PandionJAgent {
 
 				if(retType.equals(CtClass.voidType)) {
 					m.insertAfter(expression + ";");
+					System.out.println(m);
 				}
 				else if(retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
 					String inst = "System.out.println(\"" + left + " = \" + java.util.Arrays.toString((" + retType.getComponentType().getName() +"[])" + right + "));";
