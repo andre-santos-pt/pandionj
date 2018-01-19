@@ -1,0 +1,18 @@
+#msg-box5-1 .mbr-header__text {
+  color: #ffffff;
+}
+#msg-box5-1 .mbr-header__subtext {
+  color: #ffffff;
+}
+#msg-box5-1 .mbr-article {
+  color: #ffffff;
+}
+#menu-3 .mbr-brand__name {
+  font-size: 16px;
+}
+#menu-3.mbr-navbar--stuck .mbr-navbar__section {
+  background: #2c2c2c;
+}
+#menu-3 .mbr-navbar__hamburger {
+  color: #ffffff;
+}
