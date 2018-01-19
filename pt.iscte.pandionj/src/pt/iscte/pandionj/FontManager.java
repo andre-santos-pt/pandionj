@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.eclipse.draw2d.Figure;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;

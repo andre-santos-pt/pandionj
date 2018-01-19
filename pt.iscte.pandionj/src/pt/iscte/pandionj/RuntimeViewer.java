@@ -346,4 +346,15 @@ public class RuntimeViewer extends Composite {
 	}
 
 
+	void saveToImageFile() {
+		Dimension size = rootFig.getPreferredSize();
+		Image image = new Image(Display.getDefault(), size.width, size.height);
+		GC gc = new GC(image);
+		SWTGraphics graphics = new SWTGraphics(gc);
+		rootFig.paint(graphics);
+		Clipboard clipboard = new Clipboard(Display.getDefault());
+		clipboard.setContents(new Object[]{image.getImageData()}, new Transfer[]{ ImageTransfer.getInstance()}); 
+		image.dispose();
+		gc.dispose();
+	}
 }

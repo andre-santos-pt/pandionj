@@ -9,7 +9,6 @@ import java.security.ProtectionDomain;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
-import javassist.CtConstructor;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
@@ -54,12 +53,20 @@ public class PandionJAgent {
 //								init.insertAfter("System.out.print(\"\");");
 							}
 							else {
-								System.out.println(expression);
 								int i = expression.indexOf("(");	
 								final String methodName = i == -1 ? "" : expression.substring(0, i);
-								CtMethod method = null;
+								CtClass retType = null;
+//								CtMethod method = null;
 								try {
-									method = cc.getMethod(methodName, methodSig);
+									if(expression.startsWith("new")) {
+										//CtConstructor constructor = cc.getConstructor(methodSig);
+										retType = cc;
+//										CtField f = new CtField(retType,"test",cc);
+//										f.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
+//										cc.addField(f, expression);
+										
+									} else
+										retType = cc.getMethod(methodName, methodSig).getReturnType();
 								}
 								catch(NotFoundException ex) {
 									System.err.println("Could not find method: " + className + "." + methodName + " " + methodSig);
@@ -69,7 +76,7 @@ public class PandionJAgent {
 									cc.detach();
 									return byteCode;
 								}
-								CtClass retType = method.getReturnType();
+//								CtClass retType = method.getReturnType();
 
 								generateMain(cc, retType);
 							}
@@ -99,7 +106,6 @@ public class PandionJAgent {
 
 				if(retType.equals(CtClass.voidType)) {
 					m.insertAfter(expression + ";");
-					System.out.println(m);
 				}
 				else if(retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {
 					String inst = "System.out.println(\"" + left + " = \" + java.util.Arrays.toString((" + retType.getComponentType().getName() +"[])" + right + "));";

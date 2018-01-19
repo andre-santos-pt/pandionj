@@ -172,7 +172,9 @@ public class LaunchCommand extends AbstractHandler {
 						else {
 							IMethod selectedMethod = null;
 							for (IMethod m : type.getMethods()) {
-								if(Modifier.isStatic(m.getFlags()) && withinSourceRange(m, offset)) {							
+//								TODO future: constructor invocation?
+//								if((Modifier.isStatic(m.getFlags()) || m.isConstructor()) && withinSourceRange(m, offset) && !Modifier.isPrivate(m.getFlags())) {							
+								if(Modifier.isStatic(m.getFlags()) && withinSourceRange(m, offset) && !Modifier.isPrivate(m.getFlags())) {							
 									selectedMethod = m;
 									break;
 								}
@@ -188,7 +190,6 @@ public class LaunchCommand extends AbstractHandler {
 								InvocationAction action = new InvocationAction() {
 									@Override
 									public void invoke(String expression, String[] paramValues) {
-//										shell.setVisible(false);
 										args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
 										try {
 											launch(file, lineFinal, t, args, mainMethod);
@@ -201,7 +202,7 @@ public class LaunchCommand extends AbstractHandler {
 							}
 							else {  // no params
 								if(PandionJUI.checkView()) {
-									args = agentArgs + "|" + selectedMethod.getElementName() + "()" + "|" + methodSig;
+									args = agentArgs + "|" + (selectedMethod.isConstructor() ? "new " + selectedMethod.getElementName() : selectedMethod.getElementName()) + "()" + "|" + methodSig;
 									launch(file, line, type, args, mainMethod);
 								}
 							}

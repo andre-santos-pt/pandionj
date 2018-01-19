@@ -29,8 +29,8 @@ import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.InvokeDialog;
 import pt.iscte.pandionj.PandionJView;
-import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.RuntimeViewer;
+import pt.iscte.pandionj.parser.ParserManager;
 import pt.iscte.pandionj.parser.VarParser;
 
 public interface PandionJUI {

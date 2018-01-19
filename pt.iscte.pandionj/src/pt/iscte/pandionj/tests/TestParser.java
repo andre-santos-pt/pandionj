@@ -133,14 +133,12 @@ public class TestParser {
 		
 		@Override
 		public boolean visit(PrefixExpression node) {
-			// TODO completar
 			System.out.println("PrefixExpression (por completar): " + node.toString());
 			return super.visit(node);
 		}
 		
 		@Override
 		public boolean visit(PostfixExpression node) {
-			// TODO completar
 			System.out.println("PostfixExpression (por completar): " + node.toString());
 			return super.visit(node);
 		}

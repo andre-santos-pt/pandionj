@@ -42,7 +42,6 @@ import com.sun.jdi.InvocationException;
 import com.sun.jdi.ReferenceType;
 
 import pt.iscte.pandionj.ExtensionManager;
-import pt.iscte.pandionj.ParserManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
@@ -52,6 +51,7 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.RuntimeModel.ReferencePath;
+import pt.iscte.pandionj.parser.ParserManager;
 
 @SuppressWarnings("restriction")
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {

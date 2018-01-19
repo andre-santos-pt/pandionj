@@ -1,4 +1,4 @@
-package pt.iscte.pandionj;
+package pt.iscte.pandionj.parser;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -7,8 +7,7 @@ import java.util.WeakHashMap;
 
 import org.eclipse.core.resources.IFile;
 
-import pt.iscte.pandionj.parser.TagParser;
-import pt.iscte.pandionj.parser.VarParser;
+import pt.iscte.pandionj.ExtensionManager;
 
 public class ParserManager {
 
@@ -28,6 +27,7 @@ public class ParserManager {
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
 		}
+		r.print();
 		return r;
 	}
 	

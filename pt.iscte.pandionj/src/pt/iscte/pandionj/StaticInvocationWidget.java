@@ -2,7 +2,6 @@ package pt.iscte.pandionj;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -98,7 +97,7 @@ public class StaticInvocationWidget extends Composite {
 		comboComp.setLayout(comboLayout);
 		Combo combo = new Combo(comboComp, SWT.DROP_DOWN);
 		combo.setToolTipText(pType);
-		int comboWidth = pType.equals(String.class.getSimpleName()) ? PandionJConstants.COMBO_STRING_WIDTH : PandionJConstants.COMBO_WIDTH; 
+		int comboWidth = pType.equals(String.class.getSimpleName()) || pType.endsWith("[]") ? PandionJConstants.COMBO_STRING_WIDTH : PandionJConstants.COMBO_WIDTH; 
 		combo.setLayoutData(new GridData(comboWidth, SWT.DEFAULT));
 
 		Label varName = new Label(comboComp, SWT.NONE);
@@ -284,7 +283,12 @@ public class StaticInvocationWidget extends Composite {
 			values[i] = convertForTypedInvocation(values[i], pType);
 		}
 
-		return methodName + "(" + String.join(", ", values) + ")";
+		try {
+			return (method.isConstructor() ? "new " + method.getElementName() : methodName) + "(" + String.join(", ", values) + ")";
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	private String convertForTypedInvocation(String val, String pType) {
@@ -303,7 +307,7 @@ public class StaticInvocationWidget extends Composite {
 			if(val.matches("\\s*\\{\\s*\\}\\s*"))
 				return "new " + pType.replace("[]", "[0]");
 			else
-				return "new " + pType + val;
+				return "new " + pType + " " + val;
 		}
 		else
 			return val;
