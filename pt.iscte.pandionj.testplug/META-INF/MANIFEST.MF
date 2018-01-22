@@ -1,0 +1,7 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Testplug
+Bundle-SymbolicName: pt.iscte.pandionj.testplug;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: pt.iscte.pandionj;bundle-version="0.2.0"

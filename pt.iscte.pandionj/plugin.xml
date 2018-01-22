@@ -32,11 +32,13 @@
          point="pt.iscte.pandionj.arraytags">
       <array-tag
             class="pt.iscte.pandionj.extensions.StringCharArray"
-            name="string">
+            name="string"
+            where="char[] to display its contents as a string">
       </array-tag>
       <array-tag
             class="pt.iscte.pandionj.extensions.MatrixWidget"
-            name="matrix">
+            name="matrix"
+            where="well-formed matrix (all lines of same length) to render as an Algebra matrix">
       </array-tag>
    </extension>
    <extension
@@ -48,16 +50,6 @@
             class="pt.iscte.pandionj.extensions.IterableWidget">
       </widget>
    </extension>
-   <extension
-         point="pt.iscte.pandionj.valuetags">
-      <value-tag
-            class="pt.iscte.pandionj.extensions.ColorARGBWidget"
-            name="color">
-      </value-tag>
-      <value-tag
-            class="pt.iscte.pandionj.extensions.BinaryWidget"
-            name="binary">
-      </value-tag>
-   </extension>
+  
 
 </plugin>

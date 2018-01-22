@@ -5,8 +5,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.Set;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
@@ -37,6 +37,8 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -44,6 +46,7 @@ import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbench;
@@ -158,14 +161,32 @@ public class PandionJView extends ViewPart {
 		versionLabel.setText(getTitleToolTip());
 		versionLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
 
+		Link pluginLabel = new Link(introComp, SWT.NONE);
+		pluginLabel.setText("<a>view installed tags (@)</a>");
+		pluginLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
+		pluginLabel.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				String info = "";
+				
+				for (ExtensionManager.TagDescription desc : ExtensionManager.getTagDescriptions()) {
+					String where = desc.description;
+					if(where == null)
+						where = "";
+					else
+						where += "\n";
+					info += desc.tag + "\n" + where + "\n";
+				}
+				MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Installed tags", info);
+			}
+		});
+
+		
 		Label labelInit = new Label(introComp, SWT.WRAP);
 		FontManager.setFont(labelInit, PandionJConstants.MESSAGE_FONT_SIZE, FontStyle.ITALIC);
 		labelInit.setForeground(ColorConstants.gray);
 		labelInit.setText(PandionJConstants.Messages.START);
 		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
-
-		Set<String> validTags = ExtensionManager.validTags();
-		introComp.setToolTipText(validTags.toString());
 
 		return introComp;
 	}

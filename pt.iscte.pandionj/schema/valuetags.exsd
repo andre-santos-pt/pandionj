@@ -3,10 +3,10 @@
 <schema targetNamespace="pt.iscte.pandionj" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="pt.iscte.pandionj" id="valuewidgets" name="Value Widgets"/>
+         <meta.schema plugin="pt.iscte.pandionj" id="valuetags" name="Value tags"/>
       </appinfo>
       <documentation>
-         [Enter description of this extension point.]
+         This extension point allows plugins to contribute with code tags to annotate primitive variable declarations.
       </documentation>
    </annotation>
 
@@ -64,6 +64,13 @@
                <appinfo>
                   <meta.attribute kind="java" basedOn=":pt.iscte.pandionj.extensibility.IValueWidgetExtension"/>
                </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="where" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>

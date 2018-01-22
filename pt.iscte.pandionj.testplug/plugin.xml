@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+  <extension
+         point="pt.iscte.pandionj.valuetags">
+      <value-tag
+            class="pt.iscte.pandionj.testplug.ColorARGBWidget"
+            name="color"
+            where="int variable encoded as ARGB">
+      </value-tag>
+      <value-tag
+            class="pt.iscte.pandionj.testplug.BinaryWidget"
+            name="binary"
+            where="integer variable (byte/short/int/long) to be rendered in binary form">
+      </value-tag>
+   </extension>
+
+</plugin>

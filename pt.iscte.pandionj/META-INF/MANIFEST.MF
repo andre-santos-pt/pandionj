@@ -5,7 +5,7 @@ Bundle-SymbolicName: pt.iscte.pandionj;singleton:=true
 Bundle-Version: 0.2
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.jdt.core,
+ org.eclipse.jdt.core;visibility:=reexport,
  com.google.guava,
  org.eclipse.jdt.debug,
  org.eclipse.ui.ide,

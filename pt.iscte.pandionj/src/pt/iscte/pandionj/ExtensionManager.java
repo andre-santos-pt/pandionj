@@ -34,31 +34,44 @@ import pt.iscte.pandionj.extensibility.PandionJConstants;
 public class ExtensionManager {
 
 	private static Map<String, IArrayWidgetExtension> arrayExtensions;
+	private static Map<String, String> arrayExtensionDescriptions;
+
 	private static Map<String, IValueWidgetExtension> valueExtensions;
+	private static Map<String, String> valueExtensionDescriptions;
+	
 	private static List<ITypeWidgetExtension> objectExtensions;
 
 	static {
 		IExtensionRegistry extensionRegistry = Platform.getExtensionRegistry();
 
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
+		arrayExtensionDescriptions = new HashMap<String, String>();
+		
 		IConfigurationElement[] extsArray = extensionRegistry.getConfigurationElementsFor(PandionJConstants.ARRAYTAG_EXTENSION_ID);
 		for(IConfigurationElement e : extsArray) {
 			try {
 				String name = e.getAttribute("name");
 				IArrayWidgetExtension ae = (IArrayWidgetExtension) e.createExecutableExtension("class");
-				arrayExtensions.put("@" + name, ae);
+				String tag = "@" + name;
+				arrayExtensions.put(tag, ae);
+				arrayExtensionDescriptions.put(tag, e.getAttribute("where"));
 			} catch (CoreException e1) {
 				e1.printStackTrace();
 			}
 		}
 
 		valueExtensions = new HashMap<>();
+		valueExtensionDescriptions = new HashMap<String, String>();
+		
 		IConfigurationElement[] extsValue = extensionRegistry.getConfigurationElementsFor(PandionJConstants.VALUETAG_EXTENSION_ID);
 		for(IConfigurationElement e : extsValue) {
 			try {
 				String name = e.getAttribute("name");
 				IValueWidgetExtension ae = (IValueWidgetExtension) e.createExecutableExtension("class");
-				valueExtensions.put("@" + name, ae);
+				String tag = "@" + name;
+				valueExtensions.put(tag, ae);
+				valueExtensionDescriptions.put(tag, e.getAttribute("where"));
+
 			} catch (CoreException e1) {
 				e1.printStackTrace();
 			}
@@ -115,6 +128,37 @@ public class ExtensionManager {
 		validTags.addAll(arrayExtensions.keySet());
 		validTags.addAll(valueExtensions.keySet());
 		return validTags;
+	}
+	
+	static class TagDescription {
+		final String tag;
+		String description;
+
+		TagDescription(String tag, String description) {
+			this.tag = tag;
+			this.description = description;
+		}
+	}
+	
+	public static List<TagDescription> getTagDescriptions() {
+		List<TagDescription> list = new ArrayList<>();
+		for(Entry<String, String> e : arrayExtensionDescriptions.entrySet())
+			list.add(new TagDescription(e.getKey(), e.getValue()));
+		
+		for(Entry<String, String> e : valueExtensionDescriptions.entrySet()) {
+			TagDescription existing = null;
+			for(TagDescription t : list)
+				if(t.tag.equals(e.getKey())) {
+					existing = t;
+					break;
+				}
+			
+			if(existing == null)
+				list.add(new TagDescription(e.getKey(), e.getValue()));
+			else
+				existing.description += "\n" + e.getValue();
+		}
+		return list;
 	}
 	
 	static class TagExtension implements ITypeWidgetExtension {

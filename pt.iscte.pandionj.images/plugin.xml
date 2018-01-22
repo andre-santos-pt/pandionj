@@ -5,19 +5,23 @@
          point="pt.iscte.pandionj.arraytags">
       <array-tag
             class="pt.iscte.pandionj.extensions.images.BinaryImageWidget"
-            name="binaryimage">
+            name="binaryimage"
+            where="well-formed boolean[][] matrix to display as a binaryimage (#lines = height)">
       </array-tag>
       <array-tag
             class="pt.iscte.pandionj.extensions.images.GrayscaleImageWidget"
-            name="grayscaleimage">
+            name="grayscaleimage"
+            where="well-formed int[][] matrix to display as a grayscale image (#lines = height)">
       </array-tag>
        <array-tag
-            class="pt.iscte.pandionj.extensions.images.ColorImageWidget"
-            name="colorimage">
+             class="pt.iscte.pandionj.extensions.images.ColorImageWidget"
+             name="colorimage"
+             where="well-formed int[][] matrix to display as a color image (#lines = height)">
       </array-tag>
         <array-tag
-            class="pt.iscte.pandionj.extensions.images.ColorRGBArrayWidget"
-            name="color">
+              class="pt.iscte.pandionj.extensions.images.ColorRGBArrayWidget"
+              name="color"
+              where="int[] array with length equal to 3 and values within [0, 255]">
       </array-tag>
    </extension>
 

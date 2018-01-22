@@ -3,10 +3,10 @@
 <schema targetNamespace="pt.iscte.pandionj" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
-         <meta.schema plugin="pt.iscte.pandionj" id="tags" name="Custom tags"/>
+         <meta.schema plugin="pt.iscte.pandionj" id="arraytags" name="Array tags"/>
       </appinfo>
       <documentation>
-         [Enter description of this extension point.]
+         This extension point allows plugins to contribute with code tags to annotate array reference declarations.
       </documentation>
    </annotation>
 
@@ -64,6 +64,13 @@
                <appinfo>
                   <meta.attribute kind="java" basedOn=":pt.iscte.pandionj.extensibility.IArrayIndexModel"/>
                </appinfo>
+            </annotation>
+         </attribute>
+         <attribute name="where" type="string">
+            <annotation>
+               <documentation>
+                  
+               </documentation>
             </annotation>
          </attribute>
       </complexType>

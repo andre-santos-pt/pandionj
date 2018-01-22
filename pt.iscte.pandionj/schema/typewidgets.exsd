@@ -6,7 +6,7 @@
          <meta.schema plugin="pt.iscte.pandionj" id="typewidgets" name="Type Widgets"/>
       </appinfo>
       <documentation>
-         [Enter description of this extension point.]
+         This extension point allows plugins to contribute with widgets for rendering specific object types.
       </documentation>
    </annotation>
 

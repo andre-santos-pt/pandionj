@@ -1,4 +1,6 @@
-package pt.iscte.pandionj.extensions;
+package pt.iscte.pandionj.testplug;
+
+
 
 
 import org.eclipse.draw2d.ColorConstants;
@@ -9,14 +11,13 @@ import org.eclipse.draw2d.LineBorder;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IValueWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJUI;
-import pt.iscte.pandionj.model.PrimitiveType;
 
 public class BinaryWidget implements IValueWidgetExtension {
 	private Label label;
 	
 	@Override
 	public boolean accept(IValueModel v) {
-		return PrimitiveType.isInteger(v.getTypeName());
+		return v.getTypeName().matches("byte|short|long|int");
 	}
 
 	@Override
