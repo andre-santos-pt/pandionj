@@ -90,5 +90,10 @@ public class MockStackFrame implements IStackFrameModel {
 		return false;
 	}
 
+	@Override
+	public StackEvent<String> getExceptionEvent() {
+		return null;
+	}
+
 	
 }

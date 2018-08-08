@@ -86,25 +86,25 @@ public class ObjectContainer extends Figure {
 	}
 
 
-	public void updateIllustration(IReferenceModel v, ExceptionType exception) {
+	public void updateIllustration(IReferenceModel v, Object illustrationArg) {
 		IEntityModel target = v.getModelTarget();
 		PandionJFigure<?> fig = locateFigureInContainers(target); //getChild(target);
 		if(fig != null) {
-			handleIllustration(v, fig.getInnerFigure(), exception);
+			handleIllustration(v, fig.getInnerFigure(), illustrationArg);
 
 			if(target instanceof IArrayModel && ((IArrayModel<?>) target).isReferenceType()) {
 				IArrayModel<?> a = (IArrayModel<?>) target;
 				for (Object e : a.getModelElements())
-					updateIllustration((IReferenceModel) e, exception);
+					updateIllustration((IReferenceModel) e, illustrationArg);
 			}
 		}
 	}
 
 
-	private void handleIllustration(IReferenceModel reference, IFigure targetFig, ExceptionType exception) {
+	private void handleIllustration(IReferenceModel reference, IFigure targetFig, Object illustrationArg) {
 		if(targetFig instanceof AbstractArrayFigure) {
 			if(reference.hasIndexVars()) {
-				IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig, exception);
+				IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig, (Integer) illustrationArg);
 				targetFig.setBorder(b);
 			}
 			else {

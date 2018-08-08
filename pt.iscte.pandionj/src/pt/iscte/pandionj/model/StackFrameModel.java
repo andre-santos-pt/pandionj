@@ -16,15 +16,20 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaArray;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
+import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIReturnValueVariable;
+import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent.Type;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.ParserManager;
 import pt.iscte.pandionj.parser.VarParser;
@@ -45,6 +50,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	private boolean obsolete;
 	private String returnValue;
+	
 	private String exceptionType;
 
 	private int step;
@@ -194,10 +200,24 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	private void handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
 		// TODO future: return on frame
-//		if(jv.getClass().getSimpleName().equals("JDIReturnValueVariable")) {
-//			runtime.setReturnOnFrame(this, (IJavaValue) jv.getValue());
-//			return;
-//		}
+		if(jv instanceof JDIReturnValueVariable) {
+			JDIReturnValueVariable retvar = (JDIReturnValueVariable) jv;
+			if(retvar.hasResult) {
+				IJavaValue retVal = (IJavaValue) jv.getValue();
+				runtime.setReturnOnFrame(this, retVal);
+				System.out.println("RET:" + jv.getName() + "  " + jv.getValue().getClass());
+//				if(retVal instanceof IJavaObject) {
+//					IJavaObject retObj = (IJavaObject) retVal;
+//					IJavaType javaType = retObj.getJavaType();
+//					System.out.println("TYPE:" + javaType.getName());
+//					if(javaType.getName().equals(ArrayIndexOutOfBoundsException.class.getName())) {
+//						IJavaFieldVariable field = retObj.getField("detailMessage", true);
+//						System.out.println("MSG: " + field.getValue());
+//					}
+//				}
+			}
+			return;
+		}
 		
 		String varName = jv.getName();
 		if(isInstance)
@@ -346,7 +366,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		this.returnValue = valueToString(v);
 		obsolete = true;
 		setChanged();
-		notifyObservers();
+		notifyObservers(new StackEvent<String>(StackEvent.Type.RETURN_VALUE, v.toString()));
 	}
 
 	public String getInvocationExpression() {
@@ -362,19 +382,16 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			return super.toString();
 	}
 
-	public void processException(String exceptionType, int line) {
+	private StackEvent<String> exceptionEvent;
+	
+	public void processException(String exceptionType, int line, String message) {
 		this.exceptionType = exceptionType;
-
-		//		Collection<JavaException> collection = codeAnalysis.lineExceptions.get(line);
-		//		for(JavaException e : collection)
-		//			if(e instanceof ArrayOutOfBounds) {
-		//				ArrayOutOfBounds ae = (ArrayOutOfBounds) e;
-		//				ArrayPrimitiveModel arrayModel = (ArrayPrimitiveModel) ((ReferenceModel) vars.get(ae.arrayName)).getModelTarget();
-		//				arrayModel.setVarError(ae.arrayAccess);
-		//			}
-
+		StackEvent.Type type = exceptionType.equals(ArrayIndexOutOfBoundsException.class.getName()) ? 
+				StackEvent.Type.ARRAY_INDEX_EXCEPTION : StackEvent.Type.EXCEPTION;
+		String arg = type == StackEvent.Type.ARRAY_INDEX_EXCEPTION ? message : exceptionType;
+		exceptionEvent = new StackEvent<String>(type, arg);
 		setChanged();
-		notifyObservers(new StackEvent<String>(StackEvent.Type.EXCEPTION, exceptionType));
+		notifyObservers(exceptionEvent);
 	}
 
 	public IJavaProject getJavaProject() {
@@ -386,6 +403,10 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		return obsolete;
 	}
 
+	public StackEvent<String> getExceptionEvent() {
+		return exceptionEvent;
+	}
+	
 	public boolean exceptionOccurred() {
 		return exceptionType != null;
 	}
@@ -393,7 +414,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public String getExceptionType() {
 		return exceptionType;
 	}
-
+	
 	public int getRunningStep() {
 		return step;
 	}

@@ -59,11 +59,25 @@ public class StackFrameFigure extends Figure {
 			});
 		}
 
-		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
+//		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
 		for (IVariableModel<?> v : frame.getAllVariables()) {
-			addVariable(v, exception);
+			addVariable(v);
 		}
 
+		if(frame.exceptionOccurred()) {
+			Object illustrationArg = null;
+			StackEvent<String> exception = frame.getExceptionEvent();
+			if(exception.type == StackEvent.Type.ARRAY_INDEX_EXCEPTION) {
+				illustrationArg = new Integer(exception.arg);
+			}
+			else if(exception.type == StackEvent.Type.EXCEPTION) {
+				// TODO exception handling
+//				illustrationArg = ExceptionType.match((String) exception.arg);
+			}
+			for (IReferenceModel ref : frame.getReferenceVariables())
+				objectContainer.updateIllustration(ref, illustrationArg);
+		}
+			
 		updateLook(frame, false);
 		addFrameObserver(frame);
 	}
@@ -73,9 +87,9 @@ public class StackFrameFigure extends Figure {
 			@Override
 			public void update(StackEvent<?> event) {
 				if(event != null) {
-					ExceptionType exception = null;
+					Object illustrationArg = null;
 					if(event.type == StackEvent.Type.NEW_VARIABLE) {
-						addVariable((IVariableModel<?>) event.arg, exception);
+						addVariable((IVariableModel<?>) event.arg);
 					}
 					else if(event.type == StackEvent.Type.VARIABLE_OUT_OF_SCOPE) {
 						PandionJFigure<?> toRemove = getVariableFigure((IVariableModel<?>)  event.arg); 
@@ -86,12 +100,20 @@ public class StackFrameFigure extends Figure {
 							runtimeViewer.removePointer((IReferenceModel) event.arg);
 						}
 					}
-					else if(event.type == StackEvent.Type.EXCEPTION) {
-						exception = ExceptionType.match((String) event.arg);
+					else if(event.type == StackEvent.Type.ARRAY_INDEX_EXCEPTION) {
+						illustrationArg = new Integer((String) event.arg);
+//						illustrationArg = ExceptionType.match((String) event.arg);
 					}
-
+					else if(event.type == StackEvent.Type.EXCEPTION) {
+						illustrationArg = ExceptionType.match((String) event.arg);
+					}
+					else if(event.type == StackEvent.Type.RETURN_VALUE) {
+						// TODO toString value of return (e.g. ArrayList)
+						label.setText(label.getText() + " = " + event.arg);
+					}
+					
 					for (IReferenceModel ref : frame.getReferenceVariables())
-						objectContainer.updateIllustration(ref, exception);
+						objectContainer.updateIllustration(ref, illustrationArg);
 				}
 				updateLook(frame, false);
 			}
@@ -107,7 +129,6 @@ public class StackFrameFigure extends Figure {
 			else if(model.exceptionOccurred()) {
 				setBackgroundColor(PandionJConstants.Colors.INST_POINTER);
 				setBorder(new LineBorder(PandionJConstants.Colors.ERROR, PandionJConstants.STACKFRAME_LINE_WIDTH, SWT.LINE_DASH));
-
 
 				if(model.getExceptionType().equals(NullPointerException.class.getName()))
 					paintNullRefs();
@@ -136,7 +157,7 @@ public class StackFrameFigure extends Figure {
 		}
 	}
 
-	private void addVariable(IVariableModel<?> v, ExceptionType exception) {
+	private void addVariable(IVariableModel<?> v) {
 		if(v.isInstance() == instance) { // && !(v instanceof IReferenceModel && !((IReferenceModel) v).getTags().isEmpty())) {
 			PandionJFigure<?> figure = figProvider.getFigure(v, true);
 			add(figure);

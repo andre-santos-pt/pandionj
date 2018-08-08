@@ -16,7 +16,7 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 	
 	class StackEvent<T> {
 		public enum Type {
-			NEW_VARIABLE, VARIABLE_OUT_OF_SCOPE, EXCEPTION, STEP;
+			NEW_VARIABLE, VARIABLE_OUT_OF_SCOPE, EXCEPTION, ARRAY_INDEX_EXCEPTION, STEP, RETURN_VALUE;
 		}
 		public final Type type;
 		public final T arg;
@@ -35,5 +35,6 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 	int getLineNumber();
 	boolean exceptionOccurred();
 	String getExceptionType();
+	StackEvent<String> getExceptionEvent();
 	IFile getSourceFile();
 }

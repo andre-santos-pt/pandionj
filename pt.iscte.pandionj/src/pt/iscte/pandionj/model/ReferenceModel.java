@@ -71,7 +71,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 
 	public boolean hasIndexVars() {
 		// info != null && !info.getArrayAccessVariables((i,v)->false).isEmpty();
-		return !getIndexVars().isEmpty();
+		return !getIndexVars().isEmpty() || !getFixedIndexes().isEmpty();
 	}
 	
 	public Collection<IArrayIndexModel> getIndexVars() {

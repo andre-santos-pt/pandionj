@@ -6,6 +6,9 @@ import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Map.Entry;
+
+import javax.annotation.PostConstruct;
+
 import java.util.Scanner;
 
 import org.eclipse.core.resources.IFile;
@@ -24,10 +27,16 @@ import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.ISourceLocator;
 import org.eclipse.debug.core.model.IStackFrame;
+import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.RuntimeProcess;
 import org.eclipse.draw2d.ColorConstants;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
+import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaThread;
+import org.eclipse.jdt.debug.core.IJavaType;
+import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.JDIDebugModel;
+import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIReturnValueVariable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -162,13 +171,12 @@ public class PandionJView extends ViewPart {
 		versionLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
 
 		Link pluginLabel = new Link(introComp, SWT.NONE);
-		pluginLabel.setText("<a>view installed tags (@)</a>");
+		pluginLabel.setText("<a>" + PandionJConstants.Messages.INSTALLED_TAGS + "</a>");
 		pluginLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
 		pluginLabel.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				String info = "";
-				
 				for (ExtensionManager.TagDescription desc : ExtensionManager.getTagDescriptions()) {
 					String where = desc.description;
 					if(where == null)
@@ -182,11 +190,11 @@ public class PandionJView extends ViewPart {
 		});
 
 		
-		Label labelInit = new Label(introComp, SWT.WRAP);
-		FontManager.setFont(labelInit, PandionJConstants.MESSAGE_FONT_SIZE, FontStyle.ITALIC);
-		labelInit.setForeground(ColorConstants.gray);
-		labelInit.setText(PandionJConstants.Messages.START);
-		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
+//		Label labelInit = new Label(introComp, SWT.WRAP);
+//		FontManager.setFont(labelInit, PandionJConstants.MESSAGE_FONT_SIZE, FontStyle.ITALIC);
+//		labelInit.setForeground(ColorConstants.gray);
+//		labelInit.setText(PandionJConstants.Messages.START);
+//		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 
 		return introComp;
 	}
@@ -229,10 +237,11 @@ public class PandionJView extends ViewPart {
 						//						job.schedule(3000);
 
 					}
-					else if(e.getKind() == DebugEvent.CHANGE && e.getDetail() == DebugEvent.CONTENT) {
-						runtime = new RuntimeModel();
-						runtimeView.setInput(runtime);
-					}
+					// TODO repor
+//					else if(e.getKind() == DebugEvent.CHANGE && e.getDetail() == DebugEvent.CONTENT) {
+//						runtime = new RuntimeModel();
+//						runtimeView.setInput(runtime);
+//					}
 					else if(e.getKind() == DebugEvent.TERMINATE && e.getSource() instanceof RuntimeProcess) {
 						runtime.setTerminated();
 					}
@@ -258,8 +267,27 @@ public class PandionJView extends ViewPart {
 			handleFrames(thread);
 			if(!runtime.isEmpty()) {
 				StackFrameModel frame = runtime.getFrame(exceptionFrame);
+				String message = null;
+				for(IVariable var : exceptionFrame.getVariables()) {
+					if(var instanceof JDIReturnValueVariable) {
+						JDIReturnValueVariable retvar = (JDIReturnValueVariable) var;
+						if(retvar.hasResult) {
+							IJavaValue retVal = (IJavaValue) var.getValue();
+							if(retVal instanceof IJavaObject) {
+								IJavaObject retObj = (IJavaObject) retVal;
+								IJavaType javaType = retObj.getJavaType();
+								if(javaType.getName().equals(ArrayIndexOutOfBoundsException.class.getName())) {
+									IJavaFieldVariable field = retObj.getField("detailMessage", true);
+									message = field.getValue().getValueString();
+									break;
+								}
+							}
+						}
+						return;
+					}
+				}
 				int line = exceptionFrame.getLineNumber();
-				frame.processException(exception, line);
+				frame.processException(exception, line, message);
 			}
 		}); 
 	}
@@ -390,6 +418,8 @@ public class PandionJView extends ViewPart {
 			@Override
 			public void logging(IStatus status, String plugin) {
 				Throwable throwable = status.getException();
+				if(throwable == null)
+					return;
 				Throwable cause = throwable.getCause();
 				if(cause != null)
 					throwable = cause;
@@ -397,7 +427,7 @@ public class PandionJView extends ViewPart {
 				for(StackTraceElement e : stackTrace)
 					if(e.getClassName().startsWith(PandionJConstants.PLUGIN_ID)) {
 						MessageDialog dialog = new MessageDialog(Display.getDefault().getActiveShell(), "PandionJ Error", null,
-								"An error has ocurred. Would you like to send us an error report, helping to improve PandionJ?", 
+								"An error has ocurred. Would you like to send us an error report for helping to improve PandionJ?", 
 								MessageDialog.ERROR, new String[] { "Send Error Report", "Ignore" }, 0);
 						int result = dialog.open();
 
@@ -466,6 +496,7 @@ public class PandionJView extends ViewPart {
 						} catch (CoreException e1) {
 							e1.printStackTrace();
 						}
+						// TODO change email
 						Program.launch("mailto:andre.santos@iscte-iul.pt?subject=PandionJ%20Error&body=" + enc(buf.toString()) + "&attachment=/Users/andresantos/git/pandionj2/pt.iscte.pandionj/src/pt/iscte/pandionj/Utils.java");
 						return;
 					}

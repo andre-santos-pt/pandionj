@@ -130,7 +130,8 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 		throw new UnsupportedOperationException();
 	}
 
-
-
-
+	@Override
+	public StackEvent<String> getExceptionEvent() {
+		return null;
+	}
 }

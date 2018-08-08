@@ -98,6 +98,7 @@ public interface PandionJConstants {
 	
 	interface Messages {
 		String START = "Illustrations will be displayed once a breakpoint is hit.";
+		String INSTALLED_TAGS = "view installed tags (@)";
 		String TRASH = "Simulates the behavior of Java's garbage collector, removing all the unferenced objects.";
 		String RUN_DIALOG = "Do you want to open PandionJ view?";
 		String COPY_CLIPBOARD = "Copy image to clipboard";

@@ -46,11 +46,13 @@ public class IllustrationBorder implements Border {
 	private final Rectangle firstLabelBounds;
 	private final Rectangle lastLabelBounds;
 
-	private ExceptionType exception;
+//	private ExceptionType exception;
+	private Integer outOfBoundsAccess;
 	
-	public IllustrationBorder(IReferenceModel ref, AbstractArrayFigure<?> arrayFigure, ExceptionType exception) {
+	public IllustrationBorder(IReferenceModel ref, AbstractArrayFigure<?> arrayFigure, Integer outOfBoundsAccess) {
 		this.arrayFigure = arrayFigure;
-		this.exception = exception;
+//		this.exception = exception;
+		this.outOfBoundsAccess = outOfBoundsAccess;
 		
 		N = arrayFigure.getModel().getLength();
 		horizontal = arrayFigure instanceof ArrayPrimitiveFigure;
@@ -251,7 +253,13 @@ public class IllustrationBorder implements Border {
 			}
 		}
 
-		if(exception == ExceptionType.ARRAY_INDEX_OUT_BOUNDS)
+		if(outOfBoundsAccess != null) {
+			showLeft = outOfBoundsAccess < 0;
+			showRight = outOfBoundsAccess >= N;
+		}
+		
+//		if(exception == ExceptionType.ARRAY_INDEX_OUT_BOUNDS)
+		if(outOfBoundsAccess != null)
 			g.setForegroundColor(PandionJConstants.Colors.ERROR);
 		else
 			g.setForegroundColor(ColorConstants.black);
@@ -266,6 +274,8 @@ public class IllustrationBorder implements Border {
 			}
 			g.setLineStyle(Graphics.LINE_DOT);
 			g.drawRectangle(new Rectangle(p, rectDim));
+			if(outOfBoundsAccess != null && outOfBoundsAccess < 0)
+				drawIndexText(g, p);
 		}
 		
 		if(showRight) {
@@ -280,8 +290,21 @@ public class IllustrationBorder implements Border {
 			
 			g.setLineStyle(Graphics.LINE_DOT);
 			g.drawRectangle(new Rectangle(p, rectDim));
+			if(outOfBoundsAccess != null && outOfBoundsAccess >= N)
+				drawIndexText(g, p);
 		}
 		
+	}
+
+
+	private void drawIndexText(Graphics g, Point p) {
+		Font f = FontManager.getFont(PandionJConstants.INDEX_FONT_SIZE);
+		String text = outOfBoundsAccess.toString();
+		int x = firstLabelBounds.width/2 - FigureUtilities.getTextWidth(text, f)/2;
+		Point indexP = horizontal ? p.getTranslated(x, firstLabelBounds.height) :
+			p.getTranslated(0, firstLabelBounds.height); // TODO vertical mid point;
+		g.setFont(f);
+		g.drawText(text, indexP);
 	}
 
 	private void drawArrow(Graphics g, Point from, Point to) {
