@@ -5,6 +5,7 @@ import java.awt.Color;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.core.IType;
 
 import pt.iscte.pandionj.extensibility.IObjectModel;
@@ -24,9 +25,11 @@ public class ColorAwtWidget implements ITypeWidgetExtension {
 		int r = (value >> 16) & 0xFF;
 		int g = (value >> 8) & 0xFF;
 		int b = (value >> 0) & 0xFF;
-		Label label = new Label(r + ", " + g + ", " + b);
+//		Label label = new Label(r + ", " + g + ", " + b);
+		Label label = new Label("       ");
 		label.setOpaque(true);
 		label.setBackgroundColor(PandionJUI.getColor(r, g, b));
+		label.setBounds(new Rectangle(0, 0, 100, 100));
 		return label;
 	}
 	

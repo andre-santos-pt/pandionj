@@ -107,8 +107,7 @@ public class StackFrameFigure extends Figure {
 					else if(event.type == StackEvent.Type.EXCEPTION) {
 						illustrationArg = ExceptionType.match((String) event.arg);
 					}
-					else if(event.type == StackEvent.Type.RETURN_VALUE) {
-						// TODO toString value of return (e.g. ArrayList)
+					else if (event.type == StackEvent.Type.RETURN_VALUE) {
 						label.setText(label.getText() + " = " + event.arg);
 					}
 					

@@ -255,8 +255,10 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			new ReferenceModel(jv, isInstance, true, info, this) :
 			new ValueModel(jv, isInstance, true, info, this);
 		
-		Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
-		newVar.setTags(tags);
+		if(srcFile != null) {
+			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
+			newVar.setTags(tags);
+		}
 		return newVar;
 	}
 
@@ -328,7 +330,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 						s += ", ";
 					s += valueSpecialChars(values[i]);
 				}
-				return "{" + s + "}";
+				return "[" + s + "]";
 			}
 			catch (DebugException e) {
 				e.printStackTrace();
@@ -366,7 +368,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		this.returnValue = valueToString(v);
 		obsolete = true;
 		setChanged();
-		notifyObservers(new StackEvent<String>(StackEvent.Type.RETURN_VALUE, v.toString()));
+		notifyObservers(new StackEvent<String>(StackEvent.Type.RETURN_VALUE, this.returnValue));
 	}
 
 	public String getInvocationExpression() {

@@ -127,9 +127,8 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			return array;
 		}
 		catch (DebugException e) {
-			e.printStackTrace();
 			getRuntimeModel().setTerminated();
-			return new Object[0];
+			return null;
 		}
 	}
 

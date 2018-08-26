@@ -31,6 +31,7 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
 import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.debug.core.JDIDebugModel;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.text.ITextSelection;
@@ -173,8 +174,11 @@ public class LaunchCommand extends AbstractHandler {
 							IMethod selectedMethod = null;
 							for (IMethod m : type.getMethods()) {
 //								TODO future: constructor invocation?
-//								if((Modifier.isStatic(m.getFlags()) || m.isConstructor()) && withinSourceRange(m, offset) && !Modifier.isPrivate(m.getFlags())) {							
-								if(Modifier.isStatic(m.getFlags()) && withinSourceRange(m, offset) && !Modifier.isPrivate(m.getFlags())) {							
+//								if((Modifier.isStatic(m.getFlags()) || m.isConstructor()) && withinSourceRange(m, offset) && !Modifier.isPrivate(m.getFlags())) {	
+//									selectedMethod = m;
+//									break;
+//								}
+								if(Modifier.isStatic(m.getFlags()) && withinSourceRange(m, offset)) {							
 									selectedMethod = m;
 									break;
 								}
@@ -269,7 +273,10 @@ public class LaunchCommand extends AbstractHandler {
 		//			breakPoint.delete();
 		//		if(line != -1)
 		//			breakPoint = JDIDebugModel.createLineBreakpoint(file, firstType.getFullyQualifiedName(), line, -1, -1, 0, true, null);
-
+		
+//		JDIDebugModel.createWatchpoint(file, type.getFullyQualifiedName(), "test", -1, -1, -1, 0, true, null);
+//		JDIDebugModel.createMethodBreakpoint(file, type.getFullyQualifiedName(), "main", "([Ljava/lang/String;)V", false, true, false, -1, -1, -1, 0, true, null);
+		
 		try {	
 			Bundle bundle = Platform.getBundle(LaunchCommand.class.getPackage().getName());
 			URL find = FileLocator.find(bundle, new Path("lib/agent.jar"), null);

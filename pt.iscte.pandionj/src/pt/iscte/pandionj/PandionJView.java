@@ -223,21 +223,15 @@ public class PandionJView extends ViewPart {
 								handleFrames(thread);
 							else
 								thread.stepReturn();
-							if(f != null && f.getLineNumber() == -1)
+							
+							if(f != null && f.getLineNumber() == -1 || thread.isSystemThread() || thread.isDaemon())
 								thread.resume(); // to jump over injected code
 						}
 						else {
 							thread.stepReturn();
 						}
-
-						//						Job job = Job.create("Update table", (ICoreRunnable) monitor -> {
-						//							System.out.println("STEP");
-						//							thread.stepInto();
-						//						});
-						//						job.schedule(3000);
-
 					}
-					// TODO repor
+					// TODO repor? -- ao repor faz com que os extension widgets nao aparecam ao suspender
 //					else if(e.getKind() == DebugEvent.CHANGE && e.getDetail() == DebugEvent.CONTENT) {
 //						runtime = new RuntimeModel();
 //						runtimeView.setInput(runtime);
@@ -295,6 +289,8 @@ public class PandionJView extends ViewPart {
 	// must be invoked under executeInternal(..)
 	private void handleFrames(IJavaThread thread) throws DebugException {
 		assert thread != null;
+		if(thread.isSystemThread() || thread.isDaemon())
+			return;
 
 		if(introScreen != null) {
 			introScreen.dispose();
@@ -313,7 +309,7 @@ public class PandionJView extends ViewPart {
 		}
 
 		contextService.activateContext(PandionJConstants.CONTEXT_ID);
-
+		
 		runtime.update(thread);
 
 		if(!runtime.isEmpty() && !runtime.isTerminated()) {
@@ -439,10 +435,12 @@ public class PandionJView extends ViewPart {
 						buf.append( throwable.getClass().getName() + " : " + throwable.getMessage() + "\n\n");
 						buf.append("Exception trace: \n\n");
 
+						int hash = 0;
 						for (StackTraceElement el : throwable.getStackTrace()) {
 							buf.append(el.toString() + "\n");
+							hash += el.toString().hashCode();
 						}
-
+						
 						buf.append("\n\nUser code: \n\n");
 
 						status.getException().printStackTrace();
@@ -489,7 +487,7 @@ public class PandionJView extends ViewPart {
 
 						IProject project = file.getProject();
 						String timeStamp = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(Calendar.getInstance().getTime());
-						IFile errorFile = project.getFile("ERROR " + timeStamp + ".txt");
+						IFile errorFile = project.getFile("ERROR " + timeStamp + " " + hash + ".txt");
 						//							IFile errorImageFile = project.getFile()
 						try {
 							errorFile.create(new ByteArrayInputStream(buf.toString().getBytes()), true, new NullProgressMonitor());

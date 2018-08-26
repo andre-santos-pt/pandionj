@@ -202,13 +202,13 @@ public class Activator extends AbstractUIPlugin {
 		//		showView(event);
 	}
 
-	private static void showView(ExecutionEvent event) {
-		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
-		try {
-			window.getActivePage().showView("pt.iscte.pandionj.view");
-		} catch (PartInitException e) {
-
-		}
-	}
+//	private static void showView(ExecutionEvent event) {
+//		IWorkbenchWindow window = HandlerUtil.getActiveWorkbenchWindow(event);
+//		try {
+//			window.getActivePage().showView("pt.iscte.pandionj.view");
+//		} catch (PartInitException e) {
+//
+//		}
+//	}
 
 }

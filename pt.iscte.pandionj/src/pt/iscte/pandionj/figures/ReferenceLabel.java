@@ -53,6 +53,7 @@ class ReferenceLabel extends Figure {
 		super.paintFigure(g);
 		
 		Rectangle r = getBounds();
+		// *2-1 *2-1
 		Rectangle square = new Rectangle(r.getLocation().getTranslated(0, r.height/4), new Dimension(r.width/2, r.height/2));
 		center = new Point(square.x + square.width/2, square.y + square.height/2);
 
@@ -62,11 +63,11 @@ class ReferenceLabel extends Figure {
 		g.setForegroundColor(ref.getRole() == Role.FIXED_VALUE ? PandionJConstants.Colors.CONSTANT : ColorConstants.black);
 		g.drawRectangle(square);
 
-		g.setBackgroundColor(error ? PandionJConstants.Colors.ERROR : ColorConstants.black);
+		g.setBackgroundColor(error ? PandionJConstants.Colors.ERROR : ref.getRole() == Role.FIXED_VALUE ? PandionJConstants.Colors.CONSTANT : ColorConstants.black);
 		g.fillOval(center.x-3, center.y-3, 7, 7);
 
 		if(isnull) {
-			g.setForegroundColor(error ? PandionJConstants.Colors.ERROR : ColorConstants.black);
+			g.setForegroundColor(error ? PandionJConstants.Colors.ERROR : ref.getRole() == Role.FIXED_VALUE ? PandionJConstants.Colors.CONSTANT : ColorConstants.black);
 			Point dest = center.getTranslated(20, 0);
 			g.drawLine(center, dest);
 			g.drawLine(dest.getTranslated(-3, 5), dest.getTranslated(3, -5));

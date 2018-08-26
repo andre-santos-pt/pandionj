@@ -102,6 +102,9 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 	}
 
 	public Collection<IArrayIndexModel> getFixedIndexes() {
+		if(info == null)
+			return Collections.emptyList();
+		
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		List<IArrayIndexModel> list = new ArrayList<>(3);
 		
@@ -128,7 +131,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 
 	@Override
 	public Role getRole() {
-		return Role.NONE;
+		return info != null && info.isFixedValue() ? Role.FIXED_VALUE : Role.NONE;
 	}
 
 	@Override

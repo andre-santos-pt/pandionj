@@ -49,6 +49,10 @@ public class PandionJFigure<T extends IObservableModel<?>> extends Figure {
 			return innerFigure;
 		}
 		
+		public ConnectionAnchor getIncommingAnchor() {
+			return new PositionAnchor(this, PositionAnchor.Position.LEFT);
+		}
+		
 //		public ConnectionAnchor getIncommingAnchor() {
 //			return new ChopboxAnchor(innerFigure);
 //			return innerFigure instanceof PandionJFigure ? ((PandionJFigure<?>) innerFigure).getIncommingAnchor() : new ChopboxAnchor(innerFigure);

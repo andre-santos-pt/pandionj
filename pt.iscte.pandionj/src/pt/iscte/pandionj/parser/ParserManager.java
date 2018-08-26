@@ -17,7 +17,7 @@ public class ParserManager {
 	
 	public static VarParser getVarParserResult(IFile f) {
 		VarParser r = cacheParser.get(f);
-		if(r == null || f.getModificationStamp() != modStamps.get(f)) {
+		if((r == null || f.getModificationStamp() != modStamps.get(f)) && f.getRawLocation() != null) {
 			r = new VarParser(f.getRawLocation().toOSString());
 			r.run();
 			cacheParser.put(f, r);

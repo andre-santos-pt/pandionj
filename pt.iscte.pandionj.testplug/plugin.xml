@@ -14,5 +14,23 @@
             where="integer variable (byte/short/int/long) to be rendered in binary form">
       </value-tag>
    </extension>
+  <extension
+        point="pt.iscte.pandionj.typewidgets">
+     <widget
+           class="pt.iscte.pandionj.testplug.ColorAwtWidget">
+     </widget>
+  </extension>
+  <extension
+        point="pt.iscte.pandionj.arraytags">
+     <array-tag
+           class="pt.iscte.pandionj.testplug.HistogramWidget"
+           name="histogram"
+           where="int[] array with a maximum length of 256">
+     </array-tag>
+     <array-tag
+           class="pt.iscte.pandionj.testplug.GridWidget"
+           name="grid">
+     </array-tag>
+  </extension>
 
 </plugin>

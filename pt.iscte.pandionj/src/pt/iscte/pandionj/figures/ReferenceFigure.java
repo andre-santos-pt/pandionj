@@ -12,6 +12,7 @@ import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
+import pt.iscte.pandionj.extensibility.IVariableModel.Role;
 
 public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 
@@ -35,7 +36,10 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		Collection<String> tags = model.getTags();
 		if(!tags.isEmpty())
 			tooltip += "\ntags: " + String.join(", ", tags);
-			
+		
+		if(model.getRole() != Role.NONE)
+			tooltip += "\nrole: " + model.getRole();
+		
 		label.setToolTip(new Label(tooltip));
 
 		add(label);

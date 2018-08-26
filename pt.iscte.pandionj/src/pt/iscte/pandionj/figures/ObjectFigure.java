@@ -20,6 +20,7 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.MouseEvent;
 import org.eclipse.draw2d.MouseListener;
 import org.eclipse.draw2d.RoundedRectangle;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
@@ -356,7 +357,6 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	}
 
 	public ConnectionAnchor getIncommingAnchor() {
-		// TODO fig.getInsets()
-		return new ChopboxAnchor(fig);
+		return new PositionAnchor(fig, PositionAnchor.Position.LEFT);
 	}
 }

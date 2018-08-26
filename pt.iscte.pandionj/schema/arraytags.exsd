@@ -52,7 +52,7 @@
          <attribute name="name" type="string" use="required">
             <annotation>
                <documentation>
-                  
+                  Name of the tag (without the @).
                </documentation>
             </annotation>
          </attribute>
@@ -69,7 +69,7 @@
          <attribute name="where" type="string">
             <annotation>
                <documentation>
-                  
+                  Where it can be applied, i.e. which restrictions over the object being tagged.
                </documentation>
             </annotation>
          </attribute>

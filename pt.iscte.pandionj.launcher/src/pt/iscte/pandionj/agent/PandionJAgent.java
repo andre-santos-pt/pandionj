@@ -9,6 +9,8 @@ import java.security.ProtectionDomain;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtField;
 import javassist.CtMethod;
 import javassist.CtNewMethod;
 import javassist.Modifier;
@@ -59,8 +61,9 @@ public class PandionJAgent {
 //								CtMethod method = null;
 								try {
 									if(expression.startsWith("new")) {
-										//CtConstructor constructor = cc.getConstructor(methodSig);
-										retType = cc;
+//										CtConstructor constructor = cc.getConstructor(methodSig);
+										// TODO start with new
+//										retType = cc;
 //										CtField f = new CtField(retType,"test",cc);
 //										f.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
 //										cc.addField(f, expression);
@@ -104,7 +107,9 @@ public class PandionJAgent {
 				String left = expression.replaceAll("\"", "\\\\\"");
 				String right = expression;
 
-				if(retType.equals(CtClass.voidType)) {
+				if(expression.startsWith("new"))
+					;
+				else if(retType.equals(CtClass.voidType)) {
 					m.insertAfter(expression + ";");
 				}
 				else if(retType.isArray() && retType.getComponentType().getName().matches("boolean|byte|short|int|long|char|float|double")) {

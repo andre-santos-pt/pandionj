@@ -43,6 +43,7 @@ import com.google.common.collect.Multimap;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.IVariableModel.Role;
 import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.PandionJUI;
@@ -197,6 +198,7 @@ public class RuntimeViewer extends Composite {
 		pointer.setVisible(!target.isNull());
 		pointer.setSourceAnchor(sourceAnchor);
 		pointer.setTargetAnchor(target.isNull() ? sourceAnchor : targetAnchor);
+		pointer.setForegroundColor(ref.getRole() == Role.FIXED_VALUE ? PandionJConstants.Colors.CONSTANT : ColorConstants.black);
 		Utils.addArrowDecoration(pointer);
 		addPointerObserver(ref, pointer, container);
 		addPointer(ref, pointer, owner);
