@@ -12,8 +12,6 @@ public interface ITypeWidgetExtension extends IWidgetExtension<IObjectModel> {
 
 	boolean accept(IType objectType);
 
-	IFigure createFigure(IObjectModel e);
-
 	default boolean includeMethod(String methodName) {
 		return true;
 	}
@@ -40,7 +38,7 @@ public interface ITypeWidgetExtension extends IWidgetExtension<IObjectModel> {
 		}
 
 		@Override
-		public IFigure createFigure(IObjectModel e) {
+		public IFigure createFigure(IObjectModel e, IPropertyProvider args) {
 			Label label = new Label();
 			label.setForegroundColor(PandionJConstants.Colors.OBJECT_HEADER_FONT);
 			FontManager.setFont(label, PandionJConstants.OBJECT_HEADER_FONT_SIZE);

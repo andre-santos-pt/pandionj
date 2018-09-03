@@ -1,14 +1,16 @@
 package pt.iscte.pandionj.parser;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IMarker;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Comment;
@@ -22,10 +24,13 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.jdt.core.dom.VariableDeclarationStatement;
 
+import pt.iscte.pandionj.extensibility.PandionJConstants;
+
 
 
 public class TagParser {
 
+	private IFile file;
 	private List<VariableTags> variables;
 	private JavaSourceParser parser;
 	private CompilationUnit cunit;
@@ -41,29 +46,29 @@ public class TagParser {
 
 	public TagParser(IFile file, Set<String> validTags) {
 		this(file.getLocation().toOSString(), validTags);
+		this.file = file;
+
+		try {
+			file.deleteMarkers(PandionJConstants.MARKER_ID, true, IResource.DEPTH_ONE);
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 	}
 
-	public Collection<String> getTags(String varName, int line, boolean isField) {
-		if(isField) {
-			for (VariableTags t : variables)
-				if(t.name.equals(varName) && t.isField == true)
-					return t.getTags();
-		}
-		else {
-			for (VariableTags t : variables)
-				if(t.name.equals(varName) && t.withinLine(line))
-					return t.getTags();
-		}
+	public Tag getTag(String varName, int line, boolean isField) {
+		for (VariableTags t : variables)
+			if(t.name.equals(varName) && (isField && t.isField || t.withinLine(line)) )
+				return t.getTag();
 
-		return Collections.emptyList();
+		return null;
 	}
 
-	public Collection<String> getAttributeTags(String typeName, String attName) {
+	public Tag getAttributeTag(String typeName, String attName) {
 		for (VariableTags t : variables)
 			if(typeName.equals(t.type) && attName.equals(t.name))
-				return t.getTags();
+				return t.getTag();
 
-		return Collections.emptyList();
+		return null;
 	}
 
 
@@ -78,7 +83,8 @@ public class TagParser {
 
 	@Override
 	public String toString() {
-		return variables.stream().filter((v) -> !v.tags.isEmpty()).collect(Collectors.toList()).toString();
+		//		return variables.stream().filter((v) -> !v.tags.isEmpty()).collect(Collectors.toList()).toString();
+		return variables.stream().filter((v) -> v.tag != null).toString();
 	}
 
 	class TagVisitor extends ASTVisitor {
@@ -132,23 +138,60 @@ public class TagParser {
 		return cunit.getLineNumber(node.getStartPosition() + node.getLength());
 	}
 
+	private static final String ARG = "[a-z]+=[a-zA-Z0-9\\.]+";
 	class CommentVisitor extends ASTVisitor {
 		public boolean visit(LineComment node) {
 			int start = node.getStartPosition();
 			int line = cunit.getLineNumber(start);
 			String comment = parser.getSourceFragment(start, node.getLength());
 			comment = comment.substring(comment.indexOf('/')+2).trim();
-			String[] tags = comment.split("\\s+");
 
-			for (VariableTags t : variables) {
-				if(t.declarationLine == line)
-					for(String tag : tags)
-						if(validTags.contains(tag))
-							t.addTag(tag);
+			String tag = null;
+			Map<String,String> args = new HashMap<>();
+			if(comment.matches("@[a-z]+")) {
+				tag = comment.substring(1);
+			}
+			else if(comment.matches("@[a-z]+\\s*\\(" + ARG + "\\s*(,\\s*" + ARG +"\\s*)*\\)")) {
+				int i = comment.indexOf('(');
+				tag = comment.substring(1, i).trim();
+				String[] split = comment.substring(i+1, comment.length()-1).split("\\s*,\\s*");
+				for(String a : split) {
+					int j = a.indexOf('=');
+					args.put(a.substring(0, j), a.substring(j+1));
+				}
+			}
+			else {
+				addMarker(node, start, line, comment, "Invalid tag syntax. Example: @tag(param1=a, param2=b)");
+				return true;
 			}
 
+			if(!validTags.contains(tag)) {
+				addMarker(node, start, line, comment, "Unknown tag. Installed tags: @" + String.join(", @", validTags));
+			}
+			else {
+				for (VariableTags t : variables) {
+					if(t.declarationLine == line)
+						t.addTag(new Tag(tag, args));
+
+				}	
+			}
 			return true;
-		}		
+		}
+
+		private void addMarker(LineComment node, int start, int line, String comment, String message) {
+			try {
+				IMarker m = file.createMarker(PandionJConstants.MARKER_ID);
+				m.setAttribute(IMarker.LINE_NUMBER, line);
+				m.setAttribute(IMarker.MESSAGE, message);
+				m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+				m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+				int dif = node.getLength() - comment.length();
+				m.setAttribute(IMarker.CHAR_START, start + dif);
+				m.setAttribute(IMarker.CHAR_END, start + dif + comment.length());
+			} catch (CoreException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	private static class VariableTags implements Comparable<VariableTags>{
@@ -157,7 +200,7 @@ public class TagParser {
 		private final int declarationLine;
 		private final Scope scope;
 		private final boolean isField;
-		private final Set<String> tags;
+		private Tag tag;
 
 		public VariableTags(String name, String type, int declarationLine, Scope scope, boolean isField) {
 			this.name = name;
@@ -165,24 +208,28 @@ public class TagParser {
 			this.declarationLine = declarationLine;
 			this.scope = scope;
 			this.isField = isField;
-			this.tags = new HashSet<String>();
 		}
 
 		public boolean withinLine(int line) {
 			return scope.contains(line);
 		}
 
-		public void addTag(String tag) {
-			tags.add(tag);
+		public void addTag(Tag tag) {
+			//			tags.add(tag);
+			this.tag = tag;
 		}			
 
 		@Override
 		public String toString() {
-			return name + " on scope " + scope + " (" + type + ") : " + tags;
+			return name + " on scope " + scope + " (" + type + ") : " + tag;
 		}
 
-		public Set<String> getTags() {
-			return Collections.unmodifiableSet(tags);
+		//		public Set<String> getTags() {
+		//			return Collections.unmodifiableSet(tags);
+		//		}
+
+		public Tag getTag() {
+			return tag;
 		}
 
 		public boolean isField() {
@@ -251,6 +298,13 @@ public class TagParser {
 			return firstLine - s.firstLine;
 			// TODO repor???
 			//			return this.equals(s) ? 0 : (isInnerScopeOf(s) ? -1 : 1);
+		}
+	}
+
+	void print() {
+		for(VariableTags v : variables) {
+			if(v.tag != null)
+				System.out.println(v.tag + " -> " + v.name);
 		}
 	}
 }

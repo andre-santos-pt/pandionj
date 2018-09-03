@@ -1,6 +1,5 @@
 package pt.iscte.pandionj.model;
 
-import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.debug.core.IJavaVariable;
@@ -10,6 +9,7 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
+import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VariableInfo;
@@ -178,12 +178,12 @@ implements IArrayIndexModel {
 	}
 
 	@Override
-	public Collection<String> getTags() {
-		return model.getTags();
+	public ITag getTag() {
+		return model.getTag();
 	}
 
 	@Override
-	public void setTags(Collection<String> tags) {
-		model.setTags(tags);
+	public void setTag(ITag tag) {
+		model.setTag(tag);
 	}
 }

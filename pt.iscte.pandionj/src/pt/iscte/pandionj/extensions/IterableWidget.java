@@ -11,6 +11,7 @@ import org.eclipse.jdt.core.JavaModelException;
 
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObjectModel.InvocationResult;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJUI;
@@ -33,7 +34,7 @@ public class IterableWidget implements ITypeWidgetExtension {
 	}
 
 	@Override
-	public IFigure createFigure(IObjectModel e) {
+	public IFigure createFigure(IObjectModel e, IPropertyProvider args) {
 		Label label = new Label();
 		e.registerDisplayObserver(new ModelObserver<Object>() {
 			@Override

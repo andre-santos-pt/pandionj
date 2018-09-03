@@ -71,7 +71,7 @@ public class TestFigure {
 		// Array com iteradores
 		MockArray array = new MockArray("Integer", 1,2,3,4,5);
 		//		MockVariable var = new MockVariable("int[]", "v", null, array);
-		MockReference ref = new MockReference("int[]", "v", array, false);
+		MockReference ref = new MockReference("int[]", "v", array, false, null);
 		
 		MockValue i1 = new MockValue("int", "i1", null, 0, false);
 		MockArrayIndex ii1 = new MockArrayIndex(i1, ref, Direction.NONE);

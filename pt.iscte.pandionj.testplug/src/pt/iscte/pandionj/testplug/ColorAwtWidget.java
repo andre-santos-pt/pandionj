@@ -2,6 +2,7 @@ package pt.iscte.pandionj.testplug;
 
 
 import java.awt.Color;
+import java.util.List;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
@@ -9,6 +10,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jdt.core.IType;
 
 import pt.iscte.pandionj.extensibility.IObjectModel;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
@@ -20,7 +22,7 @@ public class ColorAwtWidget implements ITypeWidgetExtension {
 	}
 
 	@Override
-	public IFigure createFigure(IObjectModel e) {
+	public IFigure createFigure(IObjectModel e, IPropertyProvider args) {
 		int value = e.getInt("value");
 		int r = (value >> 16) & 0xFF;
 		int g = (value >> 8) & 0xFF;

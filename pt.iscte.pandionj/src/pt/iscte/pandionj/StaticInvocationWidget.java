@@ -38,8 +38,8 @@ public class StaticInvocationWidget extends Composite {
 	static {
 		rowLayout = new RowLayout();
 		rowLayout.spacing = 5;
-		rowLayout.marginTop = PandionJConstants.MARGIN;
-		rowLayout.marginLeft = PandionJConstants.MARGIN;
+		rowLayout.marginTop = PandionJConstants.CANVAS_MARGIN;
+		rowLayout.marginLeft = PandionJConstants.CANVAS_MARGIN;
 
 		comboLayout = new GridLayout(1, false);
 		comboLayout.marginWidth = 3;

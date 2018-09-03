@@ -1,7 +1,5 @@
 package pt.iscte.pandionj.figures;
 
-import java.util.Collection;
-
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.GridData;
@@ -11,8 +9,8 @@ import org.eclipse.draw2d.Label;
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
-import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
+import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 
@@ -33,9 +31,8 @@ public class ReferenceFigure extends PandionJFigure<IReferenceModel> {
 		
 		String tooltip = Utils.getTooltip(model); 
 
-		Collection<String> tags = model.getTags();
-		if(!tags.isEmpty())
-			tooltip += "\ntags: " + String.join(", ", tags);
+		if(model.hasTag())
+			tooltip += "\ntag: " + model.getTag();
 		
 		if(model.getRole() != Role.NONE)
 			tooltip += "\nrole: " + model.getRole();

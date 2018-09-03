@@ -1,7 +1,5 @@
 package pt.iscte.pandionj.extensibility;
 
-import java.util.Collection;
-
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.parser.VariableInfo;
@@ -53,6 +51,10 @@ public interface IVariableModel<O> extends IObservableModel<O> {
 	
 	IRuntimeModel getRuntimeModel();
 	
-	Collection<String> getTags();
-	void setTags(Collection<String> tags);
+	ITag getTag();
+	
+	default boolean hasTag() {
+		return getTag() != null;
+	}
+	void setTag(ITag tag);
 }

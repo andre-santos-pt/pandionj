@@ -1,13 +1,13 @@
 package pt.iscte.pandionj.tests.mock;
 
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
+import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 import pt.iscte.pandionj.parser.VariableInfo;
@@ -119,12 +119,12 @@ implements IValueModel {
 	}
 
 	@Override
-	public Collection<String> getTags() {
-		return Collections.emptyList();
+	public ITag getTag() {
+		return null;
 	}
 
 	@Override
-	public void setTags(Collection<String> tags) {
+	public void setTag(ITag tag) {
 		
 	}
 }

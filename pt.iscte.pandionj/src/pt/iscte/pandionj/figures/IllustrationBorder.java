@@ -21,7 +21,6 @@ import org.eclipse.swt.graphics.Font;
 
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.Direction;
-import pt.iscte.pandionj.extensibility.ExceptionType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.BoundType;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel.IBound;

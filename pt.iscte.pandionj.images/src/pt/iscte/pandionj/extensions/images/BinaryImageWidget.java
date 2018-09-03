@@ -8,6 +8,7 @@ import org.eclipse.swt.graphics.RGB;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 
 
 public class BinaryImageWidget implements IArrayWidgetExtension {
@@ -25,7 +26,7 @@ public class BinaryImageWidget implements IArrayWidgetExtension {
 
 
 	@Override
-	public IFigure createFigure(IArrayModel<?> model) {
+	public IFigure createFigure(IArrayModel<?> model, IPropertyProvider args) {
 		return new BinaryImageFigure(model);
 	}
 

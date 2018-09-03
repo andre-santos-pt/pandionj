@@ -1,13 +1,30 @@
 package pt.iscte.pandionj;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.PolylineDecoration;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaVariable;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.dnd.Clipboard;
+import org.eclipse.swt.dnd.ImageTransfer;
+import org.eclipse.swt.dnd.Transfer;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.program.Program;
+import org.eclipse.swt.widgets.Display;
 
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
@@ -75,4 +92,35 @@ public interface Utils {
 	}
 	
 
+	static void saveImageToPNGandDispose(Image image, IFile file) {
+		ImageLoader imageLoader = new ImageLoader();
+		imageLoader.data = new ImageData[] {image.getImageData()};
+		ByteArrayOutputStream result = new ByteArrayOutputStream();
+		imageLoader.save(result, SWT.IMAGE_PNG);
+		InputStream source = new ByteArrayInputStream(result.toByteArray());
+		try {
+			if(file.exists())
+				file.delete(true, new NullProgressMonitor());
+			file.create(source, true, new NullProgressMonitor());
+		} catch (CoreException e1) {
+			e1.printStackTrace();
+		}
+		image.dispose();
+	}
+	
+	static void copyToClipBoardAndDispose(Image image) {
+		Clipboard clipboard = new Clipboard(Display.getDefault());
+		clipboard.setContents(new Object[]{image.getImageData()}, new Transfer[]{ ImageTransfer.getInstance()}); 
+		image.dispose();
+	}
+	
+	static void sendEmail(String subject, StringBuffer buf) {
+		String text = buf.toString();
+		try {
+			text = URLEncoder.encode(text, "UTF-8").replace("+", "%20");
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException();
+		}
+		Program.launch("mailto:" + PandionJConstants.ERROR_REPORT_MAIL + "?subject=" + subject + "&body=" + text);
+	}
 }

@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.extensions.images;
 
+import java.util.List;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.Figure;
 import org.eclipse.draw2d.GridLayout;
@@ -10,6 +12,7 @@ import org.eclipse.draw2d.LineBorder;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
 // TODO alpha
@@ -21,7 +24,7 @@ public class ColorRGBArrayWidget implements IArrayWidgetExtension {
 	}
 
 	@Override
-	public IFigure createFigure(IArrayModel<?> e) {
+	public IFigure createFigure(IArrayModel<?> e, IPropertyProvider args) {
 		ColorFigure fig = new ColorFigure();
 		updateLabel(e, fig);
 		e.registerDisplayObserver((a) -> updateLabel(e, fig));

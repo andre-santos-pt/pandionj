@@ -2,11 +2,12 @@
 <feature
       id="pt.iscte.pandionj.feature"
       label="PandionJ"
-      version="0.2"
-      provider-name="ISCTE-IUL">
+      version="0.3"
+      provider-name="ISCTE-IUL"
+      os="hpux,macosx,win32">
 
    <description url="http://www.example.com/description">
-      This feature consist of the PandionJ view and a perspective.
+      PandionJ - a pedagogical debugger for Java built on Eclipse.
    </description>
 
    <copyright url="http://www.example.com/copyright">
@@ -102,6 +103,11 @@ Everyone is permitted to copy and distribute copies of this Agreement, but in or
 
 This Agreement is governed by the laws of the State of New York and the intellectual property laws of the United States of America. No party to this Agreement will bring a legal action under this Agreement more than one year after the cause of action arose. Each party waives its rights to a jury trial in any resulting litigation.
    </license>
+
+   <url>
+      <update url="http://pandionj.iscte-iul.pt"/>
+      <discovery label="PandionJ update site" url="http://pandionj.iscte-iul.pt"/>
+   </url>
 
    <requires>
       <import plugin="org.eclipse.ui"/>

@@ -18,7 +18,11 @@ public interface PandionJConstants {
 	String TYPE_EXTENSION_ID = PLUGIN_ID + ".typewidgets";
 	String VALUETAG_EXTENSION_ID =  PLUGIN_ID + ".valuetags";
 
+	String ERROR_REPORT_MAIL = "pandionj@iscte-iul.pt";
+	
 	String IMAGE_FOLDER = "images";
+	
+	String MARKER_ID = PLUGIN_ID + ".marker";
 	
 	int STACK_LIMIT = 10; // TODO stack limit
 	
@@ -29,12 +33,13 @@ public interface PandionJConstants {
 	int POSITION_WIDTH = 32;
 	int POSITION_WIDTH_V = POSITION_WIDTH / 2;
 	
-	int MARGIN = 20;
+	int CANVAS_MARGIN = 20;
 	int NODE_SPACING = 100;
 
 	Dimension OBJECT_CORNER = new Dimension(15, 15);
 	int OBJECT_PADDING = 2;
-
+	int OBJECT_MARGIN = 10;
+	
 	int BUTTON_FONT_SIZE = 12;
 
 	int OBJECT_HEADER_FONT_SIZE = 14;
@@ -106,6 +111,7 @@ public interface PandionJConstants {
 		String PRESS_TO_INVOKE = "press Enter do execute";
 		String CLEAR = "Clear";
 		String INVOKE = "Invoke";
+		String REPORT_BUG = "Report bug";
 		
 		static String prettyException(String name) {
 			String excName = name.substring(name.lastIndexOf('.')+1);

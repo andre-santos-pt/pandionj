@@ -6,6 +6,7 @@ import org.eclipse.draw2d.MarginBorder;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
 public class StringCharArray implements IArrayWidgetExtension {
@@ -16,7 +17,7 @@ public class StringCharArray implements IArrayWidgetExtension {
 	}
 
 	@Override
-	public IFigure createFigure(IArrayModel<?> e) {
+	public IFigure createFigure(IArrayModel<?> e, IPropertyProvider args) {
 		Label label = new Label();
 		label.setBorder(new MarginBorder(5));
 		PandionJUI.setFont(label, 18);

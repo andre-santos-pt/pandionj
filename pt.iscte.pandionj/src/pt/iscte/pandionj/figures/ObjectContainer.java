@@ -11,7 +11,6 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.MarginBorder;
 
 import pt.iscte.pandionj.RuntimeViewer;
-import pt.iscte.pandionj.extensibility.ExceptionType;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;

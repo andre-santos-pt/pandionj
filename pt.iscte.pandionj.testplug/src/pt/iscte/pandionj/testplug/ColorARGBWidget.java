@@ -1,9 +1,12 @@
 package pt.iscte.pandionj.testplug;
 
 
+import java.util.List;
+
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IValueWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
@@ -18,7 +21,7 @@ public class ColorARGBWidget implements IValueWidgetExtension {
 	}
 
 	@Override
-	public IFigure createFigure(IValueModel v) {
+	public IFigure createFigure(IValueModel v, IPropertyProvider args) {
 		label = new Label("      "); 
 		label.setOpaque(true);
 		label.setPreferredSize(PandionJConstants.POSITION_WIDTH, PandionJConstants.POSITION_WIDTH);

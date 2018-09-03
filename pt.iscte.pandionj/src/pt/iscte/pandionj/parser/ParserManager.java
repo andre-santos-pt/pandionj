@@ -1,13 +1,12 @@
 package pt.iscte.pandionj.parser;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
 
 import org.eclipse.core.resources.IFile;
 
 import pt.iscte.pandionj.ExtensionManager;
+import pt.iscte.pandionj.extensibility.ITag;
 
 public class ParserManager {
 
@@ -18,7 +17,7 @@ public class ParserManager {
 	public static VarParser getVarParserResult(IFile f) {
 		VarParser r = cacheParser.get(f);
 		if((r == null || f.getModificationStamp() != modStamps.get(f)) && f.getRawLocation() != null) {
-			r = new VarParser(f.getRawLocation().toOSString());
+			r = new VarParser(f);
 			r.run();
 			cacheParser.put(f, r);
 			modStamps.put(f, f.getModificationStamp());
@@ -26,25 +25,26 @@ public class ParserManager {
 			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
+			tagParser.print();
 		}
 		r.print();
 		return r;
 	}
 	
 	
-	public static Collection<String> getAttributeTags(IFile file, String className, String attName) {
+	public static ITag getAttributeTag(IFile file, String className, String attName) {
 		getVarParserResult(file); // loads if not loaded
 		TagParser tagParser = tagParserCache.get(file);
-		return tagParser == null ? Collections.emptyList() : tagParser.getAttributeTags(className, attName);
+		return tagParser == null ? null : tagParser.getAttributeTag(className, attName);
 	}
 			
-	public static Collection<String> getTags(IFile file, String varName, int line, boolean isField) {
+	public static ITag getTag(IFile file, String varName, int line, boolean isField) {
 		getVarParserResult(file); // loads if not loaded
 		TagParser tagParser = tagParserCache.get(file);
 		if(tagParser == null)
-			return Collections.emptyList();
+			return null;
 		
-		return tagParser.getTags(varName, line, isField);
+		return tagParser.getTag(varName, line, isField);
 	}
 	
 	public static long getStamp(IFile file) {

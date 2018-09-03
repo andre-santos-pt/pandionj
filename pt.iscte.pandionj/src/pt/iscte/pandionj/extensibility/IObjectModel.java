@@ -1,11 +1,10 @@
 package pt.iscte.pandionj.extensibility;
 
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
-
-import com.google.common.collect.Multimap;
 
 public interface IObjectModel extends IEntityModel {
 	
@@ -27,7 +26,7 @@ public interface IObjectModel extends IEntityModel {
 	
 	List<IMethod> getVisibleMethods();
 	boolean hasAttributeTags();
-	Multimap<String, String> getAttributeTags();
+	Map<String, ITag> getAttributeTags();
 	IType getType();
 	List<IVariableModel<?>> getFields();
 	

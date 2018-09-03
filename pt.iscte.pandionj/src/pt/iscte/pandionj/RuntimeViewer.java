@@ -16,9 +16,6 @@ import org.eclipse.draw2d.SWTGraphics;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
-import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.dnd.ImageTransfer;
-import org.eclipse.swt.dnd.Transfer;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -90,8 +87,8 @@ public class RuntimeViewer extends Composite {
 		rootFig.setOpaque(true);
 		rootGrid = new GridLayout(2, false);
 		rootGrid.horizontalSpacing = PandionJConstants.STACK_TO_OBJECTS_GAP;
-		rootGrid.marginWidth = PandionJConstants.MARGIN;
-		rootGrid.marginHeight = PandionJConstants.MARGIN;
+		rootGrid.marginWidth = PandionJConstants.CANVAS_MARGIN;
+		rootGrid.marginHeight = PandionJConstants.CANVAS_MARGIN;
 		rootFig.setLayoutManager(rootGrid);
 
 		stackFig = new StackContainer();
@@ -148,7 +145,8 @@ public class RuntimeViewer extends Composite {
 			stackFig.getLayoutManager().layout(stackFig);
 			updateLayout();
 
-			clearItem.setEnabled(model.isTerminated());
+			if(!clearItem.isDisposed())
+				clearItem.setEnabled(model.isTerminated());
 		});
 	}
 
@@ -267,10 +265,9 @@ public class RuntimeViewer extends Composite {
 		item.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
-				copyToClipBoard();
+				Utils.copyToClipBoardAndDispose(getCanvasImage());
 			}
 		});
-
 
 		MenuItem setArrayItem = new MenuItem(menu, SWT.PUSH);
 		setArrayItem.setText(PandionJConstants.Messages.SET_ARRAY_MAX + " (current: " + PandionJView.getMaxArrayLength() + ")");
@@ -325,38 +322,34 @@ public class RuntimeViewer extends Composite {
 				clear();
 			}
 		});
+		
+		MenuItem reportBugItem = new MenuItem(menu, SWT.PUSH);
+		reportBugItem.setText(PandionJConstants.Messages.REPORT_BUG);
+		reportBugItem.setImage(PandionJUI.getImage("bug.png"));
+		reportBugItem.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				PandionJView.getErrorHandler().reportBug();
+			}
+		});
+		
 		canvas.setMenu(menu);
 	}
 
 
-	//	void saveImage() {
-	//		ImageLoader imageLoader = new ImageLoader();
-	//		imageLoader.data = new ImageData[] {ideaImageData};
-	//		imageLoader.save("C:/temp/Idea_PureWhite.jpg",SWT.IMAGE_JPEG); 
-	//	}
-
-	void copyToClipBoard() {
-		Dimension size = rootFig.getPreferredSize();
+	Image getCanvasImage() {
+		Dimension size = null;
+		try {
+			size = rootFig.getPreferredSize();
+		}
+		catch(Exception e) {
+			size = rootFig.getSize();
+		}
 		Image image = new Image(Display.getDefault(), size.width, size.height);
 		GC gc = new GC(image);
 		SWTGraphics graphics = new SWTGraphics(gc);
 		rootFig.paint(graphics);
-		Clipboard clipboard = new Clipboard(Display.getDefault());
-		clipboard.setContents(new Object[]{image.getImageData()}, new Transfer[]{ ImageTransfer.getInstance()}); 
-		image.dispose();
 		gc.dispose();
-	}
-
-
-	void saveToImageFile() {
-		Dimension size = rootFig.getPreferredSize();
-		Image image = new Image(Display.getDefault(), size.width, size.height);
-		GC gc = new GC(image);
-		SWTGraphics graphics = new SWTGraphics(gc);
-		rootFig.paint(graphics);
-		Clipboard clipboard = new Clipboard(Display.getDefault());
-		clipboard.setContents(new Object[]{image.getImageData()}, new Transfer[]{ ImageTransfer.getInstance()}); 
-		image.dispose();
-		gc.dispose();
+		return image;
 	}
 }

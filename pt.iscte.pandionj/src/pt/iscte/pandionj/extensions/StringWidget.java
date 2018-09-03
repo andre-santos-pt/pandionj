@@ -7,6 +7,7 @@ import org.eclipse.jdt.core.IType;
 
 import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.extensibility.IObjectModel;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
 
@@ -18,7 +19,7 @@ public class StringWidget implements ITypeWidgetExtension {
 	}
 
 	@Override
-	public IFigure createFigure(IObjectModel e) {
+	public IFigure createFigure(IObjectModel e, IPropertyProvider args) {
 		Label label = new Label("\"" + e.getStringValue() + "\"");
 		FontManager.setFont(label, PandionJConstants.VALUE_FONT_SIZE);
 		label.setForegroundColor(ColorConstants.black);

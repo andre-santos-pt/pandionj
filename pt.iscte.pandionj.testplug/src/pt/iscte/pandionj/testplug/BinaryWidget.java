@@ -3,11 +3,14 @@ package pt.iscte.pandionj.testplug;
 
 
 
+import java.util.List;
+
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.LineBorder;
 
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IValueWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJUI;
@@ -21,7 +24,7 @@ public class BinaryWidget implements IValueWidgetExtension {
 	}
 
 	@Override
-	public IFigure createFigure(IValueModel v) {
+	public IFigure createFigure(IValueModel v, IPropertyProvider args) {
 		label = new Label(""); 
 		label.setOpaque(true);
 		label.setBackgroundColor(ColorConstants.white);

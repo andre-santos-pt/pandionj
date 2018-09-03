@@ -6,13 +6,13 @@ import org.eclipse.draw2d.FigureUtilities;
 import org.eclipse.draw2d.FreeformLayout;
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.IFigure;
-import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Font;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 
 public class HistogramWidget implements IArrayWidgetExtension {
@@ -25,15 +25,18 @@ public class HistogramWidget implements IArrayWidgetExtension {
 	}
 
 	@Override
-	public IFigure createFigure(IArrayModel<?> e) {
-		return new HistFigure((IArrayModel<Integer>) e);
+	public IFigure createFigure(IArrayModel<?> e, IPropertyProvider args) {
+		Integer height = args.getIntProperty("height");
+		return new HistFigure((IArrayModel<Integer>) e, height);
 	}
 
 	private static class HistFigure extends Figure {
 		final IArrayModel<Integer> array;
-		HistFigure(IArrayModel<Integer> array) {
+		final int height;
+		
+		HistFigure(IArrayModel<Integer> array, Integer height) {
 			this.array = array;
-			setOpaque(true);
+			setOpaque(true);	
 //			setBackgroundColor(ColorConstants.lightGray);
 //			setBorder(new LineBorder(ColorConstants.lightGray, 1));
 			setLayoutManager(new FreeformLayout());
@@ -41,11 +44,13 @@ public class HistogramWidget implements IArrayWidgetExtension {
 				if(!array.getRuntimeModel().isTerminated())
 					repaint();
 			});
+			
+			this.height = height == null ? HEIGHT : height;
 		}
 
 		@Override
 		public Dimension getPreferredSize(int wHint, int hHint) {
-			return new Dimension(array.getLength() + MARGIN + 3, HEIGHT + 3);
+			return new Dimension(array.getLength() + MARGIN + 3, height + 3);
 		}
 
 		@Override
@@ -53,6 +58,7 @@ public class HistogramWidget implements IArrayWidgetExtension {
 			super.paintFigure(g);
 			Rectangle r = getClientArea();
 			Object values = array.getValues();
+		
 			if(values instanceof int[]) {
 				int[] list = (int[]) values; 
 				int maxX = list[0];
@@ -65,7 +71,7 @@ public class HistogramWidget implements IArrayWidgetExtension {
 				}
 				
 				for(int x = 0; x < list.length; x++) {
-					int h = maxX == 0 ? 0 : (list[x] * HEIGHT) / maxX;
+					int h = maxX == 0 ? 0 : (list[x] * height) / maxX;
 					g.drawLine(r.x + x + MARGIN+1, r.y+r.height-2, r.x + x + MARGIN+1, r.y+r.height - h);
 				}
 				g.setForegroundColor(ColorConstants.black);

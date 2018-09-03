@@ -1,6 +1,8 @@
  package pt.iscte.pandionj.extensions.images;
 
 
+import java.util.List;
+
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.PaletteData;
@@ -8,6 +10,7 @@ import org.eclipse.swt.graphics.RGB;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 
 
 public class GrayscaleImageWidget implements IArrayWidgetExtension {
@@ -33,7 +36,7 @@ public class GrayscaleImageWidget implements IArrayWidgetExtension {
 
 
 	@Override
-	public IFigure createFigure(IArrayModel<?> model) {
+	public IFigure createFigure(IArrayModel<?> model, IPropertyProvider args) {
 		return new GrayscaleImageFigure(model);
 	}
 

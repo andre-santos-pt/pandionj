@@ -1,8 +1,8 @@
 package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,8 +45,9 @@ import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
-import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.ITag;
+import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJUI;
@@ -107,8 +108,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 					if(jType != null) {
 						IResource resource = jType.getResource();
 						if(!jType.isBinary() && resource instanceof IFile) {
-							Collection<String> tags = ParserManager.getAttributeTags((IFile) resource, jType.getFullyQualifiedName(), name);
-							refModel.setTags(tags);
+							ITag tag = ParserManager.getAttributeTag((IFile) resource, jType.getFullyQualifiedName(), name);
+							refModel.setTag(tag);
 						}
 					}
 					references.put(name, refModel);
@@ -175,18 +176,18 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	public boolean hasAttributeTags() {
 		for(VariableModel<IJavaObject, IEntityModel> r : references.values())
-			if(r.hasTags())
+			if(r.hasTag())
 				return true;
 		return false;
 	}
 
 
-	public Multimap<String, String> getAttributeTags() {
-		Multimap<String, String> map = ArrayListMultimap.create();
+	public Map<String, ITag> getAttributeTags() {
+		Map<String, ITag> map = new HashMap<String, ITag>();
 
 		for(VariableModel<IJavaObject, IEntityModel> r : references.values()) {
-			if(r.hasTags())
-				map.putAll(r.getName(), r.getTags());
+			if(r.hasTag())
+				map.put(r.getName(), r.getTag());
 		}
 		return map;
 	}
@@ -589,12 +590,12 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		invoke("toString", listener);
 	}
 
-	public Multimap<String, String> getTags() {
-		Multimap<String,String> tags = ArrayListMultimap.create();
+	public Multimap<String, ITag> getTags() {
+		Multimap<String,ITag> tags = ArrayListMultimap.create();
 
 		for (Entry<String, ReferenceModel> e : references.entrySet()) {
-			for(String t : e.getValue().getTags())
-				tags.put(e.getKey(), t);
+			if(e.getValue().hasTag())
+				tags.put(e.getKey(), e.getValue().getTag());	
 		}
 		return tags;
 	}

@@ -10,6 +10,7 @@ import org.eclipse.swt.widgets.Canvas;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
 
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensions.MatrixWidget;
 import pt.iscte.pandionj.tests.mock.MockArray;
 
@@ -35,7 +36,7 @@ public class TestMatrixWidget {
 	
 			MatrixWidget widget = new MatrixWidget();
 			MockArray array = new MockArray("int[]", new int[]{1,2,3}, new int[]{4,5,6}, new int[]{7,8,9}, new int[]{10,11,12});
-			root.add(widget.createFigure(array));
+			root.add(widget.createFigure(array, IPropertyProvider.NULL_PROPERTY_PROVIDER));
 	
 			LightweightSystem lws = new LightweightSystem(canvas);
 			lws.setContents(root);

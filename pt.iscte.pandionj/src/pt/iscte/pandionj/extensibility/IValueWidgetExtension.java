@@ -4,9 +4,8 @@ import org.eclipse.draw2d.IFigure;
 
 import pt.iscte.pandionj.figures.ValueFigure;
 
-public interface IValueWidgetExtension {
+public interface IValueWidgetExtension extends IWidgetExtension<IValueModel>{
 	boolean accept(IValueModel v);
-	IFigure createFigure(IValueModel v);
 	
 	IValueWidgetExtension NULL_EXTENSION = new IValueWidgetExtension() {
 		@Override
@@ -15,8 +14,9 @@ public interface IValueWidgetExtension {
 		}
 
 		@Override
-		public IFigure createFigure(IValueModel v) {
+		public IFigure createFigure(IValueModel v, IPropertyProvider args) {
 			return new ValueFigure(v);
 		}
+		
 	};
 }

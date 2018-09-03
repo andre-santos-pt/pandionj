@@ -1,7 +1,5 @@
 package pt.iscte.pandionj.tests.mock;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.jdt.debug.core.IJavaVariable;
@@ -10,6 +8,7 @@ import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
+import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
@@ -148,12 +147,12 @@ implements IArrayIndexModel {
 	}
 
 	@Override
-	public Collection<String> getTags() {
-		return Collections.emptyList();
+	public ITag getTag() {
+		return null;
 	}
 
 	@Override
-	public void setTags(Collection<String> tags) {
+	public void setTag(ITag tag) {
 		
 	}
 }

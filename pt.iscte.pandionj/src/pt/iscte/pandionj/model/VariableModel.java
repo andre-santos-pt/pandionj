@@ -1,14 +1,13 @@
 package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 
+import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 
 public abstract class VariableModel<T extends IJavaValue, O>
@@ -30,7 +29,7 @@ implements IVariableModel<O> {
 	private int scopeEnd;
 
 	private int stepPointer;
-	private Collection<String> tags = Collections.emptyList();
+	private ITag tag;
 
 
 	private class StepValue {
@@ -180,18 +179,11 @@ implements IVariableModel<O> {
 		return variable;
 	}
 
-	public void setTags(Collection<String> tags) {	
-		if(this.tags == Collections.EMPTY_LIST)
-			this.tags = new ArrayList<String>(tags.size());
-	
-		this.tags.addAll(tags);
+	public void setTag(ITag tag) {	
+		this.tag = tag;
 	}
 
-	public Collection<String> getTags() {
-		return Collections.unmodifiableCollection(tags);
-	}
-
-	public boolean hasTags() {
-		return !tags.isEmpty();
+	public ITag getTag() {
+		return tag;
 	}
 }

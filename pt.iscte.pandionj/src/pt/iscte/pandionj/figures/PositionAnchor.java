@@ -34,13 +34,13 @@ public class PositionAnchor extends AbstractConnectionAnchor {
 		LEFT {
 			@Override
 			public Point getPoint(Rectangle r) {
-				return new Point(r.x, r.y + r.height/2);
+				return new Point(r.x - PandionJConstants.OBJECT_MARGIN, r.y + r.height/2);
 			}
 		},
 		TOPLEFT {
 			@Override
 			public Point getPoint(Rectangle r) {
-				return new Point(r.x, r.y + PandionJConstants.OBJECT_PADDING);
+				return new Point(r.x, r.y);
 			}
 		},
 		CENTER {

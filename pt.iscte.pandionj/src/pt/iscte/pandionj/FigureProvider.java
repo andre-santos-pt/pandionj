@@ -13,7 +13,9 @@ import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IObservableModel;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
+import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IValueWidgetExtension;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
@@ -56,8 +58,8 @@ public class FigureProvider  {
 		if(model instanceof IValueModel) {
 			IValueModel v = (IValueModel) model;
 			
-			IValueWidgetExtension valueExtension = ExtensionManager.getValueExtension(v, v.getTags());
-			IFigure f = valueExtension.createFigure(v);
+			IValueWidgetExtension valueExtension = ExtensionManager.getValueExtension(v, v.getTag());
+			IFigure f = valueExtension.createFigure(v, v.getTag());
 			if(f instanceof ValueFigure)
 				fig = (PandionJFigure<?>) f;
 			else
@@ -69,12 +71,18 @@ public class FigureProvider  {
 		else if(model instanceof IEntityModel) {
 			IEntityModel entity = (IEntityModel) model;
 			assert !entity.isNull();
-			Set<String> tags = getEntityTags(entity);
-
+			Set<ITag> tags = getEntityTags(entity);
+			ITag tag = null;
+			if(!tags.isEmpty())
+				tag = tags.iterator().next();
+			
+			IPropertyProvider args = tag == null ? IPropertyProvider.NULL_PROPERTY_PROVIDER : tag;
+			
 			if(model instanceof IArrayModel) {
 				IArrayModel aModel = (IArrayModel) model;
-				IFigure extFig = findExtensions ? 
-						ExtensionManager.getArrayExtension(aModel, tags).createFigure(aModel) : null;
+				// uses first tag of all tagged references, if available
+				IFigure extFig = findExtensions && tag != null ? 
+						ExtensionManager.getArrayExtension(aModel, tag).createFigure(aModel, args) : null;
 				
 				if(extFig == null) {
 					if(aModel.isPrimitiveType()) {
@@ -93,7 +101,7 @@ public class FigureProvider  {
 			}
 			else if(model instanceof IObjectModel) {
 				IObjectModel oModel = (IObjectModel) model; 
-				IFigure extensionFigure = ExtensionManager.getObjectExtension(oModel).createFigure(oModel);
+				IFigure extensionFigure = ExtensionManager.getObjectExtension(oModel).createFigure(oModel, tag);
 				fig = new ObjectFigure(oModel, extensionFigure);
 			}
 		}
@@ -102,11 +110,11 @@ public class FigureProvider  {
 	}
 
 
-	private Set<String> getEntityTags(IEntityModel e) {
-		
-		Set<String> tags = new HashSet<String>();
+	private Set<ITag> getEntityTags(IEntityModel e) {
+		Set<ITag> tags = new HashSet<>();
 		for(IReferenceModel r : runtime.findReferences(e))
-			tags.addAll(r.getTags());
+			if(r.hasTag())
+				tags.add(r.getTag());
 		return tags;
 	}
 

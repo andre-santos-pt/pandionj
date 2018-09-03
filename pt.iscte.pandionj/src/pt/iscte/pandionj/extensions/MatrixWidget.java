@@ -14,6 +14,7 @@ import org.eclipse.draw2d.geometry.Rectangle;
 
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
 
 // TODO limitar dimensao
@@ -25,7 +26,7 @@ public class MatrixWidget implements IArrayWidgetExtension{
 	}
 
 	@Override
-	public IFigure createFigure(IArrayModel<?> model) {
+	public IFigure createFigure(IArrayModel<?> model, IPropertyProvider args) {
 		return new MatrixFigure(model);
 	}
 

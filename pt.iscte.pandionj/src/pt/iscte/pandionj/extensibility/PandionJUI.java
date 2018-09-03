@@ -1,7 +1,9 @@
 package pt.iscte.pandionj.extensibility;
 
 
+import java.io.UnsupportedEncodingException;
 import java.net.URL;
+import java.net.URLEncoder;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.FileLocator;
@@ -17,6 +19,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PartInitException;
@@ -133,10 +136,8 @@ public interface PandionJUI {
 
 	public static void executeUpdate(DebugRun r) {
 		Display.getDefault().asyncExec(() -> {
-//			System.out.println("UPDATE " + r.hashCode());
 			PandionJView.getInstance().executeInternal(r);
 			RuntimeViewer.getInstance().updateLayout();
-//			System.out.println("/UPDATE " + r.hashCode());
 		});
 	}
 

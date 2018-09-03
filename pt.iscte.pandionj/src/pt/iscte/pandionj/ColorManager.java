@@ -10,6 +10,7 @@ public class ColorManager {
 
 	// TODO Color dispose
 	public static Color getColor(int r, int g, int b) {
+		
 		assert r >= 0 && r < 256;
 		assert g >= 0 && g < 256;
 		assert b >= 0 && b < 256;

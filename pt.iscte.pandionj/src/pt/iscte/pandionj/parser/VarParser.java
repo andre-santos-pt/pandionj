@@ -43,14 +43,17 @@ public class VarParser {
 	private JavaSourceParser parser;
 	private CompilationUnit cunit;
 	private MethodVisitor visitor;
-
+	private IFile file;
+	
 	public VarParser(String path) {
 		parser = JavaSourceParser.createFromFile(path);
 		cunit = parser.getCompilationUnit();
 	}
-
+	
 	public VarParser(IFile file) {
-		this(file.getLocation().toOSString());
+		this.file = file;
+		parser = JavaSourceParser.createFromFile(file.getLocation().toOSString());
+		cunit = parser.getCompilationUnit();
 	}
 
 	public void run() {

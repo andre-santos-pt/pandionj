@@ -50,6 +50,17 @@
             class="pt.iscte.pandionj.extensions.IterableWidget">
       </widget>
    </extension>
+   <extension
+         id="pt.iscte.pandionj.marker"
+         name="PandionJ tag marker"
+         point="org.eclipse.core.resources.markers">
+      <persistent
+            value="false">
+      </persistent>
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
+   </extension>
   
 
 </plugin>

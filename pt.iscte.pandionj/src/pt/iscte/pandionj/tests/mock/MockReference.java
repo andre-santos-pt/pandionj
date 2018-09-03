@@ -1,6 +1,5 @@
 package pt.iscte.pandionj.tests.mock;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -10,23 +9,22 @@ import pt.iscte.pandionj.extensibility.IArrayIndexModel;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
+import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockReference implements IReferenceModel {
 	final String type;
 	final String name;
 	final boolean isStatic;
-	Collection<String> tags;
+	ITag tag;
 	IEntityModel target;
-	
-	public MockReference(String type, String name, IEntityModel target, boolean isStatic, String ... tags) {
+
+	public MockReference(String type, String name, IEntityModel target, boolean isStatic, String tag) {
 		this.type = type;
 		this.name = name;
 		this.target = target;
 		this.isStatic = isStatic;
-		this.tags = new ArrayList<>();
-		for(String t : tags)
-			this.tags.add(t);
+		this.tag = null;
 	}
 
 	@Override
@@ -44,10 +42,10 @@ public class MockReference implements IReferenceModel {
 		return false;
 	}
 
-//	@Override
-//	public boolean isWithinScope() {
-//		return true;
-//	}
+	//	@Override
+	//	public boolean isWithinScope() {
+	//		return true;
+	//	}
 
 	@Override
 	public Role getRole() {
@@ -60,8 +58,8 @@ public class MockReference implements IReferenceModel {
 	}
 
 	@Override
-	public Collection<String> getTags() {
-		return Collections.unmodifiableCollection(tags);
+	public ITag getTag() {
+		return tag;
 	}
 
 	@Override
@@ -91,7 +89,7 @@ public class MockReference implements IReferenceModel {
 
 	@Override
 	public void setOutOfScope() {
-		
+
 	}
 
 	@Override
@@ -106,14 +104,14 @@ public class MockReference implements IReferenceModel {
 
 	@Override
 	public void setStep(int stepPointer) {
-		
+
 	}
 
 	@Override
 	public void setVariableRole(VariableInfo info) {
-		
+
 	}
-	
+
 	@Override
 	public IRuntimeModel getRuntimeModel() {
 		return null;
@@ -128,15 +126,15 @@ public class MockReference implements IReferenceModel {
 	public int getIndex() {
 		return -1;
 	}
-	
+
 	@Override
 	public void setIndex(int i) {
-		
+
 	}
 
 	@Override
-	public void setTags(Collection<String> tags) {
-		
+	public void setTag(ITag tag) {
+
 	}
 
 }

@@ -16,20 +16,17 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaArray;
-import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
-import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIReturnValueVariable;
-import org.eclipse.jdt.internal.debug.core.model.JDIObjectValue;
 
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
-import pt.iscte.pandionj.extensibility.IStackFrameModel.StackEvent.Type;
+import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.ParserManager;
 import pt.iscte.pandionj.parser.VarParser;
@@ -199,13 +196,11 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 
 	private void handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
-		// TODO future: return on frame
 		if(jv instanceof JDIReturnValueVariable) {
 			JDIReturnValueVariable retvar = (JDIReturnValueVariable) jv;
 			if(retvar.hasResult) {
 				IJavaValue retVal = (IJavaValue) jv.getValue();
 				runtime.setReturnOnFrame(this, retVal);
-				System.out.println("RET:" + jv.getName() + "  " + jv.getValue().getClass());
 //				if(retVal instanceof IJavaObject) {
 //					IJavaObject retObj = (IJavaObject) retVal;
 //					IJavaType javaType = retObj.getJavaType();
@@ -250,14 +245,13 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		String varName = jv.getName();
 		boolean isField = !jv.isLocal();
 		VariableInfo info = varParser != null ? varParser.locateVariable(varName, frame.getLineNumber(), isField) : null;
-		//		System.out.println(frame.getDeclaringTypeName() + " -- " +  frame.getMethodName() + " " + (jv.isStatic() ? "static " : "") + varName + ": " + info);
 		IVariableModel<?> newVar = value instanceof IJavaObject ?
 			new ReferenceModel(jv, isInstance, true, info, this) :
 			new ValueModel(jv, isInstance, true, info, this);
 		
 		if(srcFile != null) {
-			Collection<String> tags = ParserManager.getTags(srcFile, jv.getName(), frame.getLineNumber(), isField);
-			newVar.setTags(tags);
+			ITag tag = ParserManager.getTag(srcFile, jv.getName(), frame.getLineNumber(), isField);
+			newVar.setTag(tag);
 		}
 		return newVar;
 	}

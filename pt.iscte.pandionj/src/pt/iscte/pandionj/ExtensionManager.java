@@ -1,7 +1,6 @@
 package pt.iscte.pandionj;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -19,12 +18,11 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IType;
 
-import com.google.common.collect.ArrayListMultimap;
-import com.google.common.collect.Multimap;
-
 import pt.iscte.pandionj.extensibility.IArrayModel;
 import pt.iscte.pandionj.extensibility.IArrayWidgetExtension;
 import pt.iscte.pandionj.extensibility.IObjectModel;
+import pt.iscte.pandionj.extensibility.IPropertyProvider;
+import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.ITypeWidgetExtension;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.IValueWidgetExtension;
@@ -38,7 +36,7 @@ public class ExtensionManager {
 
 	private static Map<String, IValueWidgetExtension> valueExtensions;
 	private static Map<String, String> valueExtensionDescriptions;
-	
+
 	private static List<ITypeWidgetExtension> objectExtensions;
 
 	static {
@@ -46,15 +44,18 @@ public class ExtensionManager {
 
 		arrayExtensions = new HashMap<String, IArrayWidgetExtension>();
 		arrayExtensionDescriptions = new HashMap<String, String>();
-		
+
 		IConfigurationElement[] extsArray = extensionRegistry.getConfigurationElementsFor(PandionJConstants.ARRAYTAG_EXTENSION_ID);
 		for(IConfigurationElement e : extsArray) {
 			try {
-				String name = e.getAttribute("name");
-				IArrayWidgetExtension ae = (IArrayWidgetExtension) e.createExecutableExtension("class");
-				String tag = "@" + name;
-				arrayExtensions.put(tag, ae);
-				arrayExtensionDescriptions.put(tag, e.getAttribute("where"));
+				String tag = e.getAttribute("name");
+				if(tag.matches("[a-z]+")) {
+					IArrayWidgetExtension ae = (IArrayWidgetExtension) e.createExecutableExtension("class");
+					arrayExtensions.put(tag, ae);
+					arrayExtensionDescriptions.put(tag, e.getAttribute("where"));
+				}
+				else
+					; // TODO log warning
 			} catch (CoreException e1) {
 				e1.printStackTrace();
 			}
@@ -62,15 +63,18 @@ public class ExtensionManager {
 
 		valueExtensions = new HashMap<>();
 		valueExtensionDescriptions = new HashMap<String, String>();
-		
+
 		IConfigurationElement[] extsValue = extensionRegistry.getConfigurationElementsFor(PandionJConstants.VALUETAG_EXTENSION_ID);
 		for(IConfigurationElement e : extsValue) {
 			try {
-				String name = e.getAttribute("name");
-				IValueWidgetExtension ae = (IValueWidgetExtension) e.createExecutableExtension("class");
-				String tag = "@" + name;
-				valueExtensions.put(tag, ae);
-				valueExtensionDescriptions.put(tag, e.getAttribute("where"));
+				String tag = e.getAttribute("name");
+				if(tag.matches("[a-z]+")) {
+					IValueWidgetExtension ae = (IValueWidgetExtension) e.createExecutableExtension("class");
+					valueExtensions.put(tag, ae);
+					valueExtensionDescriptions.put(tag, e.getAttribute("where"));
+				}
+				else
+					; // TODO log warning
 
 			} catch (CoreException e1) {
 				e1.printStackTrace();
@@ -89,26 +93,26 @@ public class ExtensionManager {
 		}		
 	}
 
-	public static IArrayWidgetExtension getArrayExtension(IArrayModel<?> m, Collection<String> tags) {
-		for (String tag : tags) {
-			IArrayWidgetExtension ext = arrayExtensions.get(tag);
-			if(ext != null && ext.accept(m))
-				return ext;
-		}
+	// TODO several tags from references?
+	public static IArrayWidgetExtension getArrayExtension(IArrayModel<?> m, ITag tag) {
+		IArrayWidgetExtension ext = arrayExtensions.get(tag.getName());
+		if(ext != null && ext.accept(m))
+			return ext;
 		return IArrayWidgetExtension.NULL_EXTENSION;
 	}
 
 
-	public static IValueWidgetExtension getValueExtension(IValueModel v, Collection<String> tags) {
-		for (String tag : tags) {
-			IValueWidgetExtension ext = valueExtensions.get(tag);
-			if(ext != null && ext.accept(v))
-				return ext;
-		}
-		
+	public static IValueWidgetExtension getValueExtension(IValueModel v, ITag tag) {
+		if(tag == null)
+			return IValueWidgetExtension.NULL_EXTENSION;
+
+		IValueWidgetExtension ext = valueExtensions.get(tag.getName());
+		if(ext != null && ext.accept(v))
+			return ext;
+
 		return IValueWidgetExtension.NULL_EXTENSION;
 	}
-	
+
 	public static ITypeWidgetExtension getObjectExtension(IObjectModel m) {
 		if(m.hasAttributeTags())
 			return new TagExtension(m.getAttributeTags());
@@ -129,7 +133,7 @@ public class ExtensionManager {
 		validTags.addAll(valueExtensions.keySet());
 		return validTags;
 	}
-	
+
 	static class TagDescription {
 		final String tag;
 		String description;
@@ -139,12 +143,12 @@ public class ExtensionManager {
 			this.description = description;
 		}
 	}
-	
+
 	public static List<TagDescription> getTagDescriptions() {
 		List<TagDescription> list = new ArrayList<>();
 		for(Entry<String, String> e : arrayExtensionDescriptions.entrySet())
 			list.add(new TagDescription(e.getKey(), e.getValue()));
-		
+
 		for(Entry<String, String> e : valueExtensionDescriptions.entrySet()) {
 			TagDescription existing = null;
 			for(TagDescription t : list)
@@ -152,7 +156,7 @@ public class ExtensionManager {
 					existing = t;
 					break;
 				}
-			
+
 			if(existing == null)
 				list.add(new TagDescription(e.getKey(), e.getValue()));
 			else
@@ -160,49 +164,50 @@ public class ExtensionManager {
 		}
 		return list;
 	}
-	
+
 	static class TagExtension implements ITypeWidgetExtension {
 
-		private Multimap<String, String> tags;
-		private Multimap<String, IFigure> figs;
+		private Map<String, ITag> tags;
+		private Map<String, IFigure> figs;
 		private IFigure compositeFig;
 
-		public TagExtension(Multimap<String, String> tags) {
+		public TagExtension(Map<String, ITag> tags) {
 			assert tags != null;
 			this.tags = tags;
-			figs = ArrayListMultimap.create();
+			figs = new HashMap<String, IFigure>();
 		}
 
 		@Override
-		public IFigure createFigure(IObjectModel m) {
+		public IFigure createFigure(IObjectModel m, IPropertyProvider args) {
+			// TODO when is this event triggered?
 			m.registerDisplayObserver(new ModelObserver<Object>() {
 				@Override
 				public void update(Object arg) {
 					String attName = (String) arg;
 					if(figs.containsKey(attName)) {
-						for (IFigure f : figs.get(attName))
-							compositeFig.remove(f);
-
-						figs.removeAll(attName);
-						addChildFigures(m, attName);
+						compositeFig.remove(figs.get(attName));
+						figs.remove(attName);
+						addChildFigure(m, attName);
 					}
 				}
 			});
 
 			compositeFig = new Figure();
 			compositeFig.setLayoutManager(new FlowLayout());
-			for (Entry<String, Collection<String>> e : tags.asMap().entrySet())
-				addChildFigures(m, e.getKey());
+
+			for(String att : tags.keySet())
+				addChildFigure(m, att);
 
 			return compositeFig;
 		}
 
-		private void addChildFigures(IObjectModel m, String attName) {
+		private void addChildFigure(IObjectModel m, String attName) {
 			IArrayModel<?> array = m.getArray(attName);
 			if(array != null) {
-				IArrayWidgetExtension ext = getArrayExtension(array, tags.get(attName));
+				ITag tag = tags.get(attName);
+				IArrayWidgetExtension ext = getArrayExtension(array, tag);
 				if(ext != IArrayWidgetExtension.NULL_EXTENSION) {
-					IFigure f = ext.createFigure(array);
+					IFigure f = ext.createFigure(array, tag);
 					f.setToolTip(new Label(attName));
 					figs.put(attName, f);
 					compositeFig.add(f);
@@ -217,5 +222,5 @@ public class ExtensionManager {
 
 	}
 
-	
+
 }
