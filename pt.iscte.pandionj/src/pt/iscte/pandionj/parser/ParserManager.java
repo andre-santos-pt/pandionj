@@ -25,9 +25,8 @@ public class ParserManager {
 			TagParser tagParser = new TagParser(f, ExtensionManager.validTags());
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
-			tagParser.print();
 		}
-		r.print();
+//		r.print();
 		return r;
 	}
 	

@@ -286,7 +286,7 @@ public class LaunchCommand extends AbstractHandler {
 				if(Platform.getOS().compareTo(Platform.OS_WIN32) == 0)
 					path = path.substring(1);
 
-				String args =  "-javaagent:\"" + path + "=" + agentArgs + "\" -Djava.awt.headless=true";
+				String args =  "-javaagent:\"" + path + "=" + agentArgs + "\" -Djava.awt.headless=true -ea";
 				wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_VM_ARGUMENTS, args);
 			}
 		} catch (IOException e1) {

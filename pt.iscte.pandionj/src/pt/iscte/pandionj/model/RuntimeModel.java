@@ -270,6 +270,17 @@ implements IRuntimeModel {
 		return null;
 	}
 
+	public StackFrameModel getLastUserFrame() {
+		for(int i = callStack.size()-1; i >= 0; i--) {
+			StackFrameModel f = callStack.get(i);
+			if(f.isUserFrame())
+				return f;
+		}
+
+		assert false;
+		return null;
+	}
+	
 	public void setTerminated() {
 		if(launch != null)
 			try {

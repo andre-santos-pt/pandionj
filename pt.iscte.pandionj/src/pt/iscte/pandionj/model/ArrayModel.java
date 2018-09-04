@@ -200,7 +200,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 						return false;
 			}
 		} catch (DebugException e) {
-			e.printStackTrace(); // TODO termination
+			return false;
 		}
 
 		return true;

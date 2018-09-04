@@ -98,6 +98,10 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public boolean isExecutionFrame() {
 		return !runtime.isEmpty() && runtime.getTopFrame() == this;
 	}
+	
+	public boolean isUserFrame() {
+		return javaProject != null && javaProject.exists();
+	}
 
 	public IJavaStackFrame getStackFrame() {
 		return frame;

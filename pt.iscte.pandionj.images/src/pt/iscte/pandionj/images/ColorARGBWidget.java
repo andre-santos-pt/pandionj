@@ -1,7 +1,5 @@
-package pt.iscte.pandionj.testplug;
+package pt.iscte.pandionj.images;
 
-
-import java.util.List;
 
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;

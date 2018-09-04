@@ -13,6 +13,7 @@ import org.eclipse.draw2d.GridLayout;
 import org.eclipse.draw2d.LightweightSystem;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.SWTGraphics;
+import org.eclipse.draw2d.ScalableLayeredPane;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -76,15 +77,18 @@ public class RuntimeViewer extends Composite {
 		scroll = new ScrolledComposite(this, SWT.H_SCROLL | SWT.V_SCROLL);
 		scroll.setBackground(PandionJConstants.Colors.VIEW_BACKGROUND);
 		canvas = new Canvas(scroll, SWT.DOUBLE_BUFFERED);
-		canvas.setBackground(ColorConstants.white);
+		canvas.setBackground(PandionJConstants.Colors.VIEW_BACKGROUND);
 		canvas.setLayoutData(new GridData(GridData.FILL_BOTH));
 		scroll.setContent(canvas);
 		addMenu();
 
-		//				rootFig = new ScalableLayeredPane();
-		//				((ScalableLayeredPane) rootFig).setScale(2);
+//		rootFig = new ScalableLayeredPane();
+//		((ScalableLayeredPane) rootFig).setScale(2);
+		
 		rootFig = new Figure();
 		rootFig.setOpaque(true);
+		rootFig.setBackgroundColor(PandionJConstants.Colors.VIEW_BACKGROUND);
+
 		rootGrid = new GridLayout(2, false);
 		rootGrid.horizontalSpacing = PandionJConstants.STACK_TO_OBJECTS_GAP;
 		rootGrid.marginWidth = PandionJConstants.CANVAS_MARGIN;

@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.extensions.images;
+package pt.iscte.pandionj.images;
 
 
 import org.eclipse.draw2d.IFigure;

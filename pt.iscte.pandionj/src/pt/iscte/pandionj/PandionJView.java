@@ -1,20 +1,8 @@
 package pt.iscte.pandionj;
 
-import java.io.ByteArrayInputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Scanner;
-import java.util.Set;
-
 import org.eclipse.core.resources.IFile;
-import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.ILogListener;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
@@ -35,9 +23,6 @@ import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIReturnValueVaria
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IInputValidator;
-import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -46,15 +31,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.console.ConsolePlugin;
 import org.eclipse.ui.console.IConsole;
@@ -79,7 +59,7 @@ public class PandionJView extends ViewPart {
 	private IDebugEventSetListener debugEventListener;
 	private PandionJBreakpointListener breakpointListener;
 	private ErrorHandler logListener;
-	
+
 	private RuntimeViewer runtimeView;
 	private Composite parent;
 
@@ -118,7 +98,6 @@ public class PandionJView extends ViewPart {
 		breakpointListener = new PandionJBreakpointListener();
 		JDIDebugModel.addJavaBreakpointListener(breakpointListener);
 
-		//		populateToolBar();
 		logListener = new ErrorHandler(this);
 		Platform.addLogListener(logListener);
 	}
@@ -137,7 +116,7 @@ public class PandionJView extends ViewPart {
 	RuntimeModel getRuntime() {
 		return runtime;
 	}
-	
+
 	private void createWidgets(Composite parent) {
 		this.parent = parent;
 		String toolTipVersion = "Version " + Platform.getBundle(PandionJConstants.PLUGIN_ID).getVersion().toString();
@@ -178,13 +157,6 @@ public class PandionJView extends ViewPart {
 				MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Installed tags", info);
 			}
 		});
-
-
-		//		Label labelInit = new Label(introComp, SWT.WRAP);
-		//		FontManager.setFont(labelInit, PandionJConstants.MESSAGE_FONT_SIZE, FontStyle.ITALIC);
-		//		labelInit.setForeground(ColorConstants.gray);
-		//		labelInit.setText(PandionJConstants.Messages.START);
-		//		labelInit.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 
 		return introComp;
 	}
@@ -251,30 +223,86 @@ public class PandionJView extends ViewPart {
 			exceptionFrame = thread.getTopStackFrame();
 			handleFrames(thread);
 			if(!runtime.isEmpty()) {
+				
 				StackFrameModel frame = runtime.getFrame(exceptionFrame);
-				String message = null;
-				for(IVariable var : exceptionFrame.getVariables()) {
-					if(var instanceof JDIReturnValueVariable) {
-						JDIReturnValueVariable retvar = (JDIReturnValueVariable) var;
-						if(retvar.hasResult) {
-							IJavaValue retVal = (IJavaValue) var.getValue();
-							if(retVal instanceof IJavaObject) {
-								IJavaObject retObj = (IJavaObject) retVal;
-								IJavaType javaType = retObj.getJavaType();
-								if(javaType.getName().equals(ArrayIndexOutOfBoundsException.class.getName())) {
-									IJavaFieldVariable field = retObj.getField("detailMessage", true);
-									message = field.getValue().getValueString();
-									break;
-								}
-							}
-						}
-						return;
-					}
+				//StackFrameModel frame = runtime.getLastUserFrame();
+//				if(frame == null) {
+//					thread.resume();
+//					return;
+//				}
+				
+				Exc exc = findException(exceptionFrame);
+				String message = exc.message;
+				String dialogTitle = "Exception Raised: " + PandionJConstants.Messages.prettyException(exc.typeName);
+				String dialogText = "null".equals(message) ? "" : message;
+				if(exc.matches(ArrayIndexOutOfBoundsException.class)) {
+//					dialogTitle = "Invalid index on array access";
+					dialogText = "Array was accessed at the invalid index " + message + ".";
 				}
-				int line = exceptionFrame.getLineNumber();
+				else if(exc.matches(NullPointerException.class)) {
+					dialogText = "No object can be accessed through a null reference.";
+				}
+				else if(exc.matches(AssertionError.class)) {
+//					dialogTitle = "Assertion failed";
+					dialogText = "null".equals(message) ? "Assertion check failed." : message;
+				}
+				else if(exc.matches(NegativeArraySizeException.class)) {
+					dialogText = "A negative value cannot be used to provide the array size.";
+				}
+				
+				int line = frame.getLineNumber();
 				frame.processException(exception, line, message);
+
+				// TODO go to user instruction pointer
+//				PandionJUI.navigateToLine(frame.getSourceFile(), line-1);
+//				try {
+//					IMarker m = frame.getSourceFile().createMarker("org.eclipse.debug.ui.currentIP");
+//					m.setAttribute(IMarker.LINE_NUMBER, line);
+//					m.setAttribute(IMarker.MESSAGE, message);
+//					m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
+//					m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
+//				} catch (CoreException e) {
+//					e.printStackTrace();
+//				}
+				
+				MessageDialog.open(MessageDialog.ERROR, Display.getDefault().getActiveShell(), 
+						dialogTitle, dialogText, SWT.NONE);
+				thread.resume();
 			}
 		}); 
+	}
+
+	private static class Exc {
+		final String typeName;
+		final String message;
+
+		public Exc(String typeName, String message) {
+			this.typeName = typeName;
+			this.message = message;
+		}
+		
+		boolean matches(Class<?> c) {
+			return c.getName().equals(typeName);
+		}
+	}
+
+	private static Exc findException(IStackFrame frame) throws DebugException {
+		for(IVariable var : frame.getVariables()) {
+			if(var instanceof JDIReturnValueVariable) {
+				JDIReturnValueVariable retvar = (JDIReturnValueVariable) var;
+				if(retvar.hasResult) {
+					IJavaValue retVal = (IJavaValue) var.getValue();
+					if(retVal instanceof IJavaObject) {
+						IJavaObject retObj = (IJavaObject) retVal;
+						IJavaType javaType = retObj.getJavaType();
+						IJavaFieldVariable field = retObj.getField("detailMessage", true);
+						String msg = field == null ? "" : field.getValue().getValueString(); 
+						return new Exc(javaType.getName(), msg);
+					}
+				}
+			}
+		}
+		return null;
 	}
 
 	// must be invoked under executeInternal(..)
@@ -368,7 +396,7 @@ public class PandionJView extends ViewPart {
 	}
 
 
-	
+
 	private MessageConsole findConsole(String name) {
 		ConsolePlugin plugin = ConsolePlugin.getDefault();
 		IConsoleManager conMan = plugin.getConsoleManager();
@@ -387,5 +415,5 @@ public class PandionJView extends ViewPart {
 	public static ErrorHandler getErrorHandler() {
 		return instance.logListener;
 	}
-	
+
 }

@@ -47,6 +47,9 @@ import pt.iscte.pandionj.extensibility.ITag;
 
 	@Override
 	public String toString() {
-		return "@" + name + "(" + String.join(", ", args.keySet()) + ")";
+		if(args.isEmpty())
+			return "@" + name;
+		else
+			return "@" + name + "(" + String.join(", ", args.keySet()) + ")";
 	}
 }

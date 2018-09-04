@@ -146,6 +146,9 @@ public class TagParser {
 			String comment = parser.getSourceFragment(start, node.getLength());
 			comment = comment.substring(comment.indexOf('/')+2).trim();
 
+			if(!comment.startsWith("@"))
+				return true;
+			
 			String tag = null;
 			Map<String,String> args = new HashMap<>();
 			if(comment.matches("@[a-z]+")) {

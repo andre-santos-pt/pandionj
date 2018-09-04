@@ -1,4 +1,4 @@
-package pt.iscte.pandionj.extensions.images;
+package pt.iscte.pandionj.images;
 
 
 import java.io.File;

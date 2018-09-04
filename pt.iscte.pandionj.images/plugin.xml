@@ -4,25 +4,33 @@
    <extension
          point="pt.iscte.pandionj.arraytags">
       <array-tag
-            class="pt.iscte.pandionj.extensions.images.BinaryImageWidget"
+            class="pt.iscte.pandionj.images.BinaryImageWidget"
             name="binaryimage"
             where="well-formed boolean[][] matrix to display as a binaryimage (#lines = height)">
       </array-tag>
       <array-tag
-            class="pt.iscte.pandionj.extensions.images.GrayscaleImageWidget"
+            class="pt.iscte.pandionj.images.GrayscaleImageWidget"
             name="grayscaleimage"
             where="well-formed int[][] matrix to display as a grayscale image (#lines = height)">
       </array-tag>
        <array-tag
-             class="pt.iscte.pandionj.extensions.images.ColorImageWidget"
+             class="pt.iscte.pandionj.images.ColorImageWidget"
              name="colorimage"
              where="well-formed int[][] matrix to display as a color image (#lines = height)">
       </array-tag>
         <array-tag
-              class="pt.iscte.pandionj.extensions.images.ColorRGBArrayWidget"
+              class="pt.iscte.pandionj.images.ColorRGBArrayWidget"
               name="color"
               where="int[] array with length equal to 3 and values within [0, 255]">
       </array-tag>
    </extension>
-
+   
+   <extension
+         point="pt.iscte.pandionj.valuetags">
+      <value-tag
+            class="pt.iscte.pandionj.images.ColorARGBWidget"
+            name="color"
+            where="int variable encoded as ARGB">
+      </value-tag>
+	 </extension>
 </plugin>

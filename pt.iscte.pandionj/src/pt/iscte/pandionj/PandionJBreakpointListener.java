@@ -14,6 +14,13 @@ import org.eclipse.jdt.debug.core.IJavaType;
 public class PandionJBreakpointListener implements IJavaBreakpointListener { 
 
 	public int breakpointHit(IJavaThread thread, IJavaBreakpoint breakpoint) {
+		try {
+			if(thread.isSystemThread() || thread.isDaemon())
+				return IJavaBreakpointListener.DONT_SUSPEND;
+		} catch (DebugException e) {
+			e.printStackTrace();
+		}
+		
 		PandionJView pjView = PandionJView.getInstance();
 		if(pjView == null)
 			return IJavaBreakpointListener.DONT_SUSPEND;

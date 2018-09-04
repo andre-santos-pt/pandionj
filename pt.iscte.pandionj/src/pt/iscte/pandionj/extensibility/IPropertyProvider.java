@@ -9,15 +9,15 @@ public interface IPropertyProvider {
 	
 	String getProperty(String name);
 	
-	default Integer getIntProperty(String name) {
+	default Integer getIntProperty(String name, Integer defaultValue) {
 		String s = getProperty(name);
 		if(s == null)
-			return null;
+			return defaultValue;
 		try {
 			return new Integer(s);
 		}
 		catch (NumberFormatException e) {
-			return null;
+			return defaultValue;
 		}
 	}
 	
