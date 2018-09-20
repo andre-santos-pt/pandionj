@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.extensibility;
 
+import java.util.List;
+
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.jdt.core.IMethod;
@@ -43,21 +45,32 @@ public interface ITypeWidgetExtension extends IWidgetExtension<IObjectModel> {
 			label.setForegroundColor(PandionJConstants.Colors.OBJECT_HEADER_FONT);
 			FontManager.setFont(label, PandionJConstants.OBJECT_HEADER_FONT_SIZE);
 			IType type = e.getType();
-			if(type != null) {
-				IMethod method = type.getMethod("toString", new String[0]);
-				if(!method.exists()) {
-					label.setText(":" + type.getElementName());
-					return label;
-				}
+			if(e.isToStringDefined()) {
+				invokeToString(e, label);
+				label.setToolTip(new Label("returned by toString()"));
+				e.getRuntimeModel().registerDisplayObserver((event) -> {
+					if(event.type == IRuntimeModel.Event.Type.STEP ||event.type == IRuntimeModel.Event.Type.EVALUATION) {
+						invokeToString(e, label);
+//						label.setText(e.getStringValue());
+					}
+				});
 			}
-			invokeToString(e, label);
-			label.setToolTip(new Label("returned by toString()"));
-			e.getRuntimeModel().registerDisplayObserver((event) -> {
-				if(event.type == IRuntimeModel.Event.Type.STEP ||event.type == IRuntimeModel.Event.Type.EVALUATION) {
-					invokeToString(e, label);
-//					label.setText(e.getStringValue());
-				}
-			});
+			else {
+				label.setText(":" + type.getElementName());
+				return label;
+			}
+				
+//			if(type != null) {
+//				List<IMethod> visibleMethods = e.getVisibleMethods();
+//				
+//				IMethod method = type.getMethod("toString", new String[0]);
+//				method.getParameterTypes()
+//				if(!method.exists()) {
+//					label.setText(":" + type.getElementName());
+//					return label;
+//				}
+//			}
+			
 			return label;
 		}
 

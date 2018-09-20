@@ -15,6 +15,7 @@ import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameModel.StackEvent<?>> implements IStackFrameModel {
 	// la.la.Class.VAR -> 
@@ -30,16 +31,18 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 		for(IVariableModel<?> v : map.values())
 			v.update(step);
 	}
-	
+
 	public boolean existsVar(StackFrameModel stackFrameModel, String varName) throws DebugException {
 		return get(stackFrameModel, varName) != null;
 	}
 
 	public void add(StackFrameModel frame, IVariableModel<?> v) throws DebugException  {
 		String id = frame.getStackFrame().getDeclaringTypeName() + "." + v.getName();
-		map.put(id,v);
-		setChanged();
-		notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE,v));
+		if(!map.containsKey(id)) {
+			map.put(id,v);
+			setChanged();
+			notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE,v));
+		}
 	}
 
 	public IVariableModel<?> get(StackFrameModel frame, String varName) throws DebugException {
@@ -132,6 +135,16 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 
 	@Override
 	public StackEvent<String> getExceptionEvent() {
+		return null;
+	}
+
+	@Override
+	public Collection<IVariableModel<?>> getLocalVariables() {
+		return getAllVariables();
+	}
+
+	@Override
+	public VariableInfo getVariableInfo(String varName, boolean isField) {
 		return null;
 	}
 }

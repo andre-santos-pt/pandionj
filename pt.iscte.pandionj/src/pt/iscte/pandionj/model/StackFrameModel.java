@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
@@ -50,10 +51,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	
 	private String exceptionType;
 
-	private int step;
-	private int stepPointer;
-	private Map<Integer, Integer> stepLines;
-
 	private int lastLine;
 
 	private StaticRefsContainer staticRefs;
@@ -75,15 +72,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 		obsolete = false;
 		exceptionType = null;
-
-		step = 0;
-		stepLines = new HashMap<>();
-		try {
-			lastLine = frame.getLineNumber();
-			stepLines.put(step, lastLine);
-		} catch (DebugException e) {
-			e.printStackTrace();
-		}
 	}
 
 	@Override
@@ -122,7 +110,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	public boolean isInstance() {
 		try {
-			return !frame.isStatic() && !frame.isConstructor();
+			return !frame.isStatic();
 		} catch (DebugException e) {
 			return false;
 		}
@@ -132,17 +120,13 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	public void update() throws DebugException {
 		handleVariables();
-		step++;
-		stepPointer = step;
-		stepLines.put(step, lastLine);
-
 		try {
 			lastLine = frame.getLineNumber();
 		} catch (DebugException e) {
 			e.printStackTrace();
 		}
 		setChanged();
-		notifyObservers(new IStackFrameModel.StackEvent<Object>(StackEvent.Type.STEP, step));
+		notifyObservers(new IStackFrameModel.StackEvent<Object>(StackEvent.Type.STEP, null));
 	}
 
 
@@ -223,8 +207,8 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			varName = "this." + varName;
 		
 		IJavaValue value = (IJavaValue) jv.getValue();
-		if(jv.isStatic() && !jv.isPrivate()) {
-			if(!staticRefs.existsVar(this, varName) ) { 
+		if(jv.isStatic()) {
+			if(!jv.isPrivate() && !staticRefs.existsVar(this, varName)) { 
 				IVariableModel<?> newVar = createVar(jv, false, value);
 				staticRefs.add(this, newVar);
 			}
@@ -232,7 +216,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		else {
 			if(stackVars.containsKey(varName) && stackVars.get(varName).getJavaVariable() == jv) {
 				IVariableModel<?> vModel = stackVars.get(varName);
-				vModel.update(step);
+				vModel.update(0);
 			}
 			else {
 				IVariableModel<?> newVar = createVar(jv, isInstance, value);
@@ -244,11 +228,19 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		}
 	}
 
+	public VariableInfo getVariableInfo(String varName, boolean isField) {
+		try {
+			return varParser != null ? varParser.locateVariable(varName, frame.getLineNumber(), isField) : null;
+		} catch (DebugException e) {
+			return null;
+		}
+	}
+	
 	private IVariableModel<?> createVar(IJavaVariable jv, boolean isInstance, IJavaValue value)
 			throws DebugException {
 		String varName = jv.getName();
 		boolean isField = !jv.isLocal();
-		VariableInfo info = varParser != null ? varParser.locateVariable(varName, frame.getLineNumber(), isField) : null;
+		VariableInfo info = getVariableInfo(varName, isField);
 		IVariableModel<?> newVar = value instanceof IJavaObject ?
 			new ReferenceModel(jv, isInstance, true, info, this) :
 			new ValueModel(jv, isInstance, true, info, this);
@@ -289,13 +281,14 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 				else
 					args.add(localVariables[i].getName());
 			}
-
+			System.out.println("DEC: " + frame.getDeclaringTypeName() +   "   "  + frame.getThis());
 			if(frame.isStaticInitializer())
 				return frame.getDeclaringTypeName() + " (static initializer)";
-			else if(frame.isConstructor())
-				return "new " + toSimpleName(frame.getReferenceType().getName()) + "(" + String.join(", ", args) + ")";
+			else if(frame.isConstructor()) {
+				return superType() + "new" +  "(" + String.join(", ", args) + ")"; //toSimpleName(frame.getReferenceType().getName())
+			}
 			else {
-				String ret = frame.getMethodName() + "(" + String.join(", ", args) + ")";
+				String ret = superType() + frame.getMethodName() + "(" + String.join(", ", args) + ")";
 				if(returnValue != null)
 					ret += " = " + returnValue;
 				return ret;
@@ -304,6 +297,13 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			//			e.printStackTrace();
 			return super.toString();
 		}
+	}
+
+	private String superType() throws DebugException {
+		String superType = "";
+		if(frame.getThis() != null && !frame.getDeclaringTypeName().equals(frame.getThis().getJavaType().getName()))
+			superType = toSimpleName(frame.getDeclaringTypeName()) + ".";
+		return superType;
 	}
 	
 	private static  String toSimpleName(String name) {
@@ -415,62 +415,32 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		return exceptionType;
 	}
 	
-	public int getRunningStep() {
-		return step;
-	}
-
-	public int getStepPointer() {
-		return stepPointer;
-	}
-
-	public void setStep(int step) {
-		if(step != stepPointer) {
-			stepPointer = step;
-			//			for(IVariableModel<?> var : staticVars.values())
-			//				var.setStep(stepPointer);
-
-			for(IVariableModel<?> var : stackVars.values())
-				var.setStep(stepPointer);
-		}
-		setChanged();
-		notifyObservers();
-	}
-
-	public int getStepLine() {
-		return stepLines.get(stepPointer);
-	}
-
-	public IVariableModel getStackVariable(String varName) {
-		return stackVars.get(varName);
+	public IVariableModel<?> getStackVariable(String varName) {
+		IVariableModel<?> var = stackVars.get(varName);
+		if(var == null)
+			var = stackVars.get("this." + varName);
+		return var;
 	}
 
 	@Override
 	public Collection<IVariableModel<?>> getAllVariables() {
 		return Collections.unmodifiableCollection(stackVars.values());
 	}
+	
+	public Iterable<IVariableModel<?>> getLocalVariables() {
+		return stackVars.values().stream()
+				.filter(v -> !v.isInstance())
+				.collect(Collectors.toList());
+	}
+	
 
-	public Collection<IReferenceModel> getReferenceVariables() {
-		ArrayList<IReferenceModel> vars = new ArrayList<>();
-		for(IVariableModel<?> v : stackVars.values())
-			if(v instanceof IReferenceModel)
-				vars.add((IReferenceModel)v);
-		return vars;
+	public Iterable<IReferenceModel> getReferenceVariables() {
+		return stackVars.values().stream()
+				.filter(v -> v instanceof IReferenceModel)
+				.map(v -> (IReferenceModel) v)
+				.collect(Collectors.toList());
 	}
 
-//	public IObjectModel getThis() {
-//		//assert isInstance();
-////		if(isObsolete())
-////			return null;
-//		try {
-//			IJavaObject obj = frame.getThis();
-//			if(obj != null)
-//				return (IObjectModel) getRuntime().getObject(obj, false, null);
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//		}
-//		return null;
-//	}
-	
 	public boolean isInstanceFrameOf(IObjectModel model) {
 		try {
 			IJavaObject obj = frame.getThis();
@@ -479,8 +449,5 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			return false;
 		}
 	}
-
-
-
 
 }

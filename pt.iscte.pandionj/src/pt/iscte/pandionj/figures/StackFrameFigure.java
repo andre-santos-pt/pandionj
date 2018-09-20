@@ -28,16 +28,16 @@ public class StackFrameFigure extends Figure {
 	private ObjectContainer objectContainer;
 	private RuntimeViewer runtimeViewer;
 	private boolean invisible;
-	private boolean instance;
+	//	private boolean instance;
 	private Label label;
 
-	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible, boolean instance) {
+	public StackFrameFigure(RuntimeViewer runtimeViewer, IStackFrameModel frame, ObjectContainer objectContainer, boolean invisible) {
 		this.runtimeViewer = runtimeViewer;
 		this.frame = frame;
 		this.figProvider = runtimeViewer.getFigureProvider();
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
-		this.instance = instance;
+		//		this.instance = instance;
 
 		setBackgroundColor(PandionJConstants.Colors.VIEW_BACKGROUND);
 		layout = new GridLayout(1, false);
@@ -59,10 +59,9 @@ public class StackFrameFigure extends Figure {
 			});
 		}
 
-//		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
-		for (IVariableModel<?> v : frame.getAllVariables()) {
+		//		ExceptionType exception = ExceptionType.match(frame.getExceptionType());
+		for (IVariableModel<?> v : frame.getLocalVariables())
 			addVariable(v);
-		}
 
 		if(frame.exceptionOccurred()) {
 			Object illustrationArg = null;
@@ -71,13 +70,13 @@ public class StackFrameFigure extends Figure {
 				illustrationArg = new Integer(exception.arg);
 			}
 			else if(exception.type == StackEvent.Type.EXCEPTION) {
-				// TODO exception handling
-//				illustrationArg = ExceptionType.match((String) exception.arg);
+				// TODO exception handling ?
+				//				illustrationArg = ExceptionType.match((String) exception.arg);
 			}
 			for (IReferenceModel ref : frame.getReferenceVariables())
 				objectContainer.updateIllustration(ref, illustrationArg);
 		}
-			
+
 		updateLook(frame, false);
 		addFrameObserver(frame);
 	}
@@ -89,7 +88,9 @@ public class StackFrameFigure extends Figure {
 				if(event != null) {
 					Object illustrationArg = null;
 					if(event.type == StackEvent.Type.NEW_VARIABLE) {
-						addVariable((IVariableModel<?>) event.arg);
+						IVariableModel<?> var = (IVariableModel<?>) event.arg;
+						if(!var.isInstance())
+							addVariable(var);
 					}
 					else if(event.type == StackEvent.Type.VARIABLE_OUT_OF_SCOPE) {
 						PandionJFigure<?> toRemove = getVariableFigure((IVariableModel<?>)  event.arg); 
@@ -102,7 +103,7 @@ public class StackFrameFigure extends Figure {
 					}
 					else if(event.type == StackEvent.Type.ARRAY_INDEX_EXCEPTION) {
 						illustrationArg = new Integer((String) event.arg);
-//						illustrationArg = ExceptionType.match((String) event.arg);
+						//						illustrationArg = ExceptionType.match((String) event.arg);
 					}
 					else if(event.type == StackEvent.Type.EXCEPTION) {
 						illustrationArg = ExceptionType.match((String) event.arg);
@@ -110,7 +111,7 @@ public class StackFrameFigure extends Figure {
 					else if (event.type == StackEvent.Type.RETURN_VALUE) {
 						label.setText(label.getText() + " = " + event.arg);
 					}
-					
+
 					for (IReferenceModel ref : frame.getReferenceVariables())
 						objectContainer.updateIllustration(ref, illustrationArg);
 				}
@@ -157,14 +158,12 @@ public class StackFrameFigure extends Figure {
 	}
 
 	private void addVariable(IVariableModel<?> v) {
-		if(v.isInstance() == instance) { // && !(v instanceof IReferenceModel && !((IReferenceModel) v).getTags().isEmpty())) {
-			PandionJFigure<?> figure = figProvider.getFigure(v, true);
-			add(figure);
-			layout.setConstraint(figure, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
+		PandionJFigure<?> figure = figProvider.getFigure(v, true);
+		add(figure);
+		layout.setConstraint(figure, new GridData(SWT.RIGHT, SWT.DEFAULT, true, false));
 
-			if(v instanceof IReferenceModel)
-				objectContainer.addObjectAndPointer((IReferenceModel) v, ((ReferenceFigure) figure).getAnchor());
-		}
+		if(v instanceof IReferenceModel)
+			objectContainer.addObjectAndPointer((IReferenceModel) v, ((ReferenceFigure) figure).getAnchor());
 	}
 
 	public PandionJFigure<?> getVariableFigure(IVariableModel<?> v) {

@@ -30,4 +30,12 @@ public interface IObjectModel extends IEntityModel {
 	IType getType();
 	List<IVariableModel<?>> getFields();
 	
+	default boolean isToStringDefined() {
+		for(IMethod m : getVisibleMethods())
+			if(m.getElementName().equals("toString") && m.getParameterTypes().length == 0)
+				return true;
+		
+		return false;
+	}
+	
 }

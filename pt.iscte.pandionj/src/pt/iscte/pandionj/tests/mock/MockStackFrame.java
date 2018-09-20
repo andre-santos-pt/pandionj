@@ -14,6 +14,7 @@ import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.RuntimeModel;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockStackFrame implements IStackFrameModel {
 
@@ -95,5 +96,13 @@ public class MockStackFrame implements IStackFrameModel {
 		return null;
 	}
 
-	
+	@Override
+	public Collection<IVariableModel<?>> getLocalVariables() {
+		return null;
+	}
+
+	@Override
+	public VariableInfo getVariableInfo(String varName, boolean isField) {
+		return null;
+	}	
 }

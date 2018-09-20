@@ -36,6 +36,7 @@ public interface IVariableModel<O> extends IObservableModel<O> {
 	String getName();
 	String getTypeName();
 	
+	
 	boolean isInstance();
 	
 	Role getRole();
@@ -43,10 +44,9 @@ public interface IVariableModel<O> extends IObservableModel<O> {
 	
 	boolean isStatic();
 	boolean isVisible();
-	void setOutOfScope();
+	void setOutOfScope(); // TODO remove?
 	boolean update(int step);
 	IJavaVariable getJavaVariable();
-	void setStep(int stepPointer);
 	void setVariableRole(VariableInfo info);
 	
 	IRuntimeModel getRuntimeModel();

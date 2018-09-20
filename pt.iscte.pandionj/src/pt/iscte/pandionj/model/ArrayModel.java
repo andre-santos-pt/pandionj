@@ -83,12 +83,6 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		return i >= 0 && i < elementsModel.size() - 1 || getLength() > 0 && i == getLength()-1;
 	}
 
-	@Override
-	public void setStep(int stepPointer) {
-		for(T val : elementsModel)
-			val.setStep(stepPointer);
-	}
-
 	public Object getValues() {
 		return getValues(getContent());
 	}

@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMember;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
@@ -53,6 +54,7 @@ import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.RuntimeModel.ReferencePath;
 import pt.iscte.pandionj.parser.ParserManager;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 @SuppressWarnings("restriction")
 public class ObjectModel extends EntityModel<IJavaObject> implements IObjectModel {
@@ -60,7 +62,8 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private List<String> refsOfSameType; // TODO from source
 
 	private List<IVariableModel<?>> fields;
-
+	private List<IMethod> visibleMethods;
+	
 	private IType jType;
 
 	private String leftField;
@@ -72,6 +75,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		super(object, runtime);
 		jType = type;
 		init(object);
+		setVisibleMethods();
 	}
 
 	private void init(IJavaObject object) throws DebugException {
@@ -91,7 +95,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private void addFields(IJavaObject object) throws DebugException {
 		if(jType == null)
 			return;
-		
+
 		for(IVariable v : object.getVariables()) {
 			IJavaVariable var = (IJavaVariable) v;
 
@@ -101,8 +105,9 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				IField f = jType.getField(name);
 				boolean visible = isFieldVisible(f);
 				VariableModel<?, ?> varModel = null;
+				VariableInfo info = getRuntimeModel().getTopFrame().getVariableInfo(name, true);
 				if(value instanceof IJavaObject) {
-					ReferenceModel refModel = new ReferenceModel(var, true, visible, null, getRuntimeModel());
+					ReferenceModel refModel = new ReferenceModel(var, true, visible, info, getRuntimeModel());
 					varModel = refModel;
 
 					if(jType != null) {
@@ -115,7 +120,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 					references.put(name, refModel);
 				}
 				else {
-					varModel = new ValueModel(var, true, visible, null, getRuntimeModel());
+					varModel = new ValueModel(var, true, visible, info, getRuntimeModel());
 				}
 
 				varModel.registerObserver(new ModelObserver() {
@@ -133,7 +138,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 		fields.sort((a,b) -> {
 			if(a.isVisible() && !b.isVisible()) 			return -1;
-			else if(b.isVisible() && !a.isVisible()) 	return 1;
+			else if(b.isVisible() && !a.isVisible()) 		return 1;
 			else											return 0;
 		});
 
@@ -200,36 +205,31 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return Collections.unmodifiableMap(references);
 	}
 
-//	@Override
-//	public String toString() {
-//		try {
-//			return getContent().getValueString();
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return null;
-//		}
-//	}
+	//	@Override
+	//	public String toString() {
+	//		try {
+	//			return getContent().getValueString();
+	//		} catch (DebugException e) {
+	//			e.printStackTrace();
+	//			return null;
+	//		}
+	//	}
 
-//	@Override
-//	public int hashCode() {
-//		try {
-//			return (int) getContent().getUniqueId();
-//		} catch (DebugException e) {
-//			e.printStackTrace();
-//			return super.hashCode();
-//		}
-//	}
+	//	@Override
+	//	public int hashCode() {
+	//		try {
+	//			return (int) getContent().getUniqueId();
+	//		} catch (DebugException e) {
+	//			e.printStackTrace();
+	//			return super.hashCode();
+	//		}
+	//	}
 
-//	@Override
-//	public boolean equals(Object obj) {
-//		return obj instanceof ObjectModel && ((ObjectModel) obj).hashCode() == hashCode();
-//	}
+	//	@Override
+	//	public boolean equals(Object obj) {
+	//		return obj instanceof ObjectModel && ((ObjectModel) obj).hashCode() == hashCode();
+	//	}
 
-
-	@Override
-	public void setStep(int stepPointer) {
-
-	}
 
 
 
@@ -434,29 +434,42 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 		try {
 			List<IMethod> list = new ArrayList<>();
-			IMethod[] methods = jType.getMethods();
-			for(IMethod m : methods)
-
-				if(!m.isConstructor() && !Flags.isStatic(m.getFlags()) && isMethodVisible(m))
-					list.add(m);
+			ITypeHierarchy typeH = jType.newSupertypeHierarchy(null);
+			IType[] superTypes = typeH.getAllClasses();
+			IType[] interfaces = typeH.getAllInterfaces();
+			for(IType t : superTypes)
+				handleType(list, t);
+			
+			for(IType t : interfaces)
+				handleType(list, t);
+			
 			return list;
 		} catch (JavaModelException e) {
 			e.printStackTrace();
 			return Collections.emptyList();
 		}
-		//		return info.getMethods(EnumSet.of(VisibilityInfo.PUBLIC));
+	}
+
+	private void handleType(List<IMethod> list, IType t) throws JavaModelException {
+		if(!t.getFullyQualifiedName().equals(Object.class.getName()))
+			for(IMethod m : t.getMethods()) {
+				if(!m.isConstructor() && !Flags.isStatic(m.getFlags()) && isMethodVisible(m)) {
+					boolean found = false;
+					for(IMethod m2 : list)
+						if(m2.isSimilar(m)) {
+							found = true;
+							break;
+						}
+					
+					if(!found)
+						list.add(m);
+				}
+			}
 	}
 
 	private boolean isMethodVisible(IMethod m) {
 		try {
-			int f = m.getFlags();
 			return 	extension.includeMethod(m.getElementName()) && !jType.isMember() && isVisibleMember(m);
-//					(
-//							!jType.isMember() && jType.getPackageFragment().isDefaultPackage() && 
-//							(Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
-//							||
-//							Flags.isPublic(f)
-//							);
 		}
 		catch (JavaModelException e) {
 			e.printStackTrace();
@@ -470,7 +483,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			return 	!Flags.isStatic(f) && isVisibleMember(m);
 		}
 		catch (JavaModelException e) {
-//			e.printStackTrace();
+			//			e.printStackTrace();
 			return false;
 		}
 	}
@@ -479,19 +492,24 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		int f = member.getFlags();
 		IType jType = member.getDeclaringType();
 		return 
-			jType.getPackageFragment().isDefaultPackage() && (Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
-		||
-			Flags.isPublic(f);
+				jType.getPackageFragment().isDefaultPackage() && (Flags.isPackageDefault(f) || Flags.isProtected(f) || Flags.isPublic(f))
+				||
+				Flags.isPublic(f);
+
+	}
+
 	
+	
+	private void setVisibleMethods() {
+		visibleMethods = new ArrayList<>();
+		for(IMethod m : getInstanceMethods())
+			if(isMethodVisible(m))
+				visibleMethods.add(m);
 	}
 	
 	@Override
 	public List<IMethod> getVisibleMethods() {
-		List<IMethod> list = new ArrayList<>();
-		for(IMethod m : getInstanceMethods())
-			if(isMethodVisible(m))
-				list.add(m);
-		return list;
+		return Collections.unmodifiableList(visibleMethods);
 	}
 
 	public List<IVariableModel<?>> getFields() {
@@ -511,18 +529,10 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		IExpressionManager expressionManager = DebugPlugin.getDefault().getExpressionManager();
 		StackFrameModel stackFrame = getRuntimeModel().getTopFrame();
 		IWatchExpressionDelegate delegate = expressionManager.newWatchExpressionDelegate(stackFrame.getStackFrame().getModelIdentifier());
-
-//		List<String> refPaths = getRuntimeModel().findReferencePaths(this);
-//		if(refPaths.isEmpty())
-//			return;
-
 		ReferencePath refPath = getRuntimeModel().findReferencePaths(this);
 		if(refPath == null)
 			return;
-//		String exp = refPaths.get(0) + "." + methodName + "(" + String.join(", ", args) + ")";
 		String exp = refPath.referencePath + "." + methodName + "(" + String.join(", ", args) + ")";
-		
-//		IStackFrame context = getRuntimeModel().getFirstVisibleFrame().getStackFrame();
 		delegate.evaluateExpression(exp, refPath.context, new ExpressionListener(exp, listener));
 	}
 
@@ -555,14 +565,14 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			else if(exception != null) {
 				String trimExpression = trimExpression(expression);
 				InvocationException cause = (InvocationException) exception.getCause();
-//				cause.printStackTrace();
-//				ObjectReference exception2 = cause.exception();
+				//				cause.printStackTrace();
+				//				ObjectReference exception2 = cause.exception();
 				ReferenceType referenceType = cause.exception().referenceType();
-//				Field field = referenceType.fieldByName("NULL_CAUSE_MESSAGE");
-//				StackTraceElement[] stackTrace = ((InvocationException)exception.getCause()).getStackTrace();
-//				String message = ((InvocationException)exception.getCause()).getMessage();
-//				System.out.println(message);
-//				System.out.println(stackTrace[0].getClassName() + " " + stackTrace[0].getLineNumber());
+				//				Field field = referenceType.fieldByName("NULL_CAUSE_MESSAGE");
+				//				StackTraceElement[] stackTrace = ((InvocationException)exception.getCause()).getStackTrace();
+				//				String message = ((InvocationException)exception.getCause()).getMessage();
+				//				System.out.println(message);
+				//				System.out.println(stackTrace[0].getClassName() + " " + stackTrace[0].getLineNumber());
 				String exceptionType = ((InvocationException)exception.getCause()).exception().referenceType().name();
 				PandionJUI.executeUpdate(() -> {
 					if(exceptionType.equals(IllegalArgumentException.class.getName()))
@@ -573,21 +583,17 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 								"the current state of the object does not allow the operation " + trimExpression);
 					else
 						MessageDialog.openError(Display.getDefault().getActiveShell(), "Exception occurred", exceptionType + 
-							"\nSuggestion: execute " + trimExpression + " through code statements step by step.");
+								"\nSuggestion: execute " + trimExpression + " through code statements step by step.");
 				});
 			}
 		}
-		
+
 		String trimExpression(String expression) {
 			if(expression.indexOf('.') != -1)
 				expression = expression.substring(expression.indexOf('.')+1);
-			
+
 			return expression;
 		}
-	}
-	
-	public void invokeToString(InvocationResult listener) {
-		invoke("toString", listener);
 	}
 
 	public Multimap<String, ITag> getTags() {

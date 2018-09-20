@@ -78,7 +78,9 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		runtimeViewer = RuntimeViewer.getInstance();
 		figureProvider = runtimeViewer.getFigureProvider();
 
-		addShowMethodListener();
+		IRuntimeModel runtimeModel = model.getRuntimeModel();
+		if(!runtimeModel.findReferences(model).isEmpty())
+			addShowMethodListener();
 
 		model.getRuntimeModel().registerDisplayObserver(new ModelObserver<IRuntimeModel.Event<IStackFrameModel>>() {
 
@@ -100,7 +102,6 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 					methodsEnabled = !f.isInstanceFrameOf(model);
 					setMethodsEnabled(methodsEnabled);
 					fig.setBackgroundColor(PandionJConstants.Colors.OBJECT);
-					// TODO update illustration?
 				}
 				else if(e.type == IRuntimeModel.Event.Type.EVALUATION) {
 					fig.setBackgroundColor(PandionJConstants.Colors.OBJECT);
@@ -108,6 +109,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 				else if(e.type == IRuntimeModel.Event.Type.TERMINATION) {
 					methodsEnabled = false;
 					setMethodsEnabled(false);
+					fig.removeMouseListener(mouseListener);
 				}
 			}
 		});
@@ -116,10 +118,18 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 
 		fieldsContainer = new FieldsContainer();
 		fig.add(fieldsContainer);
-		fig.setToolTip(new Label("double-click to show methods"));
+//		fig.setToolTip(new Label("double-click to show methods"));
 		layout.setConstraint(fieldsContainer, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
-
+		
 		stack = new StackContainer();
+		for (IStackFrameModel f : runtimeModel.getActiveCallStack()) {
+			if(f.isInstanceFrameOf(model)) {
+				setObjectContainerVisible();
+				fieldsContainer.showPrivateFields();
+				stack.addFrame(f, RuntimeViewer.getInstance(), objectContainer, false);
+			}
+		}
+		
 		fig.add(stack);
 		layout.setConstraint(stack, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 	}
@@ -230,26 +240,30 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 		}
 	}
 
-
+	private MouseListener mouseListener = new MouseListener() {
+		public void mouseReleased(org.eclipse.draw2d.MouseEvent me) { }
+		public void mousePressed(org.eclipse.draw2d.MouseEvent me) { }
+		public void mouseDoubleClicked(org.eclipse.draw2d.MouseEvent me) {
+			if(methodsFig == null) {
+				IObjectModel model = getModel();
+				addMethods(model);
+				boolean enableMethods = !model.getRuntimeModel().getTopFrame().isInstanceFrameOf(model);
+				setMethodsEnabled(enableMethods);
+				fig.setToolTip(new Label("double-click to hide methods"));
+			}
+			else {
+				fig.remove(methodsFig);
+				methodsFig = null;
+				fig.setToolTip(new Label("double-click to show methods"));
+			}
+			runtimeViewer.updateLayout();
+			invalidate();
+		}
+	};
+	
 	private void addShowMethodListener() {
 		methodWidgets = new ArrayList<ObjectFigure.MethodWidget>();
-		fig.addMouseListener(new MouseListener() {
-			public void mouseReleased(org.eclipse.draw2d.MouseEvent me) { }
-			public void mousePressed(org.eclipse.draw2d.MouseEvent me) { }
-			public void mouseDoubleClicked(org.eclipse.draw2d.MouseEvent me) {
-				if(methodsFig == null) {
-					addMethods(getModel());
-					fig.setToolTip(new Label("double-click to hide methods"));
-				}
-				else {
-					fig.remove(methodsFig);
-					methodsFig = null;
-					fig.setToolTip(new Label("double-click to show methods"));
-				}
-				runtimeViewer.updateLayout();
-				invalidate();
-			}
-		});
+		fig.addMouseListener(mouseListener);
 	}
 
 
@@ -310,6 +324,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			methodsFig.add(w);
 		}
 		fig.add(methodsFig);
+		
 		RuntimeViewer.getInstance().updateLayout();
 	}
 

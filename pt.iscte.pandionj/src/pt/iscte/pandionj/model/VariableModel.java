@@ -23,29 +23,11 @@ implements IVariableModel<O> {
 	private boolean isStatic;
 	private boolean isVisible;
 	
-	private List<StepValue> history;
+	private List<T> history;
 
-	private int stepInit;
-	private int scopeEnd;
-
-	private int stepPointer;
 	private ITag tag;
 
 
-	private class StepValue {
-		final T value;
-		final int step;
-
-		StepValue(T value, int step) {
-			this.value = value;
-			this.step = step;
-		}
-
-		@Override
-		public String toString() {
-			return "(" + value + ", " + step + ")";
-		}
-	}
 
 	public VariableModel(IJavaVariable variable, boolean isInstance, boolean isVisible, StackFrameModel stackFrame) throws DebugException {
 		this(variable, isInstance, isVisible, stackFrame.getRuntime());
@@ -67,26 +49,14 @@ implements IVariableModel<O> {
 		this.isVisible = isVisible;
 		this.isStatic = variable.isStatic();
 		history = new ArrayList<>();
-		StepValue sv = new StepValue(val, runtime.getRunningStep());
-		history.add(sv);
-		stepPointer = 0;
-		this.stepInit = runtime.getRunningStep();
-		this.scopeEnd = Integer.MAX_VALUE;
+		history.add(val);
 	}
 
 	public StackFrameModel getStackFrame() {
 		return stackFrame;
 	}
 
-	//	public boolean isWithinScope() {
-	//		if(stackFrame == null)
-	//			return true;
-	//		else
-	//			return stepInit <= stackFrame.getStepPointer() && stackFrame.getStepPointer() <= scopeEnd;
-	//	}
-
 	public void setOutOfScope() {
-		this.scopeEnd = getRuntimeModel().getRunningStep();
 		setChanged();
 		notifyObservers();
 	}
@@ -95,12 +65,10 @@ implements IVariableModel<O> {
 	@Override
 	public boolean update(int step) {
 		try {
-			StepValue current = history.get(history.size()-1);
-			boolean equals = variable.getValue().equals(current.value);
+			T current = history.get(history.size()-1);
+			boolean equals = variable.getValue().equals(current);
 			if(!equals) {
-				StepValue sv = new StepValue((T) variable.getValue(), step);
-				history.add(sv);
-				stepPointer++;
+				history.add((T) variable.getValue());
 				setChanged();
 				notifyObservers();
 				return true;
@@ -141,36 +109,20 @@ implements IVariableModel<O> {
 		return type;
 	}
 
-	public void setStep(int step) {
-		int temp = stepPointer;
-		while(stepPointer != history.size() - 1 && history.get(stepPointer).step < step)
-			stepPointer++;
-
-		while(stepPointer != 0 && history.get(stepPointer).step > step)
-			stepPointer--;
-
-		assert stepPointer >= 0 && stepPointer < history.size();
-		if(stepPointer != temp) {
-			setChanged();
-			notifyObservers();
-		}
-	}
-
-
 
 	@Override
 	public T getContent() {
-		return history.get(stepPointer).value;
+		return history.get(history.size()-1);
 	}
 
 	public String getCurrentValue() {
-		return history.get(stepPointer).value.toString();
+		return getContent().toString();
 	}
 
 	public List<String> getHistory() {
 		List<String> hist = new ArrayList<>();
-		for(StepValue sv : history)
-			hist.add(sv.value.toString());
+		for(T v : history)
+			hist.add(v.toString());
 		return hist;
 	}
 

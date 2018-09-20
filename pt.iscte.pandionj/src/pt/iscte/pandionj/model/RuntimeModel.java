@@ -49,7 +49,6 @@ implements IRuntimeModel {
 	private int countActive;
 	private boolean terminated;
 
-	private int step;
 
 	public RuntimeModel() {
 		callStack = new ArrayList<>();
@@ -59,7 +58,6 @@ implements IRuntimeModel {
 
 		countActive = 0;
 		terminated = false;
-		step = 0;
 	}
 
 	public IJavaDebugTarget getDebugTarget() {
@@ -72,39 +70,19 @@ implements IRuntimeModel {
 			callStack.clear();
 			objects.clear();
 			looseObjects.clear();
-			step = 0;
 			terminated = false;
 			countActive = 0;
 			setChanged();
 			notifyObservers(new Event<IStackFrameModel>(Event.Type.NEW_STACK, null));
 		}
 
-		//		for(EntityModel<?> o : objects.values().toArray(new EntityModel[objects.size()])) {
-		//			if(o instanceof ArrayModel && o.update(step))
-		//				setChanged();
-		//			else if(o instanceof ObjectModel) {
-		//				((ObjectModel) o).traverseSiblings(new SiblingVisitor() {
-		//					public void visit(IEntityModel object, ObjectModel parent, int index, int depth, String field) {
-		//						try {
-		//							if(object != null && ((EntityModel<?>) object).update(step))
-		//								setChanged();
-		//						}
-		//						catch(DebugException e) {
-		//							//							throw e;
-		//						}
-		//					}
-		//				});
-		//			}
-		//		}
-
 		PandionJView.getInstance().executeInternal(() -> {
 			handle(thread.getStackFrames());
-			staticRefs.update(step);
+			staticRefs.update(0);
 		});
 
 		updateActiveStack();
 
-		step++;
 		setChanged();
 		notifyObservers(new Event<IStackFrameModel>(Event.Type.STEP, getTopFrame()));
 
@@ -117,13 +95,6 @@ implements IRuntimeModel {
 		delegate.evaluateExpression(expression, stackFrame.getStackFrame(), new IWatchExpressionListener() {
 			public void watchEvaluationFinished(IWatchExpressionResult result) {
 				listener.valueReturn(result.getValue());
-//				setChanged();
-//				notifyObservers(new Event<IStackFrameModel>(Event.Type.EVALUATION, getTopFrame()));
-//				try {
-//					evaluationNotify();
-//				} catch (DebugException e) {
-//					e.printStackTrace();
-//				}
 			}
 		});
 	}
@@ -256,6 +227,15 @@ implements IRuntimeModel {
 		return Collections.unmodifiableList(callStack);
 	}
 
+	public List<IStackFrameModel> getActiveCallStack() {
+		ArrayList<IStackFrameModel> stack = new ArrayList<IStackFrameModel>();
+		for(int i = 0; i < countActive; i++) {
+			StackFrameModel f = callStack.get(i);
+			stack.add(f);
+		}
+		return stack;
+	}
+	
 	public List<StackFrameModel> getFilteredStackPath() {
 		return callStack.stream().filter((f) -> f.getLineNumber() != -1).collect(Collectors.toList());
 	}
@@ -301,11 +281,6 @@ implements IRuntimeModel {
 	public boolean isTerminated() {
 		return terminated;
 	}
-
-	public int getRunningStep() {
-		return step;
-	}
-
 
 	public IEntityModel getObject(IJavaObject obj, boolean loose, IReferenceModel model) {
 		assert !obj.isNull();
@@ -438,12 +413,11 @@ implements IRuntimeModel {
 			return new ReferencePath(referencesTo.get(0).getName(), topFrame.getStackFrame());
 		}
 			
-		Collection<IReferenceModel> refs = firstVisibleFrame.getReferenceVariables();
 		Collection<IEntityModel> visited = new ArrayList<IEntityModel>();
 		Stack<String> stack = new Stack<String>();
 		List<String> paths = new ArrayList<String>();
 		
-		for(IReferenceModel r : refs) {
+		for(IReferenceModel r : firstVisibleFrame.getReferenceVariables()) {
 			String path = findReferencePathsRec(target, r, visited, stack, paths);
 			if(path != null)
 				return new ReferencePath(path, firstVisibleFrame.getStackFrame());
@@ -498,10 +472,9 @@ implements IRuntimeModel {
 		if(firstVisibleFrame == null)
 			return Collections.emptyList();
 		
-		Collection<IReferenceModel> refs = firstVisibleFrame.getReferenceVariables();
 		Collection<IEntityModel> visited = new ArrayList<IEntityModel>();
 		
-		for(IReferenceModel r : refs)
+		for(IReferenceModel r : firstVisibleFrame.getReferenceVariables())
 			findReachableObjectsRec(r, visited);
 		
 		return visited;

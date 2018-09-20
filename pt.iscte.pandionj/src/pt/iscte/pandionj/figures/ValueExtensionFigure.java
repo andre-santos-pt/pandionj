@@ -14,8 +14,8 @@ import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
 
+// TODO inutil?
 public class ValueExtensionFigure extends PandionJFigure<IValueModel> {
-	private static final int ANNOTATION_FONT_SIZE = (int) Math.round(PandionJConstants.VAR_FONT_SIZE/1.5);
 	
 	private ValueLabel valueLabel;
 	private GridLayout layout;

@@ -5,12 +5,14 @@ import java.util.Collection;
 import org.eclipse.core.resources.IFile;
 
 import pt.iscte.pandionj.model.RuntimeModel;
+import pt.iscte.pandionj.parser.VariableInfo;
 
 public interface IStackFrameModel extends IObservableModel<IStackFrameModel.StackEvent<?>> {
 
 	Collection<IVariableModel<?>> getAllVariables();
-	Collection<IReferenceModel> getReferenceVariables();
-	Collection<IReferenceModel> getReferencesTo(IEntityModel e);
+	Iterable<IVariableModel<?>> getLocalVariables();
+	Iterable<IReferenceModel> getReferenceVariables();
+	Iterable<IReferenceModel> getReferencesTo(IEntityModel e);
 	RuntimeModel getRuntime();
 	String getInvocationExpression();
 	
@@ -37,4 +39,6 @@ public interface IStackFrameModel extends IObservableModel<IStackFrameModel.Stac
 	String getExceptionType();
 	StackEvent<String> getExceptionEvent();
 	IFile getSourceFile();
+	
+	VariableInfo getVariableInfo(String varName, boolean isField);
 }

@@ -19,5 +19,4 @@ public abstract class ModelElement<T extends IJavaValue,O> extends DisplayUpdate
 
 	public abstract boolean update(int step) throws DebugException;
 
-	public abstract void setStep(int stepPointer);
 }

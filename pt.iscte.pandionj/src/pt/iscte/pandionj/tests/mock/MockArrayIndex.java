@@ -127,11 +127,6 @@ implements IArrayIndexModel {
 	}
 
 	@Override
-	public void setStep(int stepPointer) {
-		
-	}
-
-	@Override
 	public void setVariableRole(VariableInfo info) {
 		
 	}

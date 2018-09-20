@@ -39,6 +39,7 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 
 import pt.iscte.pandionj.extensibility.IEntityModel;
+import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
@@ -143,7 +144,11 @@ public class RuntimeViewer extends Composite {
 			}
 			else if(event.type == RuntimeModel.Event.Type.NEW_FRAME) {
 				StackFrameModel frame = (StackFrameModel) event.arg;
-				if(!frame.isInstance())
+				if(frame.isInstance()) {
+					IObjectModel obj = (IObjectModel) model.getObject(frame.getStackFrame().getThis(), false, null);
+					addObject(obj);
+				}
+				else
 					stackFig.addFrame(frame, this, objectContainer, false);
 			}
 			stackFig.getLayoutManager().layout(stackFig);

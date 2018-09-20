@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.extensibility;
 
+import java.util.List;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.jdt.debug.core.IJavaObject;
 
@@ -20,7 +22,10 @@ public interface IRuntimeModel extends IObservableModel<IRuntimeModel.Event<ISta
 	}
 	
 	IStackFrameModel getTopFrame();
+	List<IStackFrameModel> getActiveCallStack();
+	
 	IEntityModel getObject(IJavaObject obj, boolean loose, IReferenceModel model);
+	List<IReferenceModel> findReferences(IEntityModel e); 
 	
 	void evaluationNotify() throws DebugException;
 	boolean isTerminated();

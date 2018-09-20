@@ -20,7 +20,7 @@ public class StackContainer extends Figure {
 
 	public void addFrame(IStackFrameModel frame, RuntimeViewer runtimeViewer, ObjectContainer objectContainer, boolean invisible) {
 		if(frame.getLineNumber() != -1) {
-			StackFrameFigure sv = new StackFrameFigure(runtimeViewer, frame, objectContainer, invisible, false);
+			StackFrameFigure sv = new StackFrameFigure(runtimeViewer, frame, objectContainer, invisible);
 			add(sv);
 			getLayoutManager().setConstraint(sv, new GridData(SWT.FILL, SWT.DEFAULT, true, false));
 		}
