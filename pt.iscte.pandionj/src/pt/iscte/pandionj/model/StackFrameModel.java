@@ -281,7 +281,6 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 				else
 					args.add(localVariables[i].getName());
 			}
-			System.out.println("DEC: " + frame.getDeclaringTypeName() +   "   "  + frame.getThis());
 			if(frame.isStaticInitializer())
 				return frame.getDeclaringTypeName() + " (static initializer)";
 			else if(frame.isConstructor()) {

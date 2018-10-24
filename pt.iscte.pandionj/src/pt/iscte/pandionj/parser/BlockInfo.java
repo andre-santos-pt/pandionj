@@ -134,7 +134,7 @@ public class BlockInfo {
 			@Override
 			public boolean visit(BlockInfo b) {
 				tabs(depth);
-				System.out.println(lineStart+"-"+lineEnd+ " " + b.getId() + " {");
+				System.out.println(b.lineStart+"-"+b.lineEnd+ " " + b.getId() + " {");
 				depth++;
 				return true;
 			}

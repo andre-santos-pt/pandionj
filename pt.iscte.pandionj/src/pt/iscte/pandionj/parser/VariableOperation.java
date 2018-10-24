@@ -46,7 +46,8 @@ public class VariableOperation {
 	private final String varName;
 	private final Type type;
 	private final List<Object> paramValues;
-
+	
+	// TODO line
 	public VariableOperation(String varName, Type type, Object ... paramValues) {
 		this.varName = varName;
 		this.type = type;

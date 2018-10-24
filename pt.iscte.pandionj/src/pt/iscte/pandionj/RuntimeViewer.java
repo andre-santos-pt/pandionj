@@ -6,15 +6,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.ColorConstants;
 import org.eclipse.draw2d.ConnectionAnchor;
 import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.GridLayout;
+import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.LightweightSystem;
+import org.eclipse.draw2d.LineBorder;
 import org.eclipse.draw2d.PolylineConnection;
 import org.eclipse.draw2d.SWTGraphics;
 import org.eclipse.draw2d.ScalableLayeredPane;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.KeyAdapter;
@@ -111,7 +117,6 @@ public class RuntimeViewer extends Composite {
 		lws.setContents(rootFig);
 		pointersMap = new HashMap<>();
 		pointersMapOwners = ArrayListMultimap.create();
-
 	}
 
 	public static RuntimeViewer getInstance() {

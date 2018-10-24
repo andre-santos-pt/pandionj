@@ -100,8 +100,6 @@ public class IllustrationBorder implements Border {
 		
 		drawOutOfBoundsPositions(figure, g);
 
-		final int pWidth = POSITION_DIM.width;
-
 		Font font = FontManager.getFont(PandionJConstants.VAR_FONT_SIZE-4);
 		g.setFont(font);
 		for(IArrayIndexModel f : fixedVars) {

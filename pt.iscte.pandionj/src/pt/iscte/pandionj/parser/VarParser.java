@@ -44,6 +44,7 @@ public class VarParser {
 	private CompilationUnit cunit;
 	private MethodVisitor visitor;
 	private IFile file;
+	//TODO MultiMap line -> VariableOperation[]
 	
 	public VarParser(String path) {
 		parser = JavaSourceParser.createFromFile(path);
