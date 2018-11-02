@@ -13,12 +13,15 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.debug.core.IJavaArray;
+import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaStackFrame;
+import org.eclipse.jdt.debug.core.IJavaType;
 import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIReturnValueVariable;
@@ -38,7 +41,7 @@ import pt.iscte.pandionj.parser.VariableInfo;
 public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.StackEvent<?>> implements IStackFrameModel {
 	private RuntimeModel runtime;
 	private IJavaStackFrame frame;
-	private Map<String, IVariableModel<?>> stackVars;
+	private Map<String, IVariableModel> stackVars;
 
 	private IFile srcFile;
 	private VarParser varParser;
@@ -48,7 +51,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 
 	private boolean obsolete;
 	private String returnValue;
-	
+
 	private String exceptionType;
 
 	private int lastLine;
@@ -86,7 +89,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public boolean isExecutionFrame() {
 		return !runtime.isEmpty() && runtime.getTopFrame() == this;
 	}
-	
+
 	public boolean isUserFrame() {
 		return javaProject != null && javaProject.exists();
 	}
@@ -159,71 +162,81 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 
 	private void handleOutOfScopeVars() throws DebugException {
-		Iterator<Entry<String, IVariableModel<?>>> iterator = stackVars.entrySet().iterator();
+		Iterator<Entry<String, IVariableModel>> iterator = stackVars.entrySet().iterator();
 		while(iterator.hasNext()) {
-			Entry<String, IVariableModel<?>> e = iterator.next();
+			Entry<String, IVariableModel> e = iterator.next();
 			String varName = e.getKey();
 			boolean contains = false;
 			for(IVariable v : frame.getVariables()) {
 				if(v.getName().equals(varName))
 					contains = true;
-//				else if(v.getName().equals("this")) {
-//					for (IVariable iv : v.getValue().getVariables())
-//						if(iv.getName().equals(varName))
-//							contains = true;
-//				}
+				//				else if(v.getName().equals("this")) {
+				//					for (IVariable iv : v.getValue().getVariables())
+				//						if(iv.getName().equals(varName))
+				//							contains = true;
+				//				}
 			}
 			if(!contains) {
 				e.getValue().setOutOfScope();
 				iterator.remove();
 				setChanged();
-				notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.VARIABLE_OUT_OF_SCOPE, e.getValue()));
+				notifyObservers(new StackEvent<IVariableModel>(StackEvent.Type.VARIABLE_OUT_OF_SCOPE, e.getValue()));
 			}
 		}
 	}
 
+	public static boolean isException(JDIReturnValueVariable var) throws DebugException {
+		if(var.hasResult) {
+			IJavaValue retVal = (IJavaValue) var.getValue();
+			if(retVal instanceof IJavaObject) {
+				IJavaObject retObj = (IJavaObject) retVal;
+				IJavaType javaType = retObj.getJavaType();
+				String typeName = javaType.getName();
+				try {
+					Class<?> c = Class.forName(typeName);
+					if(Exception.class.isAssignableFrom(c))
+						return true;
+				}
+				catch(ClassNotFoundException e) {
+					return false;
+				}
+			}
+		}
+		return false;
+	}
 
 	private void handleVar(IJavaVariable jv, boolean isInstance) throws DebugException {
 		if(jv instanceof JDIReturnValueVariable) {
 			JDIReturnValueVariable retvar = (JDIReturnValueVariable) jv;
-			if(retvar.hasResult) {
+			if(retvar.hasResult && !isException(retvar)) {
 				IJavaValue retVal = (IJavaValue) jv.getValue();
 				runtime.setReturnOnFrame(this, retVal);
-//				if(retVal instanceof IJavaObject) {
-//					IJavaObject retObj = (IJavaObject) retVal;
-//					IJavaType javaType = retObj.getJavaType();
-//					System.out.println("TYPE:" + javaType.getName());
-//					if(javaType.getName().equals(ArrayIndexOutOfBoundsException.class.getName())) {
-//						IJavaFieldVariable field = retObj.getField("detailMessage", true);
-//						System.out.println("MSG: " + field.getValue());
-//					}
-//				}
 			}
 			return;
 		}
-		
+
 		String varName = jv.getName();
 		if(isInstance)
 			varName = "this." + varName;
-		
+
 		IJavaValue value = (IJavaValue) jv.getValue();
 		if(jv.isStatic()) {
 			if(!jv.isPrivate() && !staticRefs.existsVar(this, varName)) { 
-				IVariableModel<?> newVar = createVar(jv, false, value);
+				IVariableModel newVar = createVar(jv, false, value);
 				staticRefs.add(this, newVar);
 			}
 		}
 		else {
 			if(stackVars.containsKey(varName) && stackVars.get(varName).getJavaVariable() == jv) {
-				IVariableModel<?> vModel = stackVars.get(varName);
+				IVariableModel vModel = stackVars.get(varName);
 				vModel.update(0);
 			}
 			else {
-				IVariableModel<?> newVar = createVar(jv, isInstance, value);
+				IVariableModel newVar = createVar(jv, isInstance, value);
 				stackVars.put(varName, newVar);
 
 				setChanged();
-				notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE, newVar));
+				notifyObservers(new StackEvent<IVariableModel>(StackEvent.Type.NEW_VARIABLE, newVar));
 			}
 		}
 	}
@@ -235,21 +248,21 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			return null;
 		}
 	}
-	
-	private IVariableModel<?> createVar(IJavaVariable jv, boolean isInstance, IJavaValue value)
+
+	private IVariableModel createVar(IJavaVariable jv, boolean isInstance, IJavaValue value)
 			throws DebugException {
 		String varName = jv.getName();
 		boolean isField = !jv.isLocal();
 		VariableInfo info = getVariableInfo(varName, isField);
-		IVariableModel<?> newVar = value instanceof IJavaObject ?
-			new ReferenceModel(jv, isInstance, true, info, this) :
-			new ValueModel(jv, isInstance, true, info, this);
-		
-		if(srcFile != null) {
-			ITag tag = ParserManager.getTag(srcFile, jv.getName(), frame.getLineNumber(), isField);
-			newVar.setTag(tag);
-		}
-		return newVar;
+		IVariableModel newVar = value instanceof IJavaObject ?
+				new ReferenceModel(jv, isInstance, true, info, this) :
+					new ValueModel(jv, isInstance, true, info, this);
+
+				if(srcFile != null) {
+					ITag tag = ParserManager.getTag(srcFile, jv.getName(), frame.getLineNumber(), isField);
+					newVar.setTag(tag);
+				}
+				return newVar;
 	}
 
 
@@ -258,10 +271,10 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		findReferences(stackVars, object, refs);
 		return refs;
 	}
-	
-	
-	private static void findReferences(Map<String, IVariableModel<?>> map, IEntityModel object, List<IReferenceModel> refs) {
-		for (IVariableModel<?> e : map.values()) {
+
+
+	private static void findReferences(Map<String, IVariableModel> map, IEntityModel object, List<IReferenceModel> refs) {
+		for (IVariableModel e : map.values()) {
 			if(e instanceof ReferenceModel && ((ReferenceModel) e).getModelTarget().equals(object))
 				refs.add((ReferenceModel) e);
 		}
@@ -304,15 +317,15 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 			superType = toSimpleName(frame.getDeclaringTypeName()) + ".";
 		return superType;
 	}
-	
+
 	private static  String toSimpleName(String name) {
 		String simple = name;
 		if(simple.indexOf('.') != -1)
 			simple = simple.substring(simple.lastIndexOf('.')+1);
-		
+
 		if(simple.indexOf('$') != -1)
 			simple = simple.substring(simple.lastIndexOf('$')+1);
-		
+
 		return simple;
 	}
 
@@ -382,7 +395,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	}
 
 	private StackEvent<String> exceptionEvent;
-	
+
 	public void processException(String exceptionType, int line, String message) {
 		this.exceptionType = exceptionType;
 		StackEvent.Type type = exceptionType.equals(ArrayIndexOutOfBoundsException.class.getName()) ? 
@@ -405,7 +418,7 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public StackEvent<String> getExceptionEvent() {
 		return exceptionEvent;
 	}
-	
+
 	public boolean exceptionOccurred() {
 		return exceptionType != null;
 	}
@@ -413,25 +426,25 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 	public String getExceptionType() {
 		return exceptionType;
 	}
-	
-	public IVariableModel<?> getStackVariable(String varName) {
-		IVariableModel<?> var = stackVars.get(varName);
+
+	public IVariableModel getStackVariable(String varName) {
+		IVariableModel var = stackVars.get(varName);
 		if(var == null)
 			var = stackVars.get("this." + varName);
 		return var;
 	}
 
 	@Override
-	public Collection<IVariableModel<?>> getAllVariables() {
+	public Collection<IVariableModel> getAllVariables() {
 		return Collections.unmodifiableCollection(stackVars.values());
 	}
-	
-	public Iterable<IVariableModel<?>> getLocalVariables() {
+
+	public Iterable<IVariableModel> getLocalVariables() {
 		return stackVars.values().stream()
 				.filter(v -> !v.isInstance())
 				.collect(Collectors.toList());
 	}
-	
+
 
 	public Iterable<IReferenceModel> getReferenceVariables() {
 		return stackVars.values().stream()

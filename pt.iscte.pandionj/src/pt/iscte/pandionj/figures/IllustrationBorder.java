@@ -32,27 +32,27 @@ public class IllustrationBorder implements Border {
 	private static final int BAR_HEIGHT = 100;
 
 	private static final int EXTRA = 20;
-	
+
 	private final AbstractArrayFigure<?> arrayFigure;
 	private final int N;
 	private final boolean horizontal;
-	
+
 	private final Collection<IArrayIndexModel> vars;
 	private final Collection<IArrayIndexModel> fixedVars;
-	
+
 	private final Rectangle firstPositionBounds;
 	private final Rectangle lastPositionBounds;
 	private final Rectangle firstLabelBounds;
 	private final Rectangle lastLabelBounds;
 
-//	private ExceptionType exception;
+	//	private ExceptionType exception;
 	private Integer outOfBoundsAccess;
-	
+
 	public IllustrationBorder(IReferenceModel ref, AbstractArrayFigure<?> arrayFigure, Integer outOfBoundsAccess) {
 		this.arrayFigure = arrayFigure;
-//		this.exception = exception;
+		//		this.exception = exception;
 		this.outOfBoundsAccess = outOfBoundsAccess;
-		
+
 		N = arrayFigure.getModel().getLength();
 		horizontal = arrayFigure instanceof ArrayPrimitiveFigure;
 		vars = ref.getIndexVars();
@@ -66,13 +66,13 @@ public class IllustrationBorder implements Border {
 		firstLabelBounds = arrayFigure.getLabelBounds(0);
 		lastLabelBounds = arrayFigure.getLabelBounds(N - 1);
 	}
-	
+
 
 	@Override
 	public Insets getInsets(IFigure figure) {
 		return getInsets(figure, horizontal);
 	}
-	
+
 	public static Insets getInsets(IFigure figure, boolean horizontal) {
 		if(horizontal) {
 			int out = POSITION_WIDTH + ARRAY_POSITION_SPACING * 2;
@@ -83,7 +83,7 @@ public class IllustrationBorder implements Border {
 			return new Insets(out, EXTRA, out, 0);
 		}
 	}
-	
+
 	@Override
 	public Dimension getPreferredSize(IFigure figure) {
 		return new Dimension();
@@ -97,7 +97,7 @@ public class IllustrationBorder implements Border {
 	@Override
 	public void paint(IFigure figure, Graphics g, Insets insets) {
 		final Dimension POSITION_DIM = new Dimension(firstPositionBounds.width, PandionJConstants.POSITION_WIDTH);
-		
+
 		drawOutOfBoundsPositions(figure, g);
 
 		Font font = FontManager.getFont(PandionJConstants.VAR_FONT_SIZE-4);
@@ -105,18 +105,20 @@ public class IllustrationBorder implements Border {
 		for(IArrayIndexModel f : fixedVars) {
 			int i = f.getCurrentIndex();
 			String varName = f.getName();
+			if(i >= N)
+				varName = varName + "=" + i;
 			int textWidth = FigureUtilities.getTextWidth(varName, font);
-//			Rectangle bounds = arrayFigure.getPositionBounds(i, horizontal);
-//			g.setLineStyle(SWT.LINE_DOT);
-//			g.setLineWidth(1);
-//			g.drawRectangle(bounds.getExpanded(new Insets(1)));
-//			Point from = bounds.getLocation().getTranslated(pWidth/2 - textWidth/2, y - EXTRA + Constants.ARRAY_POSITION_SPACING*2);
+			//			Rectangle bounds = arrayFigure.getPositionBounds(i, horizontal);
+			//			g.setLineStyle(SWT.LINE_DOT);
+			//			g.setLineWidth(1);
+			//			g.drawRectangle(bounds.getExpanded(new Insets(1)));
+			//			Point from = bounds.getLocation().getTranslated(pWidth/2 - textWidth/2, y - EXTRA + Constants.ARRAY_POSITION_SPACING*2);
 			Point from = getIndexLocation(i);
 			if(horizontal)
 				from.translate(-textWidth/2, 0);
 			else
 				from.translate(-Math.min(textWidth/2, PandionJConstants.POSITION_WIDTH_V), 0);
-					
+
 			g.setForegroundColor(PandionJConstants.Colors.CONSTANT);
 			g.drawText(varName, from);
 		}
@@ -130,16 +132,16 @@ public class IllustrationBorder implements Border {
 			String varName = v.getName();
 
 			int textWidth = FigureUtilities.getTextWidth(varName, font);
-//			Point from = arrayFigure.getPositionBounds(i, horizontal).getLocation().getTranslated(0,  firstPositionBounds.height);
+			//			Point from = arrayFigure.getPositionBounds(i, horizontal).getLocation().getTranslated(0,  firstPositionBounds.height);
 			Point from = getIndexLocation(i);
 			if(horizontal)
 				from.translate(-textWidth/2, 0);
 			else
 				from.translate(-Math.min(textWidth/2, PandionJConstants.POSITION_WIDTH_V), -PandionJConstants.POSITION_WIDTH_V);
-			
+
 			g.drawText(varName, from);
 			drawHistory(g, v, PandionJConstants.Colors.ILLUSTRATION);
-			
+
 			IBound bound = v.getBound();
 			Integer boundVal =  bound == null ? null : bound.getValue();
 
@@ -164,14 +166,14 @@ public class IllustrationBorder implements Border {
 						else
 							arrowFrom.translate(0, ARRAY_POSITION_SPACING*2);
 					}
-					
+
 					Point to = getIndexLocation(boundVal);
 					if(horizontal)
 						to.translate(0, -firstPositionBounds.width/2);
-					
+
 					drawArrow(g, arrowFrom, getPointDependingOnOrientation(arrowFrom, to));
 				}
-				
+
 				if(directionOK)
 					drawBar(g, boundVal, v.getBound(), v.getDirection());
 			}
@@ -189,7 +191,7 @@ public class IllustrationBorder implements Border {
 			}
 		}
 	}
-	
+
 	private Point getPointDependingOnOrientation(Point from, Point to){
 		if(horizontal){
 			return new Point(to.x, from.y);
@@ -204,10 +206,10 @@ public class IllustrationBorder implements Border {
 		for (int j = 0; j < history.size()-1; j++) {
 			Integer i = Integer.parseInt(history.get(j));
 			Point p = getIndexLocation(i);
-			
+
 			if(horizontal)
 				p = p.translate(0, EXTRA);
-			
+
 			g.fillOval(p.x, p.y, PandionJConstants.ILLUSTRATION_LINE_WIDTH+1, PandionJConstants.ILLUSTRATION_LINE_WIDTH+1);
 		}
 	}
@@ -223,7 +225,7 @@ public class IllustrationBorder implements Border {
 
 	private Point getIndexLocation(int index) {
 		Point origin = arrayFigure.getPositionBounds(index, horizontal).getLocation();
-		
+
 		if(horizontal)
 			origin.translate(firstPositionBounds.width/2, firstPositionBounds.height + PandionJConstants.ARRAY_POSITION_SPACING);
 		else {
@@ -236,13 +238,13 @@ public class IllustrationBorder implements Border {
 		final Dimension rectDim = firstLabelBounds.getSize().expand(-1, -1);
 		if(!horizontal)
 			rectDim.setSize(new Dimension(rectDim.width/2, rectDim.height/2));
-		
+
 		boolean showLeft = false;	
 		boolean showRight = false;
 		for( IArrayIndexModel v : vars){
 			if(v.getBound() == null || v.getBound().getValue() == null)
 				continue;
-			
+
 			if(v.getCurrentIndex() < 0){
 				showLeft = true;
 			}else if(v.getCurrentIndex() >= N){
@@ -254,13 +256,13 @@ public class IllustrationBorder implements Border {
 			showLeft = outOfBoundsAccess < 0;
 			showRight = outOfBoundsAccess >= N;
 		}
-		
-//		if(exception == ExceptionType.ARRAY_INDEX_OUT_BOUNDS)
+
+		//		if(exception == ExceptionType.ARRAY_INDEX_OUT_BOUNDS)
 		if(outOfBoundsAccess != null)
 			g.setForegroundColor(PandionJConstants.Colors.ERROR);
 		else
 			g.setForegroundColor(ColorConstants.black);
-		
+
 		if(showLeft) {
 			Point origin = firstLabelBounds.getLocation();
 			Point p;
@@ -271,26 +273,33 @@ public class IllustrationBorder implements Border {
 			}
 			g.setLineStyle(Graphics.LINE_DOT);
 			g.drawRectangle(new Rectangle(p, rectDim));
-			if(outOfBoundsAccess != null && outOfBoundsAccess < 0)
+			if(outOfBoundsAccess != null && outOfBoundsAccess < 0) {
+				if(!horizontal)
+					p = p.getTranslated(-firstLabelBounds.width/2, -firstLabelBounds.width);
 				drawIndexText(g, p);
+			}
+
 		}
-		
+
 		if(showRight) {
 			Point origin = lastLabelBounds.getLocation();
-			
+
 			Point p;
 			if(horizontal){
 				p = new Point(origin.x + firstLabelBounds.width + PandionJConstants.ARRAY_MARGIN + 1, origin.y);
 			}else{
 				p = new Point(origin.x, origin.y + firstLabelBounds.height + ARRAY_POSITION_SPACING*2 + PandionJConstants.ARRAY_MARGIN+1);
 			}
-			
+
 			g.setLineStyle(Graphics.LINE_DOT);
 			g.drawRectangle(new Rectangle(p, rectDim));
-			if(outOfBoundsAccess != null && outOfBoundsAccess >= N)
+			if(outOfBoundsAccess != null && outOfBoundsAccess >= N) {
+				if(!horizontal)
+					p = p.getTranslated(-firstLabelBounds.width/2, -firstLabelBounds.width);
 				drawIndexText(g, p);
+			}
 		}
-		
+
 	}
 
 
@@ -311,7 +320,7 @@ public class IllustrationBorder implements Border {
 			g.drawLine(to, to.getTranslated(xx, -ARROW_EDGE));
 			g.drawLine(to, to.getTranslated(xx, ARROW_EDGE));
 		}else{
-//			to = to.translate(0, from.y < to.y ? firstLabelBounds.height : -firstLabelBounds.height);
+			//			to = to.translate(0, from.y < to.y ? firstLabelBounds.height : -firstLabelBounds.height);
 			int xx = from.y < to.y ? -ARROW_EDGE : ARROW_EDGE;
 			g.drawLine(to, to.getTranslated(-ARROW_EDGE, xx));
 			g.drawLine(to, to.getTranslated(ARROW_EDGE, xx));
@@ -322,11 +331,11 @@ public class IllustrationBorder implements Border {
 	private void drawBar(Graphics g, Integer boundVal, IBound bound, Direction direction) {
 		if(direction != Direction.NONE) {
 			Point origin = getIndexLocation(boundVal);
-			
+
 			int s;
 			boolean b = direction == Direction.FORWARD && bound.getType() == BoundType.CLOSE ||
 					direction == Direction.BACKWARD && bound.getType() == BoundType.OPEN;
-			
+
 			if(horizontal){
 				s = firstLabelBounds.width/2 + PandionJConstants.ARRAY_POSITION_SPACING; 
 				if(!b)
@@ -348,5 +357,5 @@ public class IllustrationBorder implements Border {
 	}
 
 
-	
+
 }

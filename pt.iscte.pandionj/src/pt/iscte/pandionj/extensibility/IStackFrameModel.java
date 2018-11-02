@@ -9,8 +9,8 @@ import pt.iscte.pandionj.parser.VariableInfo;
 
 public interface IStackFrameModel extends IObservableModel<IStackFrameModel.StackEvent<?>> {
 
-	Collection<IVariableModel<?>> getAllVariables();
-	Iterable<IVariableModel<?>> getLocalVariables();
+	Collection<IVariableModel> getAllVariables();
+	Iterable<IVariableModel> getLocalVariables();
 	Iterable<IReferenceModel> getReferenceVariables();
 	Iterable<IReferenceModel> getReferencesTo(IEntityModel e);
 	RuntimeModel getRuntime();

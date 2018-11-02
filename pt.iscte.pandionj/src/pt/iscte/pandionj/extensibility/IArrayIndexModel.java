@@ -11,7 +11,7 @@ public interface IArrayIndexModel extends IValueModel {
 		String getExpression();
 	}
 	
-	IVariableModel<?> getArrayReference();
+	IVariableModel getArrayReference();
 	
 	int getCurrentIndex();
 	

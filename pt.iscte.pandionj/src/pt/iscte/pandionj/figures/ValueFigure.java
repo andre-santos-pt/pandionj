@@ -25,6 +25,7 @@ import pt.iscte.pandionj.FontManager;
 import pt.iscte.pandionj.Utils;
 import pt.iscte.pandionj.extensibility.Direction;
 import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
 import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
@@ -34,7 +35,6 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 	private static final int ANNOTATION_FONT_SIZE = (int) Math.round(PandionJConstants.VAR_FONT_SIZE/1.5);
 	
 	private ValueLabel valueLabel;
-//	private IValueModel model;
 	private Figure extraFigure;
 	private GridLayout layout;
 
@@ -85,11 +85,11 @@ public class ValueFigure extends PandionJFigure<IValueModel> {
 			valueLabel.setForegroundColor(PandionJConstants.Colors.CONSTANT);
 		}
 
-		model.registerDisplayObserver(new ModelObserver<Object>() {
+		model.registerDisplayObserver(new ModelObserver<IVariableModel.VariableEvent<?>>() {
 			
 			@Override
-			public void update(Object arg) {
-				if(isVisible()) {
+			public void update(IVariableModel.VariableEvent<?> arg) {
+				if(isVisible() && arg.type == IVariableModel.VariableEvent.Type.VALUE_CHANGE) {
 					if(Role.GATHERER.equals(role)) {
 						String parcels = parcels();
 						((Label) extraFigure).setText(parcels);

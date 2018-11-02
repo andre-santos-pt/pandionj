@@ -19,7 +19,7 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.BlockInfo;
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> implements IReferenceModel {
+public class ReferenceModel extends VariableModel<IJavaObject> implements IReferenceModel {
 	private NullModel nullModel;
 	private VariableInfo info;
 	private int index = -1;
@@ -82,12 +82,12 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 		
 		List<IArrayIndexModel> list = new ArrayList<>(3);
 		Set<String> vars = info.getArrayAccessVariables((i,v)-> {
-			IVariableModel<?> vi = stackFrame.getStackVariable(v);
+			IVariableModel vi = stackFrame.getStackVariable(v);
 			return vi instanceof IValueModel && ((IValueModel) vi).getCurrentValue().equals(i);
 		});
 		
 		for (String indexVar : vars) {
-			IVariableModel<?> vi = stackFrame.getStackVariable(indexVar);
+			IVariableModel vi = stackFrame.getStackVariable(indexVar);
 			if(vi instanceof IValueModel && !vi.getVariableRole().isFixedValue()) {
 				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel((IValueModel) vi, this);
 				IBound bound = vi.getVariableRole().getBound();
@@ -109,7 +109,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 		List<IArrayIndexModel> list = new ArrayList<>(3);
 		
 		for (String indexVar : info.getArrayAccessVariables((i,v)->false)) {
-			IVariableModel<?> vi = stackFrame.getStackVariable(indexVar);
+			IVariableModel vi = stackFrame.getStackVariable(indexVar);
 			if(vi instanceof IValueModel && vi.getVariableRole().isFixedValue()) {
 				ArrayIndexVariableModel indexModel = new ArrayIndexVariableModel((IValueModel) vi, this);
 				list.add(indexModel);
@@ -120,7 +120,7 @@ public class ReferenceModel extends VariableModel<IJavaObject, IEntityModel> imp
 			@Override
 			public void visit(VariableInfo var) {
 				if(var.getArrayFixedVariables().contains(getName()) && info.getDeclarationBlock().getVariable(var.getName()) == var) {
-					IVariableModel<?> vi = stackFrame.getStackVariable(var.getName());
+					IVariableModel vi = stackFrame.getStackVariable(var.getName());
 					if(vi instanceof IValueModel)
 						list.add(new ArrayIndexVariableModel((IValueModel) vi, ReferenceModel.this));
 				}

@@ -75,7 +75,7 @@ public interface Utils {
 	//	pointer.setTargetDecoration(decoration);	
 	//}
 	
-	static String getTooltip(IVariableModel<?> model) {
+	static String getTooltip(IVariableModel model) {
 		IJavaVariable javaVariable = model.getJavaVariable();
 		String owner = null;
 		if(javaVariable instanceof IJavaFieldVariable)

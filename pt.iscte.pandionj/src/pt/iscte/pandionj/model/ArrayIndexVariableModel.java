@@ -15,7 +15,7 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class ArrayIndexVariableModel
-extends DisplayUpdateObservable<Object> 
+extends DisplayUpdateObservable<IVariableModel.VariableEvent<?>> 
 implements IArrayIndexModel {
 
 	private final IValueModel model;

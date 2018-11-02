@@ -178,7 +178,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			visibilityOpen = true;
 			getLayoutManager().setConstraint(hiddenFields, new GridData(SWT.FILL, SWT.DEFAULT, true, true));
 			hiddenFields.setToolTip(new Label("hidden fields"));
-			for (IVariableModel<?> var : model.getFields()) {
+			for (IVariableModel var : model.getFields()) {
 				if(!var.isVisible()) {
 					PandionJFigure<?> fieldFig = figureProvider.getFigure(var, false);
 					hiddenFields.add(fieldFig);
@@ -199,8 +199,8 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			visibleFields.setToolTip(new Label("visible fields"));
 
 			int countNotVisible = 0;
-			List<IVariableModel<?>> fields = model.getFields();
-			for(IVariableModel<?> v : fields) {
+			List<IVariableModel> fields = model.getFields();
+			for(IVariableModel v : fields) {
 				if(v.isVisible()) {
 					PandionJFigure<?> fieldFig = figureProvider.getFigure(v, false);
 					visibleFields.add(fieldFig);

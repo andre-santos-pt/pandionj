@@ -1,10 +1,7 @@
 package pt.iscte.pandionj.extensibility;
 
-import java.util.List;
-
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
-import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 
 import pt.iscte.pandionj.FontManager;

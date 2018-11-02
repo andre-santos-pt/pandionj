@@ -17,9 +17,10 @@ import pt.iscte.pandionj.extensibility.IStackFrameModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VariableInfo;
 
+// Singleton
 public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameModel.StackEvent<?>> implements IStackFrameModel {
 	// la.la.Class.VAR -> 
-	private Map<String, IVariableModel<?>> map;
+	private Map<String, IVariableModel> map;
 	private RuntimeModel runtime;
 
 	public StaticRefsContainer(RuntimeModel runtime) {
@@ -28,7 +29,7 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	}
 
 	public void update(int step) {
-		for(IVariableModel<?> v : map.values())
+		for(IVariableModel v : map.values())
 			v.update(step);
 	}
 
@@ -36,22 +37,22 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 		return get(stackFrameModel, varName) != null;
 	}
 
-	public void add(StackFrameModel frame, IVariableModel<?> v) throws DebugException  {
+	public void add(StackFrameModel frame, IVariableModel v) throws DebugException  {
 		String id = frame.getStackFrame().getDeclaringTypeName() + "." + v.getName();
 		if(!map.containsKey(id)) {
 			map.put(id,v);
 			setChanged();
-			notifyObservers(new StackEvent<IVariableModel<?>>(StackEvent.Type.NEW_VARIABLE,v));
+			notifyObservers(new StackEvent<IVariableModel>(StackEvent.Type.NEW_VARIABLE,v));
 		}
 	}
 
-	public IVariableModel<?> get(StackFrameModel frame, String varName) throws DebugException {
+	public IVariableModel get(StackFrameModel frame, String varName) throws DebugException {
 		String id = frame.getStackFrame().getDeclaringTypeName() + "." + varName;
 		return map.get(id);
 	}
 
 	@Override
-	public Collection<IVariableModel<?>> getAllVariables() {
+	public Collection<IVariableModel> getAllVariables() {
 		if(runtime.isEmpty())
 			return Collections.emptyList();
 
@@ -71,7 +72,7 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	@Override
 	public Collection<IReferenceModel> getReferencesTo(IEntityModel e) {
 		Collection<IReferenceModel> refs = new ArrayList<>();
-		for(IVariableModel<?> v : map.values())
+		for(IVariableModel v : map.values())
 			if(v instanceof IReferenceModel && ((IReferenceModel) v).getModelTarget() == e)
 				refs.add((IReferenceModel) v);
 
@@ -130,7 +131,10 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 
 	@Override
 	public Collection<IReferenceModel> getReferenceVariables() {
-		throw new UnsupportedOperationException();
+		return getAllVariables().stream()
+				.filter(v -> v instanceof IReferenceModel)
+				.map(e -> (IReferenceModel) e)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -139,7 +143,7 @@ public class StaticRefsContainer extends DisplayUpdateObservable<IStackFrameMode
 	}
 
 	@Override
-	public Collection<IVariableModel<?>> getLocalVariables() {
+	public Collection<IVariableModel> getLocalVariables() {
 		return getAllVariables();
 	}
 

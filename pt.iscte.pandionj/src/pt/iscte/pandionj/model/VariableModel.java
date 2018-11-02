@@ -10,10 +10,10 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 
-public abstract class VariableModel<T extends IJavaValue, O>
-extends ModelElement<T,O> 
-implements IVariableModel<O> {
-
+public abstract class VariableModel<T extends IJavaValue>
+extends ModelElement<T,IVariableModel.VariableEvent<?>> 
+implements IVariableModel {
+	
 	protected final IJavaVariable variable;
 	private StackFrameModel stackFrame;  // optional (if owned by variable)
 
@@ -58,7 +58,7 @@ implements IVariableModel<O> {
 
 	public void setOutOfScope() {
 		setChanged();
-		notifyObservers();
+		notifyObservers(new IVariableModel.VariableEvent<T>(IVariableModel.VariableEvent.Type.OUT_OF_SCOPE, null));
 	}
 
 	@SuppressWarnings("unchecked")
@@ -68,9 +68,10 @@ implements IVariableModel<O> {
 			T current = history.get(history.size()-1);
 			boolean equals = variable.getValue().equals(current);
 			if(!equals) {
-				history.add((T) variable.getValue());
+				T val = (T) variable.getValue();
+				history.add(val);
 				setChanged();
-				notifyObservers();
+				notifyObservers(new IVariableModel.VariableEvent<T>(IVariableModel.VariableEvent.Type.VALUE_CHANGE, val));
 				return true;
 			}
 		}

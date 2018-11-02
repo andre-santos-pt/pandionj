@@ -87,7 +87,7 @@ public class ObjectContainer extends Figure {
 
 	public void updateIllustration(IReferenceModel v, Object illustrationArg) {
 		IEntityModel target = v.getModelTarget();
-		PandionJFigure<?> fig = locateFigureInContainers(target); //getChild(target);
+		PandionJFigure<?> fig = locateFigureInContainers(target);
 		if(fig != null) {
 			handleIllustration(v, fig.getInnerFigure(), illustrationArg);
 
@@ -103,7 +103,10 @@ public class ObjectContainer extends Figure {
 	private void handleIllustration(IReferenceModel reference, IFigure targetFig, Object illustrationArg) {
 		if(targetFig instanceof AbstractArrayFigure) {
 			if(reference.hasIndexVars()) {
-				IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig, (Integer) illustrationArg);
+				Integer indexOutOfBounds = null;
+				if(illustrationArg instanceof Integer)
+					indexOutOfBounds = (Integer) illustrationArg;
+				IllustrationBorder b = new IllustrationBorder(reference, (AbstractArrayFigure<?>) targetFig, indexOutOfBounds);
 				targetFig.setBorder(b);
 			}
 			else {

@@ -48,6 +48,7 @@ import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IStackFrameModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.extensibility.IVariableModel.Role;
 import pt.iscte.pandionj.extensibility.ModelObserver;
 import pt.iscte.pandionj.extensibility.PandionJConstants;
@@ -217,9 +218,9 @@ public class RuntimeViewer extends Composite {
 	}
 
 	static void addPointerObserver(IReferenceModel ref, PolylineConnection pointer, ObjectContainer container) {
-		ref.registerDisplayObserver(new ModelObserver<IEntityModel>() {
+		ref.registerDisplayObserver(new ModelObserver<IVariableModel.VariableEvent<?>>() {
 			@Override
-			public void update(IEntityModel arg) {
+			public void update(IVariableModel.VariableEvent<?> arg) {
 				IEntityModel target = ref.getModelTarget();
 				pointer.setVisible(!target.isNull());
 				if(!target.isNull()) {

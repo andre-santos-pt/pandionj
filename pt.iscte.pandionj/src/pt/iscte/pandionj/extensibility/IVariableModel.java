@@ -4,7 +4,21 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.parser.VariableInfo;
 
-public interface IVariableModel<O> extends IObservableModel<O> {
+public interface IVariableModel extends IObservableModel<IVariableModel.VariableEvent<?>> {
+	
+	class VariableEvent<T> {
+		public enum Type {
+			VALUE_CHANGE, OUT_OF_SCOPE;
+		}
+		public final Type type;
+		public final T arg;
+
+		public VariableEvent(Type type, T arg) {
+			this.type = type;
+			this.arg = arg;
+		}
+	}
+	
 	public enum Role {
 		FIXED_VALUE {
 			public String toString() { return "Fixed Value";}

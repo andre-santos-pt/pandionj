@@ -28,7 +28,7 @@ public interface IObjectModel extends IEntityModel {
 	boolean hasAttributeTags();
 	Map<String, ITag> getAttributeTags();
 	IType getType();
-	List<IVariableModel<?>> getFields();
+	List<IVariableModel> getFields();
 	
 	default boolean isToStringDefined() {
 		for(IMethod m : getVisibleMethods())

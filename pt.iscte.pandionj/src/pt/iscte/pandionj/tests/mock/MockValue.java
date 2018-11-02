@@ -9,11 +9,12 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import pt.iscte.pandionj.extensibility.IRuntimeModel;
 import pt.iscte.pandionj.extensibility.ITag;
 import pt.iscte.pandionj.extensibility.IValueModel;
+import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.model.DisplayUpdateObservable;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockValue 
-extends DisplayUpdateObservable<Object>
+extends DisplayUpdateObservable<IVariableModel.VariableEvent<?>>
 implements IValueModel {
 
 	final String type;

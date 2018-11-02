@@ -8,7 +8,7 @@ import pt.iscte.pandionj.extensibility.IValueModel;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class ValueModel
-extends VariableModel<IJavaPrimitiveValue, Object> 
+extends VariableModel<IJavaPrimitiveValue> 
 implements IValueModel {
 	
 	private Role role;

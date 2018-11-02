@@ -15,7 +15,7 @@ import pt.iscte.pandionj.model.DisplayUpdateObservable;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockArrayIndex
-extends DisplayUpdateObservable<Object>
+extends DisplayUpdateObservable<IVariableModel.VariableEvent<?>>
 implements IArrayIndexModel {
 	
 	private final IValueModel variable;

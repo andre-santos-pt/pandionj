@@ -223,27 +223,20 @@ public class PandionJView extends ViewPart {
 			exceptionFrame = thread.getTopStackFrame();
 			handleFrames(thread);
 			if(!runtime.isEmpty()) {
-				
 				StackFrameModel frame = runtime.getFrame(exceptionFrame);
-				//StackFrameModel frame = runtime.getLastUserFrame();
-//				if(frame == null) {
-//					thread.resume();
-//					return;
-//				}
-				
 				Exc exc = findException(exceptionFrame);
+				if(exc == null)
+					return;
 				String message = exc.message;
 				String dialogTitle = "Exception Raised: " + PandionJConstants.Messages.prettyException(exc.typeName);
 				String dialogText = "null".equals(message) ? "" : message;
 				if(exc.matches(ArrayIndexOutOfBoundsException.class)) {
-//					dialogTitle = "Invalid index on array access";
 					dialogText = "Array was accessed at the invalid index " + message + ".";
 				}
 				else if(exc.matches(NullPointerException.class)) {
 					dialogText = "No object can be accessed through a null reference.";
 				}
 				else if(exc.matches(AssertionError.class)) {
-//					dialogTitle = "Assertion failed";
 					dialogText = "null".equals(message) ? "Assertion check failed." : message;
 				}
 				else if(exc.matches(NegativeArraySizeException.class)) {
@@ -253,18 +246,6 @@ public class PandionJView extends ViewPart {
 				int line = frame.getLineNumber();
 				frame.processException(exception, line, message);
 
-				// TODO go to user instruction pointer
-//				PandionJUI.navigateToLine(frame.getSourceFile(), line-1);
-//				try {
-//					IMarker m = frame.getSourceFile().createMarker("org.eclipse.debug.ui.currentIP");
-//					m.setAttribute(IMarker.LINE_NUMBER, line);
-//					m.setAttribute(IMarker.MESSAGE, message);
-//					m.setAttribute(IMarker.PRIORITY, IMarker.PRIORITY_HIGH);
-//					m.setAttribute(IMarker.SEVERITY, IMarker.SEVERITY_ERROR);
-//				} catch (CoreException e) {
-//					e.printStackTrace();
-//				}
-				
 				MessageDialog.open(MessageDialog.ERROR, Display.getDefault().getActiveShell(), 
 						dialogTitle, dialogText, SWT.NONE);
 				thread.resume();

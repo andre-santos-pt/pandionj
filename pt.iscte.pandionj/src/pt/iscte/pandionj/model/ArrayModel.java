@@ -15,19 +15,16 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IArrayModel;
-import pt.iscte.pandionj.extensibility.IEntityModel;
-import pt.iscte.pandionj.extensibility.IObjectModel;
-import pt.iscte.pandionj.extensibility.IReferenceModel;
 import pt.iscte.pandionj.extensibility.IVariableModel;
 
-public abstract class ArrayModel<T extends IVariableModel<?>> 
+public abstract class ArrayModel<T extends IVariableModel> 
 extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 	private IJavaValue[] elements;
 	private int dimensions;
 	private String componentType;
 	private List<T> elementsModel;
-	
+
 	ArrayModel(IJavaArray array, RuntimeModel runtime) throws DebugException {
 		super(array, runtime);
 		int len = Math.min(array.getLength(), PandionJView.getMaxArrayLength());
@@ -143,21 +140,23 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	public int getDimensions() {
 		return dimensions;
 	}
+	
+	public abstract String getElementString(T v) throws DebugException;
 
-	public String getElementString(int i) throws DebugException {
-//		if(primitiveType == null) {
-			IReferenceModel ref = (IReferenceModel) elementsModel.get(i);
-			IEntityModel target = ref.getModelTarget();
-			if(target.isNull())
-				return "null";
-			else	 if(target instanceof IObjectModel)
-				return ((IObjectModel) target).getStringValue();
-			else
-				return target.toString();
-//		}
-//		else
-//			return elements[i].getValueString();
+	public String getElementString(Integer i) throws DebugException {
+		return getElementString(elementsModel.get(i));
 	}
+	
+//	public String getElementString(int i) throws DebugException {
+//		IReferenceModel ref = (IReferenceModel) elementsModel.get(i);
+//		IEntityModel target = ref.getModelTarget();
+//		if(target.isNull())
+//			return "null";
+//		else	 if(target instanceof IObjectModel)
+//			return ((IObjectModel) target).getStringValue();
+//		else
+//			return target.toString();
+//	}
 
 
 	private static int getDimensions(IJavaArray array)  throws DebugException  {
@@ -225,7 +224,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			if(i != 0)
 				els += ", ";
 			try {
-				els += getElementString(i);
+				els += getElementString(elementsModel.get(i));
 			} catch (DebugException e) {
 				els = "?";
 			}

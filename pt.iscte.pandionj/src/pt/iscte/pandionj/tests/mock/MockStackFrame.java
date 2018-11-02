@@ -18,14 +18,14 @@ import pt.iscte.pandionj.parser.VariableInfo;
 
 public class MockStackFrame implements IStackFrameModel {
 
-	private List<IVariableModel<?>> elements = new ArrayList<>();
+	private List<IVariableModel> elements = new ArrayList<>();
 
-	public void add(IVariableModel<?> e) {
+	public void add(IVariableModel e) {
 		elements.add(e);
 	}
 	
 	@Override
-	public Collection<IVariableModel<?>> getAllVariables() {
+	public Collection<IVariableModel> getAllVariables() {
 		return Collections.unmodifiableCollection(elements);
 	}
 
@@ -97,7 +97,7 @@ public class MockStackFrame implements IStackFrameModel {
 	}
 
 	@Override
-	public Collection<IVariableModel<?>> getLocalVariables() {
+	public Collection<IVariableModel> getLocalVariables() {
 		return null;
 	}
 

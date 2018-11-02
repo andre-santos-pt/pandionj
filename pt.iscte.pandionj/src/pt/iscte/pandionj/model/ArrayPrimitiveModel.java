@@ -21,4 +21,9 @@ public class ArrayPrimitiveModel extends ArrayModel<IValueModel> {
 	public boolean isDecimal() {
 		return getComponentType().matches("float|double");
 	}
+
+	@Override
+	public String getElementString(IValueModel v) throws DebugException {
+		return v.getCurrentValue();
+	}
 }

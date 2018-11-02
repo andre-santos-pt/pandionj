@@ -61,7 +61,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private Map<String, ReferenceModel> references;
 	private List<String> refsOfSameType; // TODO from source
 
-	private List<IVariableModel<?>> fields;
+	private List<IVariableModel> fields;
 	private List<IMethod> visibleMethods;
 	
 	private IType jType;
@@ -79,7 +79,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	private void init(IJavaObject object) throws DebugException {
-		fields = new ArrayList<IVariableModel<?>>();
+		fields = new ArrayList<IVariableModel>();
 		references = new LinkedHashMap<String, ReferenceModel>();
 		refsOfSameType = new ArrayList<>();
 		addFields(object);
@@ -104,7 +104,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 				IJavaValue value = (IJavaValue) var.getValue();
 				IField f = jType.getField(name);
 				boolean visible = isFieldVisible(f);
-				VariableModel<?, ?> varModel = null;
+				VariableModel<?> varModel = null;
 				VariableInfo info = getRuntimeModel().getTopFrame().getVariableInfo(name, true);
 				if(value instanceof IJavaObject) {
 					ReferenceModel refModel = new ReferenceModel(var, true, visible, info, getRuntimeModel());
@@ -143,7 +143,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		});
 
 		int refCount = 0;
-		for(IVariableModel<?> var : fields) {
+		for(IVariableModel var : fields) {
 			if(var instanceof IReferenceModel) {
 				((IReferenceModel) var).setIndex(refCount++);
 			}
@@ -170,7 +170,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 
 	@Override
 	public boolean update(int step) {
-		for (IVariableModel<?> f : fields) {
+		for (IVariableModel f : fields) {
 			f.update(step);
 		}
 		//		long valChanges = values.values().stream().filter(val -> val.update(0)).count();
@@ -180,7 +180,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	}
 
 	public boolean hasAttributeTags() {
-		for(VariableModel<IJavaObject, IEntityModel> r : references.values())
+		for(VariableModel<IJavaObject> r : references.values())
 			if(r.hasTag())
 				return true;
 		return false;
@@ -190,7 +190,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public Map<String, ITag> getAttributeTags() {
 		Map<String, ITag> map = new HashMap<String, ITag>();
 
-		for(VariableModel<IJavaObject, IEntityModel> r : references.values()) {
+		for(VariableModel<IJavaObject> r : references.values()) {
 			if(r.hasTag())
 				map.put(r.getName(), r.getTag());
 		}
@@ -512,13 +512,13 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return Collections.unmodifiableList(visibleMethods);
 	}
 
-	public List<IVariableModel<?>> getFields() {
+	public List<IVariableModel> getFields() {
 		return Collections.unmodifiableList(fields);
 	}
 
 	public List<IReferenceModel> getReferenceFields() {
 		List<IReferenceModel> refs = new ArrayList<IReferenceModel>();
-		for(IVariableModel<?> f : fields)
+		for(IVariableModel f : fields)
 			if(f instanceof IReferenceModel)
 				refs.add((IReferenceModel) f);
 		return refs;
@@ -610,7 +610,20 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	@Override
 	public String getStringValue() {
 		try {
-			return getContent().getValueString();
+			IJavaObject content = getContent();
+			if(content.getReferenceTypeName().equals(String.class.getName()))
+				return content.getValueString();
+			
+			IJavaFieldVariable field = content.getField("value", false);
+			if(field != null) { // for subtypes of Number
+				IJavaValue val = (IJavaValue) field.getValue();
+				if(val.getReferenceTypeName().equals(Character.class.getName()))
+					return "'" + val.getValueString() + "'";
+				
+				return val.getValueString();
+			}
+			else
+				return content.getValueString();
 		} catch (DebugException e) {
 			getRuntimeModel().setTerminated();
 			return null;
@@ -620,6 +633,7 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	public int getInt(String fieldName) {
 		try {
 			IJavaFieldVariable field = getContent().getField(fieldName, false);
+			
 			if(field == null)
 				throw new IllegalArgumentException(fieldName + " is not a field");
 
