@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Semantic Model (PandionJ)
+Bundle-SymbolicName: pt.iscte.pandionj.semanticmodel
+Bundle-Version: 0.1
+Automatic-Module-Name: pt.iscte.pandionj.semanticmodel
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: com.google.guava;bundle-version="15.0.0"

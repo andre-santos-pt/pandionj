@@ -2,7 +2,7 @@
 <feature
       id="pt.iscte.pandionj.feature"
       label="PandionJ"
-      version="0.3"
+      version="0.4"
       provider-name="ISCTE-IUL"
       os="hpux,macosx,win32">
 
