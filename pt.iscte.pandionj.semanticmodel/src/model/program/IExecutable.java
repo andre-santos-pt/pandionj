@@ -1,7 +1,7 @@
 package model.program;
 
-import model.machine.IStackFrame;
+import model.machine.ICallStack;
 
 public interface IExecutable {
-	default void execute(IStackFrame stackFrame) {  }
+	default void execute(ICallStack callStack) {  }
 }

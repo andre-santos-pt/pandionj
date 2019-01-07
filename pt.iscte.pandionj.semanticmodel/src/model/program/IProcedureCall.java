@@ -1,32 +1,35 @@
 package model.program;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import model.machine.ICallStack;
 import model.machine.IStackFrame;
 import model.machine.IValue;
 
 public interface IProcedureCall extends IExpression, IStatement {
 	IProcedure getProcedure();
-	IExpression getArguments();
+	List<IExpression> getArguments();
 	
 	@Override
-	default void execute(IStackFrame stackFrame) {
-		getProcedure().execute(stackFrame);
+	default void execute(ICallStack callStack) {
+		List<IValue> args = new ArrayList<>();
+		ImmutableList<IVariableDeclaration> parameters = getProcedure().getParameters();
+		for(int i = 0; i < parameters.size(); i++)
+			args.add(getArguments().get(i).evaluate(callStack.getTopFrame()));
+		
+		IStackFrame newFrame = callStack.newFrame(getProcedure(), args);
+		
+		getProcedure().execute(callStack);
+		IValue returnValue = newFrame.getReturn();
+		callStack.terminateTopFrame(returnValue);
 	}
 	
 	@Override
 	default IValue evaluate(IStackFrame stackFrame) {
-		Map<IVariableDeclaration, IValue> args = new HashMap<>();
-		ImmutableList<IVariableDeclaration> parameters = getProcedure().getParameters();
-		for(int i = 0; i < parameters.size(); i++)
-			args.put(parameters.get(i), getArguments().evaluate(stackFrame));
-		IStackFrame newFrame = stackFrame.newChildFrame(args);
-		execute(newFrame);
-		IValue returnValue = newFrame.getReturn();
-		stackFrame.terminateFrame(returnValue);
-		return returnValue;
+		execute(stackFrame.getCallStack());
+		return stackFrame.getReturn();
 	}
 }

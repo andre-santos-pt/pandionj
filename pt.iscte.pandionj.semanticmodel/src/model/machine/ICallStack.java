@@ -1,9 +1,8 @@
 package model.machine;
 
 import java.util.List;
-import java.util.Map;
 
-import model.program.IVariableDeclaration;
+import model.program.IProcedure;
 
 public interface ICallStack {
 
@@ -16,6 +15,7 @@ public interface ICallStack {
 	List<IStackFrame> getFrames();
 	IStackFrame getTopFrame();
 	
-	IStackFrame newFrame(Map<IVariableDeclaration, IValue> variables);
+	IStackFrame newFrame(IProcedure procedure, List<IValue> args);
+	
 	void terminateTopFrame(IValue returnValue);
 }

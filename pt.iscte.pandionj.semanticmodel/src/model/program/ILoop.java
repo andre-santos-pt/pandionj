@@ -1,6 +1,6 @@
 package model.program;
 
-import model.machine.IStackFrame;
+import model.machine.ICallStack;
 
 public interface ILoop extends IConditionalStatement {
 	
@@ -10,9 +10,9 @@ public interface ILoop extends IConditionalStatement {
 //	}
 	
 	@Override
-	default void execute(IStackFrame frame) {
-		while(getGuard().evaluate(frame).equals(true)) {
-			getBlock().execute(frame);
+	default void execute(ICallStack callStack) {
+		while(getGuard().evaluate(callStack.getTopFrame()).equals(true)) {
+			getBlock().execute(callStack);
 		}
 	}
 }

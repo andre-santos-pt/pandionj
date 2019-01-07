@@ -1,5 +1,7 @@
 package model.program;
 
+import model.machine.ICallStack;
+
 public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 	IProcedure getProcedure();
 	
@@ -19,6 +21,12 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 		return IVariableRole.NONE;
 	}
 	*/
+	
+	
+	@Override
+	default void execute(ICallStack callStack) {
+		callStack.getTopFrame().addVariable(getIdentifier(), getType());
+	}
 	
 	class UnboundVariable implements IVariableDeclaration {
 		

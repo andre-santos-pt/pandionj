@@ -3,13 +3,12 @@ package model.machine.impl;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 import model.machine.ICallStack;
 import model.machine.IProgramState;
 import model.machine.IStackFrame;
 import model.machine.IValue;
-import model.program.IVariableDeclaration;
+import model.program.IProcedure;
 
 public class CallStack implements ICallStack {
 
@@ -19,7 +18,7 @@ public class CallStack implements ICallStack {
 
 	public CallStack(ProgramState programState) {
 		this.programState = programState;
-		stack = new IStackFrame[1024];
+		stack = new IStackFrame[1024]; // TODO
 		next = 0;
 	}
 	
@@ -39,10 +38,11 @@ public class CallStack implements ICallStack {
 	}
 
 	@Override
-	public IStackFrame newFrame(Map<IVariableDeclaration, IValue> variables) {
+	public IStackFrame newFrame(IProcedure procedure, List<IValue> args) {
 		if(next == stack.length)
 			throw new RuntimeException("stack overflow");
-		StackFrame newFrame = new StackFrame(this, getTopFrame(), variables); 
+		System.out.println("-> " + procedure);
+		StackFrame newFrame = new StackFrame(this, getTopFrame(), procedure, args); 
 		stack[next] = newFrame;
 		next++;
 		return newFrame;
@@ -51,5 +51,8 @@ public class CallStack implements ICallStack {
 	@Override
 	public void terminateTopFrame(IValue returnValue) {
 		next--;
+		IProcedure procedure = stack[next].getProcedure();
+		System.out.println("/ " + procedure);
+
 	}
 }

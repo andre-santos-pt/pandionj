@@ -8,6 +8,7 @@ public class Value implements IValue {
 	private final Object value;
 	
 	public Value(IDataType type, Object value) {
+		assert value != null;
 		this.type = type;
 		this.value = value;
 	}
@@ -20,6 +21,11 @@ public class Value implements IValue {
 	@Override
 	public Object getValue() {
 		return value;
+	}
+	
+	@Override
+	public String toString() {
+		return value.toString();
 	}
 
 }

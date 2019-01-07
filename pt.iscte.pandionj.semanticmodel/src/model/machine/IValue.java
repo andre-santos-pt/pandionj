@@ -6,7 +6,7 @@ public interface IValue {
 	IDataType getDataType();
 	Object getValue();
 	
-	class NullValue implements IValue {
+	IValue NULL_VALUE = new IValue() {
 		@Override
 		public IDataType getDataType() {
 			return null;
@@ -16,5 +16,5 @@ public interface IValue {
 		public Object getValue() {
 			return null;
 		}
-	}
+	};
 }

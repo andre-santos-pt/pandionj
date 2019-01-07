@@ -42,4 +42,9 @@ public class VariableDeclaration extends SourceElement implements IVariableDecla
 	public boolean isReference() {
 		return false;
 	}
+	
+	@Override
+	public String toString() {
+		return "var " + name + " (" + type + ")";
+	}
 }

@@ -1,10 +1,13 @@
 package model.program;
 
+import java.util.Iterator;
+
 import com.google.common.collect.ImmutableList;
 
-import model.machine.IStackFrame;
+import model.machine.ICallStack;
 
-public interface IBlock extends ISourceElement, IExecutable, IStatement {
+public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterable<IStatement> {
+	IBlock getParent();
 	ImmutableList<IStatement> getStatements();
 	
 	default boolean isEmpty() {
@@ -12,8 +15,13 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement {
 	}
 	
 	@Override
-	default void execute(IStackFrame stack) {
+	default void execute(ICallStack stack) {
 		for(IStatement s : getStatements())
-			s.execute(stack);
+			stack.getTopFrame().execute(s);
+	}
+	
+	@Override
+	default Iterator<IStatement> iterator() {
+		return getStatements().iterator();
 	}
 }

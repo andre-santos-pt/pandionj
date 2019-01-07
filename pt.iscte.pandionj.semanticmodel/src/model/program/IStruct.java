@@ -10,7 +10,7 @@ public interface IStruct extends IDataType, ISourceElement {
 		for (IProcedure tp : type.getProcedures()) {
 			boolean match = false;
 			for(IProcedure p : getProcedures())
-				if(p.isSameAs(tp)) {
+				if(p.hasSameSignature(tp)) {
 					match = true;
 					break;
 				}
