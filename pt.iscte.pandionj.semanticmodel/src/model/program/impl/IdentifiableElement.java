@@ -2,7 +2,7 @@ package model.program.impl;
 
 import model.program.IIdentifiableElement;
 
-public abstract class IdentifiableElement implements IIdentifiableElement {
+abstract class IdentifiableElement implements IIdentifiableElement {
 	private final String identifier;
 	
 	public IdentifiableElement(String identifier) {

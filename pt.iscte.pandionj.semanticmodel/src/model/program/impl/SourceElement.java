@@ -2,7 +2,7 @@ package model.program.impl;
 
 import model.program.ISourceElement;
 
-public class SourceElement implements ISourceElement {
+abstract class SourceElement implements ISourceElement {
 	private String source;
 	private int offset;
 	private int length;

@@ -18,8 +18,13 @@ public class CallStack implements ICallStack {
 
 	public CallStack(ProgramState programState) {
 		this.programState = programState;
-		stack = new IStackFrame[1024]; // TODO
+		stack = new IStackFrame[programState.getCallStackMaximum()];
 		next = 0;
+	}
+	
+	@Override
+	public int getSize() {
+		return next;
 	}
 	
 	@Override
@@ -52,7 +57,7 @@ public class CallStack implements ICallStack {
 	public void terminateTopFrame(IValue returnValue) {
 		next--;
 		IProcedure procedure = stack[next].getProcedure();
-		System.out.println("/ " + procedure);
+		System.out.println("/ " + procedure + " -> " + returnValue);
 
 	}
 }

@@ -3,8 +3,6 @@ package model.program;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
 import model.machine.ICallStack;
 import model.machine.IStackFrame;
 import model.machine.IValue;
@@ -16,8 +14,7 @@ public interface IProcedureCall extends IExpression, IStatement {
 	@Override
 	default void execute(ICallStack callStack) {
 		List<IValue> args = new ArrayList<>();
-		ImmutableList<IVariableDeclaration> parameters = getProcedure().getParameters();
-		for(int i = 0; i < parameters.size(); i++)
+		for(int i = 0; i < getProcedure().getNumberOfParameters(); i++)
 			args.add(getArguments().get(i).evaluate(callStack.getTopFrame()));
 		
 		IStackFrame newFrame = callStack.newFrame(getProcedure(), args);

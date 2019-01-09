@@ -10,6 +10,8 @@ public interface ICallStack {
 		void newStackFrame();
 	}
 	
+	int getSize();
+	
 	IProgramState getProgramState();
 	
 	List<IStackFrame> getFrames();

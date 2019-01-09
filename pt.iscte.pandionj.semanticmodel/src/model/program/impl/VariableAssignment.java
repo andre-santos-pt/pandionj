@@ -4,12 +4,13 @@ import model.program.IExpression;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 
-public class VariableAssignment extends SourceElement implements IVariableAssignment {
+class VariableAssignment extends Statement implements IVariableAssignment {
 
 	private final IVariableDeclaration variable;
 	private final IExpression expression;
 	
-	public VariableAssignment(IVariableDeclaration variable, IExpression expression) {
+	public VariableAssignment(Block parent, IVariableDeclaration variable, IExpression expression) {
+		super(parent);
 		this.variable = variable;
 		this.expression = expression;
 	}

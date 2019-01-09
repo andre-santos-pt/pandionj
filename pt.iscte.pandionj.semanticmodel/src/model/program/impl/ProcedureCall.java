@@ -2,15 +2,17 @@ package model.program.impl;
 
 import java.util.List;
 
+import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
 import model.program.IProcedureCall;
 
-public class ProcedureCall extends SourceElement implements IProcedureCall {
+class ProcedureCall extends Statement implements IProcedureCall {
 	private final IProcedure procedure;
 	private final List<IExpression> arguments;
 	
-	public ProcedureCall(IProcedure procedure, List<IExpression> arguments) {
+	public ProcedureCall(Block parent, IProcedure procedure, List<IExpression> arguments) {
+		super(parent);
 		this.procedure = procedure;
 		this.arguments = arguments;
 	}
@@ -27,6 +29,21 @@ public class ProcedureCall extends SourceElement implements IProcedureCall {
 
 	@Override
 	public String toString() {
-		return procedure.getIdentifier() + "(...)";
+		return procedure.getIdentifier() + "(" + argsToString() + ")";
+	}
+	
+	private String argsToString() {
+		String args = "";
+		for(IExpression e : arguments) {
+			if(!args.isEmpty())
+				args += ", ";
+			args += e.toString();
+		}
+		return args;
+	}
+	
+	@Override
+	public IDataType getType() {
+		return procedure.getReturnType();
 	}
 }

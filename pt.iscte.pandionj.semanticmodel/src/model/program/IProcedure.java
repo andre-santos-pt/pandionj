@@ -1,31 +1,39 @@
 package model.program;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 import model.machine.ICallStack;
 
 public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
-	ImmutableList<IVariableDeclaration> getParameters();	
+	IVariableDeclaration addParameter(String name, IDataType type);
+	Iterable<IVariableDeclaration> getParameters();	
+	int getNumberOfParameters();
+	Iterable<IVariableDeclaration> getVariables(boolean includingParams);
+	
+	
 	IBlock getBody();
-	void setBody(IBlock body);
+//	void setBody(IBlock body);
 	
 //	default boolean isDeclaration() {
 //		return getBody() == null;
 //	}
 	
-	ImmutableList<IVariableDeclaration> getVariables();
+	IDataType getReturnType();
+	
 	boolean isFunction();
 	boolean isRecursive();
 	
 	default boolean hasSameSignature(IProcedure procedure) {
-		ImmutableList<IVariableDeclaration> selfParams = getParameters();
-		ImmutableList<IVariableDeclaration> parameters = procedure.getParameters();
-
-		if(!getIdentifier().equals(procedure.getIdentifier()) || selfParams.size() != parameters.size())
+		if(!getIdentifier().equals(procedure.getIdentifier()) || 
+			getNumberOfParameters() != procedure.getNumberOfParameters() ||
+			!getReturnType().equals(procedure.getReturnType()))
 			return false;
 		
-		for(int i = 0; i < selfParams.size(); i++)
-			if(!selfParams.get(i).equals(parameters.get(i)))
+		Iterator<IVariableDeclaration> procParamsIt = procedure.getParameters().iterator();
+		for(IVariableDeclaration p : getParameters())
+			if(!p.equals(procParamsIt.next()))
 				return false;
 		
 		return true;
@@ -40,5 +48,11 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 //		System.out.println(toString() + " -> " + stack.getReturn());
 	}
 	
-	//List<ISemanticError> getSemanticErrors();
+	
+//	IVariableDeclaration declareVariable(String name, IDataType type);
+	
+	IProcedureCall call(List<IExpression> args);
+	default IProcedureCall call(IExpression ... args) {
+		return call(Arrays.asList(args));
+	}
 }

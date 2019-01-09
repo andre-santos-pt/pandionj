@@ -1,5 +1,6 @@
 package model.program;
 
+// TODO
 public interface IConstantDeclaration extends IVariableDeclaration {
 	@Override
 	default IProcedure getProcedure() {

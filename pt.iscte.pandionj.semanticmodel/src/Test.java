@@ -1,8 +1,7 @@
-import com.google.common.collect.ImmutableList;
-
 import model.machine.impl.ProgramState;
 import model.program.IBinaryExpression;
 import model.program.IBlock;
+import model.program.IDataType;
 import model.program.IFactory;
 import model.program.ILiteral;
 import model.program.IProcedure;
@@ -13,7 +12,6 @@ import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 import model.program.Operator;
 import model.program.impl.Factory;
-import model.program.impl.Return;
 
 public class Test {
 	public static void main(String[] args) {
@@ -21,35 +19,26 @@ public class Test {
 
 		IProgram program = factory.createProgram();
 		
-		IProcedure proc = factory.createProcedure("sumTwo", ImmutableList.of());
-		program.addProcedure(proc);
+		IProcedure proc = program.createProcedure("inc", IDataType.INT);
+		IVariableDeclaration nParam = proc.addParameter("n", IDataType.INT);
 		
-		IVariableDeclaration var = factory.createVariableDeclaration(proc, "a", program.getDataType("int"));	
-		ILiteral lit = factory.createLiteral("2");
-		IVariableAssignment ass = factory.createAssignment(var, lit);
+		IVariableDeclaration rVar = proc.createVariableDeclaration("r", program.getDataType("int"));
+		IVariableAssignment rAss = rVar.assignment(nParam.expression());
 		
-		IBinaryExpression e = factory.createBinaryExpression(Operator.ADD, factory.createVariableExpression(var), lit);
+		ILiteral lit = factory.value(4);
+		IBinaryExpression e = factory.createBinaryExpression(Operator.ADD, 
+				rVar.expression(), lit);
 		
 
-		IVariableAssignment ass2 = factory.createAssignment(var, e);
-
-		IReturn ret = new Return(factory.createVariableExpression(var));
-	
-		IBlock seq = factory.createBlock(proc, var, ass, ass2, ret);
-		proc.setBody(seq);
-
+		IVariableAssignment ass2 = rVar.assignment(e);
+		proc.createReturn(rVar.expression());
 		
-		IProcedure main = factory.createProcedure("main", ImmutableList.of());
-		IProcedureCall call = factory.createProcedureCall(proc, ImmutableList.of());
-		IVariableDeclaration var2 = factory.createVariableDeclaration(proc, "b", program.getDataType("int"));	
-		IVariableAssignment ass3 = factory.createAssignment(var2, call);
-
-		
-		IBlock mainBlock = factory.createBlock(main, var2, ass3);
-		main.setBody(mainBlock);
-		
-		program.addProcedure(main);
+		IProcedure main = program.createProcedure("main", IDataType.VOID);
 		program.setMainProcedure(main);
+		IProcedureCall call = factory.createProcedureCall(proc, factory.value(2));
+		IVariableDeclaration var2 = main.createVariableDeclaration("b", IDataType.INT);	
+		IVariableAssignment ass3 = var2.assignment(call);
+		
 		
 //		Output out = IFactory.createOutput();
 //		out.setExpression(var);

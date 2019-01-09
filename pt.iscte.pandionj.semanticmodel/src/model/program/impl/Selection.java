@@ -4,12 +4,13 @@ import model.program.IBlock;
 import model.program.IExpression;
 import model.program.ISelection;
 
-public class Selection extends SourceElement implements ISelection {
+class Selection extends Statement implements ISelection {
 	private final IExpression guard;
 	private final IBlock block;
 	private final IBlock alternativeBlock;
 
-	public Selection(IExpression guard, IBlock block, IBlock alternativeBlock) {
+	public Selection(Block parent, IExpression guard, IBlock block, IBlock alternativeBlock) {
+		super(parent);
 		this.guard = guard;
 		this.block = block;
 		this.alternativeBlock = alternativeBlock;
@@ -30,4 +31,8 @@ public class Selection extends SourceElement implements ISelection {
 		return alternativeBlock;
 	}
 
+	@Override
+	public String toString() {
+		return "if " + guard + " " +block + (alternativeBlock != null ? "else " + alternativeBlock : "");
+	}
 }

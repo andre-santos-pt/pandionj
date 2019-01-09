@@ -15,13 +15,18 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 		return getArrayDimensions() > 0;
 	}
 	
-	/*
+	
 	boolean isConstant();
+	
+	/*
 	default IVariableRole getRole() {
 		return IVariableRole.NONE;
 	}
 	*/
 	
+	IVariableAssignment assignment(IExpression exp);
+	
+	IVariableExpression expression();
 	
 	@Override
 	default void execute(ICallStack callStack) {
@@ -34,6 +39,11 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 		
 		UnboundVariable(String name) {
 			this.name = name;
+		}
+		
+		@Override
+		public boolean isConstant() {
+			return false;
 		}
 		
 		@Override
@@ -80,5 +90,25 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 		public boolean isReference() {
 			return false;
 		}
+
+		@Override
+		public IVariableAssignment assignment(IExpression exp) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
+		@Override
+		public IVariableExpression expression() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public IBlock getParent() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		
 	}
 }

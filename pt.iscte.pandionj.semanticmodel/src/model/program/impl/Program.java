@@ -11,11 +11,12 @@ import com.google.common.collect.ImmutableList;
 
 import model.program.IConstantDeclaration;
 import model.program.IDataType;
+import model.program.IProblem;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IStruct;
 
-public class Program implements IProgram {
+class Program extends SourceElement implements IProgram {
 	private List<IProcedure> procedures;
 	private IProcedure mainProcedure;
 	private Map<String, IDataType> types;
@@ -23,8 +24,8 @@ public class Program implements IProgram {
 	public Program() {
 		procedures = new ArrayList<IProcedure>();
 		types = new LinkedHashMap<>();
-		types.put("int", new DataType("int", Integer.class));
-		types.put("double", new DataType("double", Double.class));
+		for(IDataType t : IDataType.DEFAULTS)
+			types.put(t.getIdentifier(), t);
 	}
 	
 	@Override
@@ -37,17 +38,25 @@ public class Program implements IProgram {
 		return procedures;
 	}
 
-	public void addProcedure(IProcedure procedure) {
-		assert !procedureExists(procedure);
+	@Override
+	public IProcedure createProcedure(String name, IDataType returnType) {
+		IProcedure proc = new Procedure(name, returnType);
+		procedures.add(proc);
+		return proc;
 	}
 	
-	private boolean procedureExists(IProcedure procedure) {
-		for(IProcedure p : procedures)
-			if(p.hasSameSignature(procedure))
-				return true;
-		
-		return false;
-	}
+//	public void addProcedure(IProcedure procedure) {
+//		assert !procedureExists(procedure);
+//		procedures.add(procedure);
+//	}
+//	
+//	private boolean procedureExists(IProcedure procedure) {
+//		for(IProcedure p : procedures)
+//			if(p.hasSameSignature(procedure))
+//				return true;
+//		
+//		return false;
+//	}
 	
 	@Override
 	public IProcedure getMainProcedure() {
@@ -55,7 +64,9 @@ public class Program implements IProgram {
 	}
 	
 	public void setMainProcedure(IProcedure mainProcedure) {
-		assert mainProcedure == null || procedureExists(mainProcedure);
+		assert mainProcedure != null : "cannot be null";
+		assert procedures.contains(mainProcedure) : "main procedure must be added to the program";
+		
 		this.mainProcedure = mainProcedure;
 	}
 
@@ -75,42 +86,11 @@ public class Program implements IProgram {
 		return types.get(id);
 	}
 	
-	private static class DataType implements IDataType {
-		final String id;
-		final Class<?> valueType;
-		
-		public DataType(String id, Class<?> valueType) {
-			this.id = id;
-			this.valueType = valueType;
-		}
-
-		@Override
-		public String getIdentifier() {
-			return id;
-		}
-
-		@Override
-		public boolean matches(Object object) {
-			return valueType.isInstance(object);
-		}
-		
-		@Override
-		public Object match(String literal) {
-			try {
-				Object obj = valueType.getConstructor(String.class).newInstance(literal);
-				return obj;
-			}
-			catch(Exception e) {
-				e.printStackTrace();
-				return null;
-			}
-		}
-		
-		@Override
-		public String toString() {
-			return id;
-		}
+	@Override
+	public List<IProblem> validate() {
+		List<IProblem> problems = new ArrayList<IProblem>();
+		if(mainProcedure == null)
+			problems.add(new Problem(this, "No main procedure is defined"));
+		return problems;
 	}
-
-	
 }

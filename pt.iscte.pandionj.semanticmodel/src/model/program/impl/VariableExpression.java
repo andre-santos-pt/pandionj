@@ -1,9 +1,10 @@
 package model.program.impl;
 
+import model.program.IDataType;
 import model.program.IVariableDeclaration;
 import model.program.IVariableExpression;
 
-public class VariableExpression extends SourceElement implements IVariableExpression {
+class VariableExpression extends SourceElement implements IVariableExpression {
 
 	private final IVariableDeclaration variable;
 	
@@ -27,4 +28,8 @@ public class VariableExpression extends SourceElement implements IVariableExpres
 		return variable.getIdentifier();
 	}
 
+	@Override
+	public IDataType getType() {
+		return variable.getType();
+	}
 }

@@ -3,11 +3,12 @@ package model.program.impl;
 import model.program.IExpression;
 import model.program.IReturn;
 
-public class Return extends SourceElement implements IReturn {
+class Return extends Statement implements IReturn {
 
 	private final IExpression expression;
 	
-	public Return(IExpression expression) {
+	public Return(Block parent, IExpression expression) {
+		super(parent);
 		this.expression = expression;
 	}
 

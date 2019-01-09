@@ -2,10 +2,11 @@ package model.program;
 
 import java.util.Collection;
 
-public interface IProgram extends IExecutable {
+public interface IProgram extends IExecutable, ISourceElement {
 	Collection<IConstantDeclaration> getConstants();
 	Collection<IProcedure> getProcedures();
-	void addProcedure(IProcedure procedure);
+	IProcedure createProcedure(String name, IDataType returnType);
+
 	void setMainProcedure(IProcedure procedure);
 	IProcedure getMainProcedure(); // return is contained in getProcedures
 	Collection<IStruct> getStructs();

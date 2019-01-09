@@ -1,6 +1,7 @@
 package model.program;
 
 import model.machine.ICallStack;
+import model.machine.IValue;
 
 public interface ISelection extends IConditionalStatement {
 	// may be null
@@ -17,7 +18,7 @@ public interface ISelection extends IConditionalStatement {
 	
 	@Override
 	default void execute(ICallStack callStack) {
-		if(getGuard().evaluate(callStack.getTopFrame()).equals(true))
+		if(getGuard().evaluate(callStack.getTopFrame()).equals(IValue.TRUE))
 			getBlock().execute(callStack);
 		else if(hasAlternativeBlock())
 			getAlternativeBlock().execute(callStack);

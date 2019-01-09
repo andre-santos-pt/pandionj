@@ -1,19 +1,24 @@
 package model.program.impl;
 
+import model.program.IBlock;
 import model.program.IDataType;
+import model.program.IExpression;
 import model.program.IProcedure;
+import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
+import model.program.IVariableExpression;
 
-public class VariableDeclaration extends SourceElement implements IVariableDeclaration {
+class VariableDeclaration extends Statement implements IVariableDeclaration {
 
-	private final IProcedure parent;
 	private final String name;
 	private final IDataType type;
+	private final boolean constant; // TODO final vars
 	
-	public VariableDeclaration(IProcedure parent, String name, IDataType type) {
-		this.parent = parent;
+	public VariableDeclaration(Block block, String name, IDataType type, boolean constant) {
+		super(block);
 		this.name = name;
 		this.type = type;
+		this.constant = constant;
 	}
 
 	
@@ -21,10 +26,18 @@ public class VariableDeclaration extends SourceElement implements IVariableDecla
 	public String getIdentifier() {
 		return name;
 	}
+	
+	@Override
+	public boolean isConstant() {
+		return constant;
+	}
 
 	@Override
 	public IProcedure getProcedure() {
-		return parent;
+		IBlock parent = getParent();
+		while(!(parent instanceof IProcedure))
+			parent = parent.getParent();
+		return (IProcedure) parent;
 	}
 
 	@Override
@@ -46,5 +59,15 @@ public class VariableDeclaration extends SourceElement implements IVariableDecla
 	@Override
 	public String toString() {
 		return "var " + name + " (" + type + ")";
+	}
+	
+	@Override
+	public IVariableAssignment assignment(IExpression expression) {
+		return new VariableAssignment(getParent(), this, expression);
+	}
+	
+	@Override
+	public IVariableExpression expression() {
+		return new VariableExpression(this);
 	}
 }

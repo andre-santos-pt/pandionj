@@ -8,7 +8,7 @@ public interface IProgramState {
 	ICallStack getCallStack();
 	List<IMemorySegment> getHeapMemory();
 	ISourceElement getInstructionPointer();
-	// getStackCapacity()?
+	int getCallStackMaximum();
 	// getHeapMemory()?
 	
 	IValue getValue(String value);

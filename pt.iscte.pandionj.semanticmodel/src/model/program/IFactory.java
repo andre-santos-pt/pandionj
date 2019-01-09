@@ -1,32 +1,29 @@
 package model.program;
 
+import java.util.Arrays;
 import java.util.List;
-
-import com.google.common.collect.ImmutableList;
 
 public interface IFactory {
 
 	IProgram createProgram();
 	
-	IProcedure createProcedure(String name, ImmutableList<IVariableDeclaration> parameters);
-//	IProcedure createProcedure(String name, ImmutableList<IVariableDeclaration> parameters, IStatement ... statements);
+//	IProcedure createProcedure(String name, IDataType returnType);
 	
-	IVariableDeclaration createVariableDeclaration(IProcedure parent, String name, IDataType type);
-
+	
+	
+	// EXPRESSIONS
+	
 	IVariableExpression createVariableExpression(IVariableDeclaration var);
-	ILiteral createLiteral(String string);
-
-	IBlock createBlock(IBlock parent, IStatement ... statement);
-//	IBlock createBlock(IBlock parent, List<IStatement> statements);
-
-	ISelection createSelection(IExpression expression, IBlock block);
-	ISelection createSelection(IExpression expression, IBlock block, IBlock alternativeBlock);
-
-	IVariableAssignment createAssignment(IVariableDeclaration var, IExpression exp);
-
+	
 	IBinaryExpression createBinaryExpression(Operator operator, IExpression left, IExpression right);
 
-	IReturn createReturn(IExpression expression);
+	ILiteral createLiteral(IDataType type, String string);
+	ILiteral value(int value);
+	ILiteral value(double value);
+	ILiteral value(boolean value);
 	
 	IProcedureCall createProcedureCall(IProcedure procedure, List<IExpression> args);
+	default IProcedureCall createProcedureCall(IProcedure procedure, IExpression ... args) {
+		return createProcedureCall(procedure, Arrays.asList(args));
+	}
 }

@@ -23,12 +23,13 @@ public class StackFrame implements IStackFrame {
 	private IValue returnValue;
 	
 	public StackFrame(ICallStack callStack, IStackFrame parent, IProcedure procedure, List<IValue> arguments) {
-		assert procedure.getParameters().size() == arguments.size();
+		assert procedure.getNumberOfParameters() == arguments.size();
 		
 		this.callStack = callStack;
 		this.parent = parent;
 		this.procedure = procedure;
 		this.variables = new HashMap<>();
+		this.returnValue = IValue.NULL;
 		
 		int i = 0;
 		for(IVariableDeclaration param : procedure.getParameters()) {
@@ -60,7 +61,7 @@ public class StackFrame implements IStackFrame {
 	@Override
 	public void addVariable(String identifier, IDataType type) {
 		assert identifier != null && !identifier.isEmpty() && !variables.containsKey(identifier);
-		variables.put(identifier, IValue.NULL_VALUE);
+		variables.put(identifier, IValue.NULL);
 	}
 	
 	@Override
@@ -111,8 +112,6 @@ public class StackFrame implements IStackFrame {
 	
 	@Override
 	public void execute(IStatement statement) {
-//		if(statement instanceof IProcedureCall)
-//			System.out.println(statement);
 		System.out.println(statement);
 		statement.execute(this.getCallStack());
 		

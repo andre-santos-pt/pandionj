@@ -13,16 +13,24 @@ import model.program.IProcedure;
 import model.program.IProcedureCall;
 import model.program.IProgram;
 import model.program.ISourceElement;
-import model.program.impl.ProcedureCall;
+import model.program.impl.Factory;
 
 public class ProgramState implements IProgramState {
 
 	private IProgram program;
-	private ICallStack stack;	
+	private ICallStack stack;
+	private final int callStackMax;
 	private ISourceElement instructionPointer;
 	
 	public ProgramState(IProgram program) {
+		this(program, 1024); // TODO Constants?
+	}
+	
+	public ProgramState(IProgram program, int callStackMax) {
+		assert program != null;
+		assert callStackMax >= 1;
 		this.program = program;
+		this.callStackMax = callStackMax;
 		stack = new CallStack(this);
 	}
 	
@@ -31,6 +39,11 @@ public class ProgramState implements IProgramState {
 		return stack;
 	}
 
+	@Override
+	public int getCallStackMaximum() {
+		return callStackMax;
+	}
+	
 	@Override
 	public List<IMemorySegment> getHeapMemory() {
 		return null;
@@ -55,19 +68,24 @@ public class ProgramState implements IProgramState {
 	public IValue getValue(Object object) {
 		for(IDataType type : program.getDataTypes()) {
 			if(type.matches(object))
-				return new Value(type, type.match(object.toString()));
+				if(type.equals(IDataType.BOOLEAN))
+					return object == Boolean.TRUE ? IValue.TRUE : IValue.FALSE;
+				else
+					return new Value(type, type.match(object.toString()));
 		}
 		return null;
 	}
 	
 	public void execute() {
+		Factory factory = new Factory();
+		
 		IProcedure main = program.getMainProcedure();
-		instructionPointer = program.getMainProcedure().getBody().getStatements().get(0);
-		IProcedureCall call = new ProcedureCall(main, ImmutableList.of());
-//		IStackFrame rootFrame = stack.newFrame(main, ImmutableList.of()); // root frame (empty)
+		if(main == null)
+			throw new RuntimeException("no main procedure defined");
+		
+		instructionPointer = program.getMainProcedure().getBody().getStatements().get(0); // TODO no statements
+		IProcedureCall call = factory.createProcedureCall(main, ImmutableList.of());
 		call.execute(stack);
-//		stack.terminateTopFrame(Value.NULL_VALUE);
-//		program.getMainProcedure().execute(stack.getTopFrame());
 	}
 
 }
