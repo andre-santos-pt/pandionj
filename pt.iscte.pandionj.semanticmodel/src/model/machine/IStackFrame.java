@@ -3,6 +3,7 @@ package model.machine;
 import java.util.List;
 import java.util.Map;
 
+import model.program.IArrayType;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
@@ -36,6 +37,7 @@ public interface IStackFrame {
 	IValue getValue(String literal);
 	IValue getValue(Object object);
 
+	IArray getArray(IDataType baseType, int length);
 	
 	void execute(IStatement statement);
 	void evaluate(IExpression expression);

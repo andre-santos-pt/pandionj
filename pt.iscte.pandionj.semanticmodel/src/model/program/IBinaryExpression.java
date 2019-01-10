@@ -1,7 +1,7 @@
 package model.program;
 
 public interface IBinaryExpression extends IExpression {
-	Operator getOperator();
+	IBinaryOperator getOperator();
 	IExpression getLeftExpression();
 	IExpression getRightExpression();
 	

@@ -8,6 +8,8 @@ import java.util.List;
 import com.google.common.collect.ImmutableList;
 
 import model.machine.impl.ProgramState;
+import model.program.IArrayType;
+import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
@@ -33,7 +35,7 @@ class Procedure extends SourceElement implements IProcedure {
 		this.variables = new ArrayList<>(5);
 		this.parameters = 0;
 		this.returnType = returnType;
-		
+
 		paramsView = new ParamsView();
 		varsView = new VariablesView();
 		body = new Block(this);
@@ -53,13 +55,15 @@ class Procedure extends SourceElement implements IProcedure {
 	public IVariableDeclaration addParameter(String name, IDataType type) {
 		for(IVariableDeclaration v : variables)
 			assert !v.getIdentifier().equals(name) : "duplicate variable name";
-		
-		IVariableDeclaration param = new VariableDeclaration(null, name, type, false);
-		variables.add(parameters, param);
-		parameters++;
-		return param;
+
+			IVariableDeclaration param = type instanceof IArrayType ?
+					new ArrayVariableDeclaration(null, name, type, false, ((IArrayType) type).getDimensions()) :
+					new VariableDeclaration(null, name, type, false);
+			variables.add(parameters, param);
+			parameters++;
+			return param;
 	}
-	
+
 	@Override
 	public int getNumberOfParameters() {
 		return parameters;
@@ -69,7 +73,7 @@ class Procedure extends SourceElement implements IProcedure {
 	public Iterable<IVariableDeclaration> getVariables(boolean includingParams) {
 		return includingParams ? Collections.unmodifiableCollection(variables) : varsView;
 	}
-	
+
 	@Override
 	public IDataType getReturnType() {
 		return returnType;
@@ -80,12 +84,12 @@ class Procedure extends SourceElement implements IProcedure {
 		return body;
 	}
 
-//	@Override
-//	public void setBody(IBlock body) {
-//		this.body = body;
-//	}
-	
-	
+	//	@Override
+	//	public void setBody(IBlock body) {
+	//		this.body = body;
+	//	}
+
+
 
 	@Override
 	public boolean isFunction() {
@@ -114,7 +118,7 @@ class Procedure extends SourceElement implements IProcedure {
 	public List<IStatement> getStatements() {
 		return body == null ? ImmutableList.of() : body.getStatements();
 	}	
-	
+
 	private class ParamsView extends AbstractList<IVariableDeclaration> {
 		@Override
 		public IVariableDeclaration get(int index) {
@@ -126,7 +130,7 @@ class Procedure extends SourceElement implements IProcedure {
 			return parameters;
 		}
 	}
-	
+
 	private class VariablesView extends AbstractList<IVariableDeclaration> {
 		@Override
 		public IVariableDeclaration get(int index) {
@@ -140,41 +144,48 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
-	public IBlock createBlock() {
-		return body.createBlock();
+	public IBlock block() {
+		return body.block();
 	}
 
 	@Override
-	public IVariableDeclaration createVariableDeclaration(String name, IDataType type) {
-		IVariableDeclaration var = body.createVariableDeclaration(name, type);
+	public IVariableDeclaration variableDeclaration(String name, IDataType type) {
+		IVariableDeclaration var = body.variableDeclaration(name, type);
 		variables.add(var);
 		return var;
 	}
 
 	@Override
-	public IVariableAssignment createAssignment(IVariableDeclaration var, IExpression exp) {
-		return body.createAssignment(var, exp);
+	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions) {
+		IArrayVariableDeclaration var = body.arrayDeclaration(name, type, dimensions);
+		variables.add(var);
+		return var;
 	}
 
 	@Override
-	public ISelection createSelection(IExpression expression, IBlock block, IBlock alternativeBlock) {
-		return body.createSelection(expression, block, alternativeBlock);
+	public IVariableAssignment assignment(IVariableDeclaration var, IExpression exp) {
+		return body.assignment(var, exp);
 	}
 
 	@Override
-	public IReturn createReturn(IExpression expression) {
-		return body.createReturn(expression);
+	public ISelection selection(IExpression expression, IBlock block, IBlock alternativeBlock) {
+		return body.selection(expression, block, alternativeBlock);
 	}
 
 	@Override
-	public IProcedureCall createProcedureCall(IProcedure procedure, List<IExpression> args) {
-		return body.createProcedureCall(procedure, args);
+	public IReturn returnStatement(IExpression expression) {
+		return body.returnStatement(expression);
+	}
+
+	@Override
+	public IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args) {
+		return body.procedureCall(procedure, args);
 	}
 
 	@Override
 	public IProcedureCall call(List<IExpression> args) {
 		return new ProcedureCall(null, this, args);
 	}
-	
-	
+
+
 }

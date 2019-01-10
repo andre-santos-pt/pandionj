@@ -14,7 +14,7 @@ public class Value implements IValue {
 	}
 
 	@Override
-	public IDataType getDataType() {
+	public IDataType getType() {
 		return type;
 	}
 

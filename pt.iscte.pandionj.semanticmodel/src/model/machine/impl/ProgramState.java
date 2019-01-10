@@ -4,10 +4,12 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import model.machine.IArray;
 import model.machine.ICallStack;
 import model.machine.IMemorySegment;
 import model.machine.IProgramState;
 import model.machine.IValue;
+import model.program.IArrayType;
 import model.program.IDataType;
 import model.program.IProcedure;
 import model.program.IProcedureCall;
@@ -76,6 +78,12 @@ public class ProgramState implements IProgramState {
 		return null;
 	}
 	
+	
+	@Override
+	public IArray getArray(IDataType type, int length) {
+		return new Array(this, type, length);
+	}
+	
 	public void execute() {
 		Factory factory = new Factory();
 		
@@ -84,7 +92,7 @@ public class ProgramState implements IProgramState {
 			throw new RuntimeException("no main procedure defined");
 		
 		instructionPointer = program.getMainProcedure().getBody().getStatements().get(0); // TODO no statements
-		IProcedureCall call = factory.createProcedureCall(main, ImmutableList.of());
+		IProcedureCall call = factory.procedureCall(main, ImmutableList.of());
 		call.execute(stack);
 	}
 

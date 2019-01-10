@@ -5,8 +5,12 @@ import model.machine.IValue;
 
 public interface IVariableExpression extends IExpression {
 	IVariableDeclaration getVariable();
-	boolean isAddress();
 	
+	@Override
+	default IDataType getType() {
+		return getVariable().getType();
+	}
+
 	@Override
 	default IValue evaluate(IStackFrame frame) {
 		return frame.getVariable(getVariable().getIdentifier());

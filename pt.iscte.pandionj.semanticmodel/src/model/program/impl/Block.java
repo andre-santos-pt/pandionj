@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
@@ -46,32 +47,37 @@ class Block extends SourceElement implements IBlock{
 	}
 
 	@Override
-	public IBlock createBlock() {
+	public IBlock block() {
 		return new Block(this);
 	}
 
 	@Override
-	public IVariableDeclaration createVariableDeclaration(String name, IDataType type) {
+	public IVariableDeclaration variableDeclaration(String name, IDataType type) {
 		return new VariableDeclaration(this, name, type, false);
+	}
+	
+	@Override
+	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions) {
+		return new ArrayVariableDeclaration(this, name, type, false, dimensions);
 	}
 
 	@Override
-	public IVariableAssignment createAssignment(IVariableDeclaration variable, IExpression expression) {
+	public IVariableAssignment assignment(IVariableDeclaration variable, IExpression expression) {
 		return new VariableAssignment(this, variable, expression);
 	}
 
 	@Override
-	public ISelection createSelection(IExpression guard, IBlock block, IBlock alternativeBlock) {
+	public ISelection selection(IExpression guard, IBlock block, IBlock alternativeBlock) {
 		return new Selection(this, guard, block, alternativeBlock);
 	}
 
 	@Override
-	public IReturn createReturn(IExpression expression) {
+	public IReturn returnStatement(IExpression expression) {
 		return new Return(this, expression);
 	}
 	
 	@Override
-	public IProcedureCall createProcedureCall(IProcedure procedure, List<IExpression> args) {
+	public IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args) {
 		return new ProcedureCall(this, procedure, args);
 	}
 

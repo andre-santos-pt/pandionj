@@ -3,27 +3,37 @@ package model.program;
 import java.util.Arrays;
 import java.util.List;
 
+import model.machine.IValue;
+
 public interface IFactory {
 
 	IProgram createProgram();
 	
-//	IProcedure createProcedure(String name, IDataType returnType);
-	
-	
-	
 	// EXPRESSIONS
 	
-	IVariableExpression createVariableExpression(IVariableDeclaration var);
+	IVariableExpression variableExpression(IVariableDeclaration var);
 	
-	IBinaryExpression createBinaryExpression(Operator operator, IExpression left, IExpression right);
+	IArrayElementExpression arrayElementExpression(IArrayVariableDeclaration var, List<IExpression> indexes);
+	
+	IBinaryExpression unaryExpression(IBinaryOperator operator, IExpression exp);
+	IBinaryExpression binaryExpression(IBinaryOperator operator, IExpression left, IExpression right);
 
-	ILiteral createLiteral(IDataType type, String string);
-	ILiteral value(int value);
-	ILiteral value(double value);
-	ILiteral value(boolean value);
+	ILiteral literal(IDataType type, String string);
+	ILiteral literal(int value);
+	ILiteral literal(double value);
+	ILiteral literal(boolean value);
 	
-	IProcedureCall createProcedureCall(IProcedure procedure, List<IExpression> args);
-	default IProcedureCall createProcedureCall(IProcedure procedure, IExpression ... args) {
-		return createProcedureCall(procedure, Arrays.asList(args));
+	IValue getArray(IArrayType type, Object ... elements);
+	
+	IArrayAllocation arrayAllocation(IDataType type, List<IExpression> dimensions);
+	default IArrayAllocation arrayAllocation(IDataType type, IExpression ... dimensions) {
+		return arrayAllocation(type, Arrays.asList(dimensions));
 	}
+	IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args);
+	default IProcedureCall procedureCall(IProcedure procedure, IExpression ... args) {
+		return procedureCall(procedure, Arrays.asList(args));
+	}
+	
+	
+	
 }

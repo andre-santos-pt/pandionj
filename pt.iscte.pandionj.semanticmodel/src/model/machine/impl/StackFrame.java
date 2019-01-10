@@ -5,16 +5,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import model.machine.IArray;
 import model.machine.ICallStack;
 import model.machine.IStackFrame;
 import model.machine.IValue;
+import model.program.IArrayType;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
 import model.program.IStatement;
 import model.program.IVariableDeclaration;
 
-public class StackFrame implements IStackFrame {
+class StackFrame implements IStackFrame {
 
 	private final ICallStack callStack;
 	private final IStackFrame parent;
@@ -108,6 +110,11 @@ public class StackFrame implements IStackFrame {
 	@Override
 	public IValue getValue(Object object) {
 		return callStack.getProgramState().getValue(object);
+	}
+	
+	@Override
+	public IArray getArray(IDataType baseType, int length) {
+		return callStack.getProgramState().getArray(baseType, length);
 	}
 	
 	@Override

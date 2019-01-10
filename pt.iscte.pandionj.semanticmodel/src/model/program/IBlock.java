@@ -14,20 +14,26 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 		return getStatements().isEmpty();
 	}
 	
-	IBlock createBlock();
+	IBlock block();
 	
-	IVariableDeclaration createVariableDeclaration(String name, IDataType type);
-	IVariableAssignment createAssignment(IVariableDeclaration var, IExpression exp);
-	default ISelection createSelection(IExpression expression, IBlock block) {
-		return createSelection(expression, block, null);
+	IVariableDeclaration variableDeclaration(String name, IDataType type);
+	
+	IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions);
+	
+	IVariableAssignment assignment(IVariableDeclaration var, IExpression exp);
+	
+	default ISelection selection(IExpression expression, IBlock block) {
+		return selection(expression, block, null);
 	}
-	ISelection createSelection(IExpression expression, IBlock block, IBlock alternativeBlock);
-
-	IReturn createReturn(IExpression expression);
 	
-	IProcedureCall createProcedureCall(IProcedure procedure, List<IExpression> args);
-	default IProcedureCall createProcedureCall(IProcedure procedure, IExpression ... args) {
-		return createProcedureCall(procedure, Arrays.asList(args));
+	ISelection selection(IExpression expression, IBlock block, IBlock alternativeBlock);
+
+	IReturn returnStatement(IExpression expression);
+	
+	IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args);
+	
+	default IProcedureCall procedureCall(IProcedure procedure, IExpression ... args) {
+		return procedureCall(procedure, Arrays.asList(args));
 	}
 	
 	@Override
@@ -40,5 +46,4 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 	default Iterator<IStatement> iterator() {
 		return getStatements().iterator();
 	}
-	
 }

@@ -3,12 +3,12 @@ package model.machine;
 import model.program.IDataType;
 
 public interface IValue {
-	IDataType getDataType();
+	IDataType getType();
 	Object getValue();
 	
 	IValue NULL = new IValue() {
 		@Override
-		public IDataType getDataType() {
+		public IDataType getType() {
 			return null;
 		}
 
@@ -31,7 +31,7 @@ public interface IValue {
 		}
 		
 		@Override
-		public IDataType getDataType() {
+		public IDataType getType() {
 			return IDataType.BOOLEAN;
 		}
 	};
@@ -44,7 +44,7 @@ public interface IValue {
 		}
 		
 		@Override
-		public IDataType getDataType() {
+		public IDataType getType() {
 			return IDataType.BOOLEAN;
 		}
 	};

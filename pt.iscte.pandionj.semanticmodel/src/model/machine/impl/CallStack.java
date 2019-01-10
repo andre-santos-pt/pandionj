@@ -10,7 +10,7 @@ import model.machine.IStackFrame;
 import model.machine.IValue;
 import model.program.IProcedure;
 
-public class CallStack implements ICallStack {
+class CallStack implements ICallStack {
 
 	private final ProgramState programState;
 	private IStackFrame[] stack;

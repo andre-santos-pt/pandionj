@@ -46,12 +46,6 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 	}
 
 	@Override
-	public int getArrayDimensions() {
-		// TODO Auto-generated method stub
-		return 0;
-	}
-
-	@Override
 	public boolean isReference() {
 		return false;
 	}

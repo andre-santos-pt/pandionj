@@ -1,5 +1,7 @@
 package model.program;
 
+import model.machine.IValue;
+
 // TODO
 public interface IConstantDeclaration extends IVariableDeclaration {
 	@Override
@@ -9,5 +11,5 @@ public interface IConstantDeclaration extends IVariableDeclaration {
 
 	IProgram getProgram();
 	
-	Object getValue();
+	IValue getValue();
 }

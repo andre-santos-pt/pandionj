@@ -2,6 +2,8 @@ package model.machine;
 
 import java.util.List;
 
+import model.program.IArrayType;
+import model.program.IDataType;
 import model.program.ISourceElement;
 
 public interface IProgramState {
@@ -13,6 +15,8 @@ public interface IProgramState {
 	
 	IValue getValue(String value);
 	IValue getValue(Object object);
+	
+	IArray getArray(IDataType baseType, int length);
 	
 	void execute();
 	
