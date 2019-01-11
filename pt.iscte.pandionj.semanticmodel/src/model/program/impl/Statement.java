@@ -1,18 +1,19 @@
 package model.program.impl;
 
+import model.program.IBlock;
 import model.program.IStatement;
 
 abstract class Statement extends SourceElement implements IStatement {
-	private final Block parent;
+	private final IBlock parent;
 	
-	public Statement(Block parent) {
+	public Statement(IBlock parent) {
 		this.parent = parent;
 		if(parent != null)
 			parent.addStatement(this);
 	}
 	
 	@Override
-	public Block getParent() {
+	public IBlock getParent() {
 		return parent;
 	}
 

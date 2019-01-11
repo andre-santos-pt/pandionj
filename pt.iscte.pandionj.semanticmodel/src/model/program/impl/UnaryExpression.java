@@ -2,9 +2,9 @@ package model.program.impl;
 
 import model.machine.IStackFrame;
 import model.machine.IValue;
+import model.program.IBinaryOperator;
 import model.program.IDataType;
 import model.program.IExpression;
-import model.program.IBinaryOperator;
 import model.program.IUnaryExpression;
 
 public class UnaryExpression extends SourceElement implements IUnaryExpression {

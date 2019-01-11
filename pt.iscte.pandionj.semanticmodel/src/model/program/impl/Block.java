@@ -8,6 +8,7 @@ import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
+import model.program.ILoop;
 import model.program.IProcedure;
 import model.program.IProcedureCall;
 import model.program.IReturn;
@@ -42,7 +43,8 @@ class Block extends SourceElement implements IBlock{
 		return Collections.unmodifiableList(statements);
 	}
 	
-	void addStatement(IStatement statement) {
+	public void addStatement(IStatement statement) {
+		assert statement != null;
 		statements.add(statement);
 	}
 
@@ -72,6 +74,11 @@ class Block extends SourceElement implements IBlock{
 	}
 
 	@Override
+	public ILoop loop(IExpression guard) {
+		return new Loop(this, guard);
+	}
+
+	@Override
 	public IReturn returnStatement(IExpression expression) {
 		return new Return(this, expression);
 	}
@@ -88,5 +95,4 @@ class Block extends SourceElement implements IBlock{
 			text += s + "; ";
 		return text + "}";
 	}
-
 }

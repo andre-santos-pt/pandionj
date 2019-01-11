@@ -8,7 +8,14 @@ import model.machine.ICallStack;
 
 public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterable<IStatement> {
 	IBlock getParent();
+	
+	default boolean isProcedure() {
+		return getParent() == null;
+	}
+	
 	List<IStatement> getStatements();
+	
+	void addStatement(IStatement statement);
 	
 	default boolean isEmpty() {
 		return getStatements().isEmpty();
@@ -28,6 +35,8 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 	
 	ISelection selection(IExpression expression, IBlock block, IBlock alternativeBlock);
 
+	ILoop loop(IExpression guard);
+	
 	IReturn returnStatement(IExpression expression);
 	
 	IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args);
@@ -46,4 +55,5 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 	default Iterator<IStatement> iterator() {
 		return getStatements().iterator();
 	}
+	
 }

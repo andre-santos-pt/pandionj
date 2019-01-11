@@ -1,9 +1,9 @@
 import model.machine.impl.ProgramState;
 import model.program.IBinaryExpression;
+import model.program.IBinaryOperator;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IFactory;
-import model.program.IBinaryOperator;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IVariableDeclaration;

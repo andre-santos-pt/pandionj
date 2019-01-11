@@ -93,4 +93,15 @@ class Program extends SourceElement implements IProgram {
 			problems.add(new Problem(this, "No main procedure is defined"));
 		return problems;
 	}
+	
+	@Override
+	public String toString() {
+		String text = "";
+		for (IProcedure p : procedures) {
+			text += p + "\n\n";
+		}
+		text = text.replaceAll(";", ";\n");
+		text = text.replaceAll("\\{", "{\n");
+		return text;
+	}
 }

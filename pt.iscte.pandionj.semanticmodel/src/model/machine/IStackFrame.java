@@ -3,7 +3,6 @@ package model.machine;
 import java.util.List;
 import java.util.Map;
 
-import model.program.IArrayType;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;

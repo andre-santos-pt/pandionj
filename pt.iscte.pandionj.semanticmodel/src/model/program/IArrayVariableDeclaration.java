@@ -7,6 +7,11 @@ public interface IArrayVariableDeclaration extends IVariableDeclaration {
 
 	int getArrayDimensions();
 
+	IArrayLengthExpression lengthExpression(List<IExpression> indexes);
+	default IArrayLengthExpression lengthExpression(IExpression ... indexes) {
+		return lengthExpression(Arrays.asList(indexes));
+	}
+	
 	IArrayElementExpression elementExpression(List<IExpression> indexes);
 	default IArrayElementExpression elementExpression(IExpression ... indexes) {
 		return elementExpression(Arrays.asList(indexes));
@@ -16,4 +21,5 @@ public interface IArrayVariableDeclaration extends IVariableDeclaration {
 	default IArrayElementAssignment elementAssignment(IExpression expression, IExpression ... indexes) {
 		return elementAssignment(expression, Arrays.asList(indexes));
 	}
+	
 }

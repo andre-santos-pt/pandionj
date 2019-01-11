@@ -7,12 +7,12 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import model.machine.impl.ProgramState;
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
+import model.program.ILoop;
 import model.program.IProcedure;
 import model.program.IProcedureCall;
 import model.program.IReturn;
@@ -105,8 +105,7 @@ class Procedure extends SourceElement implements IProcedure {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
-		return name + "()";
+		return name + "()" + body;
 	}
 
 	@Override
@@ -116,9 +115,15 @@ class Procedure extends SourceElement implements IProcedure {
 
 	@Override
 	public List<IStatement> getStatements() {
-		return body == null ? ImmutableList.of() : body.getStatements();
+		return body.getStatements();
 	}	
 
+	@Override
+	public void addStatement(IStatement statement) {
+		body.addStatement(statement);
+		
+	}
+	
 	private class ParamsView extends AbstractList<IVariableDeclaration> {
 		@Override
 		public IVariableDeclaration get(int index) {
@@ -172,6 +177,11 @@ class Procedure extends SourceElement implements IProcedure {
 		return body.selection(expression, block, alternativeBlock);
 	}
 
+	@Override
+	public ILoop loop(IExpression guard) {
+		return body.loop(guard);
+	}
+	
 	@Override
 	public IReturn returnStatement(IExpression expression) {
 		return body.returnStatement(expression);

@@ -5,7 +5,11 @@ public interface IOperator {
 	
 	
 	IBinaryOperator ADD = ArithmeticOperator.ADD;
+	
+	IBinaryOperator EQUAL = RelationalOperator.EQUAL;
+	IBinaryOperator DIFFERENT = RelationalOperator.DIFFERENT;
 	IBinaryOperator GREATER = RelationalOperator.GREATER;
+	
 	
 	IUnaryOperator NOT = UnaryOperator.NOT;
 	IBinaryOperator AND = LogicalOperator.AND;

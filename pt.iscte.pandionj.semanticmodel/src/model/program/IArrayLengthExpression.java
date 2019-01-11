@@ -3,21 +3,17 @@ package model.program;
 import java.util.List;
 
 import model.machine.IArray;
-import model.machine.ICallStack;
 import model.machine.IStackFrame;
 import model.machine.IValue;
 
-public interface IArrayElementAssignment extends IVariableAssignment {
-	List<IExpression> getIndexes(); // not null, length == getDimensions
-	default int getDimensions() {
-		return getIndexes().size();
-	}
+public interface IArrayLengthExpression extends IExpression {
 	
 	IArrayVariableDeclaration getVariable();
+
+	List<IExpression> getIndexes(); // size() >= 1
 	
 	@Override
-	default void execute(ICallStack callStack) {
-		IStackFrame frame = callStack.getTopFrame();
+	default IValue evaluate(IStackFrame frame) {
 		IArray array = (IArray) frame.getVariable(getVariable().getIdentifier());
 		
 		List<IExpression> indexes = getIndexes();
@@ -25,6 +21,7 @@ public interface IArrayElementAssignment extends IVariableAssignment {
 		for(int i = 0; i < indexes.size()-1; i++) {
 			v = array.getElement((int) indexes.get(i).evaluate(frame).getValue());
 		}
-		((IArray) v).setElement((int) indexes.get(indexes.size()-1).evaluate(frame).getValue(), getExpression().evaluate(frame));
+
+		return frame.getValue(((IArray) v).getLength());
 	}
 }

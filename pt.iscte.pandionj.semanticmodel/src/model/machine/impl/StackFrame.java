@@ -9,7 +9,6 @@ import model.machine.IArray;
 import model.machine.ICallStack;
 import model.machine.IStackFrame;
 import model.machine.IValue;
-import model.program.IArrayType;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;

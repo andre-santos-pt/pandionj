@@ -2,7 +2,6 @@ package model.machine;
 
 import java.util.List;
 
-import model.program.IArrayType;
 import model.program.IDataType;
 import model.program.ISourceElement;
 

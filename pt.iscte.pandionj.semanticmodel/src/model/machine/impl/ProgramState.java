@@ -9,7 +9,6 @@ import model.machine.ICallStack;
 import model.machine.IMemorySegment;
 import model.machine.IProgramState;
 import model.machine.IValue;
-import model.program.IArrayType;
 import model.program.IDataType;
 import model.program.IProcedure;
 import model.program.IProcedureCall;

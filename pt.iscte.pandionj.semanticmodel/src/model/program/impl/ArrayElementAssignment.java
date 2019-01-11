@@ -6,13 +6,14 @@ import com.google.common.collect.ImmutableList;
 
 import model.program.IArrayElementAssignment;
 import model.program.IArrayVariableDeclaration;
+import model.program.IBlock;
 import model.program.IExpression;
 
 public class ArrayElementAssignment extends VariableAssignment implements IArrayElementAssignment {
 
 	private ImmutableList<IExpression> indexes;
 
-	public ArrayElementAssignment(Block parent, IArrayVariableDeclaration variable, List<IExpression> indexes, IExpression expression) {
+	public ArrayElementAssignment(IBlock parent, IArrayVariableDeclaration variable, List<IExpression> indexes, IExpression expression) {
 		super(parent, variable, expression);
 		this.indexes = ImmutableList.copyOf(indexes);
 	}

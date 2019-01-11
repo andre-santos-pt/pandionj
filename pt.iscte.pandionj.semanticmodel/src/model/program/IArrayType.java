@@ -40,5 +40,10 @@ public interface IArrayType extends IDataType {
 		public boolean sameAs(IArrayType type) {
 			return id.equals(type.getIdentifier());
 		}
+		
+		@Override
+		public String toString() {
+			return id;
+		}
 	}
 }
