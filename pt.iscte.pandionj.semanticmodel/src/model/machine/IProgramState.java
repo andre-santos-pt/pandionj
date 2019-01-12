@@ -3,21 +3,28 @@ package model.machine;
 import java.util.List;
 
 import model.program.IDataType;
+import model.program.IProcedure;
 import model.program.ISourceElement;
 
 public interface IProgramState {
 	ICallStack getCallStack();
-	List<IMemorySegment> getHeapMemory();
-	ISourceElement getInstructionPointer();
+	List<IValue> getHeapMemory();
 	int getCallStackMaximum();
-	// getHeapMemory()?
-	
-	IValue getValue(String value);
+	ISourceElement getInstructionPointer();
+	IValue getValue(String literal);
 	IValue getValue(Object object);
 	
-	IArray getArray(IDataType baseType, int length);
+	IArray allocateArray(IDataType baseType, int length);
 	
-	void execute();
+	IExecutionData execute(IProcedure procedureName, String ... args);
+//	default IExecutionData execute(String procedureName, String ... args) {
+//		
+//	}
 	
-	// IExecutionData getExecutionData()
+	interface IListener {
+		default void programEnded() { }
+		default void instructionPointerMoved(ISourceElement currentInstruction) { }
+		default void addedToHeap(IValue value) { }
+		default void removedFromHeap(IValue value) { }
+	}
 }

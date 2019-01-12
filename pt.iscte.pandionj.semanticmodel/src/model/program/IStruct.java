@@ -2,6 +2,7 @@ package model.program;
 
 import com.google.common.collect.ImmutableList;
 
+// TODO
 public interface IStruct extends IDataType, ISourceElement {
 	ImmutableList<IVariableDeclaration> getVariables();
 	ImmutableList<IProcedure> getProcedures();

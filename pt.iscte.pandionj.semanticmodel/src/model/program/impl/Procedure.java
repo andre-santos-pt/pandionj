@@ -5,8 +5,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
@@ -54,7 +52,7 @@ class Procedure extends SourceElement implements IProcedure {
 	@Override
 	public IVariableDeclaration addParameter(String name, IDataType type) {
 		for(IVariableDeclaration v : variables)
-			assert !v.getIdentifier().equals(name) : "duplicate variable name";
+			assert !v.getIdentifier().equals(name) : "duplicate variable name"; // TODO to semantic error
 
 			IVariableDeclaration param = type instanceof IArrayType ?
 					new ArrayVariableDeclaration(null, name, type, false, ((IArrayType) type).getDimensions()) :

@@ -1,3 +1,4 @@
+import model.machine.IExecutionData;
 import model.machine.impl.ProgramState;
 import model.program.IBinaryExpression;
 import model.program.IBinaryOperator;
@@ -25,13 +26,17 @@ public class TestMax {
 		elseblock.returnStatement(bParam.expression());
 		maxFunc.selection(e, ifblock, elseblock);
 		
+		
 		IProcedure main = program.createProcedure("main", IDataType.INT);
-		program.setMainProcedure(main);
+//		program.setMainProcedure(main);
 		IVariableDeclaration mVar = main.variableDeclaration("m", IDataType.INT);
 		mVar.assignment(maxFunc.call(factory.literal(2), factory.literal(1)));
 
 		ProgramState state = new ProgramState(program);
-		state.execute();
+		
+//		state.enterInteractiveMode();
+		IExecutionData data = state.execute(maxFunc, "2","-1");
+		System.out.println(data);
 	}
 
 }

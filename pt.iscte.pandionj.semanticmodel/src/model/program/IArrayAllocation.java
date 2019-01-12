@@ -8,7 +8,13 @@ import model.machine.IStackFrame;
 public interface IArrayAllocation extends IExpression {
 	List<IExpression> getDimensions();
 	
-	default IArray evaluate(IStackFrame frame) {
-		return frame.getArray(getType(), (int) getDimensions().get(0).evaluate(frame).getValue()); // FIXME
+	@Override
+	default boolean isOperation() {
+		return false;
+	}
+	
+	default IArray evaluate(IStackFrame frame) throws ExecutionError {
+		int dim = (int) frame.evaluate(getDimensions().get(0)).getValue();
+		return frame.getArray(getType(), dim); // FIXME
 	}
 }

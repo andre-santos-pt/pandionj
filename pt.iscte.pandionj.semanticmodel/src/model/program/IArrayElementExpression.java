@@ -13,26 +13,15 @@ public interface IArrayElementExpression extends IVariableExpression {
 	List<IExpression> getIndexes(); // size() >= 1
 	
 	@Override
-	default IValue evaluate(IStackFrame frame) {
+	default IValue evaluate(IStackFrame frame) throws ExecutionError {
 		IValue variable = frame.getVariable(getVariable().getIdentifier());
 		IValue element = variable;
 		for(IExpression e : getIndexes()) {
-			IValue i = e.evaluate(frame);
-			if((int) i.getValue() < 0)
-				throw new ExecutionError() {
-					
-					@Override
-					public ISourceElement getSourceElement() {
-						// TODO Auto-generated method stub
-						return null;
-					}
-					
-					@Override
-					public String getMessage() {
-						return "negative";
-					}
-				};
-			element = ((IArray) element).getElement((int) i.getValue());
+			IValue i = frame.evaluate(e);
+			int index = (int) i.getValue();
+			if(index < 0)
+				throw new ExecutionError(e, "negative array index", index);
+			element = ((IArray) element).getElement(index);
 		}
 		return element;
 	}

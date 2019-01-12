@@ -13,25 +13,25 @@ public interface ILoop extends IConditionalStatement, IBlock {
 	boolean executeBlockFirst();
 
 	@Override
-	default void execute(ICallStack callStack) {
+	default void execute(ICallStack callStack) throws ExecutionError {
 		if(executeBlockFirst())
 			if(!executeLoopBlock(getBlock(), callStack))
 				return;
 
-		while(getGuard().evaluate(callStack.getTopFrame()).equals(IValue.TRUE)) {
+		while(callStack.evaluate(getGuard()).equals(IValue.TRUE)) {
 			if(!executeLoopBlock(getBlock(), callStack))
 				return;
 		}
 	}
 
-	public static boolean executeLoopBlock(IBlock block, ICallStack callStack) {
+	public static boolean executeLoopBlock(IBlock block, ICallStack callStack) throws ExecutionError {
 		for(IStatement s : block) {
 			if(s instanceof IBreak)
 				return false;
 			else if(s instanceof IContinue)
 				return true;
 			else 
-				s.execute(callStack);
+				callStack.getTopFrame().execute(s);
 		}
 		return true;
 	}
@@ -40,13 +40,7 @@ public interface ILoop extends IConditionalStatement, IBlock {
 
 	IContinue continueStatement();
 	
-	public interface IBreak extends IStatement {
+	public interface IBreak extends IStatement { }
 
-	}
-
-
-	public interface IContinue extends IStatement {
-		
-	}
-
+	public interface IContinue extends IStatement { }
 }

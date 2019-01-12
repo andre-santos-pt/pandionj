@@ -16,5 +16,6 @@ public interface IExecutable {
 		return validate().isEmpty();
 	}
 	
-	default void execute(ICallStack callStack) {  }
+	// ARCH: only called my stack frame
+	default void execute(ICallStack callStack) throws ExecutionError { }
 }

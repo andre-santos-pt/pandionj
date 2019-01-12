@@ -16,15 +16,18 @@ public interface IArrayElementAssignment extends IVariableAssignment {
 	IArrayVariableDeclaration getVariable();
 	
 	@Override
-	default void execute(ICallStack callStack) {
+	default void execute(ICallStack callStack) throws ExecutionError {
 		IStackFrame frame = callStack.getTopFrame();
 		IArray array = (IArray) frame.getVariable(getVariable().getIdentifier());
 		
 		List<IExpression> indexes = getIndexes();
 		IValue v = array;
 		for(int i = 0; i < indexes.size()-1; i++) {
-			v = array.getElement((int) indexes.get(i).evaluate(frame).getValue());
+			int index = (int) frame.evaluate(indexes.get(i)).getValue();
+			v = array.getElement(index);
 		}
-		((IArray) v).setElement((int) indexes.get(indexes.size()-1).evaluate(frame).getValue(), getExpression().evaluate(frame));
+		int index = (int) frame.evaluate(indexes.get(indexes.size()-1)).getValue();
+		IValue value = frame.evaluate(getExpression());
+		((IArray) v).setElement(index, value);
 	}
 }

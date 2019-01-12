@@ -1,7 +1,5 @@
 package model.program.impl;
 
-import model.machine.IStackFrame;
-import model.machine.IValue;
 import model.program.IBinaryExpression;
 import model.program.IBinaryOperator;
 import model.program.IDataType;
@@ -22,13 +20,6 @@ class BinaryExpression extends SourceElement implements IBinaryExpression {
 		this.operator = operator;
 		this.left = left;
 		this.right = right;
-	}
-
-	@Override
-	public IValue evaluate(IStackFrame frame) {
-		IValue leftValue = left.evaluate(frame);
-		IValue rightValue = right.evaluate(frame);
-		return operator.apply(leftValue, rightValue);
 	}
 
 	@Override
@@ -62,6 +53,4 @@ class BinaryExpression extends SourceElement implements IBinaryExpression {
 				left.getType().getIdentifier().equals("boolean") && 
 				right.getType().getIdentifier().equals("boolean");
 	}
-	
-	
 }

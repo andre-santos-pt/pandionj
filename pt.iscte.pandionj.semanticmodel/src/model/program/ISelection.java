@@ -7,21 +7,16 @@ public interface ISelection extends IConditionalStatement {
 	// may be null
 	IBlock getAlternativeBlock();
 	
-//	@Override
-//	default String getDescription() {
-//		return "Selection: " + getGuard().getSourceCode() + getAlternativeBlock() == null ? "" : " Alternative: " + getAlternativeBlock();
-//	}
-	
 	default boolean hasAlternativeBlock() {
 		return getAlternativeBlock() != null;
 	}
 	
 	@Override
-	default void execute(ICallStack callStack) {
-		if(getGuard().evaluate(callStack.getTopFrame()).equals(IValue.TRUE))
-			getBlock().execute(callStack);
+	default void execute(ICallStack callStack) throws ExecutionError {
+		IValue guard = callStack.evaluate(getGuard());
+		if(guard.equals(IValue.TRUE))
+			callStack.execute(getBlock());
 		else if(hasAlternativeBlock())
-			getAlternativeBlock().execute(callStack);
-		
+			callStack.execute(getAlternativeBlock());
 	}
 }

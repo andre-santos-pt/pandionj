@@ -13,13 +13,19 @@ public interface IArrayLengthExpression extends IExpression {
 	List<IExpression> getIndexes(); // size() >= 1
 	
 	@Override
-	default IValue evaluate(IStackFrame frame) {
+	default boolean isOperation() {
+		return false;
+	}
+	
+	@Override
+	default IValue evaluate(IStackFrame frame) throws ExecutionError {
 		IArray array = (IArray) frame.getVariable(getVariable().getIdentifier());
 		
 		List<IExpression> indexes = getIndexes();
 		IValue v = array;
 		for(int i = 0; i < indexes.size()-1; i++) {
-			v = array.getElement((int) indexes.get(i).evaluate(frame).getValue());
+			int index = (int) frame.evaluate(indexes.get(i)).getValue();
+			v = array.getElement(index);
 		}
 
 		return frame.getValue(((IArray) v).getLength());

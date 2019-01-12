@@ -7,9 +7,11 @@ public interface IProgram extends IExecutable, ISourceElement {
 	Collection<IProcedure> getProcedures();
 	IProcedure createProcedure(String name, IDataType returnType);
 
-	void setMainProcedure(IProcedure procedure);
-	IProcedure getMainProcedure(); // return is contained in getProcedures
+//	void setMainProcedure(IProcedure procedure);
+//	IProcedure getMainProcedure(); // return is contained in getProcedures
 	Collection<IStruct> getStructs();
 	Collection<IDataType> getDataTypes();
 	IDataType getDataType(String id);
+	
+
 }

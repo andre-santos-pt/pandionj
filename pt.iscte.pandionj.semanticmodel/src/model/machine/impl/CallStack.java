@@ -1,5 +1,6 @@
 package model.machine.impl;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +17,11 @@ class CallStack implements ICallStack {
 	private IStackFrame[] stack;
 	private int next;
 
+	private List<ICallStack.IListener> listeners = new ArrayList<>(5);
+	public void addListener(IListener listener) {
+		listeners.add(listener);
+	}
+	
 	public CallStack(ProgramState programState) {
 		this.programState = programState;
 		stack = new IStackFrame[programState.getCallStackMaximum()];
@@ -39,25 +45,47 @@ class CallStack implements ICallStack {
 
 	@Override
 	public IStackFrame getTopFrame() {
-		return next == 0 ? null : stack[next-1];
+		if(getSize() == 0)
+			throw new RuntimeException("empty call stack");
+		return stack[next-1];
 	}
 
 	@Override
 	public IStackFrame newFrame(IProcedure procedure, List<IValue> args) {
 		if(next == stack.length)
 			throw new RuntimeException("stack overflow");
-		System.out.println("-> " + procedure);
-		StackFrame newFrame = new StackFrame(this, getTopFrame(), procedure, args); 
+
+		IStackFrame parent = getSize() == 0 ? null : getTopFrame();
+		StackFrame newFrame = new StackFrame(this, parent, procedure, args); 
 		stack[next] = newFrame;
 		next++;
+		
+		for(IListener l : listeners)
+			l.stackFrameCreated(newFrame);
+		
 		return newFrame;
 	}
 
 	@Override
 	public void terminateTopFrame(IValue returnValue) {
 		next--;
-		IProcedure procedure = stack[next].getProcedure();
-		System.out.println("/ " + procedure + " -> " + returnValue);
+		for(IListener l : listeners)
+			l.stackFrameTerminated(stack[next], returnValue);
+		
+//		IProcedure procedure = stack[next].getProcedure();
+//		stack[next].terminateFrame();
+//		System.out.println("/ " + procedure + " -> " + returnValue);
 
+	}
+	
+	@Override
+	public String toString() {
+		String text = "";
+		for(int i = 0; i < next; i++) {
+			if(i != 0)
+				text += " -> ";
+			text += stack[i].getProcedure().getIdentifier() + "()";
+		}
+		return text;
 	}
 }

@@ -3,6 +3,7 @@ package model.machine;
 import java.util.List;
 import java.util.Map;
 
+import model.program.ExecutionError;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
@@ -31,14 +32,35 @@ public interface IStackFrame {
 	
 	IStackFrame newChildFrame(IProcedure procedure, List<IValue> args);
 	
-	void terminateFrame(IValue returnValue);
+	void terminateFrame();
 	
 	IValue getValue(String literal);
 	IValue getValue(Object object);
 
 	IArray getArray(IDataType baseType, int length);
 	
-	void execute(IStatement statement);
-	void evaluate(IExpression expression);
+	void execute(IStatement statement) throws ExecutionError;
+	
+	IValue evaluate(IExpression expression) throws ExecutionError;
+	
+	void addListener(IListener listener);
+	
+	interface IListener {
+		default void variableAdded(String identifier, IDataType type) { }
+		
+		default void variableModified(String identifier, IDataType type, IValue newValue) { }
+		
+		default void statementExecutionStart(IStatement statement) { }
+
+		default void statementExecutionEnd(IStatement statement) { }
+
+		default void expressionEvaluationStart(IExpression expression) { }
+
+		default void expressionEvaluationEnd(IExpression expression, IValue result) { }
+		
+		default void started(IValue result) { }
+		
+		default void terminated(IValue result) { }
+	}
 	
 }

@@ -18,7 +18,7 @@ import model.program.IStruct;
 
 class Program extends SourceElement implements IProgram {
 	private List<IProcedure> procedures;
-	private IProcedure mainProcedure;
+//	private IProcedure mainProcedure;
 	private Map<String, IDataType> types;
 	
 	public Program() {
@@ -58,17 +58,17 @@ class Program extends SourceElement implements IProgram {
 //		return false;
 //	}
 	
-	@Override
-	public IProcedure getMainProcedure() {
-		return mainProcedure;
-	}
+//	@Override
+//	public IProcedure getMainProcedure() {
+//		return mainProcedure;
+//	}
 	
-	public void setMainProcedure(IProcedure mainProcedure) {
-		assert mainProcedure != null : "cannot be null";
-		assert procedures.contains(mainProcedure) : "main procedure must be added to the program";
-		
-		this.mainProcedure = mainProcedure;
-	}
+//	public void setMainProcedure(IProcedure mainProcedure) {
+//		assert mainProcedure != null : "cannot be null";
+//		assert procedures.contains(mainProcedure) : "main procedure must be added to the program";
+//		
+//		this.mainProcedure = mainProcedure;
+//	}
 
 	@Override
 	public Collection<IStruct> getStructs() {
@@ -89,8 +89,8 @@ class Program extends SourceElement implements IProgram {
 	@Override
 	public List<IProblem> validate() {
 		List<IProblem> problems = new ArrayList<IProblem>();
-		if(mainProcedure == null)
-			problems.add(new Problem(this, "No main procedure is defined"));
+//		if(mainProcedure == null)
+//			problems.add(new Problem(this, "No main procedure is defined"));
 		return problems;
 	}
 	

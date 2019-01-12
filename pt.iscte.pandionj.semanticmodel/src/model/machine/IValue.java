@@ -19,7 +19,7 @@ public interface IValue {
 		
 		@Override
 		public String toString() {
-			return "NULL";
+			return "null";
 		}
 	};
 	
@@ -34,6 +34,11 @@ public interface IValue {
 		public IDataType getType() {
 			return IDataType.BOOLEAN;
 		}
+		
+		@Override
+		public String toString() {
+			return "true";
+		}
 	};
 	
 	IValue FALSE = new IValue() {
@@ -47,5 +52,12 @@ public interface IValue {
 		public IDataType getType() {
 			return IDataType.BOOLEAN;
 		}
+		
+		@Override
+		public String toString() {
+			return "false";
+		}
 	};
+	
+	
 }

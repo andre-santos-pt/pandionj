@@ -31,7 +31,7 @@ public class Test {
 		proc.returnStatement(rVar.expression());
 		
 		IProcedure main = program.createProcedure("main", IDataType.VOID);
-		program.setMainProcedure(main);
+//		program.setMainProcedure(main);
 		IProcedureCall call = factory.procedureCall(proc, factory.literal(2));
 		IVariableDeclaration var2 = main.variableDeclaration("b", IDataType.INT);	
 		IVariableAssignment ass3 = var2.assignment(call);
@@ -39,7 +39,7 @@ public class Test {
 		
 		ProgramState state = new ProgramState(program);
 		
-		state.execute();
+		state.execute(main);
 
 	}
 

@@ -46,9 +46,9 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 	}
 	
 	@Override
-	default void execute(ICallStack stack) {
+	default void execute(ICallStack stack) throws ExecutionError {
 		for(IStatement s : getStatements())
-			stack.getTopFrame().execute(s);
+			stack.execute(s);
 	}
 	
 	@Override

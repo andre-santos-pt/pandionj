@@ -11,22 +11,28 @@ public interface IProcedureCall extends IExpression, IStatement {
 	IProcedure getProcedure();
 	List<IExpression> getArguments();
 	
+	default boolean isOperation() {
+		return false;
+	}
+	
+	
 	@Override
-	default void execute(ICallStack callStack) {
+	default void execute(ICallStack callStack) throws ExecutionError {
 		List<IValue> args = new ArrayList<>();
-		for(int i = 0; i < getProcedure().getNumberOfParameters(); i++)
-			args.add(getArguments().get(i).evaluate(callStack.getTopFrame()));
-		
+		for(int i = 0; i < getProcedure().getNumberOfParameters(); i++) {
+			IValue arg = callStack.evaluate(getArguments().get(i));
+			args.add(arg);
+		}
 		IStackFrame newFrame = callStack.newFrame(getProcedure(), args);
 		
-		getProcedure().execute(callStack);
+		newFrame.execute(getProcedure());
 		IValue returnValue = newFrame.getReturn();
 		callStack.terminateTopFrame(returnValue);
 	}
 	
 	@Override
-	default IValue evaluate(IStackFrame stackFrame) {
-		execute(stackFrame.getCallStack());
+	default IValue evaluate(IStackFrame stackFrame) throws ExecutionError {
+		stackFrame.execute(this);
 		return stackFrame.getReturn();
 	}
 }

@@ -14,11 +14,10 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 	
 	
 	IBlock getBody();
-//	void setBody(IBlock body);
 	
-//	default boolean isDeclaration() {
-//		return getBody() == null;
-//	}
+	default boolean isDeclaration() {
+		return getBody() == null;
+	}
 	
 	IDataType getReturnType();
 	
@@ -41,15 +40,11 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 	
 	
 	@Override
-	default void execute(ICallStack stack) {
-		for(IStatement s : this)
-			stack.getTopFrame().execute(s);
-//		getBody().execute(stack);
-//		System.out.println(toString() + " -> " + stack.getReturn());
+	default void execute(ICallStack stack) throws ExecutionError {
+		stack.execute(getBody());
+//		stack.getTopFrame().terminateFrame();
 	}
 	
-	
-//	IVariableDeclaration declareVariable(String name, IDataType type);
 	
 	IProcedureCall call(List<IExpression> args);
 	default IProcedureCall call(IExpression ... args) {

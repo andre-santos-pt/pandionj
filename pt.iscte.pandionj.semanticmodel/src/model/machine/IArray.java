@@ -7,4 +7,8 @@ public interface IArray extends IValue {
 	int getLength();
 	IValue getElement(int i);
 	void setElement(int i, IValue value);
+	
+	interface IListener {
+		void elementChanged(int index, IValue newValue);
+	}
 }

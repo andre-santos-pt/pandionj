@@ -29,6 +29,7 @@ public interface IFactory {
 	default IArrayAllocation arrayAllocation(IDataType type, IExpression ... dimensions) {
 		return arrayAllocation(type, Arrays.asList(dimensions));
 	}
+	
 	IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args);
 	default IProcedureCall procedureCall(IProcedure procedure, IExpression ... args) {
 		return procedureCall(procedure, Arrays.asList(args));
