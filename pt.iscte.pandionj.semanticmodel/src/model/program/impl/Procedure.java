@@ -103,7 +103,14 @@ class Procedure extends SourceElement implements IProcedure {
 
 	@Override
 	public String toString() {
-		return name + "()" + body;
+		String params = "";
+		for(IVariableDeclaration p : paramsView) {
+			if(!params.isEmpty())
+				params += ", ";
+			params += p.getIdentifier();
+		}
+			
+		return name + "(" + params + ")" + body;
 	}
 
 	@Override

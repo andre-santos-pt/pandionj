@@ -20,6 +20,7 @@ public interface ICallStack {
 	
 	void terminateTopFrame(IValue returnValue);
 	
+	IStackFrame getLastTerminatedFrame();
 	
 	default void execute(IStatement statement) throws ExecutionError {
 		getTopFrame().execute(statement);
@@ -42,5 +43,7 @@ public interface ICallStack {
 	}
 
 	void addListener(IListener listener);
+
+	
 	
 }

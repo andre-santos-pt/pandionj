@@ -10,11 +10,10 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 	boolean isReference();
 	boolean isConstant();
 	
-	/*
+	
 	default IVariableRole getRole() {
 		return IVariableRole.NONE;
 	}
-	*/
 	
 	IVariableAssignment assignment(IExpression exp);
 	

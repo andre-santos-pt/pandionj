@@ -6,6 +6,7 @@ import java.util.Map;
 
 import model.machine.ICallStack;
 import model.machine.IExecutionData;
+import model.machine.IValue;
 import model.program.IProcedure;
 
 public class ExecutionData implements IExecutionData  {
@@ -13,6 +14,8 @@ public class ExecutionData implements IExecutionData  {
 	private int callCount = 0;
 	private int operationCount = 0;
 	private int callStackMax = 0;
+	
+	private IValue returnValue = IValue.NULL;
 	
 	@Override
 	public Map<IProcedure, Integer> getAssignmentData() {
@@ -25,6 +28,11 @@ public class ExecutionData implements IExecutionData  {
 		for(Integer i : assignmentCount.values())
 			s += i;
 		return s;
+	}
+	
+	@Override
+	public int getTotalOperations() {
+		return operationCount;
 	}
 	
 	@Override
@@ -61,5 +69,25 @@ public class ExecutionData implements IExecutionData  {
 	
 	public void countOperation() {
 		operationCount++;
+	}
+	
+	@Override
+	public IValue getReturnValue() {
+		return returnValue;
+	}
+	
+	public void setReturnValue(IValue value) {
+		returnValue = value;
+	}
+
+	@Override
+	public IValue getVariableValue(String id) {
+		return state.get(id);
+	}
+	
+	private Map<String, IValue> state;
+	
+	public void setVariableState(Map<String, IValue> variables) {
+		state = variables;
 	}
 }

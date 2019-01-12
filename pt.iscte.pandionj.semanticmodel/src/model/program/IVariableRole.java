@@ -7,5 +7,10 @@ public interface IVariableRole {
 		public String getName() {
 			return "no role";
 		}
+		
+		@Override
+		public String toString() {
+			return getName();
+		}
 	};
 }

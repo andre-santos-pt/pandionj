@@ -51,6 +51,12 @@ class CallStack implements ICallStack {
 	}
 
 	@Override
+	public IStackFrame getLastTerminatedFrame() {
+		assert stack[next] != null;
+		return stack[next];
+	}
+	
+	@Override
 	public IStackFrame newFrame(IProcedure procedure, List<IValue> args) {
 		if(next == stack.length)
 			throw new RuntimeException("stack overflow");

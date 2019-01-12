@@ -124,6 +124,8 @@ public class ProgramState implements IProgramState {
 			@Override
 			public void stackFrameTerminated(IStackFrame stackFrame, IValue returnValue) {
 				System.out.println(stackFrame.getProcedure() + " returns " + returnValue);
+				data.setVariableState(stackFrame.getVariables());
+				data.setReturnValue(returnValue);
 			}
 		});
 		

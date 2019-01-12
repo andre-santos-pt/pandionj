@@ -50,4 +50,18 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 	default IProcedureCall call(IExpression ... args) {
 		return call(Arrays.asList(args));
 	}
+	
+	default void accept(IVisitor visitor) {
+		for(IStatement s : getStatements()) {
+			if(s instanceof IVariableAssignment)
+				visitor.visitVariableAssignment((IVariableAssignment) s);
+			else if(s instanceof IArrayElementAssignment)
+				visitor.visitArrayElementAssignment((IArrayElementAssignment) s);
+		}
+	}
+	
+	interface IVisitor {
+		default void visitVariableAssignment(IVariableAssignment assignment) { }
+		default void visitArrayElementAssignment(IVariableAssignment assignment) { }
+	}
 }

@@ -3,16 +3,19 @@ package model.program.impl;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
+import model.program.IGatherer;
 import model.program.IProcedure;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 import model.program.IVariableExpression;
+import model.program.IVariableRole;
 
 class VariableDeclaration extends Statement implements IVariableDeclaration {
 
 	private final String name;
 	private final IDataType type;
 	private final boolean constant; // TODO final vars
+	private IVariableRole role;
 	
 	public VariableDeclaration(Block block, String name, IDataType type, boolean constant) {
 		super(block);
@@ -52,7 +55,7 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 	
 	@Override
 	public String toString() {
-		return "var " + name + " (" + type + ")";
+		return "var " + name + " (" + type + ", " + getRole() + ")";
 	}
 	
 	@Override
@@ -63,5 +66,16 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 	@Override
 	public IVariableExpression expression() {
 		return new VariableExpression(this);
+	}
+	
+	@Override
+	public IVariableRole getRole() {
+		if(role == null) {
+			if(IGatherer.isGatherer(this))
+				role = IGatherer.createGatherer(this);
+			else
+				role = IVariableRole.NONE;
+		}
+		return role;
 	}
 }

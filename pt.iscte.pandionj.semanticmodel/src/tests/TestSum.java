@@ -1,3 +1,9 @@
+package tests;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import model.machine.IExecutionData;
 import model.machine.impl.ProgramState;
 import model.program.IArrayType;
@@ -13,27 +19,30 @@ import model.program.impl.Factory;
 
 public class TestSum {
 
-	public static void main(String[] args) {
+	private static IProgram program;
+	private static IProcedure sumArrayProc;
+	private static IProcedure main;
+
+	@BeforeClass
+	public static void setup() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
+		program = factory.createProgram();
 		
-		IProcedure f = program.createProcedure("sum", IDataType.INT);
-		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) f.addParameter("v", new IArrayType.ValueTypeArray(IDataType.INT, 1));
+		sumArrayProc = program.createProcedure("sum", IDataType.INT);
+		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) sumArrayProc.addParameter("v", new IArrayType.ValueTypeArray(IDataType.INT, 1));
 		
-		IVariableDeclaration sVar = f.variableDeclaration("s", IDataType.INT);
+		IVariableDeclaration sVar = sumArrayProc.variableDeclaration("s", IDataType.INT);
 		sVar.assignment(factory.literal(0));
-		IVariableDeclaration iVar = f.variableDeclaration("i", IDataType.INT);
+		IVariableDeclaration iVar = sumArrayProc.variableDeclaration("i", IDataType.INT);
 		iVar.assignment(factory.literal(0));
 		
-		ILoop loop = f.loop(factory.binaryExpression(IOperator.DIFFERENT, iVar.expression(), vParam.lengthExpression()));
+		ILoop loop = sumArrayProc.loop(factory.binaryExpression(IOperator.DIFFERENT, iVar.expression(), vParam.lengthExpression()));
 		loop.assignment(sVar, factory.binaryExpression(IOperator.ADD, sVar.expression(), vParam.elementExpression(iVar.expression())));
 		loop.assignment(iVar, factory.binaryExpression(IOperator.ADD, iVar.expression(), factory.literal(1)));
-//		loop.continueStatement();
 		
-		f.returnStatement(sVar.expression());
+		sumArrayProc.returnStatement(sVar.expression());
 		
-		IProcedure main = program.createProcedure("main", IDataType.INT);
-//		program.setMainProcedure(main);
+		main = program.createProcedure("main", IDataType.INT);
 		
 		IArrayVariableDeclaration array = main.arrayDeclaration("test", IDataType.INT, 1);
 		array.assignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
@@ -42,13 +51,14 @@ public class TestSum {
 		array.elementAssignment(factory.literal(9), factory.literal(2));
 		
 		IVariableDeclaration mVar = main.variableDeclaration("s", IDataType.INT);
-		mVar.assignment(f.call(array.expression()));
-
-		ProgramState state = new ProgramState(program);
-		IExecutionData data = state.execute(main);
-		
-		System.out.println(data);
-		
+		mVar.assignment(sumArrayProc.call(array.expression()));
 	}
 
+	@Test
+	public void testSum() {
+		ProgramState state = new ProgramState(program);
+		IExecutionData data = state.execute(main);
+		assertEquals(2, data.getCallStackDepth());
+		assertEquals(21, data.getVariableValue("s").getValue());
+	}
 }

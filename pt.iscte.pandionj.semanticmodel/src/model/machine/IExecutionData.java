@@ -10,7 +10,10 @@ public interface IExecutionData {
 //	Map<IProcedure, Integer> getNumberOfComparisons();
 	
 	int getTotalAssignments();
+	int getTotalOperations();
 	
 	int getCallStackDepth();
+	IValue getReturnValue();
+	IValue getVariableValue(String id);
 //	int getTotalMemory();
 }

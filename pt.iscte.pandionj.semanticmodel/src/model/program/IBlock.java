@@ -47,13 +47,32 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 	
 	@Override
 	default void execute(ICallStack stack) throws ExecutionError {
-		for(IStatement s : getStatements())
+		for(IStatement s : getStatements()) {
 			stack.execute(s);
+			if(s instanceof IReturn)
+				; // TODO quit procedure
+		}
 	}
 	
 	@Override
 	default Iterator<IStatement> iterator() {
 		return getStatements().iterator();
+	}
+	
+	default void accept(IVisitor visitor) {
+		for(IStatement s : getStatements()) {
+			if(s instanceof IVariableAssignment)
+				visitor.visitVariableAssignment((IVariableAssignment) s);
+			else if(s instanceof IArrayElementAssignment)
+				visitor.visitArrayElementAssignment((IArrayElementAssignment) s);
+			else if(s instanceof IBlock)
+				((IBlock) s).accept(visitor);
+		}
+	}
+	
+	interface IVisitor {
+		default void visitVariableAssignment(IVariableAssignment assignment) { }
+		default void visitArrayElementAssignment(IVariableAssignment assignment) { }
 	}
 	
 }

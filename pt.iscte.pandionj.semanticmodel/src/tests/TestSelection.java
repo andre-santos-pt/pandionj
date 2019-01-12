@@ -1,3 +1,10 @@
+package tests;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import org.junit.BeforeClass;
+import org.junit.Test;
+
 import model.machine.IExecutionData;
 import model.machine.impl.ProgramState;
 import model.program.IBinaryExpression;
@@ -10,12 +17,15 @@ import model.program.IProgram;
 import model.program.IVariableDeclaration;
 import model.program.impl.Factory;
 
-public class TestMax {
-	public static void main(String[] args) {
+public class TestSelection {
+	private static IProgram program;
+	private static IProcedure maxFunc;
+	
+	@BeforeClass
+	public static void setup() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
-		
-		IProcedure maxFunc = program.createProcedure("max", IDataType.INT);
+		program = factory.createProgram();
+		maxFunc = program.createProcedure("max", IDataType.INT);
 		IVariableDeclaration aParam = maxFunc.addParameter("a", IDataType.INT);
 		IVariableDeclaration bParam = maxFunc.addParameter("b", IDataType.INT);
 		
@@ -25,18 +35,28 @@ public class TestMax {
 		IBlock elseblock = maxFunc.block();
 		elseblock.returnStatement(bParam.expression());
 		maxFunc.selection(e, ifblock, elseblock);
-		
-		
-		IProcedure main = program.createProcedure("main", IDataType.INT);
-//		program.setMainProcedure(main);
-		IVariableDeclaration mVar = main.variableDeclaration("m", IDataType.INT);
-		mVar.assignment(maxFunc.call(factory.literal(2), factory.literal(1)));
-
-		ProgramState state = new ProgramState(program);
-		
-//		state.enterInteractiveMode();
-		IExecutionData data = state.execute(maxFunc, "2","-1");
-		System.out.println(data);
+		System.out.println(program);
 	}
 
+	@Test
+	public void testFirst() {
+		ProgramState state = new ProgramState(program);
+		IExecutionData data = state.execute(maxFunc, "2","-1");
+		assertTrue(data.getReturnValue().toString().equals("2"));
+		commonAsserts(data);
+	}
+	
+	@Test
+	public void testSecond() {
+		ProgramState state = new ProgramState(program);
+		IExecutionData data = state.execute(maxFunc, "2","4");
+		assertTrue(data.getReturnValue().toString().equals("4"));
+		commonAsserts(data);
+	}
+
+	private static void commonAsserts(IExecutionData data) {
+		assertEquals(0, data.getTotalAssignments());
+		assertEquals(1, data.getTotalOperations());
+		assertEquals(1, data.getCallStackDepth());
+	}
 }

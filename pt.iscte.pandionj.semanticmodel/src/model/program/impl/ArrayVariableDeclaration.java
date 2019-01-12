@@ -10,6 +10,7 @@ import model.program.IArrayLengthExpression;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IExpression;
+import model.program.IVariableRole;
 
 class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVariableDeclaration {
 	private final int numberOfDimensions;
@@ -44,6 +45,9 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 		return new ArrayElementAssignment(getParent(), this, indexes, expression);
 	}
 	
+	public IVariableRole getRole() {
+		return IVariableRole.NONE;
+	}
 	@Override
 	public String toString() {
 		String text = "var " + getIdentifier() + " (" + getType() + " ";

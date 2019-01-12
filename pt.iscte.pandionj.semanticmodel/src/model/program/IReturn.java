@@ -4,11 +4,14 @@ import model.machine.ICallStack;
 import model.machine.IValue;
 
 public interface IReturn extends IStatement {
-	IExpression getExpression();
+	IExpression getExpression(); // may be null (void)
 	
 	@Override
 	default void execute(ICallStack callStack) throws ExecutionError {
-		IValue value = callStack.evaluate(getExpression());
-		callStack.getTopFrame().setReturn(value);
+		IExpression expression = getExpression();
+		if(expression != null) {
+			IValue value = callStack.evaluate(getExpression());
+			callStack.getTopFrame().setReturn(value);
+		}
 	}
 }

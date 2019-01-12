@@ -12,7 +12,25 @@ public interface IVariableAssignment extends IStatement {
 		IValue value = callStack.evaluate(getExpression());
 		callStack.getTopFrame().setVariable(getVariable().getIdentifier(), value);
 	}
-	/*
-	boolean isAccumulation();
-	*/
+	
+	default ArithmeticOperator getAccumulationOperator() {
+		IExpression expression = getExpression();
+		if(expression instanceof IBinaryExpression) {
+			IBinaryExpression e = (IBinaryExpression) expression;
+			IExpression left = e.getLeftExpression();
+			IExpression right = e.getRightExpression();
+			if(e.getOperator() instanceof ArithmeticOperator && 
+				(
+				left instanceof IVariableExpression && ((IVariableExpression) left).getVariable().equals(this.getVariable()) ||
+				right instanceof IVariableExpression && ((IVariableExpression) right).getVariable().equals(this.getVariable()))
+				)
+				return (ArithmeticOperator) e.getOperator();
+		}
+		return null;
+	}
+	
+	default boolean isAccumulation() {
+		return getAccumulationOperator() != null;
+	}
+	
 }

@@ -32,7 +32,9 @@ public interface IProcedureCall extends IExpression, IStatement {
 	
 	@Override
 	default IValue evaluate(IStackFrame stackFrame) throws ExecutionError {
+		
 		stackFrame.execute(this);
-		return stackFrame.getReturn();
+		IStackFrame last = stackFrame.getCallStack().getLastTerminatedFrame();
+		return last.getReturn();
 	}
 }
