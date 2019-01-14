@@ -1,6 +1,7 @@
 package model.program.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import com.google.common.collect.ImmutableList;
 
@@ -15,8 +16,8 @@ import model.program.IVariableRole;
 class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVariableDeclaration {
 	private final int numberOfDimensions;
 	
-	public ArrayVariableDeclaration(Block block, String name, IDataType type, boolean constant, int numberOfDimensions) {
-		super(block, name, type, constant);
+	public ArrayVariableDeclaration(Block block, String name, IDataType type, int numberOfDimensions, Set<VariableDeclaration.Flag> flags) {
+		super(block, name, type, flags);
 		this.numberOfDimensions = numberOfDimensions;
 	}
 
@@ -48,12 +49,10 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 	public IVariableRole getRole() {
 		return IVariableRole.NONE;
 	}
+	
 	@Override
 	public String toString() {
-		String text = "var " + getIdentifier() + " (" + getType() + " ";
-		for(int i = 0; i < numberOfDimensions; i++)
-			text += "[]";
-		return text + ")";
+		return (isReference() ? "*var " : "var ") + getIdentifier() + " (" + getType() + ")";
 	}
 	
 	private class ArrayLengthExpression extends SourceElement implements IArrayLengthExpression {

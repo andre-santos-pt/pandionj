@@ -1,7 +1,7 @@
 package model.program;
 
 public interface IUnaryExpression extends IExpression {
-	IBinaryOperator getOperator();
+	IUnaryOperator getOperator();
 	IExpression getExpression();
 	
 	default boolean isOperation() {

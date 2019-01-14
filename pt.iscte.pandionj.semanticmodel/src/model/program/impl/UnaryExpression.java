@@ -1,36 +1,51 @@
 package model.program.impl;
 
+
 import model.machine.IStackFrame;
 import model.machine.IValue;
-import model.program.IBinaryOperator;
+import model.program.ExecutionError;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IUnaryExpression;
+import model.program.IUnaryOperator;
 
 public class UnaryExpression extends SourceElement implements IUnaryExpression {
 
+	private final IUnaryOperator operator;
+	private final IExpression expression;
+	
+	public UnaryExpression(IUnaryOperator operator, IExpression expression) {
+		assert operator != null;
+		assert expression != null;
+		this.operator = operator;
+		this.expression = expression;
+	}
+
 	@Override
-	public IValue evaluate(IStackFrame frame) {
-		// TODO Auto-generated method stub
-		return null;
+	public IValue evaluate(IStackFrame frame) throws ExecutionError {
+		IValue val = frame.evaluate(expression);
+		IValue result = operator.apply(val);
+		return result;
 	}
 
 	@Override
 	public IDataType getType() {
-		// TODO Auto-generated method stub
-		return null;
+		return operator.getResultType(expression);
 	}
 
 	@Override
-	public IBinaryOperator getOperator() {
-		// TODO Auto-generated method stub
-		return null;
+	public IUnaryOperator getOperator() {
+		return operator;
 	}
 
 	@Override
 	public IExpression getExpression() {
-		// TODO Auto-generated method stub
-		return null;
+		return expression;
+	}
+	
+	@Override
+	public String toString() {
+		return operator.getSymbol() + expression;
 	}
 
 }

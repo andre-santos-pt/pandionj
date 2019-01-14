@@ -5,8 +5,10 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 
 @Suite.SuiteClasses({
-   TestSelection.class,
-   TestSum.class
+	TestArithmeticExpressions.class,
+	TestBooleanFuncions.class,
+	TestSelection.class,
+	TestSum.class,
 })
 
 public class JunitTestSuite {   

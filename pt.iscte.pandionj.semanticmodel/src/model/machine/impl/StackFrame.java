@@ -46,6 +46,9 @@ class StackFrame implements IStackFrame {
 			variables.put(param.getIdentifier(), arguments.get(i));
 			i++;
 		}
+		
+		for (IVariableDeclaration var : procedure.getVariables(false))
+			variables.put(var.getIdentifier(), Value.create(var.getType(), var.getType().getDefaultValue()));
 	}
 
 	@Override
@@ -63,15 +66,16 @@ class StackFrame implements IStackFrame {
 		return Collections.unmodifiableMap(variables);
 	}
 
-	@Override
+	@Override // TODO copy when not reference
 	public IValue getVariable(String name) {
 		return variables.get(name);
 	}
 
+	// TODO block variable
 	@Override
 	public void addVariable(String identifier, IDataType type) {
-		assert identifier != null && !identifier.isEmpty() && !variables.containsKey(identifier);
-		variables.put(identifier, IValue.NULL);
+//		assert identifier != null && !identifier.isEmpty() && !variables.containsKey(identifier);
+//		variables.put(identifier, IValue.NULL);
 	}
 
 	@Override

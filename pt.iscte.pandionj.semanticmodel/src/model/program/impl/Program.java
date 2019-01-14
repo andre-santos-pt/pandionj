@@ -11,14 +11,12 @@ import com.google.common.collect.ImmutableList;
 
 import model.program.IConstantDeclaration;
 import model.program.IDataType;
-import model.program.IProblem;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IStruct;
 
 class Program extends SourceElement implements IProgram {
 	private List<IProcedure> procedures;
-//	private IProcedure mainProcedure;
 	private Map<String, IDataType> types;
 	
 	public Program() {
@@ -45,31 +43,6 @@ class Program extends SourceElement implements IProgram {
 		return proc;
 	}
 	
-//	public void addProcedure(IProcedure procedure) {
-//		assert !procedureExists(procedure);
-//		procedures.add(procedure);
-//	}
-//	
-//	private boolean procedureExists(IProcedure procedure) {
-//		for(IProcedure p : procedures)
-//			if(p.hasSameSignature(procedure))
-//				return true;
-//		
-//		return false;
-//	}
-	
-//	@Override
-//	public IProcedure getMainProcedure() {
-//		return mainProcedure;
-//	}
-	
-//	public void setMainProcedure(IProcedure mainProcedure) {
-//		assert mainProcedure != null : "cannot be null";
-//		assert procedures.contains(mainProcedure) : "main procedure must be added to the program";
-//		
-//		this.mainProcedure = mainProcedure;
-//	}
-
 	@Override
 	public Collection<IStruct> getStructs() {
 		return ImmutableList.of();
@@ -84,14 +57,6 @@ class Program extends SourceElement implements IProgram {
 	public IDataType getDataType(String id) {
 		assert types.containsKey(id);
 		return types.get(id);
-	}
-	
-	@Override
-	public List<IProblem> validate() {
-		List<IProblem> problems = new ArrayList<IProblem>();
-//		if(mainProcedure == null)
-//			problems.add(new Problem(this, "No main procedure is defined"));
-		return problems;
 	}
 	
 	@Override

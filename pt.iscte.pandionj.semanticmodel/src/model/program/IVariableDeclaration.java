@@ -9,7 +9,7 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 
 	boolean isReference();
 	boolean isConstant();
-	
+	boolean isParameter();
 	
 	default IVariableRole getRole() {
 		return IVariableRole.NONE;
@@ -22,5 +22,9 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 	@Override
 	default void execute(ICallStack callStack) {
 		callStack.getTopFrame().addVariable(getIdentifier(), getType());
+	}
+	
+	enum Flag {
+		REFERENCE, CONSTANT, PARAM 
 	}
 }

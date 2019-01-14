@@ -26,7 +26,7 @@ public interface IArrayElementAssignment extends IVariableAssignment {
 			int index = (int) frame.evaluate(indexes.get(i)).getValue();
 			v = array.getElement(index);
 		}
-		int index = (int) frame.evaluate(indexes.get(indexes.size()-1)).getValue();
+		int index = ((Number) frame.evaluate(indexes.get(indexes.size()-1)).getValue()).intValue();
 		IValue value = frame.evaluate(getExpression());
 		((IArray) v).setElement(index, value);
 	}

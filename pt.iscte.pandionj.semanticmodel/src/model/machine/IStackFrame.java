@@ -43,7 +43,9 @@ public interface IStackFrame {
 	
 	IValue evaluate(IExpression expression) throws ExecutionError;
 	
+	
 	void addListener(IListener listener);
+	
 	
 	interface IListener {
 		default void variableAdded(String identifier, IDataType type) { }

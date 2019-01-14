@@ -18,7 +18,7 @@ public interface IArrayElementExpression extends IVariableExpression {
 		IValue element = variable;
 		for(IExpression e : getIndexes()) {
 			IValue i = frame.evaluate(e);
-			int index = (int) i.getValue();
+			int index = ((Number) i.getValue()).intValue();
 			if(index < 0)
 				throw new ExecutionError(e, "negative array index", index);
 			element = ((IArray) element).getElement(index);

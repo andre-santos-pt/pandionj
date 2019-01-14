@@ -3,6 +3,7 @@ package model.program.impl;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
@@ -54,13 +55,13 @@ class Block extends SourceElement implements IBlock{
 	}
 
 	@Override
-	public IVariableDeclaration variableDeclaration(String name, IDataType type) {
-		return new VariableDeclaration(this, name, type, false);
+	public IVariableDeclaration variableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
+		return new VariableDeclaration(this, name, type, flags);
 	}
 	
 	@Override
-	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions) {
-		return new ArrayVariableDeclaration(this, name, type, false, dimensions);
+	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions, Set<IVariableDeclaration.Flag> flags) {
+		return new ArrayVariableDeclaration(this, name, type, dimensions, flags);
 	}
 
 	@Override

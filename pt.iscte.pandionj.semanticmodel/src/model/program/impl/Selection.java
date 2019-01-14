@@ -33,6 +33,6 @@ class Selection extends Statement implements ISelection {
 
 	@Override
 	public String toString() {
-		return "if " + guard + " " +block + (alternativeBlock != null ? "else " + alternativeBlock : "");
+		return "if " + guard + " " + block + (alternativeBlock != null ? "else " + alternativeBlock : "");
 	}
 }

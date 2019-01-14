@@ -6,17 +6,14 @@ import model.program.IDataType;
 import model.program.IExpression;
 
 class BinaryExpression extends SourceElement implements IBinaryExpression {
-
 	private final IBinaryOperator operator;
 	private final IExpression left;
 	private final IExpression right;
-	
 	
 	public BinaryExpression(IBinaryOperator operator, IExpression left, IExpression right) {
 		assert operator != null;
 		assert left != null;
 		assert right != null;
-//		assert operator.isNumeric() && left.getType().isNumeric() && right.getType().isNumeric();
 		this.operator = operator;
 		this.left = left;
 		this.right = right;
@@ -44,13 +41,20 @@ class BinaryExpression extends SourceElement implements IBinaryExpression {
 
 	@Override
 	public String toString() {
-		return left + " " + operator + " " + right;
+		String l = left.toString();
+		if(left instanceof IBinaryExpression)
+			l = "(" + l + ")";
+		
+		String r = right.toString();
+		if(right instanceof IBinaryExpression)
+			r = "(" + r + ")";
+		return l + " " + operator + " " + r;
 	}
 	
-	@Override
-	public boolean isBoolean() {
-		return 
-				left.getType().getIdentifier().equals("boolean") && 
-				right.getType().getIdentifier().equals("boolean");
-	}
+//	@Override
+//	public boolean isBoolean() {
+//		return 
+//				left.getType().getIdentifier().equals("boolean") && 
+//				right.getType().getIdentifier().equals("boolean");
+//	}
 }

@@ -1,33 +1,35 @@
 package model.program;
 
+import java.math.BigDecimal;
+import java.util.function.BiFunction;
+
+import model.machine.IStackFrame;
 import model.machine.IValue;
+import model.machine.impl.Value;
 
 enum RelationalOperator implements IBinaryOperator {
-	EQUAL("==") {
-		@Override
-		protected boolean calculate(IValue left, IValue right) {
-			return left.getValue().equals(right.getValue()); // FIXME;
-		}
-	},
-	DIFFERENT("!=") {
-		@Override
-		protected boolean calculate(IValue left, IValue right) {
-			return !EQUAL.calculate(left, right); // FIXME;
-		}
-	},
-	GREATER(">") {
-		@Override
-		protected boolean calculate(IValue left, IValue right) {
-			return ((Number) left.getValue()).doubleValue() > ((Number) right.getValue()).doubleValue(); // FIXME;
-		}
+	EQUAL("==", (left,right) -> left.getValue().equals(right.getValue())),
+	
+	DIFFERENT("!=", (left,right) -> !left.getValue().equals(right.getValue())),
+	
+	GREATER(">", (left, right) -> compare(left, right) > 0),
+	
+	GREATER_EQ(">=", (left, right) -> compare(left, right) >= 0),
+	
+	SMALLER("<", (left, right) -> compare(left, right) < 0),
+	
+	SMALLER_EQ("<=", (left, right) -> compare(left, right) <= 0);
+
+	private static int compare(IValue left, IValue right) {
+		return ((BigDecimal) left.getValue()).compareTo((BigDecimal) right.getValue());
 	}
-//	GREATER_EQ(">="), SMALLER("<"), SMALLER_EQ("<="),
-	;
-
+	
 	private String symbol;
-
-	private RelationalOperator(String symbol) {
+	private BiFunction<IValue, IValue, Boolean> f;
+	
+	private RelationalOperator(String symbol, BiFunction<IValue, IValue, Boolean> f) {
 		this.symbol = symbol;
+		this.f = f;
 	}
 
 	@Override
@@ -40,12 +42,12 @@ enum RelationalOperator implements IBinaryOperator {
 		return symbol;
 	}
 
-	public IValue apply(IValue left, IValue right) {
-		return calculate(left, right) ? IValue.TRUE : IValue.FALSE;
+	public IValue apply(IExpression left, IExpression right, IStackFrame frame) throws ExecutionError {
+		IValue leftValue =  frame.evaluate(left);
+		IValue rightValue = frame.evaluate(right);
+		return Value.create(IDataType.BOOLEAN, f.apply(leftValue, rightValue));
 	}
 
-	protected abstract boolean calculate(IValue left, IValue right);
-	
 	public IDataType getResultType(IExpression left, IExpression right) {
 		return IDataType.BOOLEAN;
 	}

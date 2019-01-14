@@ -1,5 +1,8 @@
 package tests;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
+import java.math.BigDecimal;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -10,6 +13,7 @@ import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IFactory;
+import model.program.IGatherer;
 import model.program.ILoop;
 import model.program.IOperator;
 import model.program.IProcedure;
@@ -56,9 +60,12 @@ public class TestSum {
 
 	@Test
 	public void testSum() {
+		System.out.println(program);
 		ProgramState state = new ProgramState(program);
 		IExecutionData data = state.execute(main);
 		assertEquals(2, data.getCallStackDepth());
-		assertEquals(21, data.getVariableValue("s").getValue());
+		assertEquals(new BigDecimal(21), data.getVariableValue("s").getValue());
+		
+		assertTrue(sumArrayProc.getVariable("s").getRole() instanceof IGatherer); 
 	}
 }

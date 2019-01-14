@@ -1,6 +1,7 @@
 package model.program.impl;
 
 import java.util.List;
+import java.util.Set;
 
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
@@ -15,7 +16,7 @@ import model.program.IStatement;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 
-public class Loop extends Statement implements ILoop {
+class Loop extends Statement implements ILoop {
 	private final IExpression guard;
 	private final IBlock block;
 	
@@ -87,13 +88,13 @@ public class Loop extends Statement implements ILoop {
 	}
 
 	@Override
-	public IVariableDeclaration variableDeclaration(String name, IDataType type) {
-		return block.variableDeclaration(name, type);
+	public IVariableDeclaration variableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
+		return block.variableDeclaration(name, type, flags);
 	}
 
 	@Override
-	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions) {
-		return block.arrayDeclaration(name, type, dimensions);
+	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions, Set<IVariableDeclaration.Flag> flags) {
+		return block.arrayDeclaration(name, type, dimensions, flags);
 	}
 
 	@Override

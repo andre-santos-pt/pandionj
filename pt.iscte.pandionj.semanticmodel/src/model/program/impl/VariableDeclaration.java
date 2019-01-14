@@ -1,5 +1,7 @@
 package model.program.impl;
 
+import java.util.Set;
+
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
@@ -15,24 +17,32 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 	private final String name;
 	private final IDataType type;
 	private final boolean constant; // TODO final vars
+	private final boolean reference;
+	private final boolean param;
 	private IVariableRole role;
-	
-	public VariableDeclaration(Block block, String name, IDataType type, boolean constant) {
+
+	public VariableDeclaration(Block block, String name, IDataType type, Set<Flag> flags) {
 		super(block);
 		this.name = name;
 		this.type = type;
-		this.constant = constant;
+		this.constant = flags.contains(Flag.CONSTANT);
+		this.reference = flags.contains(Flag.REFERENCE);
+		this.param = flags.contains(Flag.PARAM);
 	}
 
-	
+
 	@Override
 	public String getIdentifier() {
 		return name;
 	}
-	
+
 	@Override
 	public boolean isConstant() {
 		return constant;
+	}
+
+	public boolean isParameter() {
+		return param;
 	}
 
 	@Override
@@ -50,24 +60,24 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 
 	@Override
 	public boolean isReference() {
-		return false;
+		return reference;
 	}
-	
+
 	@Override
 	public String toString() {
-		return "var " + name + " (" + type + ", " + getRole() + ")";
+		return (isReference() ? "*var " : "var ") + name + " (" + type + ", " + getRole() + ")";
 	}
-	
+
 	@Override
 	public IVariableAssignment assignment(IExpression expression) {
 		return new VariableAssignment(getParent(), this, expression);
 	}
-	
+
 	@Override
 	public IVariableExpression expression() {
 		return new VariableExpression(this);
 	}
-	
+
 	@Override
 	public IVariableRole getRole() {
 		if(role == null) {

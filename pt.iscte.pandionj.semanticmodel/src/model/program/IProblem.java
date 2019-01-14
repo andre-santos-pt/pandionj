@@ -1,8 +1,10 @@
 package model.program;
 
+import java.util.List;
+
 public interface IProblem {
 
-	ISourceElement getSourceElement();
+	List<ISourceElement> getSourceElements();
 	String getMessage();
 	
 }

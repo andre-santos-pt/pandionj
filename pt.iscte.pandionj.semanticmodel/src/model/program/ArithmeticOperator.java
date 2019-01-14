@@ -1,28 +1,48 @@
 package model.program;
 
+import java.math.BigDecimal;
+import java.util.function.BiFunction;
+
+import model.machine.IStackFrame;
 import model.machine.IValue;
 import model.machine.impl.Value;
 
 enum ArithmeticOperator implements IBinaryOperator {
 	ADD("+") {
-		@Override
-		protected Object calculateBinary(IValue left, IValue right) {
-			return (int) left.getValue() + (int) right.getValue(); // FIXME
+		protected BigDecimal calculate(IValue left, IValue right) {
+			return ((BigDecimal)left.getValue()).add((BigDecimal) right.getValue());
 		}
 	}, 
-//	MINUS("-"), 
-//	PROD("*"), 
-//	DIV("/"), 
-//	MOD("%"),
-	;
+	SUB("-") {
+		protected BigDecimal calculate(IValue left, IValue right) {
+			return ((BigDecimal)left.getValue()).subtract((BigDecimal) right.getValue());
+		}
+	},
+	MUL("*") {
+		protected BigDecimal calculate(IValue left, IValue right) {
+			return ((BigDecimal)left.getValue()).multiply((BigDecimal) right.getValue());
+		}
+	},
+	DIV("/") {
+		protected BigDecimal calculate(IValue left, IValue right) {
+			return ((BigDecimal)left.getValue()).divide((BigDecimal) right.getValue());
+		}
+	},
+	MOD("%") {
+		protected BigDecimal calculate(IValue left, IValue right) {
+			return ((BigDecimal)left.getValue()).remainder((BigDecimal) right.getValue());
+		}
+	};
 	
 	private String symbol;
+	
+	private BiFunction<BigDecimal, BigDecimal, BigDecimal> f; // TODO
 	
 	private ArithmeticOperator(String symbol) {
 		this.symbol = symbol;
 	}
 	
-	private static IDataType getNumericType(IDataType left, IDataType right) {
+	private static IDataType getDataType(IDataType left, IDataType right) {
 		if(left.equals(IDataType.INT) && right.equals(IDataType.INT))
 			return IDataType.INT;
 		else if(left.equals(IDataType.DOUBLE) && right.equals(IDataType.INT))
@@ -46,15 +66,18 @@ enum ArithmeticOperator implements IBinaryOperator {
 		return symbol;
 	}
 
-	public IValue apply(IValue left, IValue right) {
-		IDataType type = getNumericType(left.getType(), right.getType());
-		Object obj = calculateBinary(left, right);
-		return new Value(type, obj);
+	public IValue apply(IExpression left, IExpression right, IStackFrame frame) throws ExecutionError {
+		IValue leftValue =  frame.evaluate(left);
+		IValue rightValue = frame.evaluate(right);
+		
+		IDataType type = getDataType(left.getType(), right.getType());
+		BigDecimal obj = calculate(leftValue, rightValue);
+		return Value.create(type, obj);
 	}
 	
-	protected abstract Object calculateBinary(IValue left, IValue right);
+	protected abstract BigDecimal calculate(IValue left, IValue right);
 	
 	public IDataType getResultType(IExpression left, IExpression right) {
-		return getNumericType(left.getType(), right.getType());
+		return getDataType(left.getType(), right.getType());
 	}
 }

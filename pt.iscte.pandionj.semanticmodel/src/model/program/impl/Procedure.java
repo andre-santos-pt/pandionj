@@ -3,7 +3,11 @@ package model.program.impl;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
@@ -50,16 +54,14 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
-	public IVariableDeclaration addParameter(String name, IDataType type) {
-		for(IVariableDeclaration v : variables)
-			assert !v.getIdentifier().equals(name) : "duplicate variable name"; // TODO to semantic error
-
-			IVariableDeclaration param = type instanceof IArrayType ?
-					new ArrayVariableDeclaration(null, name, type, false, ((IArrayType) type).getDimensions()) :
-					new VariableDeclaration(null, name, type, false);
-			variables.add(parameters, param);
-			parameters++;
-			return param;
+	public IVariableDeclaration addParameter(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
+		// TODO review null param
+		IVariableDeclaration param = type instanceof IArrayType ?
+				new ArrayVariableDeclaration(body, name, type, ((IArrayType) type).getDimensions(), ImmutableSet.of()) :
+					new VariableDeclaration(body, name, type, flags);
+				variables.add(parameters, param);
+				parameters++;
+				return param;
 	}
 
 	@Override
@@ -73,6 +75,14 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
+	public IVariableDeclaration getVariable(String id) {
+		for(IVariableDeclaration v : variables)
+			if(v.getIdentifier().equals(id))
+				return v;
+		return null;
+	}
+
+	@Override
 	public IDataType getReturnType() {
 		return returnType;
 	}
@@ -81,13 +91,6 @@ class Procedure extends SourceElement implements IProcedure {
 	public IBlock getBody() {
 		return body;
 	}
-
-	//	@Override
-	//	public void setBody(IBlock body) {
-	//		this.body = body;
-	//	}
-
-
 
 	@Override
 	public boolean isFunction() {
@@ -107,10 +110,12 @@ class Procedure extends SourceElement implements IProcedure {
 		for(IVariableDeclaration p : paramsView) {
 			if(!params.isEmpty())
 				params += ", ";
+			if(p.isReference())
+				params += "*";
 			params += p.getIdentifier();
 		}
-			
-		return name + "(" + params + ")" + body;
+
+		return returnType + " " + name + "(" + params + ")" + body;
 	}
 
 	@Override
@@ -126,9 +131,9 @@ class Procedure extends SourceElement implements IProcedure {
 	@Override
 	public void addStatement(IStatement statement) {
 		body.addStatement(statement);
-		
+
 	}
-	
+
 	private class ParamsView extends AbstractList<IVariableDeclaration> {
 		@Override
 		public IVariableDeclaration get(int index) {
@@ -159,15 +164,15 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
-	public IVariableDeclaration variableDeclaration(String name, IDataType type) {
-		IVariableDeclaration var = body.variableDeclaration(name, type);
+	public IVariableDeclaration variableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
+		IVariableDeclaration var = body.variableDeclaration(name, type, flags);
 		variables.add(var);
 		return var;
 	}
 
 	@Override
-	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions) {
-		IArrayVariableDeclaration var = body.arrayDeclaration(name, type, dimensions);
+	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions, Set<IVariableDeclaration.Flag> flags) {
+		IArrayVariableDeclaration var = body.arrayDeclaration(name, type, dimensions, flags);
 		variables.add(var);
 		return var;
 	}
@@ -186,7 +191,7 @@ class Procedure extends SourceElement implements IProcedure {
 	public ILoop loop(IExpression guard) {
 		return body.loop(guard);
 	}
-	
+
 	@Override
 	public IReturn returnStatement(IExpression expression) {
 		return body.returnStatement(expression);
@@ -198,9 +203,7 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
-	public IProcedureCall call(List<IExpression> args) {
+	public IProcedureCall callExpression(List<IExpression> args) {
 		return new ProcedureCall(null, this, args);
 	}
-
-
 }

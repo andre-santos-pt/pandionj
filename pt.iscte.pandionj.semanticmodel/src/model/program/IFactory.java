@@ -3,8 +3,6 @@ package model.program;
 import java.util.Arrays;
 import java.util.List;
 
-import model.machine.IValue;
-
 public interface IFactory {
 
 	IProgram createProgram();
@@ -15,7 +13,7 @@ public interface IFactory {
 	
 	IArrayElementExpression arrayElementExpression(IArrayVariableDeclaration var, List<IExpression> indexes);
 	
-	IBinaryExpression unaryExpression(IBinaryOperator operator, IExpression exp);
+	IUnaryExpression unaryExpression(IUnaryOperator operator, IExpression exp);
 	IBinaryExpression binaryExpression(IBinaryOperator operator, IExpression left, IExpression right);
 
 	ILiteral literal(IDataType type, String string);
@@ -23,7 +21,7 @@ public interface IFactory {
 	ILiteral literal(double value);
 	ILiteral literal(boolean value);
 	
-	IValue getArray(IArrayType type, Object ... elements);
+//	IValue getArray(IArrayType type, Object ... elements);
 	
 	IArrayAllocation arrayAllocation(IDataType type, List<IExpression> dimensions);
 	default IArrayAllocation arrayAllocation(IDataType type, IExpression ... dimensions) {

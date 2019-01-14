@@ -5,7 +5,11 @@ import model.machine.IValue;
 import model.program.IDataType;
 
 public class Reference implements IReference {
-	private IValue target = IValue.NULL;
+	private IValue target;
+	
+	public Reference(IValue target) {
+		this.target = target;
+	}
 	
 	@Override
 	public IDataType getType() {
@@ -21,4 +25,5 @@ public class Reference implements IReference {
 	public IValue getTarget() {
 		return target;
 	}
+
 }

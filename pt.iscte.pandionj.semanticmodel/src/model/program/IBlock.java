@@ -3,6 +3,9 @@ package model.program;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+
+import com.google.common.collect.ImmutableSet;
 
 import model.machine.ICallStack;
 
@@ -23,9 +26,15 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 	
 	IBlock block();
 	
-	IVariableDeclaration variableDeclaration(String name, IDataType type);
+	IVariableDeclaration variableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags);
+	default IVariableDeclaration variableDeclaration(String name, IDataType type) {
+		return variableDeclaration(name, type, ImmutableSet.of());
+	}
 	
-	IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions);
+	IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions, Set<IVariableDeclaration.Flag> flags);
+	default IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions) {
+		return arrayDeclaration(name, type, dimensions, ImmutableSet.of());
+	}
 	
 	IVariableAssignment assignment(IVariableDeclaration var, IExpression exp);
 	

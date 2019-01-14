@@ -1,9 +1,7 @@
 package model.machine.impl;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Scanner;
 
 import model.machine.IArray;
 import model.machine.ICallStack;
@@ -41,7 +39,7 @@ public class ProgramState implements IProgramState {
 		this.program = program;
 		this.callStackMax = callStackMax;
 		stack = new CallStack(this);
-		data = new ExecutionData();
+		addStateListener();
 	}
 	
 	@Override
@@ -62,9 +60,8 @@ public class ProgramState implements IProgramState {
 	@Override
 	public IValue getValue(String value) {
 		for(IDataType type : program.getDataTypes()) {
-			Object val = type.match(value);
-			if(val != null)
-				return new Value(type, val);
+			if(type.matchesLiteral(value))
+				return Value.create(type, type.create(value));
 		}
 		return null;
 	}
@@ -73,11 +70,9 @@ public class ProgramState implements IProgramState {
 	public IValue getValue(Object object) {
 		for(IDataType type : program.getDataTypes()) {
 			if(type.matches(object))
-				if(type.equals(IDataType.BOOLEAN))
-					return object == Boolean.TRUE ? IValue.TRUE : IValue.FALSE;
-				else
-					return new Value(type, type.match(object.toString()));
+				return Value.create(type, type.create(object.toString()));
 		}
+		assert false;
 		return null;
 	}
 	
@@ -88,11 +83,28 @@ public class ProgramState implements IProgramState {
 	}
 	
 	public IExecutionData execute(IProcedure procedure, String ... args) {
+		
 		if(args.length != procedure.getNumberOfParameters())
 			throw new RuntimeException("incorrect number of arguments for " + procedure);
 		
 		instructionPointer = procedure.getBody().getStatements().get(0); // TODO no statements
+		data = new ExecutionData();
+		
+		Factory factory = new Factory();
+		List<IExpression> procArgs = new ArrayList<>(args.length);
+		for(String a : args)
+			procArgs.add(factory.literal(Integer.parseInt(a))); // FIXME
+		
+		IProcedureCall call = factory.procedureCall(procedure, procArgs);
+		try {
+			call.execute(stack);
+		} catch (ExecutionError e) {
+			System.err.println("Execution error: " + e);
+		}
+		return data;
+	}
 
+	private void addStateListener() {
 		stack.addListener(new ICallStack.IListener() {
 			@Override
 			public void stackFrameCreated(IStackFrame stackFrame) {
@@ -128,19 +140,6 @@ public class ProgramState implements IProgramState {
 				data.setReturnValue(returnValue);
 			}
 		});
-		
-		Factory factory = new Factory();
-		List<IExpression> procArgs = new ArrayList<>(args.length);
-		for(String a : args)
-			procArgs.add(factory.literal(Integer.parseInt(a))); // FIXME
-		
-		IProcedureCall call = factory.procedureCall(procedure, procArgs);
-		try {
-			call.execute(stack);
-		} catch (ExecutionError e) {
-			System.err.println("Execution error: " + e);
-		}
-		return data;
 	}
 
 	
@@ -153,24 +152,4 @@ public class ProgramState implements IProgramState {
 		// TODO Auto-generated method stub
 		return null;
 	}
-	
-	public void enterInteractiveMode() {
-		Scanner keyboard = new Scanner(System.in);
-		String cmd = "";
-		do {
-			cmd = keyboard.nextLine();
-			String[] parts = cmd.split("\\s+");
-			for (IProcedure p : program.getProcedures()) {
-				if(p.getIdentifier().equals(parts[0]) && 
-						p.getNumberOfParameters() == parts.length-1) {
-					execute(p, Arrays.copyOfRange(parts, 1, parts.length));
-					break;
-				}
-					
-			}
-		}
-		while(!cmd.equals("exit"));
-		keyboard.close();
-	}
-
 }

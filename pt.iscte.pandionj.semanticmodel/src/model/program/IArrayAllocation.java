@@ -14,7 +14,7 @@ public interface IArrayAllocation extends IExpression {
 	}
 	
 	default IArray evaluate(IStackFrame frame) throws ExecutionError {
-		int dim = (int) frame.evaluate(getDimensions().get(0)).getValue();
+		int dim = ((Number) frame.evaluate(getDimensions().get(0)).getValue()).intValue();
 		return frame.getArray(getType(), dim); // FIXME
 	}
 }

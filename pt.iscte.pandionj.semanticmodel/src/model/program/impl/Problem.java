@@ -1,21 +1,26 @@
 package model.program.impl;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 import model.program.IProblem;
 import model.program.ISourceElement;
 
 class Problem implements IProblem {
-	private final ISourceElement element;
 	private final String message;
+	private final ImmutableList<ISourceElement> elements;
 	
-	public Problem(ISourceElement element, String message) {
-		this.element = element;
+	public Problem(String message, ISourceElement ... elements) {
 		this.message = message;
+		this.elements = ImmutableList.copyOf(elements);
 	}
 	
 	@Override
-	public ISourceElement getSourceElement() {
-		return element;
+	public List<ISourceElement> getSourceElements() {
+		return elements;
 	}
+	
 	@Override
 	public String getMessage() {
 		return message;

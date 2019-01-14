@@ -26,4 +26,6 @@ public interface IArrayVariableDeclaration extends IVariableDeclaration {
 		return elementAssignment(expression, Arrays.asList(indexes));
 	}
 	
+	
+	
 }

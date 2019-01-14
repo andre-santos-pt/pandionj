@@ -5,12 +5,11 @@ public interface IArrayType extends IDataType {
 	int getDimensions();
 	
 	class ValueTypeArray implements IArrayType {
-		private IDataType.ValueType type;
+		private IDataType type;
 		private int dimensions;
 		private String id;
 		
 		public ValueTypeArray(IDataType type, int dimensions) {
-			assert type instanceof IDataType.ValueType;
 			this.dimensions = dimensions;
 			id = type.getIdentifier();
 			for(int i = 0; i < dimensions; i++)
@@ -28,8 +27,8 @@ public interface IArrayType extends IDataType {
 		}
 
 		@Override
-		public Object match(String literal) {
-			return type.match(literal);
+		public boolean matchesLiteral(String literal) {
+			return type.matchesLiteral(literal);
 		}
 
 		@Override
@@ -44,6 +43,16 @@ public interface IArrayType extends IDataType {
 		@Override
 		public String toString() {
 			return id;
+		}
+
+		@Override
+		public Object create(String literal) {
+			return type.create(literal);
+		}
+		
+		@Override
+		public Object getDefaultValue() {
+			return null;
 		}
 	}
 }

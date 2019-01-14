@@ -8,8 +8,6 @@ public interface IBinaryExpression extends IExpression {
 	IExpression getLeftExpression();
 	IExpression getRightExpression();
 	
-	boolean isBoolean();
-	
 	default boolean isOperation() {
 		return true;
 	}
@@ -17,9 +15,7 @@ public interface IBinaryExpression extends IExpression {
 	
 	@Override
 	default public IValue evaluate(IStackFrame frame) throws ExecutionError {
-		IValue leftValue =  frame.evaluate(getLeftExpression());
-		IValue rightValue = frame.evaluate(getRightExpression());
-		return getOperator().apply(leftValue, rightValue);
+		return getOperator().apply(getLeftExpression(), getRightExpression(), frame);
 	}
 }
 
