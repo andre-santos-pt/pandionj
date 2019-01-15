@@ -8,17 +8,18 @@ import com.google.common.collect.ImmutableList;
 import model.program.IArrayElementAssignment;
 import model.program.IArrayElementExpression;
 import model.program.IArrayLengthExpression;
+import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IVariableRole;
 
 class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVariableDeclaration {
-	private final int numberOfDimensions;
+	private final IArrayType arrayType;
 	
-	public ArrayVariableDeclaration(Block block, String name, IDataType type, int numberOfDimensions, Set<VariableDeclaration.Flag> flags) {
-		super(block, name, type, flags);
-		this.numberOfDimensions = numberOfDimensions;
+	public ArrayVariableDeclaration(Block block, String name, IArrayType type, Set<VariableDeclaration.Flag> flags) {
+		super(block, name, type.getComponentType(), flags);
+		this.arrayType = type;
 	}
 
 	@Override
@@ -28,9 +29,19 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 
 	@Override
 	public int getArrayDimensions() {
-		return numberOfDimensions;
+		return arrayType.getDimensions();
 	}
 
+	@Override
+	public IArrayType getType() {
+		return arrayType;
+	}
+	
+	@Override
+	public IDataType getComponentType() {
+		return arrayType.getComponentType();
+	}
+	
 	@Override
 	public IArrayLengthExpression lengthExpression(List<IExpression> indexes) {
 		return new ArrayLengthExpression(indexes);
@@ -52,6 +63,9 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 	
 	@Override
 	public String toString() {
+//		String brackets = "";
+//		for(int i = 0; i < getArrayDimensions(); i++)
+//			brackets += "[]";
 		return (isReference() ? "*var " : "var ") + getId() + " (" + getType() + ")";
 	}
 	
@@ -79,7 +93,10 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 		
 		@Override
 		public String toString() {
-			return getVariable().getId() + ".length";
+			String text = getVariable().getId();
+			for(IExpression e : indexes)
+				text += "[" + e + "]";
+			return text + ".length";
 		}
 	}
 }

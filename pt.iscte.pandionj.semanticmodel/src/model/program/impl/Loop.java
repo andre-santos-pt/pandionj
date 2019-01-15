@@ -3,6 +3,8 @@ package model.program.impl;
 import java.util.List;
 import java.util.Set;
 
+import model.program.IArrayElementAssignment;
+import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
 import model.program.IDataType;
@@ -20,6 +22,7 @@ class Loop extends Statement implements ILoop {
 	private final IExpression guard;
 	private final IBlock block;
 	
+	// TODO doFirst param
 	public Loop(Block parent, IExpression guard) {
 		super(parent);
 		this.guard = guard;
@@ -37,13 +40,18 @@ class Loop extends Statement implements ILoop {
 	}
 
 	@Override
+	public int getLoopLimit() {
+		return 100;
+	}
+	
+	@Override
 	public boolean executeBlockFirst() {
 		return false;
 	}
 
 	@Override
 	public String toString() {
-		return "while(" + guard + ") " + block;
+		return "while " + guard + " " + block;
 	}
 	
 	@Override
@@ -93,8 +101,8 @@ class Loop extends Statement implements ILoop {
 	}
 
 	@Override
-	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions, Set<IVariableDeclaration.Flag> flags) {
-		return block.arrayDeclaration(name, type, dimensions, flags);
+	public IArrayVariableDeclaration arrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags) {
+		return block.arrayDeclaration(name, type, flags);
 	}
 
 	@Override
@@ -103,8 +111,14 @@ class Loop extends Statement implements ILoop {
 	}
 
 	@Override
-	public ISelection selection(IExpression expression, IBlock block, IBlock alternativeBlock) {
-		return block.selection(expression, block, alternativeBlock);
+	public IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp,
+			List<IExpression> indexes) {
+		return block.arrayElementAssignment(var, exp, indexes);
+	}
+	
+	@Override
+	public ISelection selection(IExpression expression, IBlock selectionBlock, IBlock alternativeBlock) {
+		return block.selection(expression, selectionBlock, alternativeBlock);
 	}
 
 	@Override

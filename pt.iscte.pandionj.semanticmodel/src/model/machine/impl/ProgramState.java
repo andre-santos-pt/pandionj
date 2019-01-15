@@ -1,6 +1,7 @@
 package model.machine.impl;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import model.machine.IArray;
@@ -78,11 +79,22 @@ public class ProgramState implements IProgramState {
 	
 	
 	@Override
-	public IArray allocateArray(IDataType type, int length) {
-		return new Array(this, type, length);
+	public IArray allocateArray(IDataType type, int ... dimensions) {
+		assert dimensions.length > 0;
+		Array array = new Array(this, type, dimensions[0]);
+		if(dimensions.length == 1) {
+			for(int i = 0; i < dimensions[0]; i++)
+			array.setElement(i, Value.create(type, type.getDefaultValue()));
+		}
+		for(int i = 1; i < dimensions.length; i++) {
+			int[] remainingDims = Arrays.copyOfRange(dimensions, i, dimensions.length);
+			for(int j = 0; j < dimensions[0]; j++)
+				array.setElement(j, allocateArray(type, remainingDims));
+		}
+		return array;
 	}
 	
-	public IExecutionData execute(IProcedure procedure, String ... args) {
+	public IExecutionData execute(IProcedure procedure, Object ... args) {
 		
 		if(args.length != procedure.getNumberOfParameters())
 			throw new RuntimeException("incorrect number of arguments for " + procedure);
@@ -92,14 +104,12 @@ public class ProgramState implements IProgramState {
 		
 		Factory factory = new Factory();
 		List<IExpression> procArgs = new ArrayList<>(args.length);
-		for(String a : args)
-			procArgs.add(factory.literal(Integer.parseInt(a))); // FIXME other types of program args
+		for(Object a : args)
+			procArgs.add(factory.literalMatch(a.toString()));
 		
 		IProcedureCallExpression call = procedure.callExpression(procArgs);
 		try {
-//			stack.evaluate(call);
 			call.evaluate(stack);
-//			call.execute(stack);
 		} catch (ExecutionError e) {
 			System.err.println("Execution error: " + e);
 		}

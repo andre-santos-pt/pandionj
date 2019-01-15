@@ -8,8 +8,11 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 
 import model.machine.ICallStack;
+import model.program.impl.Factory;
 
 public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterable<IStatement> {
+	IFactory factory = new Factory();
+	
 	IBlock getParent();
 	
 	default boolean isProcedure() {
@@ -31,18 +34,33 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 		return variableDeclaration(name, type, ImmutableSet.of());
 	}
 	
-	IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions, Set<IVariableDeclaration.Flag> flags);
-	default IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions) {
-		return arrayDeclaration(name, type, dimensions, ImmutableSet.of());
+	IArrayVariableDeclaration arrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags);
+	default IArrayVariableDeclaration arrayDeclaration(String name, IArrayType type) {
+		return arrayDeclaration(name, type, ImmutableSet.of());
 	}
 	
 	IVariableAssignment assignment(IVariableDeclaration var, IExpression exp);
+	
+	default IVariableAssignment increment(IVariableDeclaration var) {
+		assert var.getType() == IDataType.INT;
+		return assignment(var, factory.binaryExpression(IOperator.ADD, var.expression(), factory.literal(1)));
+	}
+	
+	default IVariableAssignment decrement(IVariableDeclaration var) {
+		assert var.getType() == IDataType.INT;
+		return assignment(var, factory.binaryExpression(IOperator.SUB, var.expression(), factory.literal(1)));
+	}
+	
+	IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp, List<IExpression> indexes);
+	default IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp, IExpression ... indexes) {
+		return arrayElementAssignment(var, exp, Arrays.asList(indexes));
+	}
 	
 	default ISelection selection(IExpression expression, IBlock block) {
 		return selection(expression, block, null);
 	}
 	
-	ISelection selection(IExpression expression, IBlock block, IBlock alternativeBlock);
+	ISelection selection(IExpression expression, IBlock selectionBlock, IBlock alternativeBlock);
 
 	ILoop loop(IExpression guard);
 	
@@ -55,12 +73,14 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 	}
 	
 	@Override
-	default void execute(ICallStack stack) throws ExecutionError {
+	default boolean execute(ICallStack stack) throws ExecutionError {
 		for(IStatement s : getStatements()) {
-			stack.execute(s);
-			if(s instanceof IReturn)
+			if(!stack.execute(s))
+				return false;
+//			if(s instanceof IReturn)
 				; // TODO quit procedure
 		}
+		return true;
 	}
 	
 	@Override

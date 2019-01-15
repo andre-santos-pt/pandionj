@@ -3,17 +3,20 @@ package model.program;
 public interface IArrayType extends IDataType {
 
 	int getDimensions();
+	IDataType getComponentType();
 	
 	class ValueTypeArray implements IArrayType {
-		private IDataType type;
-		private int dimensions;
-		private String id;
+		private final IDataType type;
+		private final int dimensions;
+		private final String id;
 		
 		public ValueTypeArray(IDataType type, int dimensions) {
+			this.type = type;
 			this.dimensions = dimensions;
-			id = type.getId();
+			String id = type.getId();
 			for(int i = 0; i < dimensions; i++)
 				id += "[]";
+			this.id = id;
 		}
 		
 		@Override
@@ -53,6 +56,11 @@ public interface IArrayType extends IDataType {
 		@Override
 		public Object getDefaultValue() {
 			return null;
+		}
+		
+		@Override
+		public IDataType getComponentType() {
+			return type;
 		}
 	}
 }

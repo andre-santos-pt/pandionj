@@ -71,12 +71,11 @@ class StackFrame implements IStackFrame {
 		return variables.get(name);
 	}
 
-	// TODO block variable
-	@Override
-	public void addVariable(String identifier, IDataType type) {
+//	@Override
+//	public void addVariable(String identifier, IDataType type) {
 //		assert identifier != null && !identifier.isEmpty() && !variables.containsKey(identifier);
 //		variables.put(identifier, IValue.NULL);
-	}
+//	}
 
 	@Override
 	public void setVariable(String identifier, IValue value) {
@@ -127,20 +126,22 @@ class StackFrame implements IStackFrame {
 	}
 
 	@Override
-	public IArray getArray(IDataType baseType, int length) {
-		return callStack.getProgramState().allocateArray(baseType, length);
+	public IArray getArray(IDataType baseType, int[] dimensions) {
+		return callStack.getProgramState().allocateArray(baseType, dimensions);
 	}
 
 	@Override
-	public void execute(IStatement statement) throws ExecutionError {
+	public boolean execute(IStatement statement) throws ExecutionError {
 		try {
 			for(IListener l : listeners)
 				l.statementExecutionStart(statement);
 			
-			statement.execute(this.getCallStack());
+			boolean result = statement.execute(this.getCallStack());
 			
 			for(IListener l : listeners)
 				l.statementExecutionEnd(statement);
+			
+			return result;
 		}
 		catch(ExecutionError e) {
 			throw e;

@@ -17,7 +17,12 @@ public interface IArrayAllocation extends IExpression {
 	@Override
 	default IArray evaluate(ICallStack stack) throws ExecutionError {
 		IStackFrame frame = stack.getTopFrame();
-		int dim = ((Number) frame.evaluate(getDimensions().get(0)).getValue()).intValue();
-		return frame.getArray(getType(), dim); // FIXME
+		List<IExpression> dimensions = getDimensions();
+		int[] dims = new int[dimensions.size()];
+		for(int i = 0; i < dims.length; i++)
+			dims[i] = ((Number) frame.evaluate(dimensions.get(i)).getValue()).intValue();
+
+		IArray array = frame.getArray(getType(), dims); 
+		return array;
 	}
 }

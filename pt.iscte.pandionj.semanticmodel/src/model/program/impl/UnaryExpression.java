@@ -2,7 +2,6 @@ package model.program.impl;
 
 
 import model.machine.ICallStack;
-import model.machine.IStackFrame;
 import model.machine.IValue;
 import model.program.ExecutionError;
 import model.program.IDataType;
@@ -46,7 +45,7 @@ public class UnaryExpression extends SourceElement implements IUnaryExpression {
 	
 	@Override
 	public String toString() {
-		return operator.getSymbol() + expression;
+		return operator.getSymbol() + "(" + expression + ")";
 	}
 
 }

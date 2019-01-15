@@ -3,12 +3,12 @@ package model.program.impl;
 import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import model.program.IArrayElementAssignment;
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
@@ -58,8 +58,8 @@ class Procedure extends SourceElement implements IProcedure {
 	public IVariableDeclaration addParameter(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
 		// TODO review null param
 		IVariableDeclaration param = type instanceof IArrayType ?
-				new ArrayVariableDeclaration(body, name, type, ((IArrayType) type).getDimensions(), ImmutableSet.of()) :
-					new VariableDeclaration(body, name, type, flags);
+				new ArrayVariableDeclaration(body, name, (IArrayType) type, ImmutableSet.of()) :
+				new VariableDeclaration(body, name, type, flags);
 				variables.add(parameters, param);
 				parameters++;
 				return param;
@@ -172,8 +172,8 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
-	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions, Set<IVariableDeclaration.Flag> flags) {
-		IArrayVariableDeclaration var = body.arrayDeclaration(name, type, dimensions, flags);
+	public IArrayVariableDeclaration arrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags) {
+		IArrayVariableDeclaration var = body.arrayDeclaration(name, type, flags);
 		variables.add(var);
 		return var;
 	}
@@ -181,6 +181,12 @@ class Procedure extends SourceElement implements IProcedure {
 	@Override
 	public IVariableAssignment assignment(IVariableDeclaration var, IExpression exp) {
 		return body.assignment(var, exp);
+	}
+	
+	@Override
+	public IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp,
+			List<IExpression> indexes) {
+		return body.arrayElementAssignment(var, exp, indexes);
 	}
 
 	@Override

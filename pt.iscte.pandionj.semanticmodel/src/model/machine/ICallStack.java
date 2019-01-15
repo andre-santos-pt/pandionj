@@ -22,8 +22,8 @@ public interface ICallStack {
 	
 	IStackFrame getLastTerminatedFrame();
 	
-	default void execute(IStatement statement) throws ExecutionError {
-		getTopFrame().execute(statement);
+	default boolean execute(IStatement statement) throws ExecutionError {
+		return getTopFrame().execute(statement);
 	}
 	
 	default IValue evaluate(IExpression expression) throws ExecutionError {

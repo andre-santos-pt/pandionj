@@ -8,9 +8,10 @@ public interface IVariableAssignment extends IStatement {
 	IExpression getExpression();
 	
 	@Override
-	default void execute(ICallStack callStack) throws ExecutionError {
+	default boolean execute(ICallStack callStack) throws ExecutionError {
 		IValue value = callStack.evaluate(getExpression());
 		callStack.getTopFrame().setVariable(getVariable().getId(), value);
+		return true;
 	}
 	
 	default ArithmeticOperator getAccumulationOperator() {

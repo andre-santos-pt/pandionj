@@ -12,6 +12,10 @@ public class ExecutionError extends Exception {
 	private final String message;
 	private Object arg;
 	
+	public ExecutionError(ISourceElement element, String message) {
+		this(element, message, null);
+	}
+	
 	public ExecutionError(ISourceElement element, String message, Object arg) {
 		assert element != null;
 		assert message != null && !message.isEmpty();
@@ -34,6 +38,6 @@ public class ExecutionError extends Exception {
 	
 	@Override
 	public String toString() {
-		return element + ": " + message + ": " + arg;
+		return element + ": " + message + (arg != null ? ": " + arg : "");
 	}
 }

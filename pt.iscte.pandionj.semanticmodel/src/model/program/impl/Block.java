@@ -5,6 +5,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import model.program.IArrayElementAssignment;
+import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
 import model.program.IDataType;
@@ -60,8 +62,8 @@ class Block extends SourceElement implements IBlock{
 	}
 	
 	@Override
-	public IArrayVariableDeclaration arrayDeclaration(String name, IDataType type, int dimensions, Set<IVariableDeclaration.Flag> flags) {
-		return new ArrayVariableDeclaration(this, name, type, dimensions, flags);
+	public IArrayVariableDeclaration arrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags) {
+		return new ArrayVariableDeclaration(this, name, type, flags);
 	}
 
 	@Override
@@ -69,6 +71,11 @@ class Block extends SourceElement implements IBlock{
 		return new VariableAssignment(this, variable, expression);
 	}
 
+	@Override
+	public IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp, List<IExpression> indexes) {
+		return new ArrayElementAssignment(this, var, indexes, exp);
+	}
+	
 	@Override
 	public ISelection selection(IExpression guard, IBlock block, IBlock alternativeBlock) {
 		return new Selection(this, guard, block, alternativeBlock);
@@ -91,9 +98,13 @@ class Block extends SourceElement implements IBlock{
 
 	@Override
 	public String toString() {
-		String text = "{ ";
+		String tabs = "";
+		int d = getDepth();
+		for(int i = 0; i < d; i++)
+			tabs += "\t";
+		String text = "{";
 		for(IStatement s : statements)
-			text += s + "; ";
-		return text + "}";
+			text += tabs + s + ";";
+		return tabs + text + "}";
 	}
 }

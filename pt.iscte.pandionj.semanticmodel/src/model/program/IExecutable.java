@@ -17,5 +17,7 @@ public interface IExecutable {
 	}
 	
 	// ARCH: only called my stack frame
-	default void execute(ICallStack callStack) throws ExecutionError { }
+	default boolean execute(ICallStack callStack) throws ExecutionError { 
+		return true;
+	}
 }

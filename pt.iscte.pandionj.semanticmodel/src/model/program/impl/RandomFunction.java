@@ -12,9 +12,10 @@ public class RandomFunction extends Procedure {
 	}
 	
 	@Override
-	public void execute(ICallStack stack) throws ExecutionError {
+	public boolean execute(ICallStack stack) throws ExecutionError {
 		double d = Math.random();
 		stack.getTopFrame().setReturn(Value.create(IDataType.DOUBLE, d));
+		return true;
 	}
 
 }

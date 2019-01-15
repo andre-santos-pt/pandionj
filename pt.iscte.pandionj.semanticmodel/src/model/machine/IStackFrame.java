@@ -22,7 +22,7 @@ public interface IStackFrame {
 	Map<String, IValue> getVariables();
 	
 	IValue getVariable(String id);
-	void addVariable(String identifier, IDataType type);
+//	void addVariable(String identifier, IDataType type);
 	void setVariable(String identifier, IValue value);
 	
 	IValue getReturn();
@@ -37,9 +37,9 @@ public interface IStackFrame {
 	IValue getValue(String literal);
 	IValue getValue(Object object);
 
-	IArray getArray(IDataType baseType, int length);
+	IArray getArray(IDataType baseType, int[] dimensions);
 	
-	void execute(IStatement statement) throws ExecutionError;
+	boolean execute(IStatement statement) throws ExecutionError;
 	
 	IValue evaluate(IExpression expression) throws ExecutionError;
 	

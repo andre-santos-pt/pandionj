@@ -6,7 +6,8 @@ import java.util.List;
 public interface IArrayVariableDeclaration extends IVariableDeclaration {
 
 	int getArrayDimensions();
-
+	IDataType getComponentType();
+	
 //	default IVariableRole getRole() {
 //		return IVariableRole.NONE;
 //	}

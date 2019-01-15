@@ -13,9 +13,10 @@ public class PrintProcedure extends Procedure {
 	}
 	
 	@Override
-	public void execute(ICallStack stack) throws ExecutionError {
+	public boolean execute(ICallStack stack) throws ExecutionError {
 		IValue value = stack.getTopFrame().getVariable("value");
 		System.out.println(value.getValue());
+		return true;
 	}
 
 }

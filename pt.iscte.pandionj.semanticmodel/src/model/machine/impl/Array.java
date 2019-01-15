@@ -32,7 +32,10 @@ class Array implements IArray {
 
 	@Override
 	public IValue getElement(int i) {
-		return programState.getValue(array[i].getValue());
+		if(array[i] instanceof IArray)
+			return array[i];
+		else
+			return programState.getValue(array[i].getValue());
 	}
 	
 	@Override

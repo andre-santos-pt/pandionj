@@ -13,7 +13,6 @@ import model.machine.ICallStack;
 import model.machine.IProgramState;
 import model.machine.IStackFrame;
 import model.machine.IValue;
-import model.machine.ICallStack.IListener;
 import model.machine.impl.ProgramState;
 import model.program.ExecutionError;
 import model.program.IBinaryExpression;
@@ -144,19 +143,13 @@ public class TestArithmeticExpressions {
 		}
 
 		@Override
-		public IArray getArray(IDataType baseType, int length) {
+		public IArray getArray(IDataType baseType, int[] dimensions) {
 			return null;
 		}
 
 		@Override
-		public void execute(IStatement statement) throws ExecutionError {
-
-		}
-
-
-		@Override
-		public void addVariable(String identifier, IDataType type) {
-
+		public boolean execute(IStatement statement) throws ExecutionError {
+			return true;
 		}
 
 		@Override

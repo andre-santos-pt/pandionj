@@ -1,7 +1,6 @@
 package model.program;
 
 import model.machine.ICallStack;
-import model.machine.IStackFrame;
 import model.machine.IValue;
 
 public interface IExpression extends ISourceElement {

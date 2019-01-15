@@ -15,13 +15,15 @@ public interface IProcedureCall extends IStatement {
 		return false;
 	}
 	
-	
 	@Override
-	default void execute(ICallStack callStack) throws ExecutionError {
-		executeCall(callStack, getProcedure(), getArguments());
+	default boolean execute(ICallStack callStack) throws ExecutionError {
+		return executeCall(callStack, getProcedure(), getArguments(), this);
 	}
 	
-	static void executeCall(ICallStack callStack, IProcedure procedure, List<IExpression> args) throws ExecutionError {
+	static boolean executeCall(ICallStack callStack, IProcedure procedure, List<IExpression> args, ISourceElement element) throws ExecutionError {
+		if(procedure.getNumberOfParameters() != args.size())
+			throw new ExecutionError(element, "wrong number of arguments");
+		
 		List<IValue> argsValues = new ArrayList<>();
 		for(int i = 0; i < procedure.getNumberOfParameters(); i++) {
 			IValue arg = callStack.evaluate(args.get(i));
@@ -29,26 +31,9 @@ public interface IProcedureCall extends IStatement {
 		}
 		IStackFrame newFrame = callStack.newFrame(procedure, argsValues);
 		
-		newFrame.execute(procedure);
+		boolean result = newFrame.execute(procedure);
 		IValue returnValue = newFrame.getReturn();
 		callStack.terminateTopFrame(returnValue);
+		return result;
 	}
-	
-//	List<IValue> args = new ArrayList<>();
-//	for(int i = 0; i < getProcedure().getNumberOfParameters(); i++) {
-//		IValue arg = callStack.evaluate(getArguments().get(i));
-//		args.add(arg);
-//	}
-//	IStackFrame newFrame = callStack.newFrame(getProcedure(), args);
-//	
-//	newFrame.execute(getProcedure());
-//	IValue returnValue = newFrame.getReturn();
-//	callStack.terminateTopFrame(returnValue);
-	
-//	@Override
-//	default IValue evaluate(IStackFrame stackFrame) throws ExecutionError {
-//		stackFrame.execute(this);
-//		IStackFrame last = stackFrame.getCallStack().getLastTerminatedFrame();
-//		return last.getReturn();
-//	}
 }

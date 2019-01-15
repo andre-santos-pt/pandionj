@@ -1,7 +1,6 @@
 package model.program;
 
 public interface IStatement extends ISourceElement, IExecutable {
-//	String getDescription();
 	IBlock getParent();
 
 	default IProcedure getProcedure() {
@@ -10,5 +9,15 @@ public interface IStatement extends ISourceElement, IExecutable {
 			b = b.getParent();
 		
 		return (IProcedure) b;
+	}
+	
+	default int getDepth() {
+		int d = 1;
+		IBlock b = getParent();
+		while(b != null && !(b instanceof IProcedure)) {
+			b = b.getParent();
+			d++;
+		}
+		return d;
 	}
 }

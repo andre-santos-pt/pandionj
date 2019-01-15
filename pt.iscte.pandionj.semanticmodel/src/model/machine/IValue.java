@@ -5,6 +5,9 @@ import model.program.IDataType;
 public interface IValue {
 	IDataType getType();
 	Object getValue();
+	default boolean isNull() {
+		return this == NULL;
+	}
 	
 	IValue NULL = new IValue() {
 		@Override

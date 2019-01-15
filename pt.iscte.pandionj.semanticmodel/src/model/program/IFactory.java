@@ -17,6 +17,7 @@ public interface IFactory {
 	IBinaryExpression binaryExpression(IBinaryOperator operator, IExpression left, IExpression right);
 
 	ILiteral literal(IDataType type, String string);
+	ILiteral literalMatch(String string);
 	ILiteral literal(int value);
 	ILiteral literal(double value);
 	ILiteral literal(boolean value);
@@ -27,6 +28,8 @@ public interface IFactory {
 	default IArrayAllocation arrayAllocation(IDataType type, IExpression ... dimensions) {
 		return arrayAllocation(type, Arrays.asList(dimensions));
 	}
+	
+	IArrayType arrayType(IDataType componentType, int dimensions);
 	
 //	IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args);
 //	default IProcedureCall procedureCall(IProcedure procedure, IExpression ... args) {

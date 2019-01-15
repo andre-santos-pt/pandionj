@@ -18,4 +18,8 @@ public interface IExecutionData {
 	IValue getReturnValue();
 	IValue getVariableValue(String id);
 //	int getTotalMemory();
+	
+	default void printResult() {
+		System.out.println(getReturnValue());
+	}
 }

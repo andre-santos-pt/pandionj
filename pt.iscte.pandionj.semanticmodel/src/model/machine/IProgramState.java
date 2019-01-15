@@ -14,9 +14,9 @@ public interface IProgramState {
 	IValue getValue(String literal);
 	IValue getValue(Object object);
 	
-	IArray allocateArray(IDataType baseType, int length);
+	IArray allocateArray(IDataType baseType, int ... dimensions);
 	
-	IExecutionData execute(IProcedure procedureName, String ... args);
+	IExecutionData execute(IProcedure procedureName, Object ... args);
 //	default IExecutionData execute(String procedureName, String ... args) {
 //		
 //	}

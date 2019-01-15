@@ -17,7 +17,7 @@ public interface IProcedureCallExpression extends IExpression {
 
 	@Override
 	default IValue evaluate(ICallStack stack) throws ExecutionError {
-		IProcedureCall.executeCall(stack, getProcedure(), getArgs());
+		IProcedureCall.executeCall(stack, getProcedure(), getArgs(), this);
 //		stackFrame.execute(getProcedure().callExpression(getArgs()));
 		IStackFrame last = stack.getLastTerminatedFrame();
 		return last.getReturn();

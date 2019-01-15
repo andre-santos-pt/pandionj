@@ -15,13 +15,17 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 		return IVariableRole.NONE;
 	}
 	
+	default boolean isGatherer() {
+		return getRole() instanceof IGatherer;
+	}
+	
 	IVariableAssignment assignment(IExpression exp);
 	
 	IVariableExpression expression();
 	
 	@Override
-	default void execute(ICallStack callStack) {
-		callStack.getTopFrame().addVariable(getId(), getType());
+	default boolean execute(ICallStack callStack) {
+		return true;
 	}
 	
 	enum Flag {

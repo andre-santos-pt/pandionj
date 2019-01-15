@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 
 import model.program.IArrayElementExpression;
 import model.program.IArrayVariableDeclaration;
+import model.program.IDataType;
 import model.program.IExpression;
 
 public class ArrayElementExpression extends VariableExpression implements IArrayElementExpression {
@@ -25,6 +26,11 @@ public class ArrayElementExpression extends VariableExpression implements IArray
 	@Override
 	public List<IExpression> getIndexes() {
 		return indexes;
+	}
+	
+	@Override
+	public IDataType getType() {
+		return getVariable().getComponentType();
 	}
 	
 	@Override

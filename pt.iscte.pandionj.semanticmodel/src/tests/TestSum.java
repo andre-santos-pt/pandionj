@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import model.machine.IExecutionData;
 import model.machine.impl.ProgramState;
-import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IFactory;
@@ -33,7 +32,7 @@ public class TestSum {
 		program = factory.createProgram();
 		
 		sumArrayProc = program.createProcedure("sum", IDataType.INT);
-		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) sumArrayProc.addParameter("v", new IArrayType.ValueTypeArray(IDataType.INT, 1));
+		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) sumArrayProc.addParameter("v", factory.arrayType(IDataType.INT, 1));
 		
 		IVariableDeclaration sVar = sumArrayProc.variableDeclaration("s", IDataType.INT);
 		sVar.assignment(factory.literal(0));
@@ -48,13 +47,13 @@ public class TestSum {
 		
 		main = program.createProcedure("main", IDataType.INT);
 		
-		IArrayVariableDeclaration array = main.arrayDeclaration("test", IDataType.INT, 1);
+		IArrayVariableDeclaration array = main.arrayDeclaration("test", factory.arrayType(IDataType.INT, 1));
 		array.assignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
 		array.elementAssignment(factory.literal(5), factory.literal(0));
 		array.elementAssignment(factory.literal(7), factory.literal(1));
 		array.elementAssignment(factory.literal(9), factory.literal(2));
 		
-		IVariableDeclaration mVar = main.variableDeclaration("s", IDataType.INT);
+		IVariableDeclaration mVar = main.variableDeclaration("s", IDataType.VOID);
 		mVar.assignment(sumArrayProc.callExpression(array.expression()));
 	}
 
@@ -68,4 +67,6 @@ public class TestSum {
 		
 		assertTrue(sumArrayProc.getVariable("s").getRole() instanceof IGatherer); 
 	}
+	
+	// TODO @Test average
 }

@@ -24,9 +24,12 @@ public interface IArrayLengthExpression extends IExpression {
 		IArray array = (IArray) frame.getVariable(getVariable().getId());
 		
 		List<IExpression> indexes = getIndexes();
+		
+		//assert indexes.size() < array.getType() TODO validate indexes
+		
 		IValue v = array;
-		for(int i = 0; i < indexes.size()-1; i++) {
-			int index = (int) frame.evaluate(indexes.get(i)).getValue();
+		for(int i = 0; i < indexes.size(); i++) {
+			int index = ((Number) frame.evaluate(indexes.get(i)).getValue()).intValue();
 			v = array.getElement(index);
 		}
 

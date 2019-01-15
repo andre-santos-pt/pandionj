@@ -7,8 +7,11 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
 	TestArithmeticExpressions.class,
 	TestBooleanFuncions.class,
+	TestRandom.class,
 	TestSelection.class,
 	TestSum.class,
+	TestArrays.class,
+	Test2DArrays.class
 })
 
 public class JunitTestSuite {   

@@ -12,11 +12,16 @@ public interface ISelection extends IConditionalStatement {
 	}
 	
 	@Override
-	default void execute(ICallStack callStack) throws ExecutionError {
+	default boolean execute(ICallStack callStack) throws ExecutionError {
 		IValue guard = callStack.evaluate(getGuard());
-		if(guard.equals(IValue.TRUE))
-			callStack.execute(getBlock());
-		else if(hasAlternativeBlock())
-			callStack.execute(getAlternativeBlock());
+		if(guard.equals(IValue.TRUE)) {
+			if(!callStack.execute(getBlock()))
+				return false;
+		}
+		else if(hasAlternativeBlock()) {
+			if(!callStack.execute(getAlternativeBlock()))
+				return false;
+		}
+		return true;
 	}
 }

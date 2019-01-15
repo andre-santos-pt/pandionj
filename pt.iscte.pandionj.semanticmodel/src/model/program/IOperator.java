@@ -23,7 +23,7 @@ public interface IOperator {
 	IBinaryOperator OR = LogicalOperator.OR;
 	IBinaryOperator XOR = LogicalOperator.XOR;
 	
-//	IUnaryOperator TRUNCATE = UnaryOperator.TRUNCATE;
+	IUnaryOperator TRUNCATE = UnaryOperator.TRUNCATE;
 
 	
 }

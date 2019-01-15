@@ -9,9 +9,7 @@ import org.junit.Test;
 
 import model.machine.IArray;
 import model.machine.IExecutionData;
-import model.machine.IValue;
 import model.machine.impl.ProgramState;
-import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IFactory;
@@ -32,7 +30,7 @@ public class TestSwap {
 		program = factory.createProgram();
 		
 		swapProc = program.createProcedure("swap", IDataType.VOID);
-		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) swapProc.addParameter("v", new IArrayType.ValueTypeArray(IDataType.INT, 1), EnumSet.of(IVariableDeclaration.Flag.REFERENCE));
+		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) swapProc.addParameter("v", factory.arrayType(IDataType.INT, 1), EnumSet.of(IVariableDeclaration.Flag.REFERENCE));
 		IVariableDeclaration iParam = swapProc.addParameter("i", IDataType.INT);
 		IVariableDeclaration jParam = swapProc.addParameter("j", IDataType.INT);
 		
@@ -46,7 +44,7 @@ public class TestSwap {
 		iParam.assignment(factory.literal(4));
 		
 		main = program.createProcedure("main", IDataType.VOID);
-		IArrayVariableDeclaration array = main.arrayDeclaration("test", IDataType.INT, 1);
+		IArrayVariableDeclaration array = main.arrayDeclaration("test", factory.arrayType(IDataType.INT, 1));
 		array.assignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
 		array.elementAssignment(factory.literal(5), factory.literal(0));
 		array.elementAssignment(factory.literal(7), factory.literal(1));

@@ -27,4 +27,8 @@ public interface IArrayElementExpression extends IVariableExpression {
 		}
 		return element;
 	}
+	
+	default IDataType getType() {
+		return getVariable().getType();
+	}
 }

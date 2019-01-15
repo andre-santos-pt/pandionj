@@ -52,8 +52,8 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 	
 	
 	@Override
-	default void execute(ICallStack stack) throws ExecutionError {
-		stack.execute(getBody());
+	default boolean execute(ICallStack stack) throws ExecutionError {
+		return stack.execute(getBody());
 	}
 	
 	

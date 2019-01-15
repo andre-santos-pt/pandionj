@@ -1,5 +1,7 @@
 package model.program;
 
+import java.math.BigDecimal;
+
 import model.machine.IValue;
 import model.machine.impl.Value;
 
@@ -16,20 +18,21 @@ enum UnaryOperator implements IUnaryOperator {
 			return IDataType.BOOLEAN;
 		}
 	},
-//	TRUNCATE("(int)") {
-//		@Override
-//		protected Object calculate(IValue value) {
-//			assert value.getType().isNumeric();
-//			return new BigDecimal((int) value.getValue());
-//		}
-//		
-//		@Override
-//		public IDataType getResultType(IExpression exp) {
-//			return IDataType.INT;
-//		}
-//	},
-	// NEGATION
-	// PLUS
+	TRUNCATE("(int)") {
+		@Override
+		protected Object calculate(IValue value) {
+			assert value.getType().isNumeric();
+			return new BigDecimal(((BigDecimal) value.getValue()).intValue());
+		}
+		
+		@Override
+		public IDataType getResultType(IExpression exp) {
+			return IDataType.INT;
+		}
+	},
+	
+	// TODO NEGATION
+	// TODO PLUS
 	;
 	
 	private String symbol;

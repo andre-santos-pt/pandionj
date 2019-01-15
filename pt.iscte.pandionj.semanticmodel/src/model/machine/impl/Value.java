@@ -19,10 +19,10 @@ public final class Value implements IValue {
 			assert value instanceof Boolean;
 			return (boolean) value ? IValue.TRUE : IValue.FALSE;
 		}
-		else if(value == null)
+		else if(value == null) // TODO also for non primitive types
 			return IValue.NULL;
 		else
-			return new Value(type, value);
+			return new Value(type, type.create(value.toString()));
 	}
 	@Override
 	public IDataType getType() {
