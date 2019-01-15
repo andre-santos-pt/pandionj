@@ -22,7 +22,7 @@ public class InteractiveMode {
 			cmd = keyboard.nextLine();
 			String[] parts = cmd.split("\\s+");
 			for (IProcedure p : program.getProcedures()) {
-				if(p.getIdentifier().equals(parts[0]) && 
+				if(p.getId().equals(parts[0]) && 
 						p.getNumberOfParameters() == parts.length-1) {
 					state.execute(p, Arrays.copyOfRange(parts, 1, parts.length));
 					break;

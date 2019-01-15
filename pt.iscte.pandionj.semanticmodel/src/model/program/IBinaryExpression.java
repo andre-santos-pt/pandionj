@@ -1,6 +1,6 @@
 package model.program;
 
-import model.machine.IStackFrame;
+import model.machine.ICallStack;
 import model.machine.IValue;
 
 public interface IBinaryExpression extends IExpression {
@@ -14,8 +14,8 @@ public interface IBinaryExpression extends IExpression {
 	
 	
 	@Override
-	default public IValue evaluate(IStackFrame frame) throws ExecutionError {
-		return getOperator().apply(getLeftExpression(), getRightExpression(), frame);
+	default public IValue evaluate(ICallStack stack) throws ExecutionError {
+		return getOperator().apply(getLeftExpression(), getRightExpression(), stack.getTopFrame());
 	}
 }
 

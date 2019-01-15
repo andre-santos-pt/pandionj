@@ -18,7 +18,7 @@ public interface IArrayElementAssignment extends IVariableAssignment {
 	@Override
 	default void execute(ICallStack callStack) throws ExecutionError {
 		IStackFrame frame = callStack.getTopFrame();
-		IArray array = (IArray) frame.getVariable(getVariable().getIdentifier());
+		IArray array = (IArray) frame.getVariable(getVariable().getId());
 		
 		List<IExpression> indexes = getIndexes();
 		IValue v = array;

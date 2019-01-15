@@ -10,8 +10,10 @@ import org.junit.Test;
 
 import model.machine.IArray;
 import model.machine.ICallStack;
+import model.machine.IProgramState;
 import model.machine.IStackFrame;
 import model.machine.IValue;
+import model.machine.ICallStack.IListener;
 import model.machine.impl.ProgramState;
 import model.program.ExecutionError;
 import model.program.IBinaryExpression;
@@ -87,15 +89,16 @@ public class TestArithmeticExpressions {
 	}
 	
 	private void test(IExpression expression, IDataType type, Number result) throws ExecutionError {
-		IValue value = expression.evaluate(mockFrame);
+		IValue value = expression.evaluate(mockStack);
 		String text = expression + " = " + value;
 		assertEquals(type, value.getType(), text);
 		assertEquals(new BigDecimal(result.toString()), value.getValue(), text);
 		System.out.println(text);
 	}
 	
+	ProgramState mockState = new ProgramState(factory.createProgram());
+
 	IStackFrame mockFrame = new IStackFrame() {
-		ProgramState state = new ProgramState(factory.createProgram());
 		public void terminateFrame() { }
 		public void setVariable(String identifier, IValue value) { }
 		public void setReturn(IValue value) { }
@@ -106,83 +109,114 @@ public class TestArithmeticExpressions {
 
 		@Override
 		public IValue getVariable(String id) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public IValue getValue(Object object) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 
 		@Override
 		public IValue getReturn() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public IProcedure getProcedure() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public IStackFrame getParent() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public int getMemory() {
-			// TODO Auto-generated method stub
 			return 0;
 		}
 
 		@Override
 		public ICallStack getCallStack() {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public IArray getArray(IDataType baseType, int length) {
-			// TODO Auto-generated method stub
 			return null;
 		}
 
 		@Override
 		public void execute(IStatement statement) throws ExecutionError {
-			// TODO Auto-generated method stub
 
 		}
 
 
 		@Override
 		public void addVariable(String identifier, IDataType type) {
-			// TODO Auto-generated method stub
 
 		}
 
 		@Override
 		public void addListener(IListener listener) {
-			// TODO Auto-generated method stub
 
 		}
 
 		@Override
 		public IValue evaluate(IExpression expression) throws ExecutionError {
-			return expression.evaluate(this);
+			return expression.evaluate(mockStack);
 		}
 
 
 		@Override
 		public IValue getValue(String literal) {
-			return state.getValue(literal);
+			return mockState.getValue(literal);
 		}
 
 
+	};
+	
+	ICallStack mockStack = new ICallStack() {
+		
+		@Override
+		public void terminateTopFrame(IValue returnValue) {
+			
+		}
+		
+		@Override
+		public IStackFrame newFrame(IProcedure procedure, List<IValue> args) {
+			return null;
+		}
+		
+		@Override
+		public IStackFrame getTopFrame() {
+			return mockFrame;
+		}
+		
+		@Override
+		public int getSize() {
+			return 0;
+		}
+		
+		@Override
+		public IProgramState getProgramState() {
+			return mockState;
+		}
+		
+		@Override
+		public IStackFrame getLastTerminatedFrame() {
+			return null;
+		}
+		
+		@Override
+		public List<IStackFrame> getFrames() {
+			return null;
+		}
+		
+		@Override
+		public void addListener(IListener listener) {
+		}
 	};
 }

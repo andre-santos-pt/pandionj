@@ -3,6 +3,7 @@ package model.program;
 import java.util.List;
 
 import model.machine.IArray;
+import model.machine.ICallStack;
 import model.machine.IStackFrame;
 import model.machine.IValue;
 
@@ -18,8 +19,9 @@ public interface IArrayLengthExpression extends IExpression {
 	}
 	
 	@Override
-	default IValue evaluate(IStackFrame frame) throws ExecutionError {
-		IArray array = (IArray) frame.getVariable(getVariable().getIdentifier());
+	default IValue evaluate(ICallStack stack) throws ExecutionError {
+		IStackFrame frame = stack.getTopFrame();
+		IArray array = (IArray) frame.getVariable(getVariable().getId());
 		
 		List<IExpression> indexes = getIndexes();
 		IValue v = array;

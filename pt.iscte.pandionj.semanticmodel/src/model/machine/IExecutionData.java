@@ -12,6 +12,8 @@ public interface IExecutionData {
 	int getTotalAssignments();
 	int getTotalOperations();
 	
+	int getTotalProcedureCalls();
+	
 	int getCallStackDepth();
 	IValue getReturnValue();
 	IValue getVariableValue(String id);

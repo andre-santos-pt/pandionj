@@ -13,7 +13,7 @@ import model.program.ExecutionError;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
-import model.program.IProcedureCall;
+import model.program.IProcedureCallExpression;
 import model.program.IProgram;
 import model.program.ISourceElement;
 import model.program.IStatement;
@@ -93,11 +93,13 @@ public class ProgramState implements IProgramState {
 		Factory factory = new Factory();
 		List<IExpression> procArgs = new ArrayList<>(args.length);
 		for(String a : args)
-			procArgs.add(factory.literal(Integer.parseInt(a))); // FIXME
+			procArgs.add(factory.literal(Integer.parseInt(a))); // FIXME other types of program args
 		
-		IProcedureCall call = factory.procedureCall(procedure, procArgs);
+		IProcedureCallExpression call = procedure.callExpression(procArgs);
 		try {
-			call.execute(stack);
+//			stack.evaluate(call);
+			call.evaluate(stack);
+//			call.execute(stack);
 		} catch (ExecutionError e) {
 			System.err.println("Execution error: " + e);
 		}
@@ -113,8 +115,6 @@ public class ProgramState implements IProgramState {
 					public void statementExecutionEnd(IStatement statement) {
 						if(statement instanceof IVariableAssignment)
 							data.countAssignment(stackFrame.getProcedure());
-						else if(statement instanceof IProcedure)
-							data.countCall();
 					}
 					
 					@Override
@@ -127,6 +127,7 @@ public class ProgramState implements IProgramState {
 //						}
 					}
 					
+					
 //					public void terminated(IValue result) {
 //						System.out.println(stackFrame.getProcedure() + " returns " + result);
 //					}
@@ -138,6 +139,7 @@ public class ProgramState implements IProgramState {
 				System.out.println(stackFrame.getProcedure() + " returns " + returnValue);
 				data.setVariableState(stackFrame.getVariables());
 				data.setReturnValue(returnValue);
+				data.countCall();
 			}
 		});
 	}

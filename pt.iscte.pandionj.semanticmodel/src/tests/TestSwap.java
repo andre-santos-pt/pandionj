@@ -1,9 +1,13 @@
 package tests;
+import static org.junit.Assert.assertEquals;
+
+import java.math.BigDecimal;
 import java.util.EnumSet;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import model.machine.IArray;
 import model.machine.IExecutionData;
 import model.machine.IValue;
 import model.machine.impl.ProgramState;
@@ -37,6 +41,8 @@ public class TestSwap {
 		vParam.elementAssignment(vParam.elementExpression(jParam.expression()), iParam.expression());
 		vParam.elementAssignment(tVar.expression(), jParam.expression());
 		
+		swapProc.procedureCall(program.getProcedure("print"), jParam.expression());
+
 		iParam.assignment(factory.literal(4));
 		
 		main = program.createProcedure("main", IDataType.VOID);
@@ -57,7 +63,9 @@ public class TestSwap {
 		System.out.println(program);
 		ProgramState state = new ProgramState(program);
 		IExecutionData data = state.execute(main);
-		System.out.println(data.getVariableValue("test"));
-		System.out.println(data.getVariableValue("i"));
+		IArray array = (IArray) data.getVariableValue("test");
+		assertEquals(new BigDecimal(9), array.getElement(0).getValue());
+		assertEquals(new BigDecimal(5), array.getElement(2).getValue());
+		assertEquals(new BigDecimal(0), data.getVariableValue("i").getValue());
 	}
 }

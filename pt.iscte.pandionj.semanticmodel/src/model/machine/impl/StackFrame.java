@@ -43,12 +43,12 @@ class StackFrame implements IStackFrame {
 
 		int i = 0;
 		for(IVariableDeclaration param : procedure.getParameters()) {
-			variables.put(param.getIdentifier(), arguments.get(i));
+			variables.put(param.getId(), arguments.get(i));
 			i++;
 		}
 		
 		for (IVariableDeclaration var : procedure.getVariables(false))
-			variables.put(var.getIdentifier(), Value.create(var.getType(), var.getType().getDefaultValue()));
+			variables.put(var.getId(), Value.create(var.getType(), var.getType().getDefaultValue()));
 	}
 
 	@Override
@@ -156,7 +156,7 @@ class StackFrame implements IStackFrame {
 			for(IListener l : listeners)
 				l.expressionEvaluationStart(expression);
 			
-			IValue value = expression.evaluate(this);
+			IValue value = expression.evaluate(callStack);
 			
 			for(IListener l : listeners)
 				l.expressionEvaluationEnd(expression, value);
@@ -170,7 +170,7 @@ class StackFrame implements IStackFrame {
 	
 	@Override
 	public String toString() {
-		String text = procedure.getIdentifier() + "(...)";
+		String text = procedure.getId() + "(...)";
 		for(Entry<String, IValue> e : variables.entrySet())
 			text += " " + e.getKey() + "=" + e.getValue();
 		return text;

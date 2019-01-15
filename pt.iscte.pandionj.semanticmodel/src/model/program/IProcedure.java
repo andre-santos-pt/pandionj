@@ -37,7 +37,7 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 	boolean isRecursive();
 	
 	default boolean hasSameSignature(IProcedure procedure) {
-		if(!getIdentifier().equals(procedure.getIdentifier()) || 
+		if(!getId().equals(procedure.getId()) || 
 			getNumberOfParameters() != procedure.getNumberOfParameters() ||
 			!getReturnType().equals(procedure.getReturnType()))
 			return false;
@@ -54,12 +54,11 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 	@Override
 	default void execute(ICallStack stack) throws ExecutionError {
 		stack.execute(getBody());
-//		stack.getTopFrame().terminateFrame();
 	}
 	
 	
-	IProcedureCall callExpression(List<IExpression> args);
-	default IProcedureCall call(IExpression ... args) {
+	IProcedureCallExpression callExpression(List<IExpression> args);
+	default IProcedureCallExpression callExpression(IExpression ... args) {
 		return callExpression(Arrays.asList(args));
 	}
 	
@@ -68,12 +67,12 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 		List<IProblem> problems = new ArrayList<IProblem>();
 		Map<String, IVariableDeclaration> ids = new HashMap<>();
 		for(IVariableDeclaration v : getVariables(true))
-			if(ids.containsKey(v.getIdentifier())) {
+			if(ids.containsKey(v.getId())) {
 				problems.add(new IProblem() {
 					
 					@Override
 					public List<ISourceElement> getSourceElements() {
-						return ImmutableList.of(v, ids.get(v.getIdentifier()));
+						return ImmutableList.of(v, ids.get(v.getId()));
 					}
 					
 					@Override
@@ -88,7 +87,7 @@ public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
 				});
 			}
 			else
-				ids.put(v.getIdentifier(), v);
+				ids.put(v.getId(), v);
 		
 		return problems;
 	}

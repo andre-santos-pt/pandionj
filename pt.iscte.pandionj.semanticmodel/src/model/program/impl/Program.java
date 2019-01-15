@@ -23,7 +23,10 @@ class Program extends SourceElement implements IProgram {
 		procedures = new ArrayList<IProcedure>();
 		types = new LinkedHashMap<>();
 		for(IDataType t : IDataType.DEFAULTS)
-			types.put(t.getIdentifier(), t);
+			types.put(t.getId(), t);
+		
+		procedures.add(new PrintProcedure());
+		procedures.add(new RandomFunction());
 	}
 	
 	@Override
@@ -34,6 +37,14 @@ class Program extends SourceElement implements IProgram {
 	@Override
 	public Collection<IProcedure> getProcedures() {
 		return procedures;
+	}
+	
+	@Override
+	public IProcedure getProcedure(String id) {
+		for(IProcedure p : procedures)
+			if(p.getId().equals(id))
+				return p;
+		return null;
 	}
 
 	@Override

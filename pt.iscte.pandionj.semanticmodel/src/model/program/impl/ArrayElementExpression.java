@@ -29,7 +29,7 @@ public class ArrayElementExpression extends VariableExpression implements IArray
 	
 	@Override
 	public String toString() {
-		String text = getVariable().getIdentifier();
+		String text = getVariable().getId();
 		for(IExpression e : indexes)
 			text += "[" + e + "]";
 		return text;

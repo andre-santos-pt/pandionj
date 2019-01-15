@@ -10,7 +10,7 @@ public interface IVariableAssignment extends IStatement {
 	@Override
 	default void execute(ICallStack callStack) throws ExecutionError {
 		IValue value = callStack.evaluate(getExpression());
-		callStack.getTopFrame().setVariable(getVariable().getIdentifier(), value);
+		callStack.getTopFrame().setVariable(getVariable().getId(), value);
 	}
 	
 	default ArithmeticOperator getAccumulationOperator() {

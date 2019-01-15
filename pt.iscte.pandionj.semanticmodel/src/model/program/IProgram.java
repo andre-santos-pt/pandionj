@@ -7,7 +7,8 @@ import java.util.List;
 public interface IProgram extends IExecutable, ISourceElement {
 	Collection<IConstantDeclaration> getConstants();
 	Collection<IProcedure> getProcedures();
-	IProcedure createProcedure(String name, IDataType returnType);
+	IProcedure createProcedure(String id, IDataType returnType);
+	IProcedure getProcedure(String id); // TODO signature
 	Collection<IStruct> getStructs();
 	Collection<IDataType> getDataTypes();
 	IDataType getDataType(String id);

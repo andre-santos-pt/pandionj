@@ -32,7 +32,7 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 
 
 	@Override
-	public String getIdentifier() {
+	public String getId() {
 		return name;
 	}
 

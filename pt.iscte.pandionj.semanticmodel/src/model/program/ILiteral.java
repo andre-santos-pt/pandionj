@@ -1,6 +1,6 @@
 package model.program;
 
-import model.machine.IStackFrame;
+import model.machine.ICallStack;
 import model.machine.IValue;
 
 public interface ILiteral extends IExpression {
@@ -11,7 +11,7 @@ public interface ILiteral extends IExpression {
 	}
 	
 	@Override
-	default IValue evaluate(IStackFrame frame) {
-		return frame.getValue(getStringValue());
+	default IValue evaluate(ICallStack stack) {
+		return stack.getProgramState().getValue(getStringValue());
 	}
 }

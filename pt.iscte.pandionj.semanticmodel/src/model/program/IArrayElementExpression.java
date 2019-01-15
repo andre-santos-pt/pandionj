@@ -3,6 +3,7 @@ package model.program;
 import java.util.List;
 
 import model.machine.IArray;
+import model.machine.ICallStack;
 import model.machine.IStackFrame;
 import model.machine.IValue;
 
@@ -13,8 +14,9 @@ public interface IArrayElementExpression extends IVariableExpression {
 	List<IExpression> getIndexes(); // size() >= 1
 	
 	@Override
-	default IValue evaluate(IStackFrame frame) throws ExecutionError {
-		IValue variable = frame.getVariable(getVariable().getIdentifier());
+	default IValue evaluate(ICallStack stack) throws ExecutionError {
+		IStackFrame frame = stack.getTopFrame();
+		IValue variable = frame.getVariable(getVariable().getId());
 		IValue element = variable;
 		for(IExpression e : getIndexes()) {
 			IValue i = frame.evaluate(e);

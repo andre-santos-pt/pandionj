@@ -127,7 +127,7 @@ public interface IDataType extends IIdentifiableElement {
 		}
 
 		@Override
-		public String getIdentifier() {
+		public String getId() {
 			return name().toLowerCase();
 		}
 
@@ -143,7 +143,7 @@ public interface IDataType extends IIdentifiableElement {
 
 	IDataType UNKNOWN = new IDataType() {
 		@Override
-		public String getIdentifier() {
+		public String getId() {
 			return "unknown";
 		}
 		@Override
@@ -166,7 +166,7 @@ public interface IDataType extends IIdentifiableElement {
 		
 		@Override
 		public String toString() {
-			return getIdentifier();
+			return getId();
 		}
 	};
 }

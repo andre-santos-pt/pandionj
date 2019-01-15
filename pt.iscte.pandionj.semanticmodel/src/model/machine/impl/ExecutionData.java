@@ -40,6 +40,11 @@ public class ExecutionData implements IExecutionData  {
 		return callStackMax;
 	}
 	
+	@Override
+	public int getTotalProcedureCalls() {
+		return callCount;
+	}
+	
 	public void countAssignment(IProcedure p) {
 		Integer c = assignmentCount.get(p);
 		if(c == null)

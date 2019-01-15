@@ -77,8 +77,8 @@ public class Factory implements IFactory {
 		return new ArrayAllocation(type, dimensions);
 	}
 	
-	@Override
-	public IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args) {
-		return new ProcedureCall(null, procedure, args);
-	}
+//	@Override
+//	public IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args) {
+//		return new ProcedureCall(procedure, args);
+//	}
 }

@@ -52,7 +52,7 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 	
 	@Override
 	public String toString() {
-		return (isReference() ? "*var " : "var ") + getIdentifier() + " (" + getType() + ")";
+		return (isReference() ? "*var " : "var ") + getId() + " (" + getType() + ")";
 	}
 	
 	private class ArrayLengthExpression extends SourceElement implements IArrayLengthExpression {
@@ -79,7 +79,7 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 		
 		@Override
 		public String toString() {
-			return getVariable().getIdentifier() + ".length";
+			return getVariable().getId() + ".length";
 		}
 	}
 }

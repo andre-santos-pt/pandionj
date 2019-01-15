@@ -11,7 +11,7 @@ public interface IArrayType extends IDataType {
 		
 		public ValueTypeArray(IDataType type, int dimensions) {
 			this.dimensions = dimensions;
-			id = type.getIdentifier();
+			id = type.getId();
 			for(int i = 0; i < dimensions; i++)
 				id += "[]";
 		}
@@ -32,12 +32,12 @@ public interface IArrayType extends IDataType {
 		}
 
 		@Override
-		public String getIdentifier() {
+		public String getId() {
 			return id;
 		}
 		
 		public boolean sameAs(IArrayType type) {
-			return id.equals(type.getIdentifier());
+			return id.equals(type.getId());
 		}
 		
 		@Override

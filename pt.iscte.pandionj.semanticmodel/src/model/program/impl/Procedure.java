@@ -17,6 +17,7 @@ import model.program.IExpression;
 import model.program.ILoop;
 import model.program.IProcedure;
 import model.program.IProcedureCall;
+import model.program.IProcedureCallExpression;
 import model.program.IReturn;
 import model.program.ISelection;
 import model.program.IStatement;
@@ -44,7 +45,7 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
-	public String getIdentifier() {
+	public String getId() {
 		return name;
 	}
 
@@ -77,7 +78,7 @@ class Procedure extends SourceElement implements IProcedure {
 	@Override
 	public IVariableDeclaration getVariable(String id) {
 		for(IVariableDeclaration v : variables)
-			if(v.getIdentifier().equals(id))
+			if(v.getId().equals(id))
 				return v;
 		return null;
 	}
@@ -112,7 +113,7 @@ class Procedure extends SourceElement implements IProcedure {
 				params += ", ";
 			if(p.isReference())
 				params += "*";
-			params += p.getIdentifier();
+			params += p.getId();
 		}
 
 		return returnType + " " + name + "(" + params + ")" + body;
@@ -203,7 +204,7 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
-	public IProcedureCall callExpression(List<IExpression> args) {
-		return new ProcedureCall(null, this, args);
+	public IProcedureCallExpression callExpression(List<IExpression> args) {
+		return new ProcedureCallExpression(this, args);
 	}
 }

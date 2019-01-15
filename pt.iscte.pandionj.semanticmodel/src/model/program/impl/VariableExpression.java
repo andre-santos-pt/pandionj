@@ -18,6 +18,6 @@ class VariableExpression extends SourceElement implements IVariableExpression {
 
 	@Override
 	public String toString() {
-		return variable.getIdentifier();
+		return variable.getId();
 	}
 }

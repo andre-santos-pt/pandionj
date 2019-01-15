@@ -27,7 +27,7 @@ class VariableAssignment extends Statement implements IVariableAssignment {
 	
 	@Override
 	public String toString() {
-		return variable.getIdentifier() + " = " + expression;
+		return variable.getId() + " = " + expression;
 	}
 
 }

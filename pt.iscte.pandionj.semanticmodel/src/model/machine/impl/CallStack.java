@@ -90,7 +90,7 @@ class CallStack implements ICallStack {
 		for(int i = 0; i < next; i++) {
 			if(i != 0)
 				text += " -> ";
-			text += stack[i].getProcedure().getIdentifier() + "()";
+			text += stack[i].getProcedure().getId() + "()";
 		}
 		return text;
 	}

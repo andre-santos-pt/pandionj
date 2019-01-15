@@ -1,6 +1,6 @@
 package model.program;
 
-import model.machine.IStackFrame;
+import model.machine.ICallStack;
 import model.machine.IValue;
 
 public interface IVariableExpression extends IExpression {
@@ -17,7 +17,7 @@ public interface IVariableExpression extends IExpression {
 	}
 
 	@Override
-	default IValue evaluate(IStackFrame frame) throws ExecutionError {
-		return frame.getVariable(getVariable().getIdentifier());
+	default IValue evaluate(ICallStack stack) throws ExecutionError {
+		return stack.getTopFrame().getVariable(getVariable().getId());
 	}
 }

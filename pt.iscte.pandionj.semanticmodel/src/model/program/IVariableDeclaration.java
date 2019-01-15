@@ -21,7 +21,7 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 	
 	@Override
 	default void execute(ICallStack callStack) {
-		callStack.getTopFrame().addVariable(getIdentifier(), getType());
+		callStack.getTopFrame().addVariable(getId(), getType());
 	}
 	
 	enum Flag {

@@ -2,7 +2,6 @@ package model.program.impl;
 
 import java.util.List;
 
-import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
 import model.program.IProcedureCall;
@@ -29,7 +28,7 @@ class ProcedureCall extends Statement implements IProcedureCall {
 
 	@Override
 	public String toString() {
-		return procedure.getIdentifier() + "(" + argsToString() + ")";
+		return procedure.getId() + "(" + argsToString() + ")";
 	}
 	
 	private String argsToString() {
@@ -42,8 +41,8 @@ class ProcedureCall extends Statement implements IProcedureCall {
 		return args;
 	}
 	
-	@Override
-	public IDataType getType() {
-		return procedure.getReturnType();
-	}
+//	@Override
+//	public IDataType getType() {
+//		return procedure.getReturnType();
+//	}
 }

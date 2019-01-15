@@ -81,7 +81,7 @@ public class TestBooleanFuncions {
 		IProcedure f = program.createProcedure("isOddNotEven", IDataType.BOOLEAN);
 		IVariableDeclaration nParam = f.addParameter("n", IDataType.INT);
 		
-		IUnaryExpression e = factory.unaryExpression(IOperator.NOT, factory.procedureCall(evenFunc, nParam.expression()));
+		IUnaryExpression e = factory.unaryExpression(IOperator.NOT, evenFunc.callExpression(nParam.expression()));
 		f.returnStatement(e);
 		return f;
 	}

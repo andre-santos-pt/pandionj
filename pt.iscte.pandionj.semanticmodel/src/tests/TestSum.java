@@ -55,7 +55,7 @@ public class TestSum {
 		array.elementAssignment(factory.literal(9), factory.literal(2));
 		
 		IVariableDeclaration mVar = main.variableDeclaration("s", IDataType.INT);
-		mVar.assignment(sumArrayProc.call(array.expression()));
+		mVar.assignment(sumArrayProc.callExpression(array.expression()));
 	}
 
 	@Test

@@ -1,6 +1,7 @@
 package model.program.impl;
 
 
+import model.machine.ICallStack;
 import model.machine.IStackFrame;
 import model.machine.IValue;
 import model.program.ExecutionError;
@@ -22,8 +23,8 @@ public class UnaryExpression extends SourceElement implements IUnaryExpression {
 	}
 
 	@Override
-	public IValue evaluate(IStackFrame frame) throws ExecutionError {
-		IValue val = frame.evaluate(expression);
+	public IValue evaluate(ICallStack stack) throws ExecutionError {
+		IValue val = stack.getTopFrame().evaluate(expression);
 		IValue result = operator.apply(val);
 		return result;
 	}

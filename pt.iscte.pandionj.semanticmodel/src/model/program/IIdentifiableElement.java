@@ -1,5 +1,5 @@
 package model.program;
 
 public interface IIdentifiableElement {
-	String getIdentifier(); // not null, not empty
+	String getId(); // not null, not empty
 }
