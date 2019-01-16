@@ -7,18 +7,18 @@ import java.math.BigDecimal;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import impl.machine.ProgramState;
+import impl.program.Factory;
 import model.machine.IExecutionData;
-import model.machine.impl.ProgramState;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IFactory;
-import model.program.IGatherer;
 import model.program.ILoop;
 import model.program.IOperator;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IVariableDeclaration;
-import model.program.impl.Factory;
+import model.program.roles.IGatherer;
 
 public class TestSum {
 

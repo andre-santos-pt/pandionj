@@ -2,7 +2,7 @@ package model.program;
 
 public class ExecutionError extends Exception {
 	enum Type {
-		STACK_OVERFLOW, INFINTE_CYCLE, NULL_POINTER, ARRAY_INDEX_BOUNDS, NEGATIVE_ARRAY_SIZE, VALUE_OVERFLOW;
+		STACK_OVERFLOW, INFINTE_CYCLE, NULL_POINTER, ARRAY_INDEX_BOUNDS, NEGATIVE_ARRAY_SIZE, VALUE_OVERFLOW, OUT_OF_MEMORY;
 	}
 	
 	private static final long serialVersionUID = 1L;
@@ -10,7 +10,7 @@ public class ExecutionError extends Exception {
 	private final Type type;
 	private final ISourceElement element;
 	private final String message;
-	private Object arg;
+	private final Object arg;
 	
 	public ExecutionError(Type type, ISourceElement element, String message) {
 		this(type, element, message, null);

@@ -7,10 +7,10 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
+import impl.program.Factory;
 import model.machine.ICallStack;
-import model.program.impl.Factory;
 
-public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterable<IStatement> {
+public interface IBlock extends ISourceElement, IStatement, Iterable<IStatement> {
 	IFactory factory = new Factory();
 	
 	IBlock getParent();

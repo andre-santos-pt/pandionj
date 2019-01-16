@@ -1,13 +1,12 @@
 package model.program;
 
-// TODO
-public interface IConstantDeclaration extends IVariableDeclaration {
-	@Override
-	default IProcedure getProcedure() {
-		return null;
-	}
+public interface IConstantDeclaration extends IIdentifiableElement {
 
 	IProgram getProgram();
 	
+	IDataType getType();
+	
 	ILiteral getValue();
+	
+	IConstantExpression expression();
 }

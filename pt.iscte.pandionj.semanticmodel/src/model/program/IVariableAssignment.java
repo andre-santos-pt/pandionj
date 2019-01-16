@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableList;
 
 import model.machine.ICallStack;
 import model.machine.IValue;
+import model.program.operators.ArithmeticOperator;
 
 public interface IVariableAssignment extends IStatement {
 	IVariableDeclaration getVariable();

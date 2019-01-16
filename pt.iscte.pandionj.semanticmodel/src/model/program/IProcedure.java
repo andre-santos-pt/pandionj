@@ -13,9 +13,9 @@ import com.google.common.collect.ImmutableSet;
 import model.machine.ICallStack;
 
 public interface IProcedure extends IIdentifiableElement, IExecutable, IBlock {
-	IVariableDeclaration addParameter(String name, IDataType type, Set<IVariableDeclaration.Flag> flags);
-	default IVariableDeclaration addParameter(String name, IDataType type) {
-		return addParameter(name, type, ImmutableSet.of());
+	IVariableDeclaration addParameter(String id, IDataType type, Set<IVariableDeclaration.Flag> flags);
+	default IVariableDeclaration addParameter(String id, IDataType type) {
+		return addParameter(id, type, ImmutableSet.of());
 	}
 	
 	Iterable<IVariableDeclaration> getParameters();	

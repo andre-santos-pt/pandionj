@@ -13,10 +13,10 @@ public interface IExpression extends ISourceElement {
 	//String concretize();
 	
 	default OperationType getOperationType() {
-		return OperationType.NONE;
+		return OperationType.OTHER;
 	}
 	
 	enum OperationType {
-		ARITHMETIC, RELATIONAL, LOGICAL, CALL, NONE;
+		ARITHMETIC, RELATIONAL, LOGICAL, CALL, OTHER;
 	}
 }

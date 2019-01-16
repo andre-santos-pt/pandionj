@@ -7,16 +7,16 @@ import java.util.EnumSet;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import impl.machine.ProgramState;
+import impl.program.Factory;
 import model.machine.IArray;
 import model.machine.IExecutionData;
-import model.machine.impl.ProgramState;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IFactory;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IVariableDeclaration;
-import model.program.impl.Factory;
 
 public class TestSwap {
 

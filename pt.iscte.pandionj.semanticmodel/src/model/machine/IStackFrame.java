@@ -8,6 +8,7 @@ import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
 import model.program.IStatement;
+import model.program.IStructType;
 
 public interface IStackFrame {
 	IStackFrame getParent(); // only null on root
@@ -38,6 +39,8 @@ public interface IStackFrame {
 	IValue getValue(Object object);
 
 	IArray getArray(IDataType baseType, int[] dimensions);
+	
+	IStructObject getObject(IStructType type);
 	
 	boolean execute(IStatement statement) throws ExecutionError;
 	

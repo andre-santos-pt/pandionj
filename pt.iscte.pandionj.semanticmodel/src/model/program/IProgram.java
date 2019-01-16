@@ -10,7 +10,11 @@ public interface IProgram extends IExecutable, ISourceElement {
 	
 	IProcedure createProcedure(String id, IDataType returnType);
 	
-	Collection<IStruct> getStructs(); // not there yet
+	IConstantDeclaration createConstant(String id, IDataType type, ILiteral value);
+	
+	IStructType createStruct(String id);
+	
+	Collection<IStructType> getStructs(); // not there yet
 	Collection<IDataType> getDataTypes();
 	
 	IDataType getDataType(String id);
@@ -33,6 +37,8 @@ public interface IProgram extends IExecutable, ISourceElement {
 		}
 		return problems;
 	}
+	
+	IConstantDeclaration getConstant(String id);
 	
 	// TODO test
 	default IProcedure getProcedure(String id, IDataType ... paramTypes) {

@@ -2,6 +2,7 @@ package model.program;
 
 import model.machine.ICallStack;
 import model.machine.IValue;
+import model.program.operators.IBinaryOperator;
 
 public interface IBinaryExpression extends IExpression {
 	IBinaryOperator getOperator();

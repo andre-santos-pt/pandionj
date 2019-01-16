@@ -11,7 +11,8 @@ import org.junit.runners.Suite;
 	TestSelection.class,
 	TestSum.class,
 	TestArrays.class,
-	Test2DArrays.class
+	Test2DArrays.class,
+	TestConstants.class
 })
 
 public class JunitTestSuite {   

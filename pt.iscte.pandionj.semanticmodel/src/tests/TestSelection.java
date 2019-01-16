@@ -5,10 +5,10 @@ import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import impl.machine.ProgramState;
+import impl.program.Factory;
 import model.machine.IExecutionData;
-import model.machine.impl.ProgramState;
 import model.program.IBinaryExpression;
-import model.program.IBinaryOperator;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
@@ -16,7 +16,7 @@ import model.program.IFactory;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IVariableDeclaration;
-import model.program.impl.Factory;
+import model.program.operators.IBinaryOperator;
 
 public class TestSelection {
 	private static IProgram program;

@@ -8,12 +8,14 @@ import java.util.Map;
 
 import org.junit.Test;
 
+import impl.machine.ProgramState;
+import impl.program.Factory;
 import model.machine.IArray;
 import model.machine.ICallStack;
+import model.machine.IStructObject;
 import model.machine.IProgramState;
 import model.machine.IStackFrame;
 import model.machine.IValue;
-import model.machine.impl.ProgramState;
 import model.program.ExecutionError;
 import model.program.IBinaryExpression;
 import model.program.IDataType;
@@ -23,7 +25,7 @@ import model.program.ILiteral;
 import model.program.IOperator;
 import model.program.IProcedure;
 import model.program.IStatement;
-import model.program.impl.Factory;
+import model.program.IStructType;
 
 // TODO more arithmetic cases
 public class TestArithmeticExpressions {
@@ -148,6 +150,12 @@ public class TestArithmeticExpressions {
 			return null;
 		}
 
+		@Override
+		public IStructObject getObject(IStructType type) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+		
 		@Override
 		public boolean execute(IStatement statement) throws ExecutionError {
 			return true;

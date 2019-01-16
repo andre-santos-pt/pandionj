@@ -1,6 +1,7 @@
 import java.util.List;
 
-import model.machine.impl.ProgramState;
+import impl.machine.ProgramState;
+import impl.program.Factory;
 import model.program.IDataType;
 import model.program.IFactory;
 import model.program.IProcedure;
@@ -9,7 +10,6 @@ import model.program.IProgram;
 import model.program.ISemanticProblem;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
-import model.program.impl.Factory;
 
 public class Test {
 

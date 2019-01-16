@@ -6,9 +6,10 @@ import java.math.BigDecimal;
 
 import org.junit.Test;
 
+import impl.machine.ProgramState;
+import impl.program.Factory;
 import model.machine.IArray;
 import model.machine.IExecutionData;
-import model.machine.impl.ProgramState;
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
@@ -20,7 +21,6 @@ import model.program.IOperator;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IVariableDeclaration;
-import model.program.impl.Factory;
 
 public class Test2DArrays {
 
@@ -58,7 +58,7 @@ public class Test2DArrays {
 				assertEquals(i == j ? ONE : ZERO, line.getElement(j).getValue());
 		}
 	}
-	
+
 
 	@Test
 	public void testNatMatrix() {

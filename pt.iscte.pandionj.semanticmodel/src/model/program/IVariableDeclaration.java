@@ -1,6 +1,8 @@
 package model.program;
 
 import model.machine.ICallStack;
+import model.program.roles.IGatherer;
+import model.program.roles.IVariableRole;
 
 public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 	IProcedure getProcedure();
@@ -29,6 +31,6 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 	}
 	
 	enum Flag {
-		REFERENCE, CONSTANT, PARAM 
+		REFERENCE, CONSTANT, PARAM, FIELD
 	}
 }

@@ -4,9 +4,10 @@ import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import impl.machine.ProgramState;
+import impl.program.Factory;
 import model.machine.IExecutionData;
 import model.machine.IValue;
-import model.machine.impl.ProgramState;
 import model.program.IBinaryExpression;
 import model.program.IDataType;
 import model.program.IFactory;
@@ -15,7 +16,6 @@ import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IUnaryExpression;
 import model.program.IVariableDeclaration;
-import model.program.impl.Factory;
 
 public class TestBooleanFuncions {
 	private static IProgram program;
