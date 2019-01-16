@@ -5,4 +5,6 @@ public interface ISourceElement {
 	int getOffset();
 	int getLength();
 	int getLine();
+	
+	// get specific source element ID?
 }

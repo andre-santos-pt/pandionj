@@ -8,12 +8,12 @@ import model.machine.ICallStack;
 
 public interface IExecutable {
 	
-	default List<IProblem> validate() {
+	default List<ISemanticProblem> validateSematics() {
 		return ImmutableList.of();
 	}
 	
 	default boolean isValid() {
-		return validate().isEmpty();
+		return validateSematics().isEmpty();
 	}
 	
 	// ARCH: only called my stack frame

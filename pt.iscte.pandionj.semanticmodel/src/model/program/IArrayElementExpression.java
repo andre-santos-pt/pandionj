@@ -22,7 +22,7 @@ public interface IArrayElementExpression extends IVariableExpression {
 			IValue i = frame.evaluate(e);
 			int index = ((Number) i.getValue()).intValue();
 			if(index < 0)
-				throw new ExecutionError(e, "negative array index", index);
+				throw new ExecutionError(ExecutionError.Type.NEGATIVE_ARRAY_SIZE, this, "negative array index", index);
 			element = ((IArray) element).getElement(index);
 		}
 		return element;

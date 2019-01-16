@@ -14,11 +14,6 @@ public interface IArrayLengthExpression extends IExpression {
 	List<IExpression> getIndexes(); // size() >= 1
 	
 	@Override
-	default boolean isOperation() {
-		return false;
-	}
-	
-	@Override
 	default IValue evaluate(ICallStack stack) throws ExecutionError {
 		IStackFrame frame = stack.getTopFrame();
 		IArray array = (IArray) frame.getVariable(getVariable().getId());

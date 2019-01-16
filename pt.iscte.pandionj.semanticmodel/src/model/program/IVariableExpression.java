@@ -6,11 +6,6 @@ import model.machine.IValue;
 public interface IVariableExpression extends IExpression {
 	IVariableDeclaration getVariable();
 	
-	default boolean isOperation() {
-		return false;
-	}
-	
-	
 	@Override
 	default IDataType getType() {
 		return getVariable().getType();

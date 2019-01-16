@@ -4,14 +4,15 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-import model.program.IProblem;
+import model.program.ISemanticProblem;
 import model.program.ISourceElement;
 
-class Problem implements IProblem {
+// TODO remove?
+class SemanticProblem implements ISemanticProblem {
 	private final String message;
 	private final ImmutableList<ISourceElement> elements;
 	
-	public Problem(String message, ISourceElement ... elements) {
+	public SemanticProblem(String message, ISourceElement ... elements) {
 		this.message = message;
 		this.elements = ImmutableList.copyOf(elements);
 	}

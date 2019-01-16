@@ -11,6 +11,7 @@ import model.program.IBinaryExpression;
 import model.program.IBinaryOperator;
 import model.program.IBlock;
 import model.program.IDataType;
+import model.program.IExpression;
 import model.program.IFactory;
 import model.program.IProcedure;
 import model.program.IProgram;
@@ -56,7 +57,7 @@ public class TestSelection {
 
 	private static void commonAsserts(IExecutionData data) {
 		assertEquals(0, data.getTotalAssignments());
-		assertEquals(1, data.getTotalOperations());
+		assertEquals(1, data.getOperationCount(IExpression.OperationType.RELATIONAL));
 		assertEquals(1, data.getCallStackDepth());
 	}
 }

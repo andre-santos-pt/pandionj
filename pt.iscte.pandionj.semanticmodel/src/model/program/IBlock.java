@@ -77,8 +77,6 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 		for(IStatement s : getStatements()) {
 			if(!stack.execute(s))
 				return false;
-//			if(s instanceof IReturn)
-				; // TODO quit procedure
 		}
 		return true;
 	}
@@ -88,20 +86,47 @@ public interface IBlock extends ISourceElement, IExecutable, IStatement, Iterabl
 		return getStatements().iterator();
 	}
 	
+	
 	default void accept(IVisitor visitor) {
 		for(IStatement s : getStatements()) {
-			if(s instanceof IVariableAssignment)
-				visitor.visitVariableAssignment((IVariableAssignment) s);
+			if(s instanceof IReturn)
+				visitor.visitReturn((IReturn) s);
+			
 			else if(s instanceof IArrayElementAssignment)
 				visitor.visitArrayElementAssignment((IArrayElementAssignment) s);
+			
+			else if(s instanceof IVariableAssignment)
+				visitor.visitVariableAssignment((IVariableAssignment) s);
+			
+			else if(s instanceof IProcedureCall) {
+				IProcedureCall call = (IProcedureCall) s;
+				visitor.visitProcedureCall(call.getProcedure(), call.getArguments());
+			}
+			
+			else if(s instanceof IProcedureCallExpression) {
+				IProcedureCallExpression call = (IProcedureCallExpression) s;
+				visitor.visitProcedureCall(call.getProcedure(), call.getArguments());
+			}
+			
 			else if(s instanceof IBlock)
 				((IBlock) s).accept(visitor);
+			
+			else if(s instanceof IConditionalStatement) {
+				((IConditionalStatement) s).getBlock().accept(visitor);
+				if(s instanceof ISelection) {
+					IBlock alternativeBlock = ((ISelection) s).getAlternativeBlock();
+					if(alternativeBlock != null)
+						alternativeBlock.accept(visitor);
+				}
+			}
 		}
 	}
 	
 	interface IVisitor {
+		default void visitReturn(IReturn returnStatement) { }
+		default void visitArrayElementAssignment(IArrayElementAssignment assignment) { }
 		default void visitVariableAssignment(IVariableAssignment assignment) { }
-		default void visitArrayElementAssignment(IVariableAssignment assignment) { }
+		default void visitProcedureCall(IProcedure procedure, List<IExpression> args) { }
 	}
 	
 }

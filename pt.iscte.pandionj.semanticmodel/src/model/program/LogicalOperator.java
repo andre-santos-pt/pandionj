@@ -2,6 +2,7 @@ package model.program;
 
 import model.machine.IStackFrame;
 import model.machine.IValue;
+import model.program.IExpression.OperationType;
 
 enum LogicalOperator implements IBinaryOperator {
 	AND("&&") {
@@ -52,5 +53,10 @@ enum LogicalOperator implements IBinaryOperator {
 
 	public IDataType getResultType(IExpression left, IExpression right) {
 		return IDataType.BOOLEAN;
+	}
+	
+	@Override
+	public OperationType getOperationType() {
+		return OperationType.LOGICAL;
 	}
 }

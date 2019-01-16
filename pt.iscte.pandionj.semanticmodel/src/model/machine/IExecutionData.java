@@ -2,6 +2,7 @@ package model.machine;
 
 import java.util.Map;
 
+import model.program.IExpression;
 import model.program.IProcedure;
 
 public interface IExecutionData {
@@ -10,7 +11,7 @@ public interface IExecutionData {
 //	Map<IProcedure, Integer> getNumberOfComparisons();
 	
 	int getTotalAssignments();
-	int getTotalOperations();
+	int getOperationCount(IExpression.OperationType operation);
 	
 	int getTotalProcedureCalls();
 	

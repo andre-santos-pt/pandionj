@@ -71,12 +71,6 @@ class StackFrame implements IStackFrame {
 		return variables.get(name);
 	}
 
-//	@Override
-//	public void addVariable(String identifier, IDataType type) {
-//		assert identifier != null && !identifier.isEmpty() && !variables.containsKey(identifier);
-//		variables.put(identifier, IValue.NULL);
-//	}
-
 	@Override
 	public void setVariable(String identifier, IValue value) {
 		assert variables.containsKey(identifier);
@@ -95,7 +89,7 @@ class StackFrame implements IStackFrame {
 
 	@Override
 	public int getMemory() {
-		return 0; // TODO
+		return 0; // TODO stack frame memory
 	}
 
 	@Override

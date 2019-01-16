@@ -6,6 +6,7 @@ import java.util.function.BiFunction;
 import model.machine.IStackFrame;
 import model.machine.IValue;
 import model.machine.impl.Value;
+import model.program.IExpression.OperationType;
 
 enum RelationalOperator implements IBinaryOperator {
 	EQUAL("==", (left,right) -> left.getValue().equals(right.getValue())),
@@ -50,5 +51,10 @@ enum RelationalOperator implements IBinaryOperator {
 
 	public IDataType getResultType(IExpression left, IExpression right) {
 		return IDataType.BOOLEAN;
+	}
+	
+	@Override
+	public OperationType getOperationType() {
+		return OperationType.RELATIONAL;
 	}
 }

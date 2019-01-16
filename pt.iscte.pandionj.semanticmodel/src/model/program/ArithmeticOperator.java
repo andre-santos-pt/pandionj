@@ -6,6 +6,7 @@ import java.util.function.BiFunction;
 import model.machine.IStackFrame;
 import model.machine.IValue;
 import model.machine.impl.Value;
+import model.program.IExpression.OperationType;
 
 enum ArithmeticOperator implements IBinaryOperator {
 	ADD("+") {
@@ -79,5 +80,10 @@ enum ArithmeticOperator implements IBinaryOperator {
 	
 	public IDataType getResultType(IExpression left, IExpression right) {
 		return getDataType(left.getType(), right.getType());
+	}
+	
+	@Override
+	public OperationType getOperationType() {
+		return OperationType.ARITHMETIC;
 	}
 }

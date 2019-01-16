@@ -30,7 +30,7 @@ public class ProcedureCallExpression extends SourceElement implements IProcedure
 	}
 
 	@Override
-	public List<IExpression> getArgs() {
+	public List<IExpression> getArguments() {
 		return args;
 	}
 

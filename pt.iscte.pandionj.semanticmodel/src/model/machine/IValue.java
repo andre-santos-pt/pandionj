@@ -3,8 +3,10 @@ package model.machine;
 import model.program.IDataType;
 
 public interface IValue {
+	// TODO value overflow error
 	IDataType getType();
 	Object getValue();
+	
 	default boolean isNull() {
 		return this == NULL;
 	}

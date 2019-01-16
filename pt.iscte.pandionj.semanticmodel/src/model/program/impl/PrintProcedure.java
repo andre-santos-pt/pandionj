@@ -19,4 +19,8 @@ public class PrintProcedure extends Procedure {
 		return true;
 	}
 
+	@Override
+	public boolean isBuiltIn() {
+		return true;
+	}
 }

@@ -8,8 +8,9 @@ public interface IBinaryExpression extends IExpression {
 	IExpression getLeftExpression();
 	IExpression getRightExpression();
 	
-	default boolean isOperation() {
-		return true;
+	@Override
+	default OperationType getOperationType() {
+		return getOperator().getOperationType();
 	}
 	
 	

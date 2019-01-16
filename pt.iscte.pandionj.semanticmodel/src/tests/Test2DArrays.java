@@ -11,7 +11,6 @@ import model.machine.IExecutionData;
 import model.machine.impl.ProgramState;
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
-import model.program.IBinaryOperator;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
@@ -25,7 +24,7 @@ import model.program.impl.Factory;
 
 public class Test2DArrays {
 
-//	@Test
+	@Test
 	public void testIdMatrix() {
 		IFactory factory = new Factory();
 		IProgram program = factory.createProgram();
@@ -61,7 +60,7 @@ public class Test2DArrays {
 	}
 	
 
-//	@Test
+	@Test
 	public void testNatMatrix() {
 		IFactory factory = new Factory();
 		IProgram program = factory.createProgram();
@@ -133,7 +132,6 @@ public class Test2DArrays {
 		ifBlock.returnStatement(factory.literal(true));
 		innerLoop.selection(factory.binaryExpression(IOperator.EQUAL, mParam.elementExpression(iVar.expression(), jVar.expression()), nParam.expression()), ifBlock);
 		innerLoop.increment(jVar);
-//		outerLoop.procedureCall(program.getProcedure("print"), iVar.expression());
 		outerLoop.increment(iVar);
 		
 		findFunc.returnStatement(factory.literal(false));
@@ -144,8 +142,8 @@ public class Test2DArrays {
 		IProcedure main = program.createProcedure("main", IDataType.BOOLEAN);
 		IArrayVariableDeclaration array = main.arrayDeclaration("test", factory.arrayType(IDataType.INT, 2));
 		array.assignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
-		array.elementAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(2)), factory.literal(0));
-		array.elementAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)), factory.literal(1));
+		array.elementAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(0)), factory.literal(0));
+		array.elementAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(2)), factory.literal(1));
 		array.elementAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(4)), factory.literal(2));
 		
 		array.elementAssignment(factory.literal(5), factory.literal(2), factory.literal(2));

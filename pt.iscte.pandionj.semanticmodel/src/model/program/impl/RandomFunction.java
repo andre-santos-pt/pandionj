@@ -18,4 +18,8 @@ public class RandomFunction extends Procedure {
 		return true;
 	}
 
+	@Override
+	public boolean isBuiltIn() {
+		return true;
+	}
 }

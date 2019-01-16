@@ -1,11 +1,22 @@
 package model.program;
 
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
+
 import model.machine.ICallStack;
 import model.machine.IValue;
 
 public interface IVariableAssignment extends IStatement {
 	IVariableDeclaration getVariable();
 	IExpression getExpression();
+	
+	@Override
+	default List<ISemanticProblem> validateSematics() {
+		if(!getVariable().getType().equals(getExpression().getType()))
+			return ImmutableList.of(ISemanticProblem.create("incompatible types", this, getExpression()));
+		return ImmutableList.of();
+	}
 	
 	@Override
 	default boolean execute(ICallStack callStack) throws ExecutionError {

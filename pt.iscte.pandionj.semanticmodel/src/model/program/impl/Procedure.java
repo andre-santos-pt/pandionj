@@ -60,9 +60,9 @@ class Procedure extends SourceElement implements IProcedure {
 		IVariableDeclaration param = type instanceof IArrayType ?
 				new ArrayVariableDeclaration(body, name, (IArrayType) type, ImmutableSet.of()) :
 				new VariableDeclaration(body, name, type, flags);
-				variables.add(parameters, param);
-				parameters++;
-				return param;
+		variables.add(parameters, param);
+		parameters++;
+		return param;
 	}
 
 	@Override

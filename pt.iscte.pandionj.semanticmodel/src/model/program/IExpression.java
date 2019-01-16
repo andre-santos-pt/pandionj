@@ -9,5 +9,14 @@ public interface IExpression extends ISourceElement {
 	
 	IDataType getType();
 	
-	boolean isOperation();
+	// TODO concretize expression
+	//String concretize();
+	
+	default OperationType getOperationType() {
+		return OperationType.NONE;
+	}
+	
+	enum OperationType {
+		ARITHMETIC, RELATIONAL, LOGICAL, CALL, NONE;
+	}
 }

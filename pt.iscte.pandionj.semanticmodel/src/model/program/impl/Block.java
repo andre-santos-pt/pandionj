@@ -20,8 +20,7 @@ import model.program.IStatement;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 
-class Block extends SourceElement implements IBlock{
-
+class Block extends SourceElement implements IBlock {
 	private final IBlock parent;
 	private final List<IStatement> statements;
 
@@ -30,12 +29,6 @@ class Block extends SourceElement implements IBlock{
 		this.statements = new ArrayList<>();
 	}
 	
-//	public Block(IBlock parent, IStatement ... statements) {
-//		this(parent);
-//		for(IStatement s : statements)
-//			this.statements.add(s);
-//	}
-
 	@Override
 	public IBlock getParent() {
 		return parent;
@@ -83,7 +76,7 @@ class Block extends SourceElement implements IBlock{
 
 	@Override
 	public ILoop loop(IExpression guard) {
-		return new Loop(this, guard);
+		return new Loop(this, guard, false);
 	}
 
 	@Override

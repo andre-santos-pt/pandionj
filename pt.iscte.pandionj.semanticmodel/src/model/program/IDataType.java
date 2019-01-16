@@ -16,6 +16,10 @@ public interface IDataType extends IIdentifiableElement {
 	
 	Object getDefaultValue();
 	
+	default boolean isVoid() {
+		return this == VOID;
+	}
+	
 	default boolean isNumeric() {
 		return this.equals(INT) || this.equals(DOUBLE);
 	}

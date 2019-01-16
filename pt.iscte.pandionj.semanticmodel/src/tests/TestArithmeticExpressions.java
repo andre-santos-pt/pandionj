@@ -25,6 +25,7 @@ import model.program.IProcedure;
 import model.program.IStatement;
 import model.program.impl.Factory;
 
+// TODO more arithmetic cases
 public class TestArithmeticExpressions {
 	
 	IFactory factory = new Factory();

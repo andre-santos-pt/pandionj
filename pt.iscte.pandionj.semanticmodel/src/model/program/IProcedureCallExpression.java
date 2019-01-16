@@ -8,17 +8,11 @@ import model.machine.IValue;
 
 public interface IProcedureCallExpression extends IExpression {
 	IProcedure getProcedure();
-	List<IExpression> getArgs();
+	List<IExpression> getArguments();
 	
 	@Override
-	default boolean isOperation() {
-		return false;
-	}
-
-	@Override
 	default IValue evaluate(ICallStack stack) throws ExecutionError {
-		IProcedureCall.executeCall(stack, getProcedure(), getArgs(), this);
-//		stackFrame.execute(getProcedure().callExpression(getArgs()));
+		IProcedureCall.executeCall(stack, getProcedure(), getArguments(), this);
 		IStackFrame last = stack.getLastTerminatedFrame();
 		return last.getReturn();
 	}

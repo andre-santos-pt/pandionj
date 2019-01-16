@@ -7,13 +7,22 @@ import java.util.Map;
 import model.machine.ICallStack;
 import model.machine.IExecutionData;
 import model.machine.IValue;
+import model.program.IExpression;
+import model.program.IExpression.OperationType;
 import model.program.IProcedure;
 
 public class ExecutionData implements IExecutionData  {
 	private Map<IProcedure, Integer> assignmentCount = new HashMap<IProcedure, Integer>();
-	private int callCount = 0;
-	private int operationCount = 0;
+	
 	private int callStackMax = 0;
+	
+	
+	private int arithmeticCount = 0;
+	private int relationalCount = 0;
+	private int logicalCount = 0;
+	private int callCount = 0;
+	private int otherOpCount = 0;
+	
 	
 	private IValue returnValue = IValue.NULL;
 	
@@ -30,9 +39,20 @@ public class ExecutionData implements IExecutionData  {
 		return s;
 	}
 	
-	@Override
 	public int getTotalOperations() {
-		return operationCount;
+		return arithmeticCount + relationalCount + logicalCount + callCount + otherOpCount;
+	}
+	
+	@Override
+	public int getOperationCount(OperationType operation) {
+		switch(operation) {
+		case ARITHMETIC:	return arithmeticCount;
+		case RELATIONAL:	return relationalCount;
+		case LOGICAL:		return logicalCount;
+		case CALL:			return callCount;
+		case NONE: 			return otherOpCount;
+		default:			return 0;
+		}
 	}
 	
 	@Override
@@ -64,7 +84,7 @@ public class ExecutionData implements IExecutionData  {
 				"call stack depth: " + getCallStackDepth() + "\n" +
 				"procedure calls: " + callCount + "\n" +
 				"assignments: " + getTotalAssignments() + "\n" +
-				"operations: " + operationCount;
+				"operations: " + getTotalOperations();
 		return text;
 	}
 
@@ -72,8 +92,14 @@ public class ExecutionData implements IExecutionData  {
 		callCount++;
 	}
 	
-	public void countOperation() {
-		operationCount++;
+	public void countOperation(IExpression.OperationType operation) {
+		switch(operation) {
+		case ARITHMETIC:	arithmeticCount++;	break;
+		case RELATIONAL:	relationalCount++;	break;
+		case LOGICAL:		logicalCount++;		break;
+		case CALL:			callCount++;		break;
+		case NONE: 			otherOpCount++; 	break;
+		}
 	}
 	
 	@Override

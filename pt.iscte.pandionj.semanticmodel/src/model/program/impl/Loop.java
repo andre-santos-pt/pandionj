@@ -21,12 +21,13 @@ import model.program.IVariableDeclaration;
 class Loop extends Statement implements ILoop {
 	private final IExpression guard;
 	private final IBlock block;
-	
-	// TODO doFirst param
-	public Loop(Block parent, IExpression guard) {
+	private final boolean executeBlockFirst;
+
+	public Loop(Block parent, IExpression guard, boolean executeBlockFirst) {
 		super(parent);
 		this.guard = guard;
 		this.block = new Block(parent);
+		this.executeBlockFirst = executeBlockFirst;
 	}
 	
 	@Override
@@ -40,13 +41,8 @@ class Loop extends Statement implements ILoop {
 	}
 
 	@Override
-	public int getLoopLimit() {
-		return 100;
-	}
-	
-	@Override
 	public boolean executeBlockFirst() {
-		return false;
+		return executeBlockFirst;
 	}
 
 	@Override

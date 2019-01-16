@@ -40,14 +40,6 @@ class Program extends SourceElement implements IProgram {
 	}
 	
 	@Override
-	public IProcedure getProcedure(String id) {
-		for(IProcedure p : procedures)
-			if(p.getId().equals(id))
-				return p;
-		return null;
-	}
-
-	@Override
 	public IProcedure createProcedure(String name, IDataType returnType) {
 		IProcedure proc = new Procedure(name, returnType);
 		procedures.add(proc);
@@ -70,11 +62,12 @@ class Program extends SourceElement implements IProgram {
 		return types.get(id);
 	}
 	
-	@Override
+	@Override // TODO pretty print
 	public String toString() {
 		String text = "";
 		for (IProcedure p : procedures) {
-			text += p + "\n\n";
+			if(!p.isBuiltIn())
+				text += p + "\n\n";
 		}
 		text = text.replaceAll(";", ";\n");
 		text = text.replaceAll("\\{", "{\n");

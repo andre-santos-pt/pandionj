@@ -26,19 +26,22 @@ public class ProgramState implements IProgramState {
 	private IProgram program;
 	private ICallStack stack;
 	private final int callStackMax;
+	private final int loopIterationMax;
+	
 	private ISourceElement instructionPointer;
 	
 	private ExecutionData data;
 	
 	public ProgramState(IProgram program) {
-		this(program, 1024); // TODO Constants?
+		this(program, 1024, 100); // TODO Constants?
 	}
 	
-	public ProgramState(IProgram program, int callStackMax) {
+	public ProgramState(IProgram program, int callStackMax, int loopIterationMax) {
 		assert program != null;
 		assert callStackMax >= 1;
 		this.program = program;
 		this.callStackMax = callStackMax;
+		this.loopIterationMax = loopIterationMax;
 		stack = new CallStack(this);
 		addStateListener();
 	}
@@ -51,6 +54,11 @@ public class ProgramState implements IProgramState {
 	@Override
 	public int getCallStackMaximum() {
 		return callStackMax;
+	}
+	
+	@Override
+	public int getLoopIterationMaximum() {
+		return loopIterationMax;
 	}
 
 	@Override
@@ -129,12 +137,7 @@ public class ProgramState implements IProgramState {
 					
 					@Override
 					public void expressionEvaluationEnd(IExpression expression, IValue result) {
-						if(expression.isOperation())
-							data.countOperation();
-//						else if(expression instanceof IProcedureCall) {
-//							data.countCall();
-//							System.out.println(((IProcedureCall) expression).getProcedure().getIdentifier() + "(...) -> " + result);
-//						}
+						data.countOperation(expression.getOperationType());
 					}
 					
 					
@@ -153,7 +156,6 @@ public class ProgramState implements IProgramState {
 			}
 		});
 	}
-
 	
 	void countAssignment(IProcedure p) {
 		data.countAssignment(p);
@@ -161,7 +163,7 @@ public class ProgramState implements IProgramState {
 	
 	@Override
 	public List<IValue> getHeapMemory() {
-		// TODO Auto-generated method stub
+		// TODO heapMemory
 		return null;
 	}
 }

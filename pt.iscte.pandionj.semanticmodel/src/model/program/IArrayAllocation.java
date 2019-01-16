@@ -10,11 +10,6 @@ public interface IArrayAllocation extends IExpression {
 	List<IExpression> getDimensions();
 	
 	@Override
-	default boolean isOperation() {
-		return false;
-	}
-	
-	@Override
 	default IArray evaluate(ICallStack stack) throws ExecutionError {
 		IStackFrame frame = stack.getTopFrame();
 		List<IExpression> dimensions = getDimensions();

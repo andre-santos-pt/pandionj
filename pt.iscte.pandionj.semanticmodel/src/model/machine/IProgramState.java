@@ -10,6 +10,7 @@ public interface IProgramState {
 	ICallStack getCallStack();
 	List<IValue> getHeapMemory();
 	int getCallStackMaximum();
+	int getLoopIterationMaximum();
 	ISourceElement getInstructionPointer();
 	IValue getValue(String literal);
 	IValue getValue(Object object);
