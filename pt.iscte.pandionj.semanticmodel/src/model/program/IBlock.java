@@ -10,66 +10,64 @@ import com.google.common.collect.ImmutableSet;
 import impl.program.Factory;
 import model.machine.ICallStack;
 
-public interface IBlock extends ISourceElement, IStatement, Iterable<IStatement> {
+public interface IBlock extends IStatement, Iterable<IStatement> {
 	IFactory factory = new Factory();
 	
 	IBlock getParent();
 	
-	default boolean isProcedure() {
-		return getParent() == null;
-	}
-	
 	List<IStatement> getStatements();
-	
-	void addStatement(IStatement statement);
 	
 	default boolean isEmpty() {
 		return getStatements().isEmpty();
 	}
 	
-	IBlock block();
-	
-	IVariableDeclaration variableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags);
-	default IVariableDeclaration variableDeclaration(String name, IDataType type) {
-		return variableDeclaration(name, type, ImmutableSet.of());
+	@Override
+	default boolean isControl() {
+		return true;
 	}
 	
-	IArrayVariableDeclaration arrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags);
-	default IArrayVariableDeclaration arrayDeclaration(String name, IArrayType type) {
-		return arrayDeclaration(name, type, ImmutableSet.of());
+	
+	IVariableDeclaration addVariableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags);
+	default IVariableDeclaration addVariableDeclaration(String name, IDataType type) {
+		return addVariableDeclaration(name, type, ImmutableSet.of());
 	}
 	
-	IVariableAssignment assignment(IVariableDeclaration var, IExpression exp);
-	
-	default IVariableAssignment increment(IVariableDeclaration var) {
-		assert var.getType() == IDataType.INT;
-		return assignment(var, factory.binaryExpression(IOperator.ADD, var.expression(), factory.literal(1)));
+	IArrayVariableDeclaration addArrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags);
+	default IArrayVariableDeclaration addArrayDeclaration(String name, IArrayType type) {
+		return addArrayDeclaration(name, type, ImmutableSet.of());
 	}
 	
-	default IVariableAssignment decrement(IVariableDeclaration var) {
-		assert var.getType() == IDataType.INT;
-		return assignment(var, factory.binaryExpression(IOperator.SUB, var.expression(), factory.literal(1)));
-	}
-	
-	IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp, List<IExpression> indexes);
-	default IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp, IExpression ... indexes) {
-		return arrayElementAssignment(var, exp, Arrays.asList(indexes));
-	}
-	
-	default ISelection selection(IExpression expression, IBlock block) {
-		return selection(expression, block, null);
-	}
-	
-	ISelection selection(IExpression expression, IBlock selectionBlock, IBlock alternativeBlock);
+	IBlock addBlock();
 
-	ILoop loop(IExpression guard);
+	IVariableAssignment addAssignment(IVariableDeclaration var, IExpression exp);
 	
-	IReturn returnStatement(IExpression expression);
+	default IVariableAssignment addIncrement(IVariableDeclaration var) {
+		assert var.getType() == IDataType.INT;
+		return addAssignment(var, factory.binaryExpression(IOperator.ADD, var.expression(), factory.literal(1)));
+	}
 	
-	IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args);
+	default IVariableAssignment addDecrement(IVariableDeclaration var) {
+		assert var.getType() == IDataType.INT;
+		return addAssignment(var, factory.binaryExpression(IOperator.SUB, var.expression(), factory.literal(1)));
+	}
 	
-	default IProcedureCall procedureCall(IProcedure procedure, IExpression ... args) {
-		return procedureCall(procedure, Arrays.asList(args));
+	IArrayElementAssignment addArrayElementAssignment(IArrayVariableDeclaration var, IExpression exp, List<IExpression> indexes);
+	default IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp, IExpression ... indexes) {
+		return addArrayElementAssignment(var, exp, Arrays.asList(indexes));
+	}
+	
+	IStructMemberAssignment addStructMemberAssignment(IVariableDeclaration var, String memberId, IExpression exp);
+	
+	
+	ISelection addSelection(IExpression guard);
+
+	ILoop addLoop(IExpression guard);
+	
+	IReturn addReturnStatement(IExpression expression);
+	
+	IProcedureCall addProcedureCall(IProcedure procedure, List<IExpression> args);
+	default IProcedureCall addProcedureCall(IProcedure procedure, IExpression ... args) {
+		return addProcedureCall(procedure, Arrays.asList(args));
 	}
 	
 	@Override
@@ -102,22 +100,26 @@ public interface IBlock extends ISourceElement, IStatement, Iterable<IStatement>
 				IProcedureCall call = (IProcedureCall) s;
 				visitor.visitProcedureCall(call.getProcedure(), call.getArguments());
 			}
-			
 			else if(s instanceof IProcedureCallExpression) {
 				IProcedureCallExpression call = (IProcedureCallExpression) s;
 				visitor.visitProcedureCall(call.getProcedure(), call.getArguments());
 			}
-			
-			else if(s instanceof IBlock)
+			else if(s instanceof ISelection) {
+				ISelection sel = (ISelection) s;
+				visitor.visitSelection(sel);
+				sel.getSelectionBlock().accept(visitor);
+				IBlock alternativeBlock = sel.getAlternativeBlock();
+				if(alternativeBlock != null) 
+					alternativeBlock.accept(visitor);
+			}
+			else if(s instanceof ILoop) {
+				ILoop loop = (ILoop) s;
+				visitor.visitLoop(loop);
+				loop.accept(visitor);
+			}
+			else if(s instanceof IBlock) { // only single blocks
+				visitor.visitBlock((IBlock) s);
 				((IBlock) s).accept(visitor);
-			
-			else if(s instanceof IConditionalStatement) {
-				((IConditionalStatement) s).getBlock().accept(visitor);
-				if(s instanceof ISelection) {
-					IBlock alternativeBlock = ((ISelection) s).getAlternativeBlock();
-					if(alternativeBlock != null)
-						alternativeBlock.accept(visitor);
-				}
 			}
 		}
 	}
@@ -127,6 +129,9 @@ public interface IBlock extends ISourceElement, IStatement, Iterable<IStatement>
 		default void visitArrayElementAssignment(IArrayElementAssignment assignment) { }
 		default void visitVariableAssignment(IVariableAssignment assignment) { }
 		default void visitProcedureCall(IProcedure procedure, List<IExpression> args) { }
+		default void visitSelection(ISelection block) { }
+		default void visitLoop(ILoop lool) { }
+		default void visitBlock(IBlock block) { }
 	}
 	
 }

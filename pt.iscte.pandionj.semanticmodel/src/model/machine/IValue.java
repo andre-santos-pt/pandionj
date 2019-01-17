@@ -11,6 +11,10 @@ public interface IValue {
 		return this == NULL;
 	}
 	
+	default int getMemory() {
+		return getType().getMemoryBytes();
+	}
+	
 	IValue NULL = new IValue() {
 		@Override
 		public IDataType getType() {

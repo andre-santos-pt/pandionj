@@ -1,673 +1,709 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <class-diagram version="1.2.2" icons="true" always-add-relationships="false" generalizations="true" realizations="true" 
   associations="true" dependencies="false" nesting-relationships="true" router="FAN">  
-  <interface id="1" language="java" name="model.program.IConditionalStatement" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IConditionalStatement.java" binary="false" 
-    corner="BOTTOM_RIGHT">    
-    <position height="29" width="173" x="1219" y="589"/>    
-    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
-    </display>  
-  </interface>  
-  <interface id="2" language="java" name="model.program.IArrayAllocation" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="1" language="java" name="model.program.IArrayAllocation" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayAllocation.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="133" x="2188" y="394"/>    
+    <position height="-1" width="-1" x="5062" y="1497"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="3" language="java" name="model.program.IArrayIndexIterator" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayIndexIterator.java" binary="false" 
+  <interface id="2" language="java" name="model.program.roles.IArrayIndexIterator" 
+    project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/model/program/roles/IArrayIndexIterator.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="150" x="42" y="37"/>    
+    <position height="-1" width="-1" x="26" y="211"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="4" language="java" name="model.program.IFactory" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="3" language="java" name="model.program.IFactory" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IFactory.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="47" width="136" x="437" y="37"/>    
+    <position height="-1" width="-1" x="410" y="337"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="5" language="java" name="model.program.IVariableDeclaration" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="4" language="java" name="model.program.IVariableDeclaration" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IVariableDeclaration.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="158" x="816" y="589"/>    
+    <position height="-1" width="-1" x="2085" y="1252"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="6" language="java" name="model.program.IProcedureCall" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="5" language="java" name="model.program.IProcedureCall" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IProcedureCall.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="123" x="1056" y="589"/>    
+    <position height="-1" width="-1" x="3301" y="1542"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="7" language="java" name="model.program.ISelection" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="6" language="java" name="model.program.ISelection" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ISelection.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="91" x="1100" y="712"/>    
+    <position height="-1" width="-1" x="3658" y="1542"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="8" language="java" name="model.program.IAbstractDataType" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="7" language="java" name="model.program.IAbstractDataType" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IAbstractDataType.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="147" x="4055" y="589"/>    
+    <position height="-1" width="-1" x="556" y="1488"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <enumeration id="9" language="java" name="model.program.IDataType.DefaultValueType" 
+  <enumeration id="8" language="java" name="model.program.IDataType.DefaultValueType" 
     project="pt.iscte.pandionj.semanticmodel" file="/pt.iscte.pandionj.semanticmodel/src/model/program/IDataType.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="101" width="185" x="3949" y="37"/>    
+    <position height="-1" width="-1" x="840" y="1560"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </enumeration>  
-  <interface id="10" language="java" name="model.program.IStructMemberAssignment" 
+  <interface id="9" language="java" name="model.program.IStructMemberAssignment" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IStructMemberAssignment.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="203" x="1545" y="589"/>    
+    <position height="-1" width="-1" x="3893" y="1524"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="11" language="java" name="model.program.IStructMemberExpression" 
+  <interface id="10" language="java" name="model.program.IStructMemberExpression" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IStructMemberExpression.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="198" x="2805" y="394"/>    
+    <position height="-1" width="-1" x="5311" y="1506"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <class id="12" language="java" name="model.program.ISemanticProblem.SemanticProblem" 
+  <class id="11" language="java" name="model.program.ISemanticProblem.SemanticProblem" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ISemanticProblem.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="65" width="256" x="4411" y="37"/>    
+    <position height="-1" width="-1" x="1488" y="627"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <interface id="13" language="java" name="model.program.IUnaryExpression" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="12" language="java" name="model.program.IUnaryExpression" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IUnaryExpression.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="144" x="3567" y="394"/>    
+    <position height="-1" width="-1" x="5546" y="1506"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <class id="14" language="java" name="model.program.ExecutionError" project="pt.iscte.pandionj.semanticmodel" 
+  <class id="13" language="java" name="model.program.ExecutionError" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ExecutionError.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="101" width="161" x="852" y="37"/>    
+    <position height="-1" width="-1" x="101" y="681"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <interface id="15" language="java" name="model.program.IArrayLengthExpression" 
+  <interface id="14" language="java" name="model.program.IArrayLengthExpression" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayLengthExpression.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="187" x="3230" y="394"/>    
+    <position height="-1" width="-1" x="5795" y="1506"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="16" language="java" name="model.program.IReturn" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="15" language="java" name="model.program.IReturn" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IReturn.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="73" x="1432" y="589"/>    
+    <position height="-1" width="-1" x="4136" y="1515"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="17" language="java" name="model.program.IStatement" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="16" language="java" name="model.program.IStatement" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IStatement.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1394" y="408"/>    
+    <position height="-1" width="-1" x="3694" y="1216"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </interface>  
+  <interface id="17" language="java" name="model.program.IIdentifiableElement" project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IIdentifiableElement.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1052" y="863"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <interface id="18" language="java" name="model.program.IArrayElementExpression" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayElementExpression.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="195" x="3711" y="589"/>    
+    <position height="-1" width="-1" x="4827" y="2021"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <enumeration id="19" language="java" name="model.program.ISemanticProblem.Type" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ISemanticProblem.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="83" width="231" x="4411" y="589"/>    
+    <position height="-1" width="-1" x="1202" y="618"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </enumeration>  
   <interface id="20" language="java" name="model.program.IArrayElementAssignment" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayElementAssignment.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="200" x="368" y="712"/>    
+    <position height="-1" width="-1" x="2892" y="2030"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <interface id="21" language="java" name="model.program.IVariableExpression" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IVariableExpression.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="158" x="3751" y="394"/>    
+    <position height="-1" width="-1" x="4813" y="1506"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <interface id="22" language="java" name="model.program.IExpression" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IExpression.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="104" x="2893" y="37"/>    
+    <position height="-1" width="-1" x="5785" y="1180"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <interface id="23" language="java" name="model.program.IProcedureCallExpression" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IProcedureCallExpression.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="199" x="2566" y="394"/>    
+    <position height="-1" width="-1" x="6056" y="1506"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <interface id="24" language="java" name="model.program.IBinaryExpression" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IBinaryExpression.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="147" x="3043" y="394"/>    
+    <position height="-1" width="-1" x="6306" y="1524"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <class id="25" language="java" name="model.program.IArrayType.ValueTypeArray" 
     project="pt.iscte.pandionj.semanticmodel" file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayType.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="4306" y="158"/>    
+    <position height="-1" width="-1" x="290" y="962"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <interface id="26" language="java" name="model.program.ILoop.IBreak" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/model/program/ILoop.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="67" x="1124" y="853"/>    
-    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
-    </display>  
-  </interface>  
-  <interface id="27" language="java" name="model.program.IProgram" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="26" language="java" name="model.program.IProgram" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IProgram.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1160" y="192"/>    
+    <position height="-1" width="-1" x="899" y="310"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="28" language="java" name="model.program.ISemanticProblem" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="27" language="java" name="model.program.ISemanticProblem" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ISemanticProblem.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="147" x="4411" y="394"/>    
+    <position height="-1" width="-1" x="1506" y="238"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="29" language="java" name="model.program.IVariableAssignment" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="28" language="java" name="model.program.IVariableAssignment" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IVariableAssignment.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="162" x="614" y="589"/>    
+    <position height="-1" width="-1" x="2900" y="1542"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </interface>  
+  <interface id="29" language="java" name="model.program.IBreak" project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IBreak.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="4365" y="1497"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <interface id="30" language="java" name="model.program.IBlock.IVisitor" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IBlock.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="72" x="1788" y="712"/>    
+    <position height="-1" width="-1" x="2382" y="2048"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="31" language="java" name="model.program.IExecutable" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IExecutable.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1553" y="190"/>    
-    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
-      sort-features="false" accessors="true" visibility="true">      
-      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
-    </display>  
-  </interface>  
-  <interface id="32" language="java" name="model.program.IDataType" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="31" language="java" name="model.program.IDataType" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IDataType.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="137" width="272" x="3949" y="394"/>    
+    <position height="-1" width="-1" x="799" y="1279"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="33" language="java" name="model.program.IProcedure" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="32" language="java" name="model.program.IProcedure" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IProcedure.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="98" x="1922" y="712"/>    
+    <position height="-1" width="-1" x="1140" y="2111"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <enumeration id="34" language="java" name="model.program.IVariableDeclaration.Flag" 
+  <enumeration id="33" language="java" name="model.program.IVariableDeclaration.Flag" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IVariableDeclaration.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="101" width="131" x="843" y="712"/>    
+    <position height="-1" width="-1" x="1501" y="1515"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </enumeration>  
-  <interface id="35" language="java" name="model.program.IArrayType" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayType.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="97" x="4242" y="589"/>    
+  <interface id="34" language="java" name="model.program.IStructType" project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IStructType.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1196" y="1524"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </interface>  
+  <interface id="35" language="java" name="model.program.IArrayType" project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayType.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="269" y="1497"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
   <interface id="36" language="java" name="model.program.ILoop" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ILoop.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="63" x="1231" y="712"/>    
+    <position height="-1" width="-1" x="2070" y="2030"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <enumeration id="37" language="java" name="model.program.IExpression.OperationType" 
+  <interface id="37" language="java" name="model.program.IStructAllocation" project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IStructAllocation.java" binary="false" 
+    corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="6555" y="1497"/>    
+    <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
+      sort-features="false" accessors="true" visibility="true">      
+      <attributes public="true" package="true" protected="true" private="true" static="true"/>      
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
+    </display>  
+  </interface>  
+  <enumeration id="38" language="java" name="model.program.IExpression.OperationType" 
     project="pt.iscte.pandionj.semanticmodel" file="/pt.iscte.pandionj.semanticmodel/src/model/program/IExpression.java" 
     binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="2358" y="125"/>    
+    <position height="-1" width="-1" x="6792" y="1524"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </enumeration>  
-  <class id="38" language="java" name="model.program.ILoop.Util" project="pt.iscte.pandionj.semanticmodel" 
+  <class id="39" language="java" name="model.program.ILoop.Util" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ILoop.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="47" x="1231" y="853"/>    
+    <position height="-1" width="-1" x="1999" y="2311"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <class id="39" language="java" name="model.program.IProcedure.Util" project="pt.iscte.pandionj.semanticmodel" 
+  <class id="40" language="java" name="model.program.IProcedure.Util" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IProcedure.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="47" x="1922" y="853"/>    
+    <position height="-1" width="-1" x="979" y="2311"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </class>  
-  <enumeration id="40" language="java" name="model.program.ExecutionError.Type" 
+  <enumeration id="41" language="java" name="model.program.ExecutionError.Type" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ExecutionError.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="950" y="376"/>    
+    <position height="-1" width="-1" x="51" y="908"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </enumeration>  
-  <interface id="41" language="java" name="model.program.IStructType" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IStructType.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="69" x="3946" y="589"/>    
+  <interface id="42" language="java" name="model.program.ISourceElement" project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/model/program/ISourceElement.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="1960" y="881"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="42" language="java" name="model.program.IConstantExpression" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="43" language="java" name="model.program.IConstantExpression" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IConstantExpression.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="165" x="2361" y="394"/>    
+    <position height="-1" width="-1" x="7032" y="1497"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="43" language="java" name="model.program.ILiteral" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="44" language="java" name="model.program.ILiteral" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/ILiteral.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="70" x="3457" y="394"/>    
+    <position height="-1" width="-1" x="7265" y="1497"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="44" language="java" name="model.program.IArrayVariableDeclaration" 
+  <interface id="45" language="java" name="model.program.IArrayVariableDeclaration" 
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IArrayVariableDeclaration.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="195" x="608" y="712"/>    
+    <position height="-1" width="-1" x="1828" y="1551"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="45" language="java" name="model.program.IBlock" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="46" language="java" name="model.program.IBlock" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IBlock.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="47" width="113" x="1788" y="589"/>    
+    <position height="-1" width="-1" x="2406" y="1695"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="46" language="java" name="model.program.ILoop.IContinue" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/model/program/ILoop.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="29" width="89" x="995" y="853"/>    
+  <interface id="47" language="java" name="model.program.IContinue" project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/model/program/IContinue.java" binary="false" corner="BOTTOM_RIGHT">    
+    <position height="-1" width="-1" x="4582" y="1497"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="47" language="java" name="model.program.IOperator" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="48" language="java" name="model.program.IOperator" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IOperator.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="317" width="199" x="613" y="37"/>    
+    <position height="-1" width="-1" x="1218" y="364"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <interface id="48" language="java" name="model.program.IConstantDeclaration" project="pt.iscte.pandionj.semanticmodel" 
+  <interface id="49" language="java" name="model.program.IConstantDeclaration" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IConstantDeclaration.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="29" width="165" x="232" y="37"/>    
+    <position height="-1" width="-1" x="1384" y="1189"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
-      <operations public="false" package="false" protected="false" private="false" static="true"/>    
+      <operations public="true" package="false" protected="false" private="false" static="true"/>    
     </display>  
   </interface>  
-  <generalization id="49">    
-    <end type="SOURCE" refId="29"/>    
-    <end type="TARGET" refId="17"/>  
-  </generalization>  
   <generalization id="50">    
-    <end type="SOURCE" refId="18"/>    
-    <end type="TARGET" refId="21"/>  
-  </generalization>  
-  <generalization id="51">    
-    <end type="SOURCE" refId="20"/>    
-    <end type="TARGET" refId="29"/>  
-  </generalization>  
-  <nesting id="52">    
-    <end type="SOURCE" refId="28"/>    
-    <end type="TARGET" refId="12"/>  
-  </nesting>  
-  <association id="53">    
-    <end type="SOURCE" refId="25" navigable="false">      
-      <attribute id="54" name="type"/>      
-      <multiplicity id="55" minimum="0" maximum="1"/>    
-    </end>    
-    <end type="TARGET" refId="32" navigable="true"/>    
-    <display labels="true" multiplicity="true"/>  
-  </association>  
-  <generalization id="56">    
-    <end type="SOURCE" refId="41"/>    
-    <end type="TARGET" refId="32"/>  
-  </generalization>  
-  <generalization id="57">    
-    <end type="SOURCE" refId="36"/>    
-    <end type="TARGET" refId="45"/>  
-  </generalization>  
-  <generalization id="58">    
-    <end type="SOURCE" refId="42"/>    
-    <end type="TARGET" refId="22"/>  
-  </generalization>  
-  <generalization id="59">    
-    <bendpoint x="1931" y="589"/>    
-    <bendpoint x="1931" y="394"/>    
-    <end type="SOURCE" refId="33"/>    
-    <end type="TARGET" refId="31"/>  
-  </generalization>  
-  <generalization id="60">    
-    <end type="SOURCE" refId="7"/>    
-    <end type="TARGET" refId="1"/>  
-  </generalization>  
-  <generalization id="61">    
-    <bendpoint x="1004" y="712"/>    
-    <bendpoint x="1004" y="589"/>    
-    <end type="SOURCE" refId="46"/>    
-    <end type="TARGET" refId="17"/>  
-  </generalization>  
-  <generalization id="62">    
-    <end type="SOURCE" refId="35"/>    
-    <end type="TARGET" refId="32"/>  
-  </generalization>  
-  <nesting id="63">    
-    <end type="SOURCE" refId="14"/>    
-    <end type="TARGET" refId="40"/>  
-  </nesting>  
-  <generalization id="64">    
-    <end type="SOURCE" refId="44"/>    
-    <end type="TARGET" refId="5"/>  
-  </generalization>  
-  <nesting id="65">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="34"/>  
-  </nesting>  
-  <nesting id="66">    
-    <end type="SOURCE" refId="22"/>    
-    <end type="TARGET" refId="37"/>  
-  </nesting>  
-  <generalization id="67">    
-    <end type="SOURCE" refId="33"/>    
-    <end type="TARGET" refId="45"/>  
-  </generalization>  
-  <generalization id="68">    
-    <end type="SOURCE" refId="17"/>    
-    <end type="TARGET" refId="31"/>  
-  </generalization>  
-  <nesting id="69">    
-    <end type="SOURCE" refId="36"/>    
-    <end type="TARGET" refId="38"/>  
-  </nesting>  
-  <nesting id="70">    
-    <bendpoint x="4272" y="394"/>    
-    <end type="SOURCE" refId="35"/>    
-    <end type="TARGET" refId="25"/>  
-  </nesting>  
-  <generalization id="71">    
-    <end type="SOURCE" refId="43"/>    
-    <end type="TARGET" refId="22"/>  
-  </generalization>  
-  <realization id="72">    
-    <end type="SOURCE" refId="12"/>    
-    <end type="TARGET" refId="28"/>  
-  </realization>  
-  <nesting id="73">    
-    <end type="SOURCE" refId="33"/>    
-    <end type="TARGET" refId="39"/>  
-  </nesting>  
-  <generalization id="74">    
-    <end type="SOURCE" refId="21"/>    
-    <end type="TARGET" refId="22"/>  
-  </generalization>  
-  <generalization id="75">    
-    <end type="SOURCE" refId="6"/>    
-    <end type="TARGET" refId="17"/>  
-  </generalization>  
-  <generalization id="76">    
-    <end type="SOURCE" refId="11"/>    
-    <end type="TARGET" refId="22"/>  
-  </generalization>  
-  <generalization id="77">    
-    <end type="SOURCE" refId="1"/>    
-    <end type="TARGET" refId="17"/>  
-  </generalization>  
-  <nesting id="78">    
-    <end type="SOURCE" refId="45"/>    
-    <end type="TARGET" refId="30"/>  
-  </nesting>  
-  <nesting id="79">    
-    <end type="SOURCE" refId="36"/>    
-    <end type="TARGET" refId="46"/>  
-  </nesting>  
-  <generalization id="80">    
-    <end type="SOURCE" refId="10"/>    
-    <end type="TARGET" refId="17"/>  
-  </generalization>  
-  <generalization id="81">    
-    <end type="SOURCE" refId="24"/>    
-    <end type="TARGET" refId="22"/>  
-  </generalization>  
-  <generalization id="82">    
     <end type="SOURCE" refId="23"/>    
     <end type="TARGET" refId="22"/>  
   </generalization>  
-  <generalization id="83">    
-    <end type="SOURCE" refId="36"/>    
-    <end type="TARGET" refId="1"/>  
-  </generalization>  
-  <generalization id="84">    
+  <nesting id="51">    
     <end type="SOURCE" refId="13"/>    
+    <end type="TARGET" refId="41"/>  
+  </nesting>  
+  <generalization id="52">    
+    <end type="SOURCE" refId="31"/>    
+    <end type="TARGET" refId="17"/>  
+  </generalization>  
+  <generalization id="53">    
+    <end type="SOURCE" refId="12"/>    
     <end type="TARGET" refId="22"/>  
   </generalization>  
-  <generalization id="85">    
-    <end type="SOURCE" refId="27"/>    
+  <generalization id="54">    
+    <end type="SOURCE" refId="7"/>    
     <end type="TARGET" refId="31"/>  
   </generalization>  
-  <nesting id="86">    
-    <end type="SOURCE" refId="32"/>    
-    <end type="TARGET" refId="9"/>  
-  </nesting>  
-  <generalization id="87">    
-    <end type="SOURCE" refId="15"/>    
+  <association id="55">    
+    <end type="SOURCE" refId="13" navigable="false">      
+      <attribute id="56" name="type"/>      
+      <multiplicity id="57" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="41" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization id="58">    
+    <end type="SOURCE" refId="24"/>    
     <end type="TARGET" refId="22"/>  
   </generalization>  
-  <generalization id="88">    
-    <end type="SOURCE" refId="16"/>    
-    <end type="TARGET" refId="17"/>  
-  </generalization>  
-  <realization id="89">    
-    <end type="SOURCE" refId="9"/>    
-    <end type="TARGET" refId="32"/>  
-  </realization>  
-  <generalization id="90">    
-    <end type="SOURCE" refId="5"/>    
-    <end type="TARGET" refId="17"/>  
-  </generalization>  
-  <nesting id="91">    
-    <end type="SOURCE" refId="36"/>    
-    <end type="TARGET" refId="26"/>  
-  </nesting>  
-  <generalization id="92">    
-    <end type="SOURCE" refId="8"/>    
-    <end type="TARGET" refId="32"/>  
-  </generalization>  
-  <generalization id="93">    
-    <end type="SOURCE" refId="2"/>    
-    <end type="TARGET" refId="22"/>  
-  </generalization>  
-  <nesting id="94">    
-    <end type="SOURCE" refId="28"/>    
+  <nesting id="59">    
+    <end type="SOURCE" refId="27"/>    
     <end type="TARGET" refId="19"/>  
   </nesting>  
-  <realization id="95">    
-    <bendpoint x="4251" y="394"/>    
+  <association id="60">    
+    <end type="SOURCE" refId="25" navigable="false">      
+      <attribute id="61" name="type"/>      
+      <multiplicity id="62" minimum="0" maximum="1"/>    
+    </end>    
+    <end type="TARGET" refId="31" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization id="63">    
+    <end type="SOURCE" refId="18"/>    
+    <end type="TARGET" refId="21"/>  
+  </generalization>  
+  <nesting id="64">    
+    <bendpoint x="201" y="1136"/>    
+    <end type="SOURCE" refId="35"/>    
+    <end type="TARGET" refId="25"/>  
+  </nesting>  
+  <generalization id="65">    
+    <end type="SOURCE" refId="35"/>    
+    <end type="TARGET" refId="31"/>  
+  </generalization>  
+  <generalization id="66">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="17"/>  
+  </generalization>  
+  <generalization id="67">    
+    <end type="SOURCE" refId="22"/>    
+    <end type="TARGET" refId="42"/>  
+  </generalization>  
+  <generalization id="68">    
+    <end type="SOURCE" refId="36"/>    
+    <end type="TARGET" refId="46"/>  
+  </generalization>  
+  <realization id="69">    
+    <end type="SOURCE" refId="11"/>    
+    <end type="TARGET" refId="27"/>  
+  </realization>  
+  <generalization id="70">    
+    <end type="SOURCE" refId="20"/>    
+    <end type="TARGET" refId="28"/>  
+  </generalization>  
+  <generalization id="71">    
+    <end type="SOURCE" refId="49"/>    
+    <end type="TARGET" refId="17"/>  
+  </generalization>  
+  <association id="72">    
+    <end type="SOURCE" refId="11" navigable="false">      
+      <attribute id="73" name="elements"/>      
+      <multiplicity id="74" minimum="0" maximum="2147483647"/>    
+    </end>    
+    <end type="TARGET" refId="42" navigable="true"/>    
+    <display labels="true" multiplicity="true"/>  
+  </association>  
+  <generalization id="75">    
+    <end type="SOURCE" refId="45"/>    
+    <end type="TARGET" refId="4"/>  
+  </generalization>  
+  <generalization id="76">    
+    <end type="SOURCE" refId="49"/>    
+    <end type="TARGET" refId="42"/>  
+  </generalization>  
+  <generalization id="77">    
+    <end type="SOURCE" refId="37"/>    
+    <end type="TARGET" refId="22"/>  
+  </generalization>  
+  <nesting id="78">    
+    <end type="SOURCE" refId="27"/>    
+    <end type="TARGET" refId="11"/>  
+  </nesting>  
+  <generalization id="79">    
+    <end type="SOURCE" refId="29"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <nesting id="80">    
+    <end type="SOURCE" refId="22"/>    
+    <end type="TARGET" refId="38"/>  
+  </nesting>  
+  <nesting id="81">    
+    <end type="SOURCE" refId="32"/>    
+    <end type="TARGET" refId="40"/>  
+  </nesting>  
+  <nesting id="82">    
+    <end type="SOURCE" refId="46"/>    
+    <end type="TARGET" refId="30"/>  
+  </nesting>  
+  <nesting id="83">    
+    <end type="SOURCE" refId="31"/>    
+    <end type="TARGET" refId="8"/>  
+  </nesting>  
+  <generalization id="84">    
+    <end type="SOURCE" refId="9"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <generalization id="85">    
+    <end type="SOURCE" refId="43"/>    
+    <end type="TARGET" refId="22"/>  
+  </generalization>  
+  <generalization id="86">    
+    <end type="SOURCE" refId="1"/>    
+    <end type="TARGET" refId="22"/>  
+  </generalization>  
+  <generalization id="87">    
+    <end type="SOURCE" refId="34"/>    
+    <end type="TARGET" refId="31"/>  
+  </generalization>  
+  <generalization id="88">    
+    <end type="SOURCE" refId="15"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <realization id="89">    
+    <end type="SOURCE" refId="8"/>    
+    <end type="TARGET" refId="31"/>  
+  </realization>  
+  <generalization id="90">    
+    <bendpoint x="1518" y="1136"/>    
+    <end type="SOURCE" refId="34"/>    
+    <end type="TARGET" refId="42"/>  
+  </generalization>  
+  <generalization id="91">    
+    <end type="SOURCE" refId="32"/>    
+    <end type="TARGET" refId="46"/>  
+  </generalization>  
+  <generalization id="92">    
+    <end type="SOURCE" refId="46"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <generalization id="93">    
+    <end type="SOURCE" refId="14"/>    
+    <end type="TARGET" refId="22"/>  
+  </generalization>  
+  <generalization id="94">    
+    <end type="SOURCE" refId="28"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <generalization id="95">    
+    <end type="SOURCE" refId="16"/>    
+    <end type="TARGET" refId="42"/>  
+  </generalization>  
+  <generalization id="96">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="42"/>  
+  </generalization>  
+  <generalization id="97">    
+    <end type="SOURCE" refId="6"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <generalization id="98">    
+    <bendpoint x="965" y="1462"/>    
+    <bendpoint x="965" y="1136"/>    
+    <end type="SOURCE" refId="32"/>    
+    <end type="TARGET" refId="17"/>  
+  </generalization>  
+  <generalization id="99">    
+    <end type="SOURCE" refId="47"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <realization id="100">    
+    <bendpoint x="180" y="1136"/>    
     <end type="SOURCE" refId="25"/>    
     <end type="TARGET" refId="35"/>  
   </realization>  
-  <generalization id="96">    
-    <bendpoint x="1025" y="712"/>    
-    <bendpoint x="1025" y="589"/>    
-    <end type="SOURCE" refId="26"/>    
-    <end type="TARGET" refId="17"/>  
-  </generalization>  
-  <association id="97">    
-    <end type="SOURCE" refId="14" navigable="false">      
-      <attribute id="98" name="type"/>      
-      <multiplicity id="99" minimum="0" maximum="1"/>    
+  <association id="101">    
+    <end type="SOURCE" refId="13" navigable="false">      
+      <attribute id="102" name="element"/>      
+      <multiplicity id="103" minimum="0" maximum="1"/>    
     </end>    
-    <end type="TARGET" refId="40" navigable="true"/>    
+    <end type="TARGET" refId="42" navigable="true"/>    
     <display labels="true" multiplicity="true"/>  
   </association>  
+  <generalization id="104">    
+    <end type="SOURCE" refId="10"/>    
+    <end type="TARGET" refId="22"/>  
+  </generalization>  
+  <generalization id="105">    
+    <end type="SOURCE" refId="21"/>    
+    <end type="TARGET" refId="22"/>  
+  </generalization>  
+  <generalization id="106">    
+    <end type="SOURCE" refId="5"/>    
+    <end type="TARGET" refId="16"/>  
+  </generalization>  
+  <nesting id="107">    
+    <end type="SOURCE" refId="36"/>    
+    <end type="TARGET" refId="39"/>  
+  </nesting>  
+  <nesting id="108">    
+    <end type="SOURCE" refId="4"/>    
+    <end type="TARGET" refId="33"/>  
+  </nesting>  
+  <generalization id="109">    
+    <end type="SOURCE" refId="44"/>    
+    <end type="TARGET" refId="22"/>  
+  </generalization>  
   <classifier-display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
     sort-features="false" accessors="true" visibility="true">    
     <attributes public="true" package="true" protected="true" private="true" static="true"/>    

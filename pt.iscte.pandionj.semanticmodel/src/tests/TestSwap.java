@@ -34,26 +34,26 @@ public class TestSwap {
 		IVariableDeclaration iParam = swapProc.addParameter("i", IDataType.INT);
 		IVariableDeclaration jParam = swapProc.addParameter("j", IDataType.INT);
 		
-		IVariableDeclaration tVar = swapProc.variableDeclaration("t", IDataType.INT);
-		tVar.assignment(vParam.elementExpression(iParam.expression()));
+		IVariableDeclaration tVar = swapProc.addVariableDeclaration("t", IDataType.INT);
+		tVar.addAssignment(vParam.elementExpression(iParam.expression()));
 		vParam.elementAssignment(vParam.elementExpression(jParam.expression()), iParam.expression());
 		vParam.elementAssignment(tVar.expression(), jParam.expression());
 		
-		swapProc.procedureCall(program.getProcedure("print"), jParam.expression());
+		swapProc.addProcedureCall(program.getProcedure("print", IDataType.INT), jParam.expression());
 
-		iParam.assignment(factory.literal(4));
+		iParam.addAssignment(factory.literal(4));
 		
 		main = program.createProcedure("main", IDataType.VOID);
-		IArrayVariableDeclaration array = main.arrayDeclaration("test", factory.arrayType(IDataType.INT, 1));
-		array.assignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
+		IArrayVariableDeclaration array = main.addArrayDeclaration("test", factory.arrayType(IDataType.INT, 1));
+		array.addAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
 		array.elementAssignment(factory.literal(5), factory.literal(0));
 		array.elementAssignment(factory.literal(7), factory.literal(1));
 		array.elementAssignment(factory.literal(9), factory.literal(2));
 		
-		IVariableDeclaration iVar = main.variableDeclaration("i", IDataType.INT);
-		iVar.assignment(factory.literal(0));
+		IVariableDeclaration iVar = main.addVariableDeclaration("i", IDataType.INT);
+		iVar.addAssignment(factory.literal(0));
 		
-		main.procedureCall(swapProc, array.expression(), iVar.expression(), factory.literal(2));
+		main.addProcedureCall(swapProc, array.expression(), iVar.expression(), factory.literal(2));
 	}
 
 	@Test

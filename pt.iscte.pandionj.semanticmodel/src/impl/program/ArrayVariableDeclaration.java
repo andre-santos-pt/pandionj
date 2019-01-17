@@ -10,8 +10,10 @@ import model.program.IArrayElementExpression;
 import model.program.IArrayLengthExpression;
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
+import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
+import model.program.ISourceElement;
 import model.program.roles.IVariableRole;
 
 class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVariableDeclaration {
@@ -54,7 +56,9 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 	
 	@Override
 	public IArrayElementAssignment elementAssignment(IExpression expression, List<IExpression> indexes) {
-		return new ArrayElementAssignment(getParent(), this, indexes, expression);
+		ISourceElement parent = getParent();
+		assert parent instanceof IBlock;
+		return new ArrayElementAssignment((IBlock) parent, this, indexes, expression);
 	}
 	
 	public IVariableRole getRole() {

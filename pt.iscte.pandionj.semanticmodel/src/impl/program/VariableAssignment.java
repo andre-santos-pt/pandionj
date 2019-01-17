@@ -11,7 +11,7 @@ class VariableAssignment extends Statement implements IVariableAssignment {
 	private final IExpression expression;
 	
 	public VariableAssignment(IBlock parent, IVariableDeclaration variable, IExpression expression) {
-		super(parent);
+		super(parent, true);
 		this.variable = variable;
 		this.expression = expression;
 	}

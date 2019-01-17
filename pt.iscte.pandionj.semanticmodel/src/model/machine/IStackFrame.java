@@ -9,6 +9,7 @@ import model.program.IExpression;
 import model.program.IProcedure;
 import model.program.IStatement;
 import model.program.IStructType;
+import model.program.IVariableDeclaration;
 
 public interface IStackFrame {
 	IStackFrame getParent(); // only null on root
@@ -29,7 +30,13 @@ public interface IStackFrame {
 	IValue getReturn();
 	void setReturn(IValue value);
 	
-	int getMemory();
+	default int getMemory() {
+		int bytes = 0;
+		for (IVariableDeclaration var : getProcedure().getVariables(true)) {
+			bytes += var.getType().getMemoryBytes();
+		}
+		return bytes;
+	}
 	
 	IStackFrame newChildFrame(IProcedure procedure, List<IValue> args);
 	

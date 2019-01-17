@@ -29,7 +29,7 @@ public class TestConstants {
 		
 		IProcedure circleArea = program.createProcedure("circleArea", IDataType.DOUBLE);
 		IVariableDeclaration rParam = circleArea.addParameter("r", IDataType.DOUBLE);
-		circleArea.returnStatement(fact.binaryExpression(IOperator.MUL, fact.binaryExpression(IOperator.MUL, piConst.expression(), rParam.expression()), rParam.expression()));
+		circleArea.addReturnStatement(fact.binaryExpression(IOperator.MUL, fact.binaryExpression(IOperator.MUL, piConst.expression(), rParam.expression()), rParam.expression()));
 		
 		ProgramState state = new ProgramState(program);
 		state.execute(circleArea, 3);
@@ -41,7 +41,7 @@ public class TestConstants {
 		
 		IProcedure circlePerimeter = program.createProcedure("circlePerimeter", IDataType.DOUBLE);
 		IVariableDeclaration rParam = circlePerimeter.addParameter("r", IDataType.DOUBLE);
-		circlePerimeter.returnStatement(fact.binaryExpression(IOperator.MUL, fact.binaryExpression(IOperator.MUL, fact.literal(2), piConst.expression()), rParam.expression()));
+		circlePerimeter.addReturnStatement(fact.binaryExpression(IOperator.MUL, fact.binaryExpression(IOperator.MUL, fact.literal(2), piConst.expression()), rParam.expression()));
 		ProgramState state = new ProgramState(program);
 		state.execute(circlePerimeter, 3);
 

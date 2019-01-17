@@ -17,7 +17,7 @@ import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IStructType;
 
-class Program extends SourceElement implements IProgram {
+class Program implements IProgram {
 	private final Map<String, IConstantDeclaration> constants;
 	private final Map<String, IStructType> structs;
 	private final List<IProcedure> procedures;

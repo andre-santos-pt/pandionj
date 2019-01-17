@@ -9,8 +9,8 @@ import com.google.common.collect.ImmutableSet;
 
 import model.program.IDataType;
 import model.program.IIdentifiableElement;
+import model.program.IStructAllocation;
 import model.program.IStructType;
-import model.program.IStructMemberExpression;
 import model.program.IVariableDeclaration;
 import model.program.IVariableDeclaration.Flag;
 
@@ -42,11 +42,6 @@ class StructType extends SourceElement implements IStructType {
 	}
 	
 	@Override
-	public IStructMemberExpression memberExpression(String id) {
-		return new StructMemberExpression(this, id);
-	}	
-	
-	@Override
 	public boolean matches(Object object) {
 		return false;
 	}
@@ -69,6 +64,19 @@ class StructType extends SourceElement implements IStructType {
 			text += member + ";";
 		}
 		return text + "}";
+	}
+	
+	@Override
+	public int getMemoryBytes() {
+		int bytes = 0;
+		for(IVariableDeclaration v : variables)
+			bytes += v.getType().getMemoryBytes();
+		return bytes;
+	}
+	
+	@Override
+	public IStructAllocation allocationExpression() {
+		return new StructAllocation(this);
 	}
 	
 }

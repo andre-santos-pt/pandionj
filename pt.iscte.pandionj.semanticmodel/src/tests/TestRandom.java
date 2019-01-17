@@ -24,7 +24,7 @@ public class TestRandom {
 		IFactory factory = new Factory();
 		IProgram program = factory.createProgram();
 		IProcedure proc = program.createProcedure("randomDouble", IDataType.DOUBLE);
-		proc.returnStatement(program.getProcedure("random").callExpression());
+		proc.addReturnStatement(program.getProcedure("random").callExpression());
 		ProgramState state = new ProgramState(program);
 		IExecutionData data = state.execute(proc);
 		assertEquals(2, data.getTotalProcedureCalls());
@@ -37,14 +37,14 @@ public class TestRandom {
 		IProcedure proc = program.createProcedure("randomInt", IDataType.DOUBLE);
 		IVariableDeclaration minParam = proc.addParameter("min", IDataType.INT);
 		IVariableDeclaration maxParam = proc.addParameter("max", IDataType.INT);
-		IVariableDeclaration rVar = proc.variableDeclaration("r", IDataType.DOUBLE);
-		rVar.assignment(program.getProcedure("random").callExpression());
+		IVariableDeclaration rVar = proc.addVariableDeclaration("r", IDataType.DOUBLE);
+		rVar.addAssignment(program.getProcedure("random").callExpression());
 		IBinaryExpression d = factory.binaryExpression(IOperator.SUB, maxParam.expression(), minParam.expression());
 		IBinaryExpression d1 = factory.binaryExpression(IOperator.ADD, d, factory.literal(1));
 		IBinaryExpression m = factory.binaryExpression(IOperator.MUL, rVar.expression(), d1);
 		IUnaryExpression t = factory.unaryExpression(IOperator.TRUNCATE, m);
 		IBinaryExpression e = factory.binaryExpression(IOperator.ADD, minParam.expression(), t);
-		proc.returnStatement(e);
+		proc.addReturnStatement(e);
 		
 		System.out.println(program);
 		ProgramState state = new ProgramState(program);

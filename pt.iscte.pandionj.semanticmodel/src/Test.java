@@ -23,7 +23,7 @@ public class Test {
 
 		IProcedureCallExpression randomCall = program.getProcedure("random").callExpression();
 
-		proc.returnStatement(randomCall);
+		proc.addReturnStatement(randomCall);
 
 		//		IVariableDeclaration rVar = proc.variableDeclaration("r", program.getDataType("double"));
 		//		IVariableAssignment rAss = rVar.assignment(randomCall);
@@ -36,8 +36,8 @@ public class Test {
 		//		proc.returnStatement(rVar.expression());
 
 		IProcedure main = program.createProcedure("main", IDataType.DOUBLE);
-		IVariableDeclaration var2 = main.variableDeclaration("b", IDataType.INT);	
-		IVariableAssignment ass3 = var2.assignment(proc.callExpression(factory.literal(2)));
+		IVariableDeclaration var2 = main.addVariableDeclaration("b", IDataType.INT);	
+		IVariableAssignment ass3 = var2.addAssignment(proc.callExpression(factory.literal(2)));
 
 
 		ProgramState state = new ProgramState(program);

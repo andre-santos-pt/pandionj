@@ -15,6 +15,7 @@ import model.program.IExpression;
 import model.program.IFactory;
 import model.program.IProcedure;
 import model.program.IProgram;
+import model.program.ISelection;
 import model.program.IVariableDeclaration;
 import model.program.operators.IBinaryOperator;
 
@@ -31,11 +32,11 @@ public class TestSelection {
 		IVariableDeclaration bParam = maxFunc.addParameter("b", IDataType.INT);
 		
 		IBinaryExpression e = factory.binaryExpression(IBinaryOperator.GREATER, aParam.expression(), bParam.expression());
-		IBlock ifblock = maxFunc.block();
-		ifblock.returnStatement(aParam.expression());
-		IBlock elseblock = maxFunc.block();
-		elseblock.returnStatement(bParam.expression());
-		maxFunc.selection(e, ifblock, elseblock);
+		ISelection ifElse = maxFunc.addSelection(e);
+		IBlock ifblock = ifElse.getSelectionBlock();
+		ifblock.addReturnStatement(aParam.expression());
+		IBlock elseblock = ifElse.addAlternativeBlock();
+		elseblock.addReturnStatement(bParam.expression());
 		System.out.println(program);
 	}
 

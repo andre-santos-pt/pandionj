@@ -11,7 +11,7 @@ class ProcedureCall extends Statement implements IProcedureCall {
 	private final List<IExpression> arguments;
 	
 	public ProcedureCall(Block parent, IProcedure procedure, List<IExpression> arguments) {
-		super(parent);
+		super(parent, true);
 		this.procedure = procedure;
 		this.arguments = arguments;
 	}

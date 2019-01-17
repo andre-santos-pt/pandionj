@@ -77,11 +77,6 @@ class CallStack implements ICallStack {
 		next--;
 		for(IListener l : listeners)
 			l.stackFrameTerminated(stack[next], returnValue);
-		
-//		IProcedure procedure = stack[next].getProcedure();
-//		stack[next].terminateFrame();
-//		System.out.println("/ " + procedure + " -> " + returnValue);
-
 	}
 	
 	@Override

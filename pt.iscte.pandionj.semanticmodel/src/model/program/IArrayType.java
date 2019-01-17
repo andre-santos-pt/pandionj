@@ -62,5 +62,10 @@ public interface IArrayType extends IDataType {
 		public IDataType getComponentType() {
 			return type;
 		}
+		
+		@Override
+		public int getMemoryBytes() {
+			return 4;
+		}
 	}
 }

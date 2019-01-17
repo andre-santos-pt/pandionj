@@ -1,20 +1,25 @@
 package impl.program;
 
-import model.program.IDataType;
-import model.program.IStructType;
 import model.program.IStructAllocation;
+import model.program.IStructType;
 
-public class StructAllocation extends SourceElement implements IStructAllocation {
+class StructAllocation extends SourceElement implements IStructAllocation {
 
-	@Override
-	public IDataType getType() {
-		// TODO Auto-generated method stub
-		return null;
+	private final IStructType type;
+	
+	public StructAllocation(IStructType type) {
+		this.type = type;
 	}
 
+
 	@Override
-	public IStructType getStructType() {
-		// TODO Auto-generated method stub
-		return null;
+	public IStructType getType() {
+		return type;
 	}
+	
+	@Override
+	public String toString() {
+		return "new " + getType().getId(); 
+	}
+
 }

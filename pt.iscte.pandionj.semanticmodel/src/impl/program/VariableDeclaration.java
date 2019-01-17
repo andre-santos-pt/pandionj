@@ -7,14 +7,19 @@ import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IIdentifiableElement;
 import model.program.IProcedure;
+import model.program.ISourceElement;
+import model.program.IStructMemberAssignment;
+import model.program.IStructMemberExpression;
+import model.program.IStructType;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 import model.program.IVariableExpression;
 import model.program.roles.IGatherer;
 import model.program.roles.IVariableRole;
 
-class VariableDeclaration extends Statement implements IVariableDeclaration {
+class VariableDeclaration extends SourceElement implements IVariableDeclaration {
 
+	private final ISourceElement parent;
 	private final String name;
 	private final IDataType type;
 	private final boolean constant; // TODO final vars
@@ -23,8 +28,9 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 	private final boolean field;
 	private IVariableRole role;
 
-	public VariableDeclaration(Block block, String name, IDataType type, Set<Flag> flags) {
-		super(block);
+	public VariableDeclaration(ISourceElement parent, String name, IDataType type, Set<Flag> flags) {
+//		super(block, true);
+		this.parent = parent;
 		assert IIdentifiableElement.isValidIdentifier(name);
 		this.name = name;
 		this.type = type;
@@ -50,12 +56,17 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 	}
 
 	@Override
-	public IProcedure getProcedure() {
-		IBlock parent = getParent();
-		while(!(parent instanceof IProcedure))
-			parent = parent.getParent();
-		return (IProcedure) parent;
+	public ISourceElement getParent() {
+		return parent;
 	}
+	
+//	@Override
+//	public IProcedure getProcedure() {
+//		IBlock parent = getParent();
+//		while(!(parent instanceof IProcedure))
+//			parent = parent.getParent();
+//		return (IProcedure) parent;
+//	}
 
 	@Override
 	public IDataType getType() {
@@ -73,14 +84,27 @@ class VariableDeclaration extends Statement implements IVariableDeclaration {
 	}
 
 	@Override
-	public IVariableAssignment assignment(IExpression expression) {
-		return new VariableAssignment(getParent(), this, expression);
+	public IVariableAssignment addAssignment(IExpression expression) {
+		assert parent instanceof IBlock;
+		return new VariableAssignment((IBlock) parent, this, expression);
 	}
 
 	@Override
 	public IVariableExpression expression() {
 		return new VariableExpression(this);
 	}
+	
+	@Override
+	public IStructMemberAssignment addMemberAssignment(String memberId, IExpression expression) {
+		assert parent instanceof IBlock;
+		return new StructMemberAssignment((IBlock) parent, this, memberId, expression);
+	}
+	
+	@Override
+	public IStructMemberExpression memberExpression(String memberId) {
+		return new StructMemberExpression(this, memberId);
+	}
+	
 
 	@Override
 	public IVariableRole getRole() {

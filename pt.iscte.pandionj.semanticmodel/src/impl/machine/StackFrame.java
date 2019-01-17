@@ -9,8 +9,8 @@ import java.util.Map.Entry;
 
 import model.machine.IArray;
 import model.machine.ICallStack;
-import model.machine.IStructObject;
 import model.machine.IStackFrame;
+import model.machine.IStructObject;
 import model.machine.IValue;
 import model.program.ExecutionError;
 import model.program.IDataType;
@@ -75,7 +75,7 @@ class StackFrame implements IStackFrame {
 
 	@Override
 	public void setVariable(String identifier, IValue value) {
-		assert variables.containsKey(identifier);
+		assert variables.containsKey(identifier) : identifier;
 		variables.put(identifier, value);
 	}
 

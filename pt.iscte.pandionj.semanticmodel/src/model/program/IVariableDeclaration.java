@@ -4,14 +4,19 @@ import model.machine.ICallStack;
 import model.program.roles.IGatherer;
 import model.program.roles.IVariableRole;
 
-public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
-	IProcedure getProcedure();
+public interface IVariableDeclaration extends ISourceElement, IIdentifiableElement {
+	ISourceElement getParent();
 	
 	IDataType getType();
 
 	boolean isReference();
 	boolean isConstant();
 	boolean isParameter();
+	
+//	@Override
+//	default boolean isControl() {
+//		return false;
+//	}
 	
 	default IVariableRole getRole() {
 		return IVariableRole.NONE;
@@ -21,14 +26,18 @@ public interface IVariableDeclaration extends IStatement, IIdentifiableElement {
 		return getRole() instanceof IGatherer;
 	}
 	
-	IVariableAssignment assignment(IExpression exp);
+	IVariableAssignment addAssignment(IExpression exp);
 	
 	IVariableExpression expression();
 	
-	@Override
-	default boolean execute(ICallStack callStack) {
-		return true;
-	}
+	IStructMemberAssignment addMemberAssignment(String memberId, IExpression expression);
+	
+	IStructMemberExpression memberExpression(String memberId);
+
+//	@Override
+//	default boolean execute(ICallStack callStack) {
+//		return true;
+//	}
 	
 	enum Flag {
 		REFERENCE, CONSTANT, PARAM, FIELD

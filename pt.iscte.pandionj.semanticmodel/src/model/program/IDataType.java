@@ -16,6 +16,8 @@ public interface IDataType extends IIdentifiableElement {
 	
 	Object getDefaultValue();
 	
+	int getMemoryBytes();
+	
 	default boolean isVoid() {
 		return this == VOID;
 	}
@@ -53,6 +55,11 @@ public interface IDataType extends IIdentifiableElement {
 			public Object getDefaultValue() {
 				return null;
 			}
+			
+			@Override
+			public int getMemoryBytes() {
+				return 0;
+			}
 		},
 		INT {
 			public boolean matchesLiteral(String literal) {
@@ -81,6 +88,11 @@ public interface IDataType extends IIdentifiableElement {
 			private boolean isWhole(BigDecimal bigDecimal) {
 			    return bigDecimal.setScale(0, RoundingMode.HALF_UP).compareTo(bigDecimal) == 0;
 			}
+			
+			@Override
+			public int getMemoryBytes() {
+				return 4;
+			}
 		}, 
 		DOUBLE {
 			public boolean matchesLiteral(String literal) {
@@ -105,6 +117,11 @@ public interface IDataType extends IIdentifiableElement {
 			public boolean matches(Object object) {
 				return Double.class.isInstance(object);
 			}
+			
+			@Override
+			public int getMemoryBytes() {
+				return 8;
+			}
 		}, 
 		BOOLEAN {
 			public boolean matchesLiteral(String literal) {
@@ -122,6 +139,11 @@ public interface IDataType extends IIdentifiableElement {
 			@Override
 			public Object getDefaultValue() {
 				return Boolean.FALSE;
+			}
+			
+			@Override
+			public int getMemoryBytes() {
+				return 1;
 			}
 		};
 		
@@ -171,6 +193,11 @@ public interface IDataType extends IIdentifiableElement {
 		@Override
 		public String toString() {
 			return getId();
+		}
+		
+		@Override
+		public int getMemoryBytes() {
+			return 0;
 		}
 	};
 }

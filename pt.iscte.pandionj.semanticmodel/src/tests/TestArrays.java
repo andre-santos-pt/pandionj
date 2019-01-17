@@ -31,16 +31,16 @@ public class TestArrays {
 		
 		IProcedure natFunc = program.createProcedure("naturals", new IArrayType.ValueTypeArray(IDataType.INT, 1));
 		IVariableDeclaration nParam = natFunc.addParameter("n", IDataType.INT);
-		IArrayVariableDeclaration vVar = natFunc.arrayDeclaration("v", factory.arrayType(IDataType.INT, 1));
-		vVar.assignment(factory.arrayAllocation(IDataType.INT, nParam.expression()));
+		IArrayVariableDeclaration vVar = natFunc.addArrayDeclaration("v", factory.arrayType(IDataType.INT, 1));
+		vVar.addAssignment(factory.arrayAllocation(IDataType.INT, nParam.expression()));
 		
-		IVariableDeclaration iVar = natFunc.variableDeclaration("i", IDataType.INT);
+		IVariableDeclaration iVar = natFunc.addVariableDeclaration("i", IDataType.INT);
 		IExpression e = factory.binaryExpression(IOperator.SMALLER, iVar.expression(), nParam.expression());
-		ILoop loop = natFunc.loop(e);
+		ILoop loop = natFunc.addLoop(e);
 		IBinaryExpression iPlus1 = factory.binaryExpression(IOperator.ADD, iVar.expression(), factory.literal(1));
 		loop.arrayElementAssignment(vVar, iPlus1, iVar.expression());
-		loop.assignment(iVar, factory.binaryExpression(IOperator.ADD, iVar.expression(), factory.literal(1)));
-		natFunc.returnStatement(vVar.expression());
+		loop.addAssignment(iVar, factory.binaryExpression(IOperator.ADD, iVar.expression(), factory.literal(1)));
+		natFunc.addReturnStatement(vVar.expression());
 		
 		System.out.println(program);
 		ProgramState state = new ProgramState(program);

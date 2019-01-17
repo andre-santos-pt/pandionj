@@ -22,6 +22,14 @@ public interface ICallStack {
 	
 	IStackFrame getLastTerminatedFrame();
 	
+	default int getMemory() {
+		int bytes = 0;
+		for (IStackFrame f : getFrames()) {
+			bytes += f.getMemory();
+		}
+		return bytes;
+	}
+	
 	default boolean execute(IStatement statement) throws ExecutionError {
 		return getTopFrame().execute(statement);
 	}

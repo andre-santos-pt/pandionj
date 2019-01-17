@@ -6,14 +6,15 @@ import model.program.ISelection;
 
 class Selection extends Statement implements ISelection {
 	private final IExpression guard;
-	private final IBlock block;
-	private final IBlock alternativeBlock;
+	private final IBlock selectionBlock;
+	private IBlock alternativeBlock;
 
-	public Selection(Block parent, IExpression guard, IBlock block, IBlock alternativeBlock) {
-		super(parent);
+	public Selection(Block parent, IExpression guard) {
+		super(parent, true);
+		assert parent != null;
 		this.guard = guard;
-		this.block = block;
-		this.alternativeBlock = alternativeBlock;
+		this.selectionBlock = parent.addLooseBlock();
+		this.alternativeBlock = null;
 	}
 
 	@Override
@@ -22,17 +23,24 @@ class Selection extends Statement implements ISelection {
 	}
 
 	@Override
-	public IBlock getBlock() {
-		return block;
+	public IBlock getSelectionBlock() {
+		return selectionBlock;
 	}
 
 	@Override
 	public IBlock getAlternativeBlock() {
 		return alternativeBlock;
 	}
+	
+	@Override
+	public IBlock addAlternativeBlock() {
+		if(alternativeBlock == null)
+			alternativeBlock = ((Block) getParent()).addLooseBlock();
+		return alternativeBlock;
+	}
 
 	@Override
 	public String toString() {
-		return "if " + guard + " " + block + (alternativeBlock != null ? "else " + alternativeBlock : "");
+		return "if " + guard + " " + selectionBlock + (alternativeBlock != null ? "else " + alternativeBlock : "");
 	}
 }

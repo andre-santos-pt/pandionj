@@ -18,6 +18,11 @@ public interface IProcedureCall extends IStatement {
 	}
 	
 	@Override
+	default boolean isControl() {
+		return false;
+	}
+	
+	@Override
 	default List<ISemanticProblem> validateSematics() {
 		if(getProcedure().getNumberOfParameters() != getArguments().size())
 			return ImmutableList.of(ISemanticProblem.create("wrong number of arguments", this));

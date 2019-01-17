@@ -6,7 +6,6 @@ import model.program.ExecutionError;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IOperator;
-import model.program.IExpression.OperationType;
 
 public interface IBinaryOperator extends IOperator {
 

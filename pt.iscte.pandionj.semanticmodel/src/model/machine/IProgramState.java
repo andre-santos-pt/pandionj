@@ -9,10 +9,12 @@ import model.program.IStructType;
 
 public interface IProgramState {
 	ICallStack getCallStack();
-	List<IValue> getHeapMemory();
+	IHeapMemory getHeapMemory();
 	int getCallStackMaximum();
 	int getLoopIterationMaximum();
-//	int getAvailableMemory();
+	int getAvailableMemory();
+	int getUsedMemory();
+	
 	ISourceElement getInstructionPointer();
 	IValue getValue(String literal);
 	IValue getValue(Object object);
@@ -21,14 +23,14 @@ public interface IProgramState {
 	IStructObject allocateObject(IStructType type);
 	
 	IExecutionData execute(IProcedure procedureName, Object ... args);
-//	default IExecutionData execute(String procedureName, String ... args) {
-//		
-//	}
+
+	default int getMemory() {
+		return getCallStack().getMemory() + getHeapMemory().getMemory();
+	}
 	
 	interface IListener {
 		default void programEnded() { }
 		default void instructionPointerMoved(ISourceElement currentInstruction) { }
-		default void addedToHeap(IValue value) { }
-		default void removedFromHeap(IValue value) { }
+		
 	}
 }

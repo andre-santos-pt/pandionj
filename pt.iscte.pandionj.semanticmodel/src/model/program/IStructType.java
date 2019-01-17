@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableSet;
 
 import model.program.IVariableDeclaration.Flag;
 
-// TODO
 public interface IStructType extends IDataType, ISourceElement {
 	
 	List<IVariableDeclaration> getMemberVariables();
@@ -17,12 +16,14 @@ public interface IStructType extends IDataType, ISourceElement {
 		return addMemberVariable(id, type, ImmutableSet.of());
 	}
 	
-	IStructMemberExpression memberExpression(String id);
-	
 	@Override
 	default Object getDefaultValue() {
 		return null;
 	}
+	
+
+	IStructAllocation allocationExpression();
+	
 //	ImmutableList<IProcedure> getProcedures();
 //	default boolean isCompatibleWith(IAbstractDataType type) {
 //		for (IProcedure tp : type.getProcedures()) {

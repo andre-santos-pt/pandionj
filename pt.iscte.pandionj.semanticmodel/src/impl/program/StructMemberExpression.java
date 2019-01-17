@@ -1,25 +1,27 @@
 package impl.program;
 
 import model.program.IDataType;
-import model.program.IStructType;
 import model.program.IStructMemberExpression;
+import model.program.IStructType;
+import model.program.IVariableDeclaration;
 
 class StructMemberExpression extends SourceElement implements IStructMemberExpression {
 
-	private final IStructType struct;
+	private final IVariableDeclaration variable;
 	private final String memberId;
 	
-	public StructMemberExpression(IStructType struct, String memberId) {
-		assert struct != null;
+	public StructMemberExpression(IVariableDeclaration variable, String memberId) {
+		assert variable != null;
 		assert memberId != null;
 		
-		this.struct = struct;
+		// TODO validation variable
+		this.variable = variable;
 		this.memberId = memberId;
 	}
 
 	@Override
-	public IStructType getStruct() {
-		return struct;
+	public IVariableDeclaration getVariable() {
+		return variable;
 	}
 
 	@Override
@@ -29,8 +31,11 @@ class StructMemberExpression extends SourceElement implements IStructMemberExpre
 
 	@Override
 	public IDataType getType() {
-		return struct;
+		return variable.getType();
 	}
 	
-
+	@Override
+	public String toString() {
+		return variable.getId() + "." + memberId;
+	}
 }

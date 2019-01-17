@@ -8,7 +8,7 @@ class Return extends Statement implements IReturn {
 	private final IExpression expression;
 	
 	public Return(Block parent, IExpression expression) {
-		super(parent);
+		super(parent, true);
 		this.expression = expression;
 	}
 

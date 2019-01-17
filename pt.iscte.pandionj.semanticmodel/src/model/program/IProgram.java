@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public interface IProgram extends IExecutable, ISourceElement {
+public interface IProgram {
 	Collection<IConstantDeclaration> getConstants(); // not there yet
 	Collection<IProcedure> getProcedures();
 	
@@ -18,10 +18,9 @@ public interface IProgram extends IExecutable, ISourceElement {
 	Collection<IDataType> getDataTypes();
 	
 	IDataType getDataType(String id);
-	
+
 
 	// TODO program validation
-	@Override
 	default List<ISemanticProblem> validateSematics() {
 		List<ISemanticProblem> problems = new ArrayList<ISemanticProblem>();
 		

@@ -1,9 +1,10 @@
 package model.program.roles;
 
 import model.program.IBlock;
+import model.program.IProcedure;
+import model.program.ISourceElement;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
-import model.program.IBlock.IVisitor;
 import model.program.operators.ArithmeticOperator;
 
 public interface IGatherer extends IVariableRole {
@@ -43,14 +44,14 @@ public interface IGatherer extends IVariableRole {
 
 	static boolean isGatherer(IVariableDeclaration var) {
 		Visitor v = new Visitor(var);
-		var.getProcedure().accept(v);
+		((IProcedure) var.getParent()).accept(v);
 		return v.allSameAcc && v.operator != null;
 	}
 
 	static IVariableRole createGatherer(IVariableDeclaration var) {
 		assert isGatherer(var);
 		Visitor v = new Visitor(var);
-		var.getProcedure().accept(v);
+		((IProcedure) var.getParent()).accept(v);
 		return new IGatherer() {
 			@Override
 			public IVariableDeclaration getSource() {

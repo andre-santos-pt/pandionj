@@ -3,8 +3,9 @@ package model.program;
 import model.machine.ICallStack;
 import model.machine.IValue;
 
-public interface ILoop extends IConditionalStatement, IBlock {
+public interface ILoop extends IBlock {
 
+	IExpression getGuard();
 	boolean executeBlockFirst();
 
 	@Override
@@ -12,7 +13,7 @@ public interface ILoop extends IConditionalStatement, IBlock {
 		int maxIt = callStack.getProgramState().getLoopIterationMaximum();
 		int c = 0;
 		if(executeBlockFirst()) {
-			Object s = Util.executeLoopBlock(getBlock(), callStack);
+			Object s = Util.executeLoopBlock(this, callStack);
 			if(s instanceof IBreak)
 				return true;
 			else if(Boolean.FALSE.equals(s))
@@ -20,7 +21,7 @@ public interface ILoop extends IConditionalStatement, IBlock {
 			c++;
 		}
 		while(callStack.evaluate(getGuard()).equals(IValue.TRUE)) {
-			Object s = Util.executeLoopBlock(getBlock(), callStack);
+			Object s = Util.executeLoopBlock(this, callStack);
 			if(s instanceof IBreak)
 				return true;
 			else if(Boolean.FALSE.equals(s))
@@ -48,8 +49,4 @@ public interface ILoop extends IConditionalStatement, IBlock {
 	IBreak breakStatement();
 
 	IContinue continueStatement();
-
-	public interface IBreak extends IStatement { }
-
-	public interface IContinue extends IStatement { }
 }

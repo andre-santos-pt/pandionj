@@ -13,6 +13,11 @@ public interface IVariableAssignment extends IStatement {
 	IExpression getExpression();
 	
 	@Override
+	default boolean isControl() {
+		return false;
+	}
+	
+	@Override
 	default List<ISemanticProblem> validateSematics() {
 		if(!getVariable().getType().equals(getExpression().getType()))
 			return ImmutableList.of(ISemanticProblem.create("incompatible types", this, getExpression()));

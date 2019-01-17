@@ -1,6 +1,4 @@
-package model.program;
-
-import model.program.roles.IStepper;
+package model.program.roles;
 
 public interface IArrayIndexIterator extends IStepper {
 	// TODO

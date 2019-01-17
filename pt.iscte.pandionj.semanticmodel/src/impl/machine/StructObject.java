@@ -19,7 +19,7 @@ public class StructObject implements IStructObject {
 		this.type = type;
 		fields = new LinkedHashMap<>();
 		for (IVariableDeclaration var : type.getMemberVariables()) {
-			fields.put(var.getId(), IValue.NULL);
+			fields.put(var.getId(), Value.create(var.getType(), var.getType().getDefaultValue()));
 		}
 	}
 	

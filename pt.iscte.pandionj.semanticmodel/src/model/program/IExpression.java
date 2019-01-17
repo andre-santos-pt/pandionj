@@ -5,7 +5,7 @@ import model.machine.IValue;
 
 public interface IExpression extends ISourceElement {
 	// ARCH: only called my stack frame
-	IValue evaluate(ICallStack frame) throws ExecutionError;
+	IValue evaluate(ICallStack stack) throws ExecutionError;
 	
 	IDataType getType();
 	

@@ -8,33 +8,25 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-import model.program.IArrayElementAssignment;
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
-import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IIdentifiableElement;
-import model.program.ILoop;
 import model.program.IProcedure;
-import model.program.IProcedureCall;
 import model.program.IProcedureCallExpression;
-import model.program.IReturn;
-import model.program.ISelection;
-import model.program.IStatement;
-import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 
-class Procedure extends SourceElement implements IProcedure {
+class Procedure extends Block implements IProcedure {
 	private final String name;
 	private final List<IVariableDeclaration> variables;
 	private final ParamsView paramsView;
 	private final VariablesView varsView;
 	private final IDataType returnType;
-	private final Block body;
 	private int parameters;
 
 	public Procedure(String id, IDataType returnType) {
+		super(null, false);
 		assert IIdentifiableElement.isValidIdentifier(id);
 		this.name = id;
 		this.variables = new ArrayList<>(5);
@@ -43,7 +35,6 @@ class Procedure extends SourceElement implements IProcedure {
 
 		paramsView = new ParamsView();
 		varsView = new VariablesView();
-		body = new Block(this);
 	}
 
 	@Override
@@ -58,10 +49,9 @@ class Procedure extends SourceElement implements IProcedure {
 
 	@Override
 	public IVariableDeclaration addParameter(String id, IDataType type, Set<IVariableDeclaration.Flag> flags) {
-		// TODO review null param
 		IVariableDeclaration param = type instanceof IArrayType ?
-				new ArrayVariableDeclaration(body, id, (IArrayType) type, ImmutableSet.of()) :
-				new VariableDeclaration(body, id, type, flags);
+				new ArrayVariableDeclaration(this, id, (IArrayType) type, ImmutableSet.of()) :
+				new VariableDeclaration(this, id, type, flags);
 		variables.add(parameters, param);
 		parameters++;
 		return param;
@@ -90,22 +80,17 @@ class Procedure extends SourceElement implements IProcedure {
 		return returnType;
 	}
 
-	@Override
-	public IBlock getBody() {
-		return body;
-	}
-
-	@Override
-	public boolean isFunction() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean isRecursive() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+//	@Override
+//	public boolean isFunction() {
+//		// TODO Auto-generated method stub
+//		return false;
+//	}
+//
+//	@Override
+//	public boolean isRecursive() {
+//		// TODO Auto-generated method stub
+//		return false;
+//	}
 
 	@Override
 	public String toString() {
@@ -118,23 +103,7 @@ class Procedure extends SourceElement implements IProcedure {
 			params += p.getId();
 		}
 
-		return returnType + " " + name + "(" + params + ")" + body;
-	}
-
-	@Override
-	public IBlock getParent() {
-		return null;
-	}
-
-	@Override
-	public List<IStatement> getStatements() {
-		return body.getStatements();
-	}	
-
-	@Override
-	public void addStatement(IStatement statement) {
-		body.addStatement(statement);
-
+		return returnType + " " + name + "(" + params + ")" + super.toString();
 	}
 
 	private class ParamsView extends AbstractList<IVariableDeclaration> {
@@ -162,53 +131,17 @@ class Procedure extends SourceElement implements IProcedure {
 	}
 
 	@Override
-	public IBlock block() {
-		return body.block();
-	}
-
-	@Override
-	public IVariableDeclaration variableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
-		IVariableDeclaration var = body.variableDeclaration(name, type, flags);
+	public IVariableDeclaration addVariableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
+		IVariableDeclaration var = super.addVariableDeclaration(name, type,flags);
 		variables.add(var);
 		return var;
 	}
 
 	@Override
-	public IArrayVariableDeclaration arrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags) {
-		IArrayVariableDeclaration var = body.arrayDeclaration(name, type, flags);
+	public IArrayVariableDeclaration addArrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags) {
+		IArrayVariableDeclaration var = super.addArrayDeclaration(name, type, flags);
 		variables.add(var);
 		return var;
-	}
-
-	@Override
-	public IVariableAssignment assignment(IVariableDeclaration var, IExpression exp) {
-		return body.assignment(var, exp);
-	}
-	
-	@Override
-	public IArrayElementAssignment arrayElementAssignment(IArrayVariableDeclaration var, IExpression exp,
-			List<IExpression> indexes) {
-		return body.arrayElementAssignment(var, exp, indexes);
-	}
-
-	@Override
-	public ISelection selection(IExpression expression, IBlock block, IBlock alternativeBlock) {
-		return body.selection(expression, block, alternativeBlock);
-	}
-
-	@Override
-	public ILoop loop(IExpression guard) {
-		return body.loop(guard);
-	}
-
-	@Override
-	public IReturn returnStatement(IExpression expression) {
-		return body.returnStatement(expression);
-	}
-
-	@Override
-	public IProcedureCall procedureCall(IProcedure procedure, List<IExpression> args) {
-		return body.procedureCall(procedure, args);
 	}
 
 	@Override

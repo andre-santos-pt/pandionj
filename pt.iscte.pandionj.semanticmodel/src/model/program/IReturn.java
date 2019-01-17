@@ -6,6 +6,11 @@ import model.machine.IValue;
 public interface IReturn extends IStatement {
 	IExpression getExpression(); // may be null (void)
 	
+	@Override
+	default boolean isControl() {
+		return false;
+	}
+	
 	default IDataType getReturnValueType() {
 		return getExpression() == null ? IDataType.VOID : getExpression().getType();
 	}
