@@ -1,10 +1,7 @@
 package model.machine;
 
-import java.util.List;
-
 import model.program.IDataType;
-import model.program.IProcedure;
-import model.program.ISourceElement;
+import model.program.IProgramElement;
 import model.program.IStructType;
 
 public interface IProgramState {
@@ -15,22 +12,25 @@ public interface IProgramState {
 	int getAvailableMemory();
 	int getUsedMemory();
 	
-	ISourceElement getInstructionPointer();
+	IProgramElement getInstructionPointer();
 	IValue getValue(String literal);
 	IValue getValue(Object object);
 	
 	IArray allocateArray(IDataType baseType, int ... dimensions);
 	IStructObject allocateObject(IStructType type);
 	
-	IExecutionData execute(IProcedure procedureName, Object ... args);
-
+//	void launchExecution(IProcedure procedure, Object ... args);
+//
+//	void stepIn();
+	
 	default int getMemory() {
 		return getCallStack().getMemory() + getHeapMemory().getMemory();
 	}
 	
 	interface IListener {
 		default void programEnded() { }
-		default void instructionPointerMoved(ISourceElement currentInstruction) { }
+		default void instructionPointerMoved(IProgramElement currentInstruction) { }
+		default void infiniteLoop() { }
 		
 	}
 }

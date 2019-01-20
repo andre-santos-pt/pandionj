@@ -1,15 +1,12 @@
 package model.program;
 
-import model.machine.ICallStack;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public interface IBreak extends IStatement {
 	@Override
-	default boolean isControl() {
-		return false;
-	}
-
-	@Override
-	default boolean execute(ICallStack stack) throws ExecutionError {
-		return true;
+	default List<IExpression> getExpressionParts() {
+		return ImmutableList.of();
 	}
 }

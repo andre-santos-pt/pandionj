@@ -4,12 +4,14 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import model.machine.ICallStack;
+import model.machine.IValue;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
 import model.program.IProcedureCallExpression;
 
-public class ProcedureCallExpression extends SourceElement implements IProcedureCallExpression {
+public class ProcedureCallExpression extends Expression implements IProcedureCallExpression {
 
 	private final IProcedure procedure;
 	private final ImmutableList<IExpression> args;
@@ -43,5 +45,21 @@ public class ProcedureCallExpression extends SourceElement implements IProcedure
 			text += a;
 		}
 		return text + ")";
+	}
+	
+	@Override
+	public List<IExpression> decompose() {
+		return args;
+	}
+	
+	@Override
+	public boolean isDecomposable() {
+		return true;
+	}	
+	
+	@Override
+	public IValue evalutate(List<IValue> values, ICallStack stack) {
+		stack.newFrame(getProcedure(), values);
+		return null; // excepcional case, for pending value from created stack
 	}
 }

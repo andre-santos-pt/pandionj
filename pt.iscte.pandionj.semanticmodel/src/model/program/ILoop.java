@@ -1,52 +1,12 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IValue;
+public interface ILoop extends IBlock, IControlStructure {
 
-public interface ILoop extends IBlock {
-
-	IExpression getGuard();
 	boolean executeBlockFirst();
 
-	@Override
-	default boolean execute(ICallStack callStack) throws ExecutionError {
-		int maxIt = callStack.getProgramState().getLoopIterationMaximum();
-		int c = 0;
-		if(executeBlockFirst()) {
-			Object s = Util.executeLoopBlock(this, callStack);
-			if(s instanceof IBreak)
-				return true;
-			else if(Boolean.FALSE.equals(s))
-				return false;
-			c++;
-		}
-		while(callStack.evaluate(getGuard()).equals(IValue.TRUE)) {
-			Object s = Util.executeLoopBlock(this, callStack);
-			if(s instanceof IBreak)
-				return true;
-			else if(Boolean.FALSE.equals(s))
-				return false;
-			c++;
-			if(c == maxIt)
-				throw new ExecutionError(ExecutionError.Type.INFINTE_CYCLE, this, "loop exceeded limit", c);
-		}
-		return true;
-	}
+	IBreak addBreakStatement();
 
-	class Util {
-		private static Object executeLoopBlock(IBlock block, ICallStack callStack) throws ExecutionError {
-			for(IStatement s : block) {
-				if(s instanceof IBreak || s instanceof IContinue)
-					return s;
-				
-				if(!callStack.getTopFrame().execute(s))
-					return false; // in case of return
-			}
-			return null;
-		}
-	}
+	IContinue addContinueStatement();
 
-	IBreak breakStatement();
-
-	IContinue continueStatement();
+	
 }

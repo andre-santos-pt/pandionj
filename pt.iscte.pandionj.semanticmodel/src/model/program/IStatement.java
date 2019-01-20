@@ -2,15 +2,9 @@ package model.program;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
-
-import model.machine.ICallStack;
-
-public interface IStatement extends ISourceElement {
+public interface IStatement extends IProgramElement {
 	IBlock getParent();
 
-	boolean isControl();
-	
 	default IProcedure getProcedure() {
 		IBlock b = getParent();
 		while(b != null && !(b instanceof IProcedure))
@@ -29,14 +23,5 @@ public interface IStatement extends ISourceElement {
 		return d;
 	}
 	
-	default List<ISemanticProblem> validateSematics() {
-		return ImmutableList.of();
-	}
-	
-	default boolean isValid() {
-		return validateSematics().isEmpty();
-	}
-	
-	// ARCH: only called my stack frame
-	boolean execute(ICallStack stack) throws ExecutionError;
+	List<IExpression> getExpressionParts();
 }

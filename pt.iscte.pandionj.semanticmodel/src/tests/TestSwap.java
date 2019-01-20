@@ -29,7 +29,7 @@ public class TestSwap {
 		IFactory factory = new Factory();
 		program = factory.createProgram();
 		
-		swapProc = program.createProcedure("swap", IDataType.VOID);
+		swapProc = program.addProcedure("swap", IDataType.VOID);
 		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) swapProc.addParameter("v", factory.arrayType(IDataType.INT, 1), EnumSet.of(IVariableDeclaration.Flag.REFERENCE));
 		IVariableDeclaration iParam = swapProc.addParameter("i", IDataType.INT);
 		IVariableDeclaration jParam = swapProc.addParameter("j", IDataType.INT);
@@ -43,7 +43,7 @@ public class TestSwap {
 
 		iParam.addAssignment(factory.literal(4));
 		
-		main = program.createProcedure("main", IDataType.VOID);
+		main = program.addProcedure("main", IDataType.VOID);
 		IArrayVariableDeclaration array = main.addArrayDeclaration("test", factory.arrayType(IDataType.INT, 1));
 		array.addAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
 		array.elementAssignment(factory.literal(5), factory.literal(0));

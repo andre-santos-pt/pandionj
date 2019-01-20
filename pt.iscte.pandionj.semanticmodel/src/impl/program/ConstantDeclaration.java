@@ -6,7 +6,7 @@ import model.program.IDataType;
 import model.program.ILiteral;
 import model.program.IProgram;
 
-class ConstantDeclaration extends SourceElement implements IConstantDeclaration {
+class ConstantDeclaration extends ProgramElement implements IConstantDeclaration {
 	private final IProgram program;
 	private final String id;
 	private final IDataType type;

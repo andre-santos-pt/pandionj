@@ -1,12 +1,16 @@
 package impl.program;
 
 
+import java.util.List;
+
+import model.machine.ICallStack;
+import model.machine.IValue;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IUnaryExpression;
-import model.program.operators.IUnaryOperator;
+import model.program.IUnaryOperator;
 
-public class UnaryExpression extends SourceElement implements IUnaryExpression {
+class UnaryExpression extends Expression implements IUnaryExpression {
 
 	private final IUnaryOperator operator;
 	private final IExpression expression;
@@ -33,10 +37,20 @@ public class UnaryExpression extends SourceElement implements IUnaryExpression {
 	public IExpression getExpression() {
 		return expression;
 	}
+
+	@Override
+	public boolean isDecomposable() {
+		return true;
+	}	
 	
 	@Override
 	public String toString() {
 		return operator.getSymbol() + "(" + expression + ")";
 	}
 
+	@Override
+	public IValue evalutate(List<IValue> values, ICallStack stack) {
+		assert values.size() == 1;
+		return getOperator().apply(values.get(0));
+	}
 }

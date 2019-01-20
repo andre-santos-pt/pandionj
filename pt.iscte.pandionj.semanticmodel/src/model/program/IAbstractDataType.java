@@ -1,7 +1,7 @@
 package model.program;
 
-import com.google.common.collect.ImmutableCollection;
+import java.util.Collection;
 
-public interface IAbstractDataType extends IDataType {
-	ImmutableCollection<IProcedure> getProcedures();
+interface IAbstractDataType extends IDataType {
+	Collection<IProcedure> getProcedures();
 }

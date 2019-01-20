@@ -21,13 +21,13 @@ public class TestConstants {
 	@BeforeClass
 	public static void setup() {
 		program = fact.createProgram();	
-		piConst = program.createConstant("PI", IDataType.DOUBLE, fact.literal(3.14159265359));
+		piConst = program.addConstant("PI", IDataType.DOUBLE, fact.literal(3.14159265359));
 	}
 	
 	@Test
 	public void testArea() {
 		
-		IProcedure circleArea = program.createProcedure("circleArea", IDataType.DOUBLE);
+		IProcedure circleArea = program.addProcedure("circleArea", IDataType.DOUBLE);
 		IVariableDeclaration rParam = circleArea.addParameter("r", IDataType.DOUBLE);
 		circleArea.addReturnStatement(fact.binaryExpression(IOperator.MUL, fact.binaryExpression(IOperator.MUL, piConst.expression(), rParam.expression()), rParam.expression()));
 		
@@ -39,7 +39,7 @@ public class TestConstants {
 	@Test
 	public void testPerimeter() {
 		
-		IProcedure circlePerimeter = program.createProcedure("circlePerimeter", IDataType.DOUBLE);
+		IProcedure circlePerimeter = program.addProcedure("circlePerimeter", IDataType.DOUBLE);
 		IVariableDeclaration rParam = circlePerimeter.addParameter("r", IDataType.DOUBLE);
 		circlePerimeter.addReturnStatement(fact.binaryExpression(IOperator.MUL, fact.binaryExpression(IOperator.MUL, fact.literal(2), piConst.expression()), rParam.expression()));
 		ProgramState state = new ProgramState(program);

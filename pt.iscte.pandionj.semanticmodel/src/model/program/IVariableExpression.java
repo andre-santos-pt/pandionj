@@ -1,7 +1,8 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IValue;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public interface IVariableExpression extends IExpression {
 	IVariableDeclaration getVariable();
@@ -12,7 +13,12 @@ public interface IVariableExpression extends IExpression {
 	}
 
 	@Override
-	default IValue evaluate(ICallStack stack) throws ExecutionError {
-		return stack.getTopFrame().getVariable(getVariable().getId());
+	default List<IExpression> decompose() {
+		return ImmutableList.of();
+	}
+	
+	@Override
+	default boolean isDecomposable() {
+		return false;
 	}
 }

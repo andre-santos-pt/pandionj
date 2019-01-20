@@ -2,11 +2,8 @@ package model.machine;
 
 import java.util.List;
 
-import model.program.ExecutionError;
-import model.program.IExpression;
 import model.program.ILiteral;
 import model.program.IProcedure;
-import model.program.IStatement;
 
 public interface ICallStack {
 	int getSize();
@@ -14,6 +11,7 @@ public interface ICallStack {
 	IProgramState getProgramState();
 	
 	List<IStackFrame> getFrames();
+	
 	IStackFrame getTopFrame();
 	
 	IStackFrame newFrame(IProcedure procedure, List<IValue> args);
@@ -21,6 +19,9 @@ public interface ICallStack {
 	void terminateTopFrame(IValue returnValue);
 	
 	IStackFrame getLastTerminatedFrame();
+	
+	boolean isEmpty();
+
 	
 	default int getMemory() {
 		int bytes = 0;
@@ -30,28 +31,24 @@ public interface ICallStack {
 		return bytes;
 	}
 	
-	default boolean execute(IStatement statement) throws ExecutionError {
-		return getTopFrame().execute(statement);
+	default IValue evaluate(ILiteral literal) {
+		return getProgramState().getValue(literal.getStringValue());
 	}
-	
-	default IValue evaluate(IExpression expression) throws ExecutionError {
-		if(expression instanceof ILiteral)
-			return getProgramState().getValue(((ILiteral) expression).getStringValue());
-		else
-			return getTopFrame().evaluate(expression);
-	}
+//	default IValue evaluate(IExpression expression) throws ExecutionError {
+//		if(expression instanceof ILiteral)
+//			return getProgramState().getValue(((ILiteral) expression).getStringValue());
+//		else
+//			return getTopFrame().evaluate(expression);
+//	}
 	
 	interface IListener {
-		default void stackFrameCreated(IStackFrame stackFrame) {
-			
-		}
-		default void stackFrameTerminated(IStackFrame stackFrame, IValue returnValue) {
-			
-		}
+		default void stackFrameCreated(IStackFrame stackFrame) { }
+		default void stackFrameTerminated(IStackFrame stackFrame, IValue returnValue) { }
 	}
 
 	void addListener(IListener listener);
 
+	
 	
 	
 }

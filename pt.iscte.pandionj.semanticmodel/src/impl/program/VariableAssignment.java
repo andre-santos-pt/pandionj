@@ -1,5 +1,10 @@
 package impl.program;
 
+import java.util.List;
+
+import impl.machine.ExecutionError;
+import model.machine.ICallStack;
+import model.machine.IValue;
 import model.program.IBlock;
 import model.program.IExpression;
 import model.program.IVariableAssignment;
@@ -30,4 +35,9 @@ class VariableAssignment extends Statement implements IVariableAssignment {
 		return variable.getId() + " = " + expression;
 	}
 
+	@Override
+	public boolean execute(ICallStack stack, List<IValue> expressions) throws ExecutionError {
+		stack.getTopFrame().setVariable(getVariable().getId(), expressions.get(0));
+		return true;
+	}
 }

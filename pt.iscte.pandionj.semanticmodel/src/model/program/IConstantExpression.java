@@ -1,14 +1,20 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IValue;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public interface IConstantExpression extends IExpression {
 
 	IConstantDeclaration getConstant();
 	
 	@Override
-	default public IValue evaluate(ICallStack frame) throws ExecutionError {
-		return frame.evaluate(getConstant().getValue());
+	default List<IExpression> decompose() {
+		return ImmutableList.of();
+	}
+	
+	@Override
+	default boolean isDecomposable() {
+		return false;
 	}
 }

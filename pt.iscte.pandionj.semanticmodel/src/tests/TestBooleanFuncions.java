@@ -43,7 +43,7 @@ public class TestBooleanFuncions {
 	
 
 	private static IProcedure createIsEven() {
-		IProcedure f = program.createProcedure("isEven", IDataType.BOOLEAN);
+		IProcedure f = program.addProcedure("isEven", IDataType.BOOLEAN);
 		IVariableDeclaration nParam = f.addParameter("n", IDataType.INT);
 		
 		IBinaryExpression e = factory.binaryExpression(IOperator.EQUAL,
@@ -66,7 +66,7 @@ public class TestBooleanFuncions {
 	
 
 	private static IProcedure createIsOdd() {
-		IProcedure f = program.createProcedure("isOdd", IDataType.BOOLEAN);
+		IProcedure f = program.addProcedure("isOdd", IDataType.BOOLEAN);
 		IVariableDeclaration nParam = f.addParameter("n", IDataType.INT);
 		
 		IBinaryExpression e = factory.binaryExpression(IOperator.DIFFERENT,
@@ -78,7 +78,7 @@ public class TestBooleanFuncions {
 	}
 	
 	private static IProcedure createIsOddNotEven() {
-		IProcedure f = program.createProcedure("isOddNotEven", IDataType.BOOLEAN);
+		IProcedure f = program.addProcedure("isOddNotEven", IDataType.BOOLEAN);
 		IVariableDeclaration nParam = f.addParameter("n", IDataType.INT);
 		
 		IUnaryExpression e = factory.unaryExpression(IOperator.NOT, evenFunc.callExpression(nParam.expression()));
@@ -108,7 +108,7 @@ public class TestBooleanFuncions {
 	
 	
 	private static IProcedure createWithinInterval() {
-		IProcedure f = program.createProcedure("withinInterval", IDataType.BOOLEAN);
+		IProcedure f = program.addProcedure("withinInterval", IDataType.BOOLEAN);
 		IVariableDeclaration nParam = f.addParameter("n", IDataType.INT);
 		IVariableDeclaration aParam = f.addParameter("a", IDataType.INT);
 		IVariableDeclaration bParam = f.addParameter("b", IDataType.INT);
@@ -131,7 +131,7 @@ public class TestBooleanFuncions {
 	}
 	
 	private static IProcedure createOutsideInterval() {
-		IProcedure f = program.createProcedure("ousideInterval", IDataType.BOOLEAN);
+		IProcedure f = program.addProcedure("ousideInterval", IDataType.BOOLEAN);
 		IVariableDeclaration nParam = f.addParameter("n", IDataType.INT);
 		IVariableDeclaration aParam = f.addParameter("a", IDataType.INT);
 		IVariableDeclaration bParam = f.addParameter("b", IDataType.INT);

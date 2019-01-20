@@ -1,20 +1,21 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IStructObject;
-import model.machine.IValue;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public interface IStructMemberExpression extends IExpression {
 
 	IVariableDeclaration getVariable();
 	String getMemberId();
-	
+
 	@Override
-	default IValue evaluate(ICallStack stack) throws ExecutionError {
-		// TODO validate
-		IStructObject object = (IStructObject) stack.getTopFrame().getVariable(getVariable().getId());
-		IValue field = object.getField(getMemberId());
-		return field;
+	default List<IExpression> decompose() {
+		return ImmutableList.of();
 	}
-	
+
+	@Override
+	default boolean isDecomposable() {
+		return false;
+	}
 }

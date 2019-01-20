@@ -1,9 +1,10 @@
 package impl.program;
 
+import model.machine.IExecutable;
 import model.program.IBlock;
 import model.program.IStatement;
 
-abstract class Statement extends SourceElement implements IStatement {
+abstract class Statement extends ProgramElement implements IStatement, IExecutable {
 	private final IBlock parent;
 	
 	public Statement(IBlock parent, boolean addToParent) {

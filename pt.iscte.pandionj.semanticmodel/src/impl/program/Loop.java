@@ -1,5 +1,10 @@
 package impl.program;
 
+import java.util.List;
+
+import impl.machine.ExecutionError;
+import model.machine.ICallStack;
+import model.machine.IValue;
 import model.program.IBreak;
 import model.program.IContinue;
 import model.program.IExpression;
@@ -31,12 +36,12 @@ class Loop extends Block implements ILoop {
 	}
 	
 	@Override
-	public IBreak breakStatement() {
+	public IBreak addBreakStatement() {
 		return new Break(this);
 	}
 	
 	@Override
-	public IContinue continueStatement() {
+	public IContinue addContinueStatement() {
 		return new Continue(this);
 	}
 	
@@ -49,6 +54,11 @@ class Loop extends Block implements ILoop {
 		public String toString() {
 			return "break";
 		}
+		
+		@Override
+		public boolean execute(ICallStack stack, List<IValue> expressions) throws ExecutionError {
+			return true;
+		}
 	}
 	
 	private static class Continue extends Statement implements IContinue {
@@ -59,6 +69,11 @@ class Loop extends Block implements ILoop {
 		@Override
 		public String toString() {
 			return "continue";
+		}
+		
+		@Override
+		public boolean execute(ICallStack stack, List<IValue> expressions) throws ExecutionError {
+			return true;
 		}
 	}
 }

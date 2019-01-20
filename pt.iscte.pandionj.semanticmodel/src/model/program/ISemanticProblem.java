@@ -12,26 +12,26 @@ public interface ISemanticProblem {
 		MISSING_RETURN;
 	}
 	
-	List<ISourceElement> getSourceElements();
+	List<IProgramElement> getSourceElements();
 	String getMessage();
 	
 	
-	static ISemanticProblem create(String message, ISourceElement ... elements) {
+	static ISemanticProblem create(String message, IProgramElement ... elements) {
 		return new SemanticProblem(message, elements);
 	}
 	
 	
 	class SemanticProblem implements ISemanticProblem {
 		private final String message;
-		private final ImmutableList<ISourceElement> elements;
+		private final ImmutableList<IProgramElement> elements;
 		
-		private SemanticProblem(String message, ISourceElement ... elements) {
+		private SemanticProblem(String message, IProgramElement ... elements) {
 			this.message = message;
 			this.elements = ImmutableList.copyOf(elements);
 		}
 		
 		@Override
-		public List<ISourceElement> getSourceElements() {
+		public List<IProgramElement> getSourceElements() {
 			return elements;
 		}
 		

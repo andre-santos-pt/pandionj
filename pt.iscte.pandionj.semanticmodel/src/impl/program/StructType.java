@@ -14,7 +14,7 @@ import model.program.IStructType;
 import model.program.IVariableDeclaration;
 import model.program.IVariableDeclaration.Flag;
 
-class StructType extends SourceElement implements IStructType {
+class StructType extends ProgramElement implements IStructType {
 	private final String id;
 	private final List<IVariableDeclaration> variables;
 	

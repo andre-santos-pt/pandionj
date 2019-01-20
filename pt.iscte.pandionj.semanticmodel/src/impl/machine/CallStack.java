@@ -14,7 +14,7 @@ import model.program.IProcedure;
 class CallStack implements ICallStack {
 
 	private final ProgramState programState;
-	private IStackFrame[] stack;
+	private StackFrame[] stack;
 	private int next;
 
 	private List<ICallStack.IListener> listeners = new ArrayList<>(5);
@@ -24,8 +24,13 @@ class CallStack implements ICallStack {
 	
 	public CallStack(ProgramState programState) {
 		this.programState = programState;
-		stack = new IStackFrame[programState.getCallStackMaximum()];
+		stack = new StackFrame[programState.getCallStackMaximum()];
 		next = 0;
+	}
+	
+	@Override
+	public boolean isEmpty() {
+		return next == 0;
 	}
 	
 	@Override
@@ -44,7 +49,7 @@ class CallStack implements ICallStack {
 	}
 
 	@Override
-	public IStackFrame getTopFrame() {
+	public StackFrame getTopFrame() {
 		if(getSize() == 0)
 			throw new RuntimeException("empty call stack");
 		return stack[next-1];
@@ -61,7 +66,7 @@ class CallStack implements ICallStack {
 		if(next == stack.length)
 			throw new RuntimeException("stack overflow");
 
-		IStackFrame parent = getSize() == 0 ? null : getTopFrame();
+		StackFrame parent = getSize() == 0 ? null : getTopFrame();
 		StackFrame newFrame = new StackFrame(this, parent, procedure, args); 
 		stack[next] = newFrame;
 		next++;
@@ -79,6 +84,11 @@ class CallStack implements ICallStack {
 			l.stackFrameTerminated(stack[next], returnValue);
 	}
 	
+	public void stepIn() throws ExecutionError {
+		assert !isEmpty();
+		stack[next-1].stepIn();
+	}
+	
 	@Override
 	public String toString() {
 		String text = "";
@@ -89,4 +99,6 @@ class CallStack implements ICallStack {
 		}
 		return text;
 	}
+
+	
 }

@@ -46,7 +46,7 @@ class Program implements IProgram {
 	}
 	
 	@Override
-	public IConstantDeclaration createConstant(String id, IDataType type, ILiteral value) {
+	public IConstantDeclaration addConstant(String id, IDataType type, ILiteral value) {
 		assert IIdentifiableElement.isValidIdentifier(id);
 		assert type != null;
 		assert value != null;
@@ -56,14 +56,14 @@ class Program implements IProgram {
 	}
 	
 	@Override
-	public IProcedure createProcedure(String id, IDataType returnType) {
+	public IProcedure addProcedure(String id, IDataType returnType) {
 		IProcedure proc = new Procedure(id, returnType);
 		procedures.add(proc);
 		return proc;
 	}
 	
 	@Override
-	public IStructType createStruct(String id) {
+	public IStructType addStruct(String id) {
 		IStructType struct = new StructType(id);
 		structs.put(id, struct);
 		return struct;

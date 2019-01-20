@@ -3,10 +3,10 @@ package model.program.operators;
 import java.math.BigDecimal;
 import java.util.function.BiFunction;
 
+import impl.machine.ExecutionError;
 import impl.machine.Value;
-import model.machine.IStackFrame;
 import model.machine.IValue;
-import model.program.ExecutionError;
+import model.program.IBinaryOperator;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IExpression.OperationType;
@@ -70,12 +70,10 @@ public enum ArithmeticOperator implements IBinaryOperator {
 		return symbol;
 	}
 
-	public IValue apply(IExpression left, IExpression right, IStackFrame frame) throws ExecutionError {
-		IValue leftValue =  frame.evaluate(left);
-		IValue rightValue = frame.evaluate(right);
-		
+	@Override
+	public IValue apply(IValue left, IValue right) throws ExecutionError {
 		IDataType type = getDataType(left.getType(), right.getType());
-		BigDecimal obj = calculate(leftValue, rightValue);
+		BigDecimal obj = calculate(left, right);
 		return Value.create(type, obj);
 	}
 	

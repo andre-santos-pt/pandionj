@@ -1,10 +1,8 @@
 package impl.program;
 
-import model.machine.ICallStack;
-import model.machine.IValue;
-import model.program.ExecutionError;
 import model.program.IDataType;
 
+// TODO
 public class PrintProcedure extends Procedure {
 
 	public PrintProcedure() {
@@ -12,12 +10,12 @@ public class PrintProcedure extends Procedure {
 		addParameter("value", IDataType.INT);
 	}
 	
-	@Override
-	public boolean execute(ICallStack stack) throws ExecutionError {
-		IValue value = stack.getTopFrame().getVariable("value");
-		System.out.println(value.getValue());
-		return true;
-	}
+//	@Override
+//	public boolean execute(ICallStack stack) throws ExecutionError {
+//		IValue value = stack.getTopFrame().getVariable("value");
+//		System.out.println(value.getValue());
+//		return true;
+//	}
 
 	@Override
 	public boolean isBuiltIn() {

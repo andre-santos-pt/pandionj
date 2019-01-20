@@ -1,16 +1,13 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IValue;
+import java.util.List;
 
-public interface IExpression extends ISourceElement {
-	// ARCH: only called my stack frame
-	IValue evaluate(ICallStack stack) throws ExecutionError;
-	
+public interface IExpression extends IProgramElement {
 	IDataType getType();
 	
 	// TODO concretize expression
 	//String concretize();
+//	ISourceElement getParent();
 	
 	default OperationType getOperationType() {
 		return OperationType.OTHER;
@@ -19,4 +16,13 @@ public interface IExpression extends ISourceElement {
 	enum OperationType {
 		ARITHMETIC, RELATIONAL, LOGICAL, CALL, OTHER;
 	}
+	
+	boolean isDecomposable();
+	
+	default int getNumberOfParts() {
+		return decompose().size();
+	}
+	
+	List<IExpression> decompose();
+
 }

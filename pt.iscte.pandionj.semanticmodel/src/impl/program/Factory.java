@@ -7,16 +7,16 @@ import model.program.IArrayElementExpression;
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBinaryExpression;
+import model.program.IBinaryOperator;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IFactory;
 import model.program.ILiteral;
 import model.program.IProgram;
 import model.program.IUnaryExpression;
+import model.program.IUnaryOperator;
 import model.program.IVariableDeclaration;
 import model.program.IVariableExpression;
-import model.program.operators.IBinaryOperator;
-import model.program.operators.IUnaryOperator;
 
 public class Factory implements IFactory {
 	@Override
@@ -79,6 +79,6 @@ public class Factory implements IFactory {
 
 	@Override
 	public IArrayType arrayType(IDataType componentType, int dimensions) {
-		return new IArrayType.ValueTypeArray(componentType, dimensions);
+		return new ValueTypeArray(componentType, dimensions);
 	}	
 }

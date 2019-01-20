@@ -29,7 +29,7 @@ public class TestSum {
 		IFactory factory = new Factory();
 		program = factory.createProgram();
 		
-		sumArrayProc = program.createProcedure("sum", IDataType.INT);
+		sumArrayProc = program.addProcedure("sum", IDataType.INT);
 		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) sumArrayProc.addParameter("v", factory.arrayType(IDataType.INT, 1));
 		
 		IVariableDeclaration sVar = sumArrayProc.addVariableDeclaration("s", IDataType.INT);
@@ -43,7 +43,7 @@ public class TestSum {
 		
 		sumArrayProc.addReturnStatement(sVar.expression());
 		
-		main = program.createProcedure("main", IDataType.INT);
+		main = program.addProcedure("main", IDataType.INT);
 		
 		IArrayVariableDeclaration array = main.addArrayDeclaration("test", factory.arrayType(IDataType.INT, 1));
 		array.addAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));

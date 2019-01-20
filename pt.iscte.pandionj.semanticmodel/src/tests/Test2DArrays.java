@@ -30,7 +30,7 @@ public class Test2DArrays {
 		IFactory factory = new Factory();
 		IProgram program = factory.createProgram();
 		
-		IProcedure idFunc = program.createProcedure("idMatrix", new IArrayType.ValueTypeArray(IDataType.INT, 2));
+		IProcedure idFunc = program.addProcedure("idMatrix", factory.arrayType(IDataType.INT, 2));
 		IVariableDeclaration nParam = idFunc.addParameter("n", IDataType.INT);
 		
 		IArrayVariableDeclaration idVar = idFunc.addArrayDeclaration("id", factory.arrayType(IDataType.INT, 2));
@@ -66,7 +66,7 @@ public class Test2DArrays {
 		IFactory factory = new Factory();
 		IProgram program = factory.createProgram();
 		
-		IProcedure natFunc = program.createProcedure("natMatrix", new IArrayType.ValueTypeArray(IDataType.INT, 2));
+		IProcedure natFunc = program.addProcedure("natMatrix", factory.arrayType(IDataType.INT, 2));
 		IVariableDeclaration linesParam = natFunc.addParameter("lines", IDataType.INT);
 		IVariableDeclaration colsParam = natFunc.addParameter("cols", IDataType.INT);
 		
@@ -116,7 +116,7 @@ public class Test2DArrays {
 		IFactory factory = new Factory();
 		IProgram program = factory.createProgram();
 		
-		IProcedure findFunc = program.createProcedure("contains", IDataType.BOOLEAN);
+		IProcedure findFunc = program.addProcedure("contains", IDataType.BOOLEAN);
 		IArrayVariableDeclaration mParam = (IArrayVariableDeclaration) findFunc.addParameter("m", factory.arrayType(IDataType.INT, 2));
 		IVariableDeclaration nParam = findFunc.addParameter("n", IDataType.INT);
 		
@@ -140,7 +140,7 @@ public class Test2DArrays {
 		
 		
 		
-		IProcedure main = program.createProcedure("main", IDataType.BOOLEAN);
+		IProcedure main = program.addProcedure("main", IDataType.BOOLEAN);
 		IArrayVariableDeclaration array = main.addArrayDeclaration("test", factory.arrayType(IDataType.INT, 2));
 		array.addAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
 		array.elementAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(0)), factory.literal(0));

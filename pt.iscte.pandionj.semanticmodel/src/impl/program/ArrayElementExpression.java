@@ -4,6 +4,11 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import impl.machine.ExecutionError;
+import model.machine.IArray;
+import model.machine.ICallStack;
+import model.machine.IStackFrame;
+import model.machine.IValue;
 import model.program.IArrayElementExpression;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
@@ -16,7 +21,6 @@ public class ArrayElementExpression extends VariableExpression implements IArray
 		super(variable);
 		this.indexes = ImmutableList.copyOf(indexes);
 	}
-	
 	
 	@Override
 	public IArrayVariableDeclaration getVariable() {
@@ -40,4 +44,25 @@ public class ArrayElementExpression extends VariableExpression implements IArray
 			text += "[" + e + "]";
 		return text;
 	}
+	
+	@Override
+	public List<IExpression> decompose() {
+		return indexes;
+	}
+	
+	@Override
+	public IValue evalutate(List<IValue> values, ICallStack stack) throws ExecutionError {
+		assert values.size() == getIndexes().size();
+		IStackFrame frame = stack.getTopFrame();
+		IValue variable = frame.getVariable(getVariable().getId());
+		IValue element = variable;
+		for(IValue v : values) {
+			int index = ((Number) v.getValue()).intValue();
+			if(index < 0)
+				throw new ExecutionError(ExecutionError.Type.NEGATIVE_ARRAY_SIZE, this, "negative array index", index);
+			element = ((IArray) element).getElement(index);
+		}
+		return element;
+	}
+	
 }

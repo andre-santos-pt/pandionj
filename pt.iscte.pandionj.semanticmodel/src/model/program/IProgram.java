@@ -5,20 +5,18 @@ import java.util.Collection;
 import java.util.List;
 
 public interface IProgram {
-	Collection<IConstantDeclaration> getConstants(); // not there yet
+	Collection<IConstantDeclaration> getConstants();
 	Collection<IProcedure> getProcedures();
 	
-	IProcedure createProcedure(String id, IDataType returnType);
-	
-	IConstantDeclaration createConstant(String id, IDataType type, ILiteral value);
-	
-	IStructType createStruct(String id);
-	
-	Collection<IStructType> getStructs(); // not there yet
+	Collection<IStructType> getStructs();
 	Collection<IDataType> getDataTypes();
 	
 	IDataType getDataType(String id);
 
+	IConstantDeclaration addConstant(String id, IDataType type, ILiteral value);
+	IStructType addStruct(String id);
+	IProcedure addProcedure(String id, IDataType returnType);
+	
 
 	// TODO program validation
 	default List<ISemanticProblem> validateSematics() {

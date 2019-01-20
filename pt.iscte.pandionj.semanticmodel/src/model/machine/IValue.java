@@ -68,6 +68,8 @@ public interface IValue {
 		}
 	};
 	
+	
+	
 	static IValue booleanValue(boolean value) {
 		return value ? IValue.TRUE : IValue.FALSE;
 	}

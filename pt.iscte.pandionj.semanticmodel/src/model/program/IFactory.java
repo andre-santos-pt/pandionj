@@ -4,8 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import impl.program.Factory;
-import model.program.operators.IBinaryOperator;
-import model.program.operators.IUnaryOperator;
 
 public interface IFactory {
 	IFactory INSTANCE = new Factory();

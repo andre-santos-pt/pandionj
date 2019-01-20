@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableSet;
 
 import model.program.IVariableDeclaration.Flag;
 
-public interface IStructType extends IDataType, ISourceElement {
+public interface IStructType extends IDataType, IProgramElement {
 	
 	List<IVariableDeclaration> getMemberVariables();
 	
@@ -20,22 +20,6 @@ public interface IStructType extends IDataType, ISourceElement {
 	default Object getDefaultValue() {
 		return null;
 	}
-	
 
 	IStructAllocation allocationExpression();
-	
-//	ImmutableList<IProcedure> getProcedures();
-//	default boolean isCompatibleWith(IAbstractDataType type) {
-//		for (IProcedure tp : type.getProcedures()) {
-//			boolean match = false;
-//			for(IProcedure p : getProcedures())
-//				if(p.hasSameSignature(tp)) {
-//					match = true;
-//					break;
-//				}
-//			if(!match)
-//				return false;
-//		}
-//		return true;
-//	}
 }

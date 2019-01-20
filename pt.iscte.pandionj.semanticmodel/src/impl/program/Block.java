@@ -16,33 +16,39 @@ import model.program.IProcedure;
 import model.program.IProcedureCall;
 import model.program.IReturn;
 import model.program.ISelection;
-import model.program.IStatement;
+import model.program.IProgramElement;
 import model.program.IStructMemberAssignment;
-import model.program.IStructType;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 
-class Block extends Statement implements IBlock {
+class Block extends ProgramElement implements IBlock {
 	private final IBlock parent;
-	private final List<IStatement> statements;
+	private final List<IProgramElement> statements;
 
 	Block(IBlock parent, boolean addToParent) {
-		super(parent, addToParent);
+//		super(parent, addToParent);
 		this.parent = parent;
 		this.statements = new ArrayList<>();
+		if(parent != null && addToParent)
+			((Block) parent).addStatement(this);
 	}
-	
+
 	@Override
 	public IBlock getParent() {
 		return parent;
 	}
 	
 	@Override
-	public List<IStatement> getStatements() {
+	public boolean isEmpty() {
+		return statements.isEmpty();
+	}
+	
+	@Override
+	public List<IProgramElement> getStatements() {
 		return Collections.unmodifiableList(statements);
 	}
 	
-	void addStatement(IStatement statement) {
+	void addStatement(IProgramElement statement) {
 		assert statement != null;
 		statements.add(statement);
 	}
@@ -59,14 +65,17 @@ class Block extends Statement implements IBlock {
 	@Override
 	public String toString() {
 		String tabs = "";
-		int d = getDepth();
+		//int d = getDepth();
+		int d = 0; // FIXME
 		for(int i = 0; i < d; i++)
 			tabs += "\t";
 		String text = "{";
-		for(IStatement s : statements)
+		for(IProgramElement s : statements)
 			text += tabs + s + ";";
 		return tabs + text + "}";
 	}
+	
+	
 	
 	@Override
 	public IVariableDeclaration addVariableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {

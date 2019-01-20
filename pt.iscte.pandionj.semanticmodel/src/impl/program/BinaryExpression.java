@@ -1,11 +1,16 @@
 package impl.program;
 
+import java.util.List;
+
+import impl.machine.ExecutionError;
+import model.machine.ICallStack;
+import model.machine.IValue;
 import model.program.IBinaryExpression;
+import model.program.IBinaryOperator;
 import model.program.IDataType;
 import model.program.IExpression;
-import model.program.operators.IBinaryOperator;
 
-class BinaryExpression extends SourceElement implements IBinaryExpression {
+class BinaryExpression extends Expression implements IBinaryExpression {
 	private final IBinaryOperator operator;
 	private final IExpression left;
 	private final IExpression right;
@@ -40,6 +45,11 @@ class BinaryExpression extends SourceElement implements IBinaryExpression {
 	}
 
 	@Override
+	public boolean isDecomposable() {
+		return true;
+	}	
+	
+	@Override
 	public String toString() {
 		String l = left.toString();
 		if(left instanceof IBinaryExpression)
@@ -49,5 +59,11 @@ class BinaryExpression extends SourceElement implements IBinaryExpression {
 		if(right instanceof IBinaryExpression)
 			r = "(" + r + ")";
 		return l + " " + operator + " " + r;
+	}
+	
+	@Override
+	public IValue evalutate(List<IValue> values, ICallStack stack) throws ExecutionError {
+		assert values.size() == 2;
+		return getOperator().apply(values.get(0), values.get(1));
 	}
 }

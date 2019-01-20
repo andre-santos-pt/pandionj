@@ -22,10 +22,6 @@ public interface IProcedure extends IBlock, IIdentifiableElement {
 	IDataType getReturnType();
 	
 	
-//	default boolean isDeclaration() {
-//		return getBody() == null;
-//	}
-	
 	default boolean isBuiltIn() {
 		return false;
 	}
@@ -43,7 +39,6 @@ public interface IProcedure extends IBlock, IIdentifiableElement {
 	// excludes return
 	default boolean hasSameSignature(IProcedure procedure) {
 		if(!getId().equals(procedure.getId()) || getNumberOfParameters() != procedure.getNumberOfParameters())
-//			|| !getReturnType().equals(procedure.getReturnType()))
 			return false;
 		
 		Iterator<IVariableDeclaration> procParamsIt = procedure.getParameters().iterator();
@@ -54,7 +49,6 @@ public interface IProcedure extends IBlock, IIdentifiableElement {
 		return true;
 	}
 	
-	@Override
 	default List<ISemanticProblem> validateSematics() {
 		List<ISemanticProblem> problems = new ArrayList<ISemanticProblem>();
 		SemanticChecks.checkVariableNames(this, problems);

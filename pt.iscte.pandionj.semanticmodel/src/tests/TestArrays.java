@@ -29,7 +29,7 @@ public class TestArrays {
 		IFactory factory = new Factory();
 		IProgram program = factory.createProgram();
 		
-		IProcedure natFunc = program.createProcedure("naturals", new IArrayType.ValueTypeArray(IDataType.INT, 1));
+		IProcedure natFunc = program.addProcedure("naturals", factory.arrayType(IDataType.INT, 1));
 		IVariableDeclaration nParam = natFunc.addParameter("n", IDataType.INT);
 		IArrayVariableDeclaration vVar = natFunc.addArrayDeclaration("v", factory.arrayType(IDataType.INT, 1));
 		vVar.addAssignment(factory.arrayAllocation(IDataType.INT, nParam.expression()));

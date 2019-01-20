@@ -1,10 +1,12 @@
 package model.program.roles;
 
+import model.program.IBinaryExpression;
 import model.program.IBlock;
+import model.program.IExpression;
 import model.program.IProcedure;
-import model.program.ISourceElement;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
+import model.program.IVariableExpression;
 import model.program.operators.ArithmeticOperator;
 
 public interface IGatherer extends IVariableRole {
@@ -32,7 +34,7 @@ public interface IGatherer extends IVariableRole {
 				if(first)
 					first = false; // FIXME
 				else {
-					ArithmeticOperator op = assignment.getAccumulationOperator();
+					ArithmeticOperator op = getAccumulationOperator(assignment);
 					if(op == null || operator != null && op != operator)
 						allSameAcc = false;
 					else
@@ -69,4 +71,22 @@ public interface IGatherer extends IVariableRole {
 			}
 		};
 	}
+	
+	static ArithmeticOperator getAccumulationOperator(IVariableAssignment var) {
+		IExpression expression = var.getExpression();
+		if(expression instanceof IBinaryExpression) {
+			IBinaryExpression e = (IBinaryExpression) expression;
+			IExpression left = e.getLeftExpression();
+			IExpression right = e.getRightExpression();
+			if(e.getOperator() instanceof ArithmeticOperator && 
+				(
+				left instanceof IVariableExpression && ((IVariableExpression) left).getVariable().equals(var.getVariable()) ||
+				right instanceof IVariableExpression && ((IVariableExpression) right).getVariable().equals(var.getVariable()))
+				)
+				return (ArithmeticOperator) e.getOperator();
+		}
+		return null;
+	}
+	
+	
 }

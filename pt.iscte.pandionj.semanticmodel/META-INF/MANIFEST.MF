@@ -6,3 +6,5 @@ Bundle-Version: 0.1
 Automatic-Module-Name: pt.iscte.pandionj.semanticmodel
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: com.google.guava;bundle-version="15.0.0"
+Export-Package: model.machine,
+ model.program

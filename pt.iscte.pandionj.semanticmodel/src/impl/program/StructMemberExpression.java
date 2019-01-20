@@ -1,11 +1,15 @@
 package impl.program;
 
+import java.util.List;
+
+import model.machine.ICallStack;
+import model.machine.IStructObject;
+import model.machine.IValue;
 import model.program.IDataType;
 import model.program.IStructMemberExpression;
-import model.program.IStructType;
 import model.program.IVariableDeclaration;
 
-class StructMemberExpression extends SourceElement implements IStructMemberExpression {
+class StructMemberExpression extends Expression implements IStructMemberExpression {
 
 	private final IVariableDeclaration variable;
 	private final String memberId;
@@ -37,5 +41,13 @@ class StructMemberExpression extends SourceElement implements IStructMemberExpre
 	@Override
 	public String toString() {
 		return variable.getId() + "." + memberId;
+	}
+	
+	@Override
+	public IValue evalutate(List<IValue> values, ICallStack stack) {
+		// TODO validate
+		IStructObject object = (IStructObject) stack.getTopFrame().getVariable(getVariable().getId());
+		IValue field = object.getField(getMemberId());
+		return field;
 	}
 }

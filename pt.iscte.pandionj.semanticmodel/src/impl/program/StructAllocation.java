@@ -1,9 +1,13 @@
 package impl.program;
 
+import java.util.List;
+
+import model.machine.ICallStack;
+import model.machine.IValue;
 import model.program.IStructAllocation;
 import model.program.IStructType;
 
-class StructAllocation extends SourceElement implements IStructAllocation {
+class StructAllocation extends Expression implements IStructAllocation {
 
 	private final IStructType type;
 	
@@ -22,4 +26,8 @@ class StructAllocation extends SourceElement implements IStructAllocation {
 		return "new " + getType().getId(); 
 	}
 
+	@Override
+	public IValue evalutate(List<IValue> values, ICallStack stack) {
+		return stack.getTopFrame().allocateObject(getType());
+	}
 }

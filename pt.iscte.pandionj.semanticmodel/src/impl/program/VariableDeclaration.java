@@ -6,30 +6,24 @@ import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IIdentifiableElement;
-import model.program.IProcedure;
-import model.program.ISourceElement;
+import model.program.IProgramElement;
 import model.program.IStructMemberAssignment;
 import model.program.IStructMemberExpression;
-import model.program.IStructType;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 import model.program.IVariableExpression;
-import model.program.roles.IGatherer;
-import model.program.roles.IVariableRole;
 
-class VariableDeclaration extends SourceElement implements IVariableDeclaration {
+class VariableDeclaration extends ProgramElement implements IVariableDeclaration {
 
-	private final ISourceElement parent;
+	private final IProgramElement parent;
 	private final String name;
 	private final IDataType type;
 	private final boolean constant; // TODO final vars
 	private final boolean reference;
 	private final boolean param;
 	private final boolean field;
-	private IVariableRole role;
 
-	public VariableDeclaration(ISourceElement parent, String name, IDataType type, Set<Flag> flags) {
-//		super(block, true);
+	public VariableDeclaration(IProgramElement parent, String name, IDataType type, Set<Flag> flags) {
 		this.parent = parent;
 		assert IIdentifiableElement.isValidIdentifier(name);
 		this.name = name;
@@ -56,18 +50,10 @@ class VariableDeclaration extends SourceElement implements IVariableDeclaration 
 	}
 
 	@Override
-	public ISourceElement getParent() {
+	public IProgramElement getParent() {
 		return parent;
 	}
 	
-//	@Override
-//	public IProcedure getProcedure() {
-//		IBlock parent = getParent();
-//		while(!(parent instanceof IProcedure))
-//			parent = parent.getParent();
-//		return (IProcedure) parent;
-//	}
-
 	@Override
 	public IDataType getType() {
 		return type;
@@ -80,7 +66,7 @@ class VariableDeclaration extends SourceElement implements IVariableDeclaration 
 
 	@Override
 	public String toString() {
-		return (isReference() ? "*var " : "var ") + name + " (" + type.getId() + ", " + getRole() + ")";
+		return (isReference() ? "*var " : "var ") + name + " (" + type.getId() + ")";
 	}
 
 	@Override
@@ -103,20 +89,5 @@ class VariableDeclaration extends SourceElement implements IVariableDeclaration 
 	@Override
 	public IStructMemberExpression memberExpression(String memberId) {
 		return new StructMemberExpression(this, memberId);
-	}
-	
-
-	@Override
-	public IVariableRole getRole() {
-		if(field)
-			role = IVariableRole.NONE;
-		
-		if(role == null) {
-			if(IGatherer.isGatherer(this))
-				role = IGatherer.createGatherer(this);
-			else
-				role = IVariableRole.NONE;
-		}
-		return role;
 	}
 }

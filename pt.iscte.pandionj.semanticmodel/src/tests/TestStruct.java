@@ -23,17 +23,17 @@ public class TestStruct {
 		IFactory factory = new Factory();
 		IProgram program = factory.createProgram();
 		
-		IStructType pointType = program.createStruct("Point");
+		IStructType pointType = program.addStruct("Point");
 		pointType.addMemberVariable("x", IDataType.INT);
 		pointType.addMemberVariable("y", IDataType.INT);
 		
-		IProcedure moveProc = program.createProcedure("move", IDataType.VOID);
+		IProcedure moveProc = program.addProcedure("move", IDataType.VOID);
 		IVariableDeclaration pParam = moveProc.addParameter("p", pointType);
 		
 		pParam.addMemberAssignment("x", factory.literal(7));
 		
 		
-		IProcedure main = program.createProcedure("main", IDataType.INT);
+		IProcedure main = program.addProcedure("main", IDataType.INT);
 		IVariableDeclaration pVar = main.addVariableDeclaration("pp", pointType);
 		pVar.addAssignment(pointType.allocationExpression());
 		

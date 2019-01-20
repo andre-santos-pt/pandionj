@@ -1,9 +1,13 @@
 package impl.program;
 
+import java.util.List;
+
+import model.machine.ICallStack;
+import model.machine.IValue;
 import model.program.IDataType;
 import model.program.ILiteral;
 
-class Literal extends SourceElement implements ILiteral {
+class Literal extends Expression implements ILiteral {
 
 	private final IDataType type;
 	private final String value;
@@ -28,5 +32,10 @@ class Literal extends SourceElement implements ILiteral {
 	@Override
 	public String toString() {
 		return value;
+	}
+	
+	@Override
+	public IValue evalutate(List<IValue> values, ICallStack stack) {
+		return stack.getProgramState().getValue(getStringValue());
 	}
 }

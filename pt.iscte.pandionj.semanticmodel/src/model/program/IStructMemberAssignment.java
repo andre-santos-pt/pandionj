@@ -1,8 +1,8 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IStructObject;
-import model.machine.IValue;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public interface IStructMemberAssignment extends IStatement {
 
@@ -11,16 +11,7 @@ public interface IStructMemberAssignment extends IStatement {
 	IExpression getExpression();
 
 	@Override
-	default boolean isControl() {
-		return false;
+	default List<IExpression> getExpressionParts() {
+		return ImmutableList.of(getExpression());
 	}
-	
-	@Override
-	default boolean execute(ICallStack stack) throws ExecutionError {
-		IStructObject object = (IStructObject) stack.getTopFrame().getVariable(getVariable().getId());
-		IValue val = stack.evaluate(getExpression());
-		object.setField(getMemberId(), val);
-		return true;
-	}
-	
 }

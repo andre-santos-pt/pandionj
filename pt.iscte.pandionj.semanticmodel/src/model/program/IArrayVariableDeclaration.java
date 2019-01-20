@@ -8,10 +8,6 @@ public interface IArrayVariableDeclaration extends IVariableDeclaration {
 	int getArrayDimensions();
 	IDataType getComponentType();
 	
-//	default IVariableRole getRole() {
-//		return IVariableRole.NONE;
-//	}
-	
 	IArrayLengthExpression lengthExpression(List<IExpression> indexes);
 	default IArrayLengthExpression lengthExpression(IExpression ... indexes) {
 		return lengthExpression(Arrays.asList(indexes));

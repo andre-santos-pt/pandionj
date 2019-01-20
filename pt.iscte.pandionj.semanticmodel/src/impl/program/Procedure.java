@@ -103,7 +103,10 @@ class Procedure extends Block implements IProcedure {
 			params += p.getId();
 		}
 
-		return returnType + " " + name + "(" + params + ")" + super.toString();
+		String vars = "";
+		for(IVariableDeclaration var : getVariables(true))
+			vars += var +"\n";
+		return returnType + " " + name + "(" + params + ")" + "\n" + vars + super.toString();
 	}
 
 	private class ParamsView extends AbstractList<IVariableDeclaration> {

@@ -3,7 +3,7 @@ package model.machine;
 import java.util.List;
 import java.util.Map;
 
-import model.program.ExecutionError;
+import impl.machine.ExecutionError;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
@@ -17,14 +17,9 @@ public interface IStackFrame {
 	
 	IProcedure getProcedure();
 	
-	default boolean isRoot() {
-		return getParent() == null;
-	}
-	
 	Map<String, IValue> getVariables();
 	
 	IValue getVariable(String id);
-//	void addVariable(String identifier, IDataType type);
 	void setVariable(String identifier, IValue value);
 	
 	IValue getReturn();
@@ -45,18 +40,19 @@ public interface IStackFrame {
 	IValue getValue(String literal);
 	IValue getValue(Object object);
 
-	IArray getArray(IDataType baseType, int[] dimensions);
+	IArray allocateArray(IDataType baseType, int[] dimensions);
 	
-	IStructObject getObject(IStructType type);
+	IStructObject allocateObject(IStructType type);
 	
-	boolean execute(IStatement statement) throws ExecutionError;
+	IValue evaluate(IExpression expression, List<IValue> expressions) throws ExecutionError;
 	
-	IValue evaluate(IExpression expression) throws ExecutionError;
 	
+	void stepIn() throws ExecutionError;
+	
+	boolean isOver();
 	
 	void addListener(IListener listener);
-	
-	
+
 	interface IListener {
 		default void variableAdded(String identifier, IDataType type) { }
 		
@@ -74,5 +70,6 @@ public interface IStackFrame {
 		
 		default void terminated(IValue result) { }
 	}
+
 	
 }

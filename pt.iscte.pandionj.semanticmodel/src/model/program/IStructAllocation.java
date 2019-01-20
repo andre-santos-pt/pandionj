@@ -1,7 +1,8 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IStructObject;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public interface IStructAllocation extends IExpression {
 	
@@ -9,7 +10,12 @@ public interface IStructAllocation extends IExpression {
 	IStructType getType();
 	
 	@Override
-	default IStructObject evaluate(ICallStack stack) throws ExecutionError {
-		return stack.getTopFrame().getObject(getType());
+	default List<IExpression> decompose() {
+		return ImmutableList.of();
+	}
+	
+	@Override
+	default boolean isDecomposable() {
+		return false;
 	}
 }

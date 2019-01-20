@@ -1,13 +1,19 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IValue;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public interface ILiteral extends IExpression {
 	String getStringValue();
 	
 	@Override
-	default IValue evaluate(ICallStack stack) {
-		return stack.getProgramState().getValue(getStringValue());
+	default List<IExpression> decompose() {
+		return ImmutableList.of();
+	}
+	
+	@Override
+	default boolean isDecomposable() {
+		return false;
 	}
 }

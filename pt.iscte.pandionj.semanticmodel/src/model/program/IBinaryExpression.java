@@ -1,8 +1,8 @@
 package model.program;
 
-import model.machine.ICallStack;
-import model.machine.IValue;
-import model.program.operators.IBinaryOperator;
+import java.util.List;
+
+import com.google.common.collect.ImmutableList;
 
 public interface IBinaryExpression extends IExpression {
 	IBinaryOperator getOperator();
@@ -14,10 +14,9 @@ public interface IBinaryExpression extends IExpression {
 		return getOperator().getOperationType();
 	}
 	
-	
 	@Override
-	default public IValue evaluate(ICallStack stack) throws ExecutionError {
-		return getOperator().apply(getLeftExpression(), getRightExpression(), stack.getTopFrame());
+	default List<IExpression> decompose() {
+		return ImmutableList.of(getLeftExpression(), getRightExpression());
 	}
 }
 
