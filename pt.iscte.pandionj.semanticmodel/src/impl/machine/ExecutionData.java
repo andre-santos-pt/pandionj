@@ -7,8 +7,7 @@ import java.util.Map;
 import model.machine.ICallStack;
 import model.machine.IExecutionData;
 import model.machine.IValue;
-import model.program.IExpression;
-import model.program.IExpression.OperationType;
+import model.program.IOperator.OperationType;
 import model.program.IProcedure;
 
 public class ExecutionData implements IExecutionData  {
@@ -105,13 +104,13 @@ public class ExecutionData implements IExecutionData  {
 		callCount++;
 	}
 	
-	public void countOperation(IExpression.OperationType operation) {
+	public void countOperation(OperationType operation) {
 		switch(operation) {
 		case ARITHMETIC:	arithmeticCount++;	break;
 		case RELATIONAL:	relationalCount++;	break;
 		case LOGICAL:		logicalCount++;		break;
 		case CALL:			callCount++;		break;
-		case OTHER: 			otherOpCount++; 	break;
+		case OTHER: 		otherOpCount++; 	break;
 		}
 	}
 	

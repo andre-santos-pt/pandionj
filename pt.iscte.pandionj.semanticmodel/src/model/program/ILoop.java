@@ -1,8 +1,8 @@
 package model.program;
 
-public interface ILoop extends IBlock, IControlStructure {
+public interface ILoop extends IControlStructure {
 
-	boolean executeBlockFirst();
+	boolean executeBlockFirst(); // TODO dowhile
 
 	IBreak addBreakStatement();
 

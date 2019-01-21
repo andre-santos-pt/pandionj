@@ -9,6 +9,7 @@ import org.junit.Test;
 import impl.machine.ProgramState;
 import impl.program.Factory;
 import model.machine.IExecutionData;
+import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IFactory;
 import model.program.IProcedure;
@@ -34,12 +35,13 @@ public class TestStruct {
 		
 		
 		IProcedure main = program.addProcedure("main", IDataType.INT);
-		IVariableDeclaration pVar = main.addVariableDeclaration("pp", pointType);
+		IBlock body = main.getBody();
+		IVariableDeclaration pVar = body.addVariableDeclaration("pp", pointType);
 		pVar.addAssignment(pointType.allocationExpression());
 		
-		main.addProcedureCall(moveProc, pVar.expression());
+		body.addProcedureCall(moveProc, pVar.expression());
 		
-		main.addReturnStatement(pVar.memberExpression("x"));
+		body.addReturnStatement(pVar.memberExpression("x"));
 		
 		
 		System.out.println(program);

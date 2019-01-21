@@ -48,7 +48,7 @@ public class ArrayElementAssignment extends VariableAssignment implements IArray
 		assert values.size() == getIndexes().size() + 1;
 		
 		IStackFrame frame = callStack.getTopFrame();
-		IValue valueArray = frame.getVariable(getVariable().getId());
+		IValue valueArray = frame.getVariableValue(getVariable().getId());
 		if(valueArray.isNull())
 			throw new ExecutionError(ExecutionError.Type.NULL_POINTER, this, "null pointer", getVariable());
 		

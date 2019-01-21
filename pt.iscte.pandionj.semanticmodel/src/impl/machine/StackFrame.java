@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.stream.Collectors;
+
+import com.google.common.collect.ImmutableList;
 
 import impl.machine.ExpressionEvaluator.Step;
 import model.machine.IArray;
@@ -28,12 +31,16 @@ import model.program.IVariableDeclaration;
 class StackFrame implements IStackFrame {
 
 	private final CallStack callStack;
-	private final StackFrame parent;
+//	private final StackFrame parent;
 	private final IProcedure procedure;
-	private final Map<String, IValue> variables;
+	private final Map<String, VariableHistory> variables;
 	private IValue returnValue;
 	private ProcedureExecutor executor;
 
+	
+	private int time;
+	private int timeBackwards;
+	
 	private List<IListener> listeners = new ArrayList<>(5);
 	public void addListener(IListener listener) {
 		listeners.add(listener);
@@ -43,27 +50,32 @@ class StackFrame implements IStackFrame {
 		assert procedure.getNumberOfParameters() == arguments.size();
 
 		this.callStack = callStack;
-		this.parent = parent;
+//		this.parent = parent;
 		this.procedure = procedure;
 		this.variables = new LinkedHashMap<>();
 		this.returnValue = IValue.NULL;
 
+		this.time = 0;
+		this.timeBackwards = 0;
+		
 		int i = 0;
 		for(IVariableDeclaration param : procedure.getParameters()) {
-			variables.put(param.getId(), arguments.get(i));
+			variables.put(param.getId(), new VariableHistory(arguments.get(i)));
 			i++;
 		}
 
-		for (IVariableDeclaration var : procedure.getVariables(false))
-			variables.put(var.getId(), Value.create(var.getType(), var.getType().getDefaultValue()));
+		for (IVariableDeclaration var : procedure.getVariables(false)) {
+			IValue defValue = Value.create(var.getType(), var.getType().getDefaultValue());
+			variables.put(var.getId(), new VariableHistory(defValue));
+		}
 
 		executor = new ProcedureExecutor(procedure);
 	}
 
-	@Override
-	public IStackFrame getParent() {
-		return parent;
-	}
+//	@Override
+//	public IStackFrame getParent() {
+//		return parent;
+//	}
 
 	@Override
 	public IProcedure getProcedure() {
@@ -72,17 +84,25 @@ class StackFrame implements IStackFrame {
 
 	@Override
 	public Map<String, IValue> getVariables() {
-		return Collections.unmodifiableMap(variables);
+		return variables.entrySet().stream().collect(Collectors.toMap(
+		                e -> e.getKey(),
+		                e -> e.getValue().getCurrent()));
 	}
 
 	@Override // TODO copy when not reference
-	public IValue getVariable(String name) {
-		return variables.get(name);
+	public IValue getVariableValue(String id) {
+		assert variables.containsKey(id);
+		return variables.get(id).getCurrent();
 	}
 
-	public void setVariable(String identifier, IValue value) {
-		assert variables.containsKey(identifier) : identifier;
-		variables.put(identifier, value);
+	public List<IValue> getVariableValueHistory(String id) {
+		assert variables.containsKey(id);
+		return variables.get(id).getHistory();
+	}
+	
+	public void setVariable(String id, IValue value) {
+		assert variables.containsKey(id) : id;
+		variables.get(id).newValue(value);
 	}
 
 	@Override
@@ -96,7 +116,10 @@ class StackFrame implements IStackFrame {
 
 	@Override
 	public int getMemory() {
-		return 0; // TODO stack frame memory
+		int bytes = 0;
+		for (IVariableDeclaration var : procedure.getVariables(true))
+			bytes += var.getType().getMemoryBytes();
+		return bytes;
 	}
 
 	@Override
@@ -141,9 +164,9 @@ class StackFrame implements IStackFrame {
 	}
 
 
-
 	public void stepIn() throws ExecutionError {
 		assert !isOver();
+		time++;
 		IProgramElement current = executor.current();
 		if(current instanceof IStatement) {
 			IStatement s = (IStatement) current;
@@ -212,6 +235,11 @@ class StackFrame implements IStackFrame {
 			terminateFrame();
 	}
 
+
+	public void stepOver() throws ExecutionError {
+		// TODO step over
+	}
+	
 	private ExpressionEvaluator pendingExpression;
 	private Queue<ExpressionEvaluator> pendingEvaluations;
 	private List<IValue> values;
@@ -229,30 +257,8 @@ class StackFrame implements IStackFrame {
 		return value;
 	}
 
-	//	private IValue evaluate(IExpression expression) throws ExecutionError {
-	//	if(expression instanceof ILiteral)
-	//		return getCallStack().getProgramState().getValue(((ILiteral) expression).getStringValue());
-	//
-	//	try {
-	//		for(IListener l : listeners)
-	//			l.expressionEvaluationStart(expression);
-	//		
-	//		IValue value = expression.evaluate(callStack);
-	//		
-	//		System.out.println("E " + expression + " = " + value);
-	//		for(IListener l : listeners)
-	//			l.expressionEvaluationEnd(expression, value);
-	//
-	//		return value;
-	//	}
-	//	catch(ExecutionError e) {
-	//		throw e;
-	//	}
-	//}
-
-
-
-
+	private List<StatementTimestamp> historyStatements = new ArrayList<StackFrame.StatementTimestamp>();
+	
 	private boolean execute(IStatement statement) throws ExecutionError {
 		try {
 			IExecutable executable = (IExecutable) statement;
@@ -261,6 +267,9 @@ class StackFrame implements IStackFrame {
 
 			boolean result = executable.execute(this.getCallStack(), values);
 			System.out.println("S " + statement + " " + result);
+			
+			historyStatements.add(new StatementTimestamp(statement));
+			
 			for(IListener l : listeners)
 				l.statementExecutionEnd(statement);
 
@@ -276,9 +285,63 @@ class StackFrame implements IStackFrame {
 
 	@Override
 	public String toString() {
-		String text = procedure.getId() + "(...)";
-		for(Entry<String, IValue> e : variables.entrySet())
-			text += " " + e.getKey() + "=" + e.getValue();
+		String text = procedure.getId() + "(...)"; // TODO pretty print
+		for(Entry<String, VariableHistory> e : variables.entrySet())
+			text += " " + e.getKey() + "=" + e.getValue().getCurrent();
 		return text;
+	}
+	
+	
+	private class VariableHistory {
+		final List<ValueTimestamp> history;
+		int current;
+		VariableHistory(IValue initialValue) {
+			history = new ArrayList<>();
+			history.add(new ValueTimestamp(initialValue));
+			current = 0;
+		}
+		
+		public void newValue(IValue value) {
+			history.add(new ValueTimestamp(value));
+			current++;
+		}
+
+		public List<IValue> getHistory() {
+			return history.stream().map(v -> v.value).collect(Collectors.toList());
+		}
+
+		IValue getCurrent() {
+			return history.get(current).value;
+		}
+		
+		void setTime(int time) {
+			for(int i = 0; i < history.size()-1; i++) {
+				if(time > history.get(i+1).timestamp) {
+					current = i;
+					return;
+				}
+			}
+			current = history.size()-1;
+		}
+	}
+	
+	private class ValueTimestamp {
+		final IValue value;
+		final int timestamp;
+		
+		ValueTimestamp(IValue value) {
+			this.value = value;
+			this.timestamp = time;
+		}
+	}
+	
+	private class StatementTimestamp {
+		final IStatement statement;
+		final int timestamp;
+		
+		StatementTimestamp(IStatement statement) {
+			this.statement = statement;
+			this.timestamp = time++;
+		}
 	}
 }

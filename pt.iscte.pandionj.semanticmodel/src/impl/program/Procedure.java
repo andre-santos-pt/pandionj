@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
+import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IIdentifiableElement;
@@ -17,17 +18,16 @@ import model.program.IProcedure;
 import model.program.IProcedureCallExpression;
 import model.program.IVariableDeclaration;
 
-class Procedure extends Block implements IProcedure {
+class Procedure extends ProgramElement implements IProcedure {
 	private final String name;
 	private final List<IVariableDeclaration> variables;
 	private final ParamsView paramsView;
 	private final VariablesView varsView;
 	private final IDataType returnType;
 	private int parameters;
-
+	private Block body;
+	
 	public Procedure(String id, IDataType returnType) {
-		super(null, false);
-		assert IIdentifiableElement.isValidIdentifier(id);
 		this.name = id;
 		this.variables = new ArrayList<>(5);
 		this.parameters = 0;
@@ -35,6 +35,7 @@ class Procedure extends Block implements IProcedure {
 
 		paramsView = new ParamsView();
 		varsView = new VariablesView();
+		body = new Block(this, false);
 	}
 
 	@Override
@@ -50,8 +51,8 @@ class Procedure extends Block implements IProcedure {
 	@Override
 	public IVariableDeclaration addParameter(String id, IDataType type, Set<IVariableDeclaration.Flag> flags) {
 		IVariableDeclaration param = type instanceof IArrayType ?
-				new ArrayVariableDeclaration(this, id, (IArrayType) type, ImmutableSet.of()) :
-				new VariableDeclaration(this, id, type, flags);
+				new ArrayVariableDeclaration(body, id, (IArrayType) type, ImmutableSet.of()) :
+				new VariableDeclaration(body, id, type, flags);
 		variables.add(parameters, param);
 		parameters++;
 		return param;
@@ -80,7 +81,12 @@ class Procedure extends Block implements IProcedure {
 		return returnType;
 	}
 
-//	@Override
+	@Override
+	public IBlock getBody() {
+		return body;
+	}
+
+	//	@Override
 //	public boolean isFunction() {
 //		// TODO Auto-generated method stub
 //		return false;
@@ -106,7 +112,7 @@ class Procedure extends Block implements IProcedure {
 		String vars = "";
 		for(IVariableDeclaration var : getVariables(true))
 			vars += var +"\n";
-		return returnType + " " + name + "(" + params + ")" + "\n" + vars + super.toString();
+		return returnType + " " + name + "(" + params + ")" + "\n" + vars + body.toString();
 	}
 
 	private class ParamsView extends AbstractList<IVariableDeclaration> {
@@ -133,20 +139,11 @@ class Procedure extends Block implements IProcedure {
 		}
 	}
 
-	@Override
-	public IVariableDeclaration addVariableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
-		IVariableDeclaration var = super.addVariableDeclaration(name, type,flags);
+	
+	void addVariableDeclaration(IVariableDeclaration var) {
 		variables.add(var);
-		return var;
 	}
-
-	@Override
-	public IArrayVariableDeclaration addArrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags) {
-		IArrayVariableDeclaration var = super.addArrayDeclaration(name, type, flags);
-		variables.add(var);
-		return var;
-	}
-
+	
 	@Override
 	public IProcedureCallExpression callExpression(List<IExpression> args) {
 		return new ProcedureCallExpression(this, args);

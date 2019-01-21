@@ -4,6 +4,8 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import model.program.IOperator.OperationType;
+
 public interface IBinaryExpression extends IExpression {
 	IBinaryOperator getOperator();
 	IExpression getLeftExpression();

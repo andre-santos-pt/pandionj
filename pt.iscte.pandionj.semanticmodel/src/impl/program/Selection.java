@@ -4,24 +4,24 @@ import model.program.IBlock;
 import model.program.IExpression;
 import model.program.ISelection;
 
-class Selection extends ProgramElement implements ISelection {
-	private final Block parent;
+class Selection extends Block implements ISelection {
+//	private final Block parent;
 	private final IExpression guard;
-	private final IBlock selectionBlock;
-	private IBlock alternativeBlock;
-
+//	private final IBlock selectionBlock;
+	
 	public Selection(Block parent, IExpression guard) {
+		super(parent, true);
 		assert parent != null;
-		this.parent = parent;
-		parent.addStatement(this);
+		assert guard != null;
 		this.guard = guard;
-		this.selectionBlock = parent.addLooseBlock();
-		this.alternativeBlock = null;
+//		this.parent = parent;
+//		parent.addStatement(this);
+//		this.selectionBlock = parent.addLooseBlock();
 	}
 
 	@Override
-	public IBlock getParent() {
-		return parent;
+	public Block getParent() {
+		return (Block) super.getParent();
 	}
 	
 	@Override
@@ -29,25 +29,13 @@ class Selection extends ProgramElement implements ISelection {
 		return guard;
 	}
 
-	@Override
-	public IBlock getSelectionBlock() {
-		return selectionBlock;
-	}
-
-	@Override
-	public IBlock getAlternativeBlock() {
-		return alternativeBlock;
-	}
-	
-	@Override
-	public IBlock addAlternativeBlock() {
-		if(alternativeBlock == null)
-			alternativeBlock = ((Block) getParent()).addLooseBlock();
-		return alternativeBlock;
-	}
+//	@Override
+//	public IBlock getSelectionBlock() {
+//		return selectionBlock;
+//	}
 
 	@Override
 	public String toString() {
-		return "if " + guard + " " + selectionBlock + (alternativeBlock != null ? "else " + alternativeBlock : "");
+		return "if " + guard + " " + super.toString();
 	}
 }

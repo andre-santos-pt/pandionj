@@ -8,6 +8,7 @@ import model.program.IControlStructure;
 import model.program.IExpression;
 import model.program.ILoop;
 import model.program.ISelection;
+import model.program.ISelectionWithAlternative;
 import model.program.IProgramElement;
 import model.program.IStatement;
 
@@ -18,7 +19,7 @@ public class BlockIterator {
 	
 	public BlockIterator(IBlock root) {
 		assert !root.isEmpty();
-		this.elements = root.getStatements();
+		this.elements = root.getInstructionSequence();
 		this.i = 0;
 		
 		if(current() instanceof IControlStructure)
@@ -46,12 +47,12 @@ public class BlockIterator {
 			ISelection sel = (ISelection) current;
 			i++;
 			if(last.equals(IValue.TRUE)) {
-				if(!sel.getSelectionBlock().isEmpty())
-					return new BlockIterator(sel.getSelectionBlock());
+				if(!sel.isEmpty())
+					return new BlockIterator(sel);
 			}
-			else {
-				IBlock elseBlock = sel.getAlternativeBlock();
-				if(elseBlock != null && !elseBlock.isEmpty())
+			else if(sel instanceof ISelectionWithAlternative) {
+				IBlock elseBlock = ((ISelectionWithAlternative) sel).getAlternativeBlock();
+				if(!elseBlock.isEmpty())
 					return new BlockIterator(elseBlock);
 			}
 		}

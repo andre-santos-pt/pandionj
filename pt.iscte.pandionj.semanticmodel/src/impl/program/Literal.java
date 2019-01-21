@@ -38,4 +38,16 @@ class Literal extends Expression implements ILiteral {
 	public IValue evalutate(List<IValue> values, ICallStack stack) {
 		return stack.getProgramState().getValue(getStringValue());
 	}
+
+	@Override
+	public int hashCode() {
+		return value.hashCode();
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		return obj != null && getClass() == obj.getClass() && value.equals(((Literal) obj).value);
+	}
+	
+	
 }

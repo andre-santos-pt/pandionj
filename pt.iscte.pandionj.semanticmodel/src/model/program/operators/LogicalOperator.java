@@ -5,7 +5,6 @@ import model.machine.IValue;
 import model.program.IBinaryOperator;
 import model.program.IDataType;
 import model.program.IExpression;
-import model.program.IExpression.OperationType;
 
 // TODO step eval
 public enum LogicalOperator implements IBinaryOperator {

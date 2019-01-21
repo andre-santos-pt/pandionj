@@ -6,14 +6,13 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-import impl.program.Factory;
+/**
+ * Mutable
+ */
+public interface IBlock extends IInstruction {
+	IProgramElement getParent();
 
-public interface IBlock extends IProgramElement {
-	IFactory factory = new Factory();
-
-	IBlock getParent();
-
-	List<IProgramElement> getStatements();
+	List<IProgramElement> getInstructionSequence();
 
 	boolean isEmpty();
 
@@ -33,11 +32,13 @@ public interface IBlock extends IProgramElement {
 
 	default IVariableAssignment addIncrement(IVariableDeclaration var) {
 		assert var.getType() == IDataType.INT;
+		IFactory factory = IFactory.INSTANCE;
 		return addAssignment(var, factory.binaryExpression(IOperator.ADD, var.expression(), factory.literal(1)));
 	}
 
 	default IVariableAssignment addDecrement(IVariableDeclaration var) {
 		assert var.getType() == IDataType.INT;
+		IFactory factory = IFactory.INSTANCE;
 		return addAssignment(var, factory.binaryExpression(IOperator.SUB, var.expression(), factory.literal(1)));
 	}
 
@@ -50,6 +51,8 @@ public interface IBlock extends IProgramElement {
 
 
 	ISelection addSelection(IExpression guard);
+	
+	ISelectionWithAlternative addSelectionWithAlternative(IExpression guard);
 
 	ILoop addLoop(IExpression guard);
 
@@ -62,52 +65,62 @@ public interface IBlock extends IProgramElement {
 
 
 	default void accept(IVisitor visitor) {
-		for(IProgramElement s : getStatements()) {
-			if(s instanceof IReturn)
-				visitor.visitReturn((IReturn) s);
-
-			else if(s instanceof IArrayElementAssignment)
-				visitor.visitArrayElementAssignment((IArrayElementAssignment) s);
-
-			else if(s instanceof IVariableAssignment)
-				visitor.visitVariableAssignment((IVariableAssignment) s);
-
+		for(IProgramElement s : getInstructionSequence()) {
+			if(s instanceof IReturn) {
+				IReturn ret = (IReturn) s;
+				if(visitor.visitReturn(ret) && !ret.getReturnValueType().isVoid())
+					visitor.visitExpression(ret.getExpression());
+			}
+			else if(s instanceof IArrayElementAssignment) {
+				IArrayElementAssignment ass = (IArrayElementAssignment) s;
+				if(visitor.visitArrayElementAssignment(ass))
+					visitor.visitExpression(ass.getExpression());
+			}
+			else if(s instanceof IVariableAssignment) {
+				IVariableAssignment ass = (IVariableAssignment) s;
+				if(visitor.visitVariableAssignment(ass))
+					visitor.visitExpression(ass.getExpression());
+			}
 			else if(s instanceof IProcedureCall) {
 				IProcedureCall call = (IProcedureCall) s;
-				visitor.visitProcedureCall(call.getProcedure(), call.getArguments());
+				if(visitor.visitProcedureCall(call.getProcedure(), call.getArguments()))
+					call.getArguments().forEach(a -> visitor.visitExpression(a));
 			}
 			else if(s instanceof IProcedureCallExpression) {
 				IProcedureCallExpression call = (IProcedureCallExpression) s;
-				visitor.visitProcedureCall(call.getProcedure(), call.getArguments());
+				if(visitor.visitProcedureCall(call.getProcedure(), call.getArguments()))
+					call.getArguments().forEach(a -> visitor.visitExpression(a));
 			}
 			else if(s instanceof ISelection) {
 				ISelection sel = (ISelection) s;
-				visitor.visitSelection(sel);
-				sel.getSelectionBlock().accept(visitor);
-				IBlock alternativeBlock = sel.getAlternativeBlock();
-				if(alternativeBlock != null) 
-					alternativeBlock.accept(visitor);
+				if(visitor.visitSelection(sel)) {
+					sel.accept(visitor);
+					if(sel instanceof ISelectionWithAlternative)
+						((ISelectionWithAlternative) sel).getAlternativeBlock().accept(visitor);
+				}
 			}
 			else if(s instanceof ILoop) {
 				ILoop loop = (ILoop) s;
-				visitor.visitLoop(loop);
-				loop.accept(visitor);
+				if(visitor.visitLoop(loop))
+					loop.accept(visitor);
 			}
 			else if(s instanceof IBlock) { // only single blocks
-				visitor.visitBlock((IBlock) s);
-				((IBlock) s).accept(visitor);
+				IBlock b = (IBlock) s;
+				if(visitor.visitBlock(b))
+					b.accept(visitor);
 			}
 		}
 	}
 
 	interface IVisitor {
-		default void visitReturn(IReturn returnStatement) { }
-		default void visitArrayElementAssignment(IArrayElementAssignment assignment) { }
-		default void visitVariableAssignment(IVariableAssignment assignment) { }
-		default void visitProcedureCall(IProcedure procedure, List<IExpression> args) { }
-		default void visitSelection(ISelection block) { }
-		default void visitLoop(ILoop lool) { }
-		default void visitBlock(IBlock block) { }
+		default boolean visitReturn(IReturn returnStatement) { return false; }
+		default boolean visitArrayElementAssignment(IArrayElementAssignment assignment) { return false;  }
+		default boolean visitVariableAssignment(IVariableAssignment assignment) {  return false; }
+		default boolean visitProcedureCall(IProcedure procedure, List<IExpression> args) { return false;  }
+		default boolean visitSelection(ISelection block) { return false; }
+		default boolean visitLoop(ILoop lool) { return false; }
+		default boolean visitBlock(IBlock block) { return false; }
+		default void visitExpression(IExpression expression) {  }
 	}
 
 }

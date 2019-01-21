@@ -54,7 +54,7 @@ public class ArrayElementExpression extends VariableExpression implements IArray
 	public IValue evalutate(List<IValue> values, ICallStack stack) throws ExecutionError {
 		assert values.size() == getIndexes().size();
 		IStackFrame frame = stack.getTopFrame();
-		IValue variable = frame.getVariable(getVariable().getId());
+		IValue variable = frame.getVariableValue(getVariable().getId());
 		IValue element = variable;
 		for(IValue v : values) {
 			int index = ((Number) v.getValue()).intValue();

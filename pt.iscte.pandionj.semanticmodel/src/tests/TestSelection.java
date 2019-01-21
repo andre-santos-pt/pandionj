@@ -14,9 +14,11 @@ import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IFactory;
+import model.program.IOperator;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.ISelection;
+import model.program.ISelectionWithAlternative;
 import model.program.IVariableDeclaration;
 
 
@@ -34,10 +36,9 @@ public class TestSelection {
 		IVariableDeclaration bParam = maxFunc.addParameter("b", IDataType.INT);
 		
 		IBinaryExpression e = factory.binaryExpression(IBinaryOperator.GREATER, aParam.expression(), bParam.expression());
-		ISelection ifElse = maxFunc.addSelection(e);
-		IBlock ifblock = ifElse.getSelectionBlock();
-		ifblock.addReturnStatement(aParam.expression());
-		IBlock elseblock = ifElse.addAlternativeBlock();
+		ISelectionWithAlternative ifElse = maxFunc.getBody().addSelectionWithAlternative(e);
+		ifElse.addReturnStatement(aParam.expression());
+		IBlock elseblock = ifElse.getAlternativeBlock();
 		elseblock.addReturnStatement(bParam.expression());
 		System.out.println(program);
 	}
@@ -61,7 +62,7 @@ public class TestSelection {
 	// TODO repor
 	private static void commonAsserts(IExecutionData data) {
 		assertEquals(0, data.getTotalAssignments());
-		assertEquals(1, data.getOperationCount(IExpression.OperationType.RELATIONAL));
+		assertEquals(1, data.getOperationCount(IOperator.OperationType.RELATIONAL));
 		assertEquals(1, data.getCallStackDepth());
 	}
 }

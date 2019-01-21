@@ -1,6 +1,5 @@
 package model.program;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -8,31 +7,27 @@ import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
-public interface IProcedure extends IBlock, IIdentifiableElement {
-	IVariableDeclaration addParameter(String id, IDataType type, Set<IVariableDeclaration.Flag> flags);
-	default IVariableDeclaration addParameter(String id, IDataType type) {
-		return addParameter(id, type, ImmutableSet.of());
-	}
+/**
+ * Mutable
+ */
+public interface IProcedure extends IIdentifiableElement {
 	
 	Iterable<IVariableDeclaration> getParameters();	
 	int getNumberOfParameters();
 	Iterable<IVariableDeclaration> getVariables(boolean includingParams);
-	
 	IVariableDeclaration getVariable(String id);
 	IDataType getReturnType();
 	
+	IBlock getBody();
 	
 	default boolean isBuiltIn() {
 		return false;
 	}
 	
+	IVariableDeclaration addParameter(String id, IDataType type, Set<IVariableDeclaration.Flag> flags);
 	
-	default boolean isFunction() {
-		return false;
-	}
-	
-	default boolean isRecursive() {
-		return false;
+	default IVariableDeclaration addParameter(String id, IDataType type) {
+		return addParameter(id, type, ImmutableSet.of());
 	}
 	
 	// compares id and types of parameters
@@ -49,16 +44,9 @@ public interface IProcedure extends IBlock, IIdentifiableElement {
 		return true;
 	}
 	
-	default List<ISemanticProblem> validateSematics() {
-		List<ISemanticProblem> problems = new ArrayList<ISemanticProblem>();
-		SemanticChecks.checkVariableNames(this, problems);
-		SemanticChecks.checkReturn(this, problems);
-		// check return paths
-		// variable not initialized
-		return problems;
-	}
 	
 	IProcedureCallExpression callExpression(List<IExpression> args);
+	
 	default IProcedureCallExpression callExpression(IExpression ... args) {
 		return callExpression(Arrays.asList(args));
 	}

@@ -1,9 +1,14 @@
-package model.program;
+package model.program.semantics;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import model.program.IBlock;
+import model.program.IDataType;
+import model.program.IProcedure;
+import model.program.IReturn;
+import model.program.IVariableDeclaration;
 import model.program.IBlock.IVisitor;
 
 class SemanticChecks {
@@ -19,11 +24,12 @@ class SemanticChecks {
 	
 	static void checkReturn(IProcedure procedure, List<ISemanticProblem> problems) {
 		IDataType returnType = procedure.getReturnType();
-		procedure.accept(new IVisitor() {
-			public void visitReturn(IReturn returnStatement) {
+		procedure.getBody().accept(new IVisitor() {
+			public boolean visitReturn(IReturn returnStatement) {
 				IDataType t = returnStatement.getReturnValueType();
 				if(!t.equals(returnType))
 					problems.add(ISemanticProblem.create("return not compatible with procedure result: " + t + " " + returnType, returnStatement, procedure));
+				return true;
 			}
 		});
 	}

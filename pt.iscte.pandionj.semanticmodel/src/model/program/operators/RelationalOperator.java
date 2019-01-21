@@ -9,7 +9,6 @@ import model.machine.IValue;
 import model.program.IBinaryOperator;
 import model.program.IDataType;
 import model.program.IExpression;
-import model.program.IExpression.OperationType;
 
 public enum RelationalOperator implements IBinaryOperator {
 	EQUAL("==", (left,right) -> left.getValue().equals(right.getValue())),
@@ -28,8 +27,8 @@ public enum RelationalOperator implements IBinaryOperator {
 		return ((BigDecimal) left.getValue()).compareTo((BigDecimal) right.getValue());
 	}
 	
-	private String symbol;
-	private BiFunction<IValue, IValue, Boolean> f;
+	private final String symbol;
+	private final BiFunction<IValue, IValue, Boolean> f;
 	
 	private RelationalOperator(String symbol, BiFunction<IValue, IValue, Boolean> f) {
 		this.symbol = symbol;
@@ -46,18 +45,12 @@ public enum RelationalOperator implements IBinaryOperator {
 		return symbol;
 	}
 
-//	@Override
-//	public IValue apply(IExpression left, IExpression right, IStackFrame frame) throws ExecutionError {
-//		IValue leftValue =  frame.evaluate(left);
-//		IValue rightValue = frame.evaluate(right);
-//		return Value.create(IDataType.BOOLEAN, f.apply(leftValue, rightValue));
-//	}
-
 	@Override
 	public IValue apply(IValue left, IValue right) throws ExecutionError {
 		return Value.create(IDataType.BOOLEAN, f.apply(left, right));
 	}
 	
+	@Override
 	public IDataType getResultType(IExpression left, IExpression right) {
 		return IDataType.BOOLEAN;
 	}

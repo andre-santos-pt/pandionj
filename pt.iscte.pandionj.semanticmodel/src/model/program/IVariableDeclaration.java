@@ -1,6 +1,6 @@
 package model.program;
 
-public interface IVariableDeclaration extends IProgramElement, IIdentifiableElement {
+public interface IVariableDeclaration extends IIdentifiableElement {
 	IProgramElement getParent();
 	
 	IDataType getType();

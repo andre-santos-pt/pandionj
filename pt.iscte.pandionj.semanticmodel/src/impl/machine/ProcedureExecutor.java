@@ -12,8 +12,8 @@ public class ProcedureExecutor {
 	
 	public ProcedureExecutor(IProcedure procedure) {
 		stack = new Stack<BlockIterator>();
-		if(!procedure.isEmpty())
-			stack.push(new BlockIterator(procedure));
+		if(!procedure.getBody().isEmpty())
+			stack.push(new BlockIterator(procedure.getBody()));
 	}
 	
 	public boolean isOver() {

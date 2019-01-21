@@ -21,6 +21,11 @@ class Loop extends Block implements ILoop {
 	}
 	
 	@Override
+	public Block getParent() {
+		return (Block) super.getParent();
+	}
+	
+	@Override
 	public IExpression getGuard() {
 		return guard;
 	}

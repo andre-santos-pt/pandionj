@@ -1,14 +1,14 @@
 package model.program;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
-public interface IProgram {
+/**
+ * Mutable
+ */
+public interface IProgram extends IProgramElement {
 	Collection<IConstantDeclaration> getConstants();
-	Collection<IProcedure> getProcedures();
-	
 	Collection<IStructType> getStructs();
+	Collection<IProcedure> getProcedures();
 	Collection<IDataType> getDataTypes();
 	
 	IDataType getDataType(String id);
@@ -18,24 +18,31 @@ public interface IProgram {
 	IProcedure addProcedure(String id, IDataType returnType);
 	
 
-	// TODO program validation
-	default List<ISemanticProblem> validateSematics() {
-		List<ISemanticProblem> problems = new ArrayList<ISemanticProblem>();
-		
-		// TODO constants
-		
-		Collection<IProcedure> procedures = getProcedures();
-		for (IProcedure p : procedures) {
-			for(IProcedure p2 : procedures) {
-				if(p2 != p && p2.hasSameSignature(p))
-					problems.add(ISemanticProblem.create("procedures with the same signature", p, p2));
-			}
-			problems.addAll(p.validateSematics());
-		}
-		return problems;
-	}
+//	// TODO program validation
+//	default List<ISemanticProblem> validateSematics() {
+//		List<ISemanticProblem> problems = new ArrayList<ISemanticProblem>();
+//		
+//		// TODO constants
+//		
+//		Collection<IProcedure> procedures = getProcedures();
+//		for (IProcedure p : procedures) {
+//			for(IProcedure p2 : procedures) {
+//				if(p2 != p && p2.hasSameSignature(p))
+//					problems.add(ISemanticProblem.create("procedures with the same signature", p, p2));
+//			}
+//			problems.addAll(p.validateSematics());
+//		}
+//		return problems;
+//	}
 	
 	IConstantDeclaration getConstant(String id);
+//	default IConstantDeclaration getConstant(String id) {
+//		for (IConstantDeclaration c : getConstants()) {
+//			if(c.getId().equals(id))
+//				return c;
+//		}
+//		return null;
+//	}
 	
 	// TODO test
 	default IProcedure getProcedure(String id, IDataType ... paramTypes) {
@@ -54,4 +61,21 @@ public interface IProgram {
 			}
 		return null;
 	}
+	
+	default void accept(IVisitor visitor) {
+		getConstants().forEach(c -> visitor.visit(c));
+		getStructs().forEach(s -> visitor.visit(s));
+		getProcedures().forEach(p -> {
+			if(visitor.visit(p))
+				p.getBody().accept(visitor);
+		});
+	}	
+	
+	
+	interface IVisitor extends IBlock.IVisitor {
+		default boolean visit(IConstantDeclaration constant) { return true; }
+		default boolean visit(IStructType constant) { return true; }
+		default boolean visit(IProcedure constant) { return true; }
+	}
+	
 }

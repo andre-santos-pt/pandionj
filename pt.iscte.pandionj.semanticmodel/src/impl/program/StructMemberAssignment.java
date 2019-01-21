@@ -47,7 +47,7 @@ public class StructMemberAssignment extends Statement implements IStructMemberAs
 	
 	@Override
 	public boolean execute(ICallStack stack, List<IValue> expressions) throws ExecutionError {
-		IStructObject object = (IStructObject) stack.getTopFrame().getVariable(getVariable().getId());
+		IStructObject object = (IStructObject) stack.getTopFrame().getVariableValue(getVariable().getId());
 		object.setField(getMemberId(), expressions.get(0));
 		return true;
 	}

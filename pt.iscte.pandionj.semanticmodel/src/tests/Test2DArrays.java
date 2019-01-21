@@ -21,6 +21,7 @@ import model.program.IOperator;
 import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.ISelection;
+import model.program.ISelectionWithAlternative;
 import model.program.IVariableDeclaration;
 
 public class Test2DArrays {
@@ -33,15 +34,16 @@ public class Test2DArrays {
 		IProcedure idFunc = program.addProcedure("idMatrix", factory.arrayType(IDataType.INT, 2));
 		IVariableDeclaration nParam = idFunc.addParameter("n", IDataType.INT);
 		
-		IArrayVariableDeclaration idVar = idFunc.addArrayDeclaration("id", factory.arrayType(IDataType.INT, 2));
+		IBlock body = idFunc.getBody();
+		IArrayVariableDeclaration idVar = body.addArrayDeclaration("id", factory.arrayType(IDataType.INT, 2));
 		idVar.addAssignment(factory.arrayAllocation(IDataType.INT, nParam.expression(), nParam.expression()));
-		IVariableDeclaration iVar = idFunc.addVariableDeclaration("i", IDataType.INT);
+		IVariableDeclaration iVar = body.addVariableDeclaration("i", IDataType.INT);
 		IExpression e = factory.binaryExpression(IOperator.DIFFERENT, iVar.expression(), nParam.expression());
-		ILoop loop = idFunc.addLoop(e);
+		ILoop loop = body.addLoop(e);
 		loop.arrayElementAssignment(idVar, factory.literal(1), iVar.expression(), iVar.expression());
 		loop.addAssignment(iVar, factory.binaryExpression(IOperator.ADD, iVar.expression(), factory.literal(1)));
 		
-		idFunc.addReturnStatement(idVar.expression());
+		body.addReturnStatement(idVar.expression());
 
 		System.out.println(program);
 		final int N = 4;
@@ -70,18 +72,20 @@ public class Test2DArrays {
 		IVariableDeclaration linesParam = natFunc.addParameter("lines", IDataType.INT);
 		IVariableDeclaration colsParam = natFunc.addParameter("cols", IDataType.INT);
 		
-		IArrayVariableDeclaration mVar = natFunc.addArrayDeclaration("m", factory.arrayType(IDataType.INT, 2));
+		IBlock body = natFunc.getBody();
+		
+		IArrayVariableDeclaration mVar = body.addArrayDeclaration("m", factory.arrayType(IDataType.INT, 2));
 		mVar.addAssignment(factory.arrayAllocation(IDataType.INT, linesParam.expression(), colsParam.expression()));
 		
-		IVariableDeclaration iVar = natFunc.addVariableDeclaration("i", IDataType.INT);
+		IVariableDeclaration iVar = body.addVariableDeclaration("i", IDataType.INT);
 		iVar.addAssignment(factory.literal(0));
 		
-		IVariableDeclaration jVar = natFunc.addVariableDeclaration("j", IDataType.INT);
-		IVariableDeclaration nVar = natFunc.addVariableDeclaration("n", IDataType.INT);
+		IVariableDeclaration jVar = body.addVariableDeclaration("j", IDataType.INT);
+		IVariableDeclaration nVar = body.addVariableDeclaration("n", IDataType.INT);
 		nVar.addAssignment(factory.literal(1));
 
 		IExpression outerGuard = factory.binaryExpression(IOperator.DIFFERENT, iVar.expression(), linesParam.expression());
-		ILoop outerLoop = natFunc.addLoop(outerGuard);
+		ILoop outerLoop = body.addLoop(outerGuard);
 		outerLoop.addAssignment(jVar, factory.literal(0));
 		IExpression innerGuard = factory.binaryExpression(IOperator.DIFFERENT, jVar.expression(), colsParam.expression());
 		ILoop innerLoop = outerLoop.addLoop(innerGuard);
@@ -91,7 +95,7 @@ public class Test2DArrays {
 		
 		outerLoop.addAssignment(iVar, factory.binaryExpression(IOperator.ADD, iVar.expression(), factory.literal(1)));
 		
-		natFunc.addReturnStatement(mVar.expression());
+		body.addReturnStatement(mVar.expression());
 		
 		final int L = 2;
 		final int C = 4;
@@ -119,29 +123,29 @@ public class Test2DArrays {
 		IProcedure findFunc = program.addProcedure("contains", IDataType.BOOLEAN);
 		IArrayVariableDeclaration mParam = (IArrayVariableDeclaration) findFunc.addParameter("m", factory.arrayType(IDataType.INT, 2));
 		IVariableDeclaration nParam = findFunc.addParameter("n", IDataType.INT);
-		
-		IVariableDeclaration iVar = findFunc.addVariableDeclaration("i", IDataType.INT);
+		IBlock body = findFunc.getBody();
+		IVariableDeclaration iVar = body.addVariableDeclaration("i", IDataType.INT);
 		iVar.addAssignment(factory.literal(0));
 		
-		IVariableDeclaration jVar = findFunc.addVariableDeclaration("j", IDataType.INT);
+		IVariableDeclaration jVar = body.addVariableDeclaration("j", IDataType.INT);
 		IExpression outerGuard = factory.binaryExpression(IOperator.DIFFERENT, iVar.expression(), mParam.lengthExpression());
-		ILoop outerLoop = findFunc.addLoop(outerGuard);
+		ILoop outerLoop = body.addLoop(outerGuard);
 		outerLoop.addAssignment(jVar, factory.literal(0));
 		IExpression innerGuard = factory.binaryExpression(IOperator.DIFFERENT, jVar.expression(), mParam.lengthExpression(iVar.expression()) );
 		ILoop innerLoop = outerLoop.addLoop(innerGuard);
-		ISelection ifEq = innerLoop.addSelection(factory.binaryExpression(IOperator.EQUAL, mParam.elementExpression(iVar.expression(), jVar.expression()), nParam.expression()));
-		IBlock ifBlock = ifEq.getSelectionBlock();
-		ifBlock.addReturnStatement(factory.literal(true));
+		ISelectionWithAlternative ifEq = innerLoop.addSelectionWithAlternative(factory.binaryExpression(IOperator.EQUAL, mParam.elementExpression(iVar.expression(), jVar.expression()), nParam.expression()));
+		ifEq.addReturnStatement(factory.literal(true));
 		innerLoop.addIncrement(jVar);
 		outerLoop.addIncrement(iVar);
 		
-		findFunc.addReturnStatement(factory.literal(false));
+		body.addReturnStatement(factory.literal(false));
 		
 		
 		
 		
 		IProcedure main = program.addProcedure("main", IDataType.BOOLEAN);
-		IArrayVariableDeclaration array = main.addArrayDeclaration("test", factory.arrayType(IDataType.INT, 2));
+		IBlock mainBody = main.getBody();
+		IArrayVariableDeclaration array = mainBody.addArrayDeclaration("test", factory.arrayType(IDataType.INT, 2));
 		array.addAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
 		array.elementAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(0)), factory.literal(0));
 		array.elementAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(2)), factory.literal(1));
@@ -149,9 +153,9 @@ public class Test2DArrays {
 		
 		array.elementAssignment(factory.literal(5), factory.literal(2), factory.literal(2));
 		
-		IVariableDeclaration var = main.addVariableDeclaration("contains", IDataType.BOOLEAN);
+		IVariableDeclaration var = mainBody.addVariableDeclaration("contains", IDataType.BOOLEAN);
 		var.addAssignment(findFunc.callExpression(array.expression(), factory.literal(5)));
-		main.addReturnStatement(var.expression());
+		mainBody.addReturnStatement(var.expression());
 		
 		
 		System.out.println(program);

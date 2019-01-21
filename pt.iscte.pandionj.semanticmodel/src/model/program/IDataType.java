@@ -164,7 +164,17 @@ public interface IDataType extends IIdentifiableElement {
 		public abstract boolean matchesLiteral(String literal);
 
 		@Override
-		public abstract Object create(String literal);		
+		public abstract Object create(String literal);
+		
+		@Override
+		public Object getProperty(String key) {
+			throw new UnsupportedOperationException();
+		}
+		
+		@Override
+		public void setProperty(String key, Object value) {
+			throw new UnsupportedOperationException();
+		}
 	}
 
 	IDataType UNKNOWN = new IDataType() {
@@ -198,6 +208,14 @@ public interface IDataType extends IIdentifiableElement {
 		@Override
 		public int getMemoryBytes() {
 			return 0;
+		}
+		@Override
+		public void setProperty(String key, Object value) {
+			
+		}
+		@Override
+		public Object getProperty(String key) {
+			return null;
 		}
 	};
 }

@@ -32,26 +32,26 @@ public class TestSum {
 		sumArrayProc = program.addProcedure("sum", IDataType.INT);
 		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) sumArrayProc.addParameter("v", factory.arrayType(IDataType.INT, 1));
 		
-		IVariableDeclaration sVar = sumArrayProc.addVariableDeclaration("s", IDataType.INT);
+		IVariableDeclaration sVar = sumArrayProc.getBody().addVariableDeclaration("s", IDataType.INT);
 		sVar.addAssignment(factory.literal(0));
-		IVariableDeclaration iVar = sumArrayProc.addVariableDeclaration("i", IDataType.INT);
+		IVariableDeclaration iVar = sumArrayProc.getBody().addVariableDeclaration("i", IDataType.INT);
 		iVar.addAssignment(factory.literal(0));
 		
-		ILoop loop = sumArrayProc.addLoop(factory.binaryExpression(IOperator.DIFFERENT, iVar.expression(), vParam.lengthExpression()));
+		ILoop loop = sumArrayProc.getBody().addLoop(factory.binaryExpression(IOperator.DIFFERENT, iVar.expression(), vParam.lengthExpression()));
 		loop.addAssignment(sVar, factory.binaryExpression(IOperator.ADD, sVar.expression(), vParam.elementExpression(iVar.expression())));
 		loop.addAssignment(iVar, factory.binaryExpression(IOperator.ADD, iVar.expression(), factory.literal(1)));
 		
-		sumArrayProc.addReturnStatement(sVar.expression());
+		sumArrayProc.getBody().addReturnStatement(sVar.expression());
 		
 		main = program.addProcedure("main", IDataType.INT);
 		
-		IArrayVariableDeclaration array = main.addArrayDeclaration("test", factory.arrayType(IDataType.INT, 1));
+		IArrayVariableDeclaration array = main.getBody().addArrayDeclaration("test", factory.arrayType(IDataType.INT, 1));
 		array.addAssignment(factory.arrayAllocation(IDataType.INT, factory.literal(3)));
 		array.elementAssignment(factory.literal(5), factory.literal(0));
 		array.elementAssignment(factory.literal(7), factory.literal(1));
 		array.elementAssignment(factory.literal(9), factory.literal(2));
 		
-		IVariableDeclaration mVar = main.addVariableDeclaration("s", IDataType.VOID);
+		IVariableDeclaration mVar = main.getBody().addVariableDeclaration("s", IDataType.VOID);
 		mVar.addAssignment(sumArrayProc.callExpression(array.expression()));
 	}
 

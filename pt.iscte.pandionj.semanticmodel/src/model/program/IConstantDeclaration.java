@@ -1,6 +1,6 @@
 package model.program;
 
-public interface IConstantDeclaration extends IProgramElement, IIdentifiableElement {
+public interface IConstantDeclaration extends IIdentifiableElement {
 
 	IProgram getProgram();
 	

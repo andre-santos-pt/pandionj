@@ -17,7 +17,7 @@ import model.program.IProcedure;
 import model.program.IProgram;
 import model.program.IStructType;
 
-class Program implements IProgram {
+class Program extends ProgramElement implements IProgram {
 	private final Map<String, IConstantDeclaration> constants;
 	private final Map<String, IStructType> structs;
 	private final List<IProcedure> procedures;
@@ -47,7 +47,7 @@ class Program implements IProgram {
 	
 	@Override
 	public IConstantDeclaration addConstant(String id, IDataType type, ILiteral value) {
-		assert IIdentifiableElement.isValidIdentifier(id);
+		assert id != null;
 		assert type != null;
 		assert value != null;
 		ConstantDeclaration dec = new ConstantDeclaration(this, id, type, value);
@@ -103,8 +103,9 @@ class Program implements IProgram {
 			if(!p.isBuiltIn())
 				text += p + "\n\n";
 		}
-		text = text.replaceAll(";", ";\n");
+		text = text.replaceAll(";", ";\n"); // wrong replacement of tabs
 		text = text.replaceAll("\\{", "{\n");
+		text = text.replaceAll("\\}", "}\n");
 		return text;
 	}
 }

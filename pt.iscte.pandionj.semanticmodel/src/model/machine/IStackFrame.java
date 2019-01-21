@@ -12,15 +12,18 @@ import model.program.IStructType;
 import model.program.IVariableDeclaration;
 
 public interface IStackFrame {
-	IStackFrame getParent(); // only null on root
+//	IStackFrame getParent(); // only null on root
 	ICallStack getCallStack();
 	
 	IProcedure getProcedure();
 	
 	Map<String, IValue> getVariables();
 	
-	IValue getVariable(String id);
+	IValue getVariableValue(String id);
 	void setVariable(String identifier, IValue value);
+	
+	// TODO timestamp / history
+
 	
 	IValue getReturn();
 	void setReturn(IValue value);

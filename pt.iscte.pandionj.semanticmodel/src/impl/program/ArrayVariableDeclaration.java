@@ -122,7 +122,7 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 		@Override
 		public IValue evalutate(List<IValue> values, ICallStack stack) throws ExecutionError {
 			assert values.size() == getIndexes().size();
-			IArray array = (IArray) stack.getTopFrame().getVariable(getVariable().getId());
+			IArray array = (IArray) stack.getTopFrame().getVariableValue(getVariable().getId());
 			IValue v = array;
 			for(int i = 0; i < values.size(); i++) {
 				int index = ((Number) values.get(i).getValue()).intValue();

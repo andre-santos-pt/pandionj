@@ -3,7 +3,7 @@ package impl.program;
 import model.program.IArrayType;
 import model.program.IDataType;
 
-class ValueTypeArray implements IArrayType {
+class ValueTypeArray extends ProgramElement implements IArrayType {
 	private final IDataType type;
 	private final int dimensions;
 	private final String id;

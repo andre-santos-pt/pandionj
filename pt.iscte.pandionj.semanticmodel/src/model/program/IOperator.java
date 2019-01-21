@@ -29,5 +29,11 @@ public interface IOperator {
 	
 	IUnaryOperator TRUNCATE = UnaryOperator.TRUNCATE;
 
+	OperationType getOperationType();
+
+	enum OperationType {
+		ARITHMETIC, RELATIONAL, LOGICAL, CALL, OTHER;
+	}
+	
 	
 }

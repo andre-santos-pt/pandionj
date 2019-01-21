@@ -1,17 +1,14 @@
 package model.program;
 
-import java.util.List;
-
-import com.google.common.collect.ImmutableList;
-
 public interface IProgramElement {
 	void setProperty(String key, Object value);
-	
 	Object getProperty(String key);
 	
-	default List<ISemanticProblem> validateSematics() {
-		return ImmutableList.of();
+	default void setFlag(String key) {
+		setProperty(key, Boolean.TRUE);
 	}
 	
-	// get specific source element ID?
+	default boolean is(String key) {
+		return Boolean.TRUE.equals(getProperty(key));
+	}
 }

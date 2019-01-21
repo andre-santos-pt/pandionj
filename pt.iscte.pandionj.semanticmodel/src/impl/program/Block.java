@@ -16,41 +16,42 @@ import model.program.IProcedure;
 import model.program.IProcedureCall;
 import model.program.IReturn;
 import model.program.ISelection;
+import model.program.ISelectionWithAlternative;
+import model.program.IStatement;
 import model.program.IProgramElement;
 import model.program.IStructMemberAssignment;
 import model.program.IVariableAssignment;
 import model.program.IVariableDeclaration;
 
 class Block extends ProgramElement implements IBlock {
-	private final IBlock parent;
-	private final List<IProgramElement> statements;
+	private final ProgramElement parent;
+	private final List<IProgramElement> instructions;
 
-	Block(IBlock parent, boolean addToParent) {
-//		super(parent, addToParent);
+	Block(ProgramElement parent, boolean addToParent) {
 		this.parent = parent;
-		this.statements = new ArrayList<>();
+		this.instructions = new ArrayList<>();
 		if(parent != null && addToParent)
 			((Block) parent).addStatement(this);
 	}
 
 	@Override
-	public IBlock getParent() {
+	public ProgramElement getParent() {
 		return parent;
 	}
 	
 	@Override
 	public boolean isEmpty() {
-		return statements.isEmpty();
+		return instructions.isEmpty();
 	}
 	
 	@Override
-	public List<IProgramElement> getStatements() {
-		return Collections.unmodifiableList(statements);
+	public List<IProgramElement> getInstructionSequence() {
+		return Collections.unmodifiableList(instructions);
 	}
 	
 	void addStatement(IProgramElement statement) {
 		assert statement != null;
-		statements.add(statement);
+		instructions.add(statement);
 	}
 
 	@Override
@@ -65,26 +66,50 @@ class Block extends ProgramElement implements IBlock {
 	@Override
 	public String toString() {
 		String tabs = "";
-		//int d = getDepth();
-		int d = 0; // FIXME
+		int d = getDepth();
+//		int d = 0; // FIXME
 		for(int i = 0; i < d; i++)
 			tabs += "\t";
-		String text = "{";
-		for(IProgramElement s : statements)
-			text += tabs + s + ";";
-		return tabs + text + "}";
+		String text = tabs.substring(1) + "{";
+		for(IProgramElement s : instructions)
+			text += tabs + s + (s instanceof IStatement ? ";" : "");
+		return text + "}";
 	}
 	
 	
 	
+	private int getDepth() {
+		if(!(parent instanceof Block))
+			return 1;
+		else
+			return 1 + ((Block) parent).getDepth();
+	}
+	
+	private Procedure getProcedure() {
+		if(parent instanceof Procedure)
+			return (Procedure) parent;
+		else if(parent == null)
+			return null;
+		else
+			return ((Block)  parent).getProcedure();
+	}
+
 	@Override
-	public IVariableDeclaration addVariableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {
-		return new VariableDeclaration(this, name, type, flags);
+	public IVariableDeclaration addVariableDeclaration(String name, IDataType type, Set<IVariableDeclaration.Flag> flags) {		
+		VariableDeclaration var = new VariableDeclaration(this, name, type, flags);
+		Procedure procedure = getProcedure();
+		if(procedure != null)
+			procedure.addVariableDeclaration(var);
+		return var;
 	}
 	
 	@Override
 	public IArrayVariableDeclaration addArrayDeclaration(String name, IArrayType type, Set<IVariableDeclaration.Flag> flags) {
-		return new ArrayVariableDeclaration(this, name, type, flags);
+		ArrayVariableDeclaration var = new ArrayVariableDeclaration(this, name, type, flags);
+		Procedure procedure = getProcedure();
+		if(procedure != null)
+			procedure.addVariableDeclaration(var);
+		return var;
 	}
 
 	@Override
@@ -107,6 +132,11 @@ class Block extends ProgramElement implements IBlock {
 		return new Selection(this, guard);
 	}
 
+	@Override
+	public ISelectionWithAlternative addSelectionWithAlternative(IExpression guard) {
+		return new SelectionWithAlternative(this, guard);
+	}
+	
 	@Override
 	public ILoop addLoop(IExpression guard) {
 		return new Loop(this, guard, false);

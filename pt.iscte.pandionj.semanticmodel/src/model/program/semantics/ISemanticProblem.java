@@ -1,19 +1,20 @@
-package model.program;
+package model.program.semantics;
 
 import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import model.program.IProgramElement;
+
 public interface ISemanticProblem {
 	enum Type {
-		
 		INCOMPATIBLE_ASSIGNMENT,
 		INCOMPATIBLE_RETURN,
 		MISSING_RETURN;
 	}
 	
-	List<IProgramElement> getSourceElements();
 	String getMessage();
+	List<IProgramElement> getProgramElements();
 	
 	
 	static ISemanticProblem create(String message, IProgramElement ... elements) {
@@ -31,7 +32,7 @@ public interface ISemanticProblem {
 		}
 		
 		@Override
-		public List<IProgramElement> getSourceElements() {
+		public List<IProgramElement> getProgramElements() {
 			return elements;
 		}
 		

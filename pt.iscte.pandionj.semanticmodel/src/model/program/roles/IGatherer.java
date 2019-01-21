@@ -29,7 +29,7 @@ public interface IGatherer extends IVariableRole {
 		}
 		
 		@Override
-		public void visitVariableAssignment(IVariableAssignment assignment) {
+		public boolean visitVariableAssignment(IVariableAssignment assignment) {
 			if(assignment.getVariable().equals(var)) {
 				if(first)
 					first = false; // FIXME
@@ -41,19 +41,20 @@ public interface IGatherer extends IVariableRole {
 						operator = op;
 				}
 			}
+			return true;
 		}
 	}
 
 	static boolean isGatherer(IVariableDeclaration var) {
 		Visitor v = new Visitor(var);
-		((IProcedure) var.getParent()).accept(v);
+		((IProcedure) var.getParent()).getBody().accept(v);
 		return v.allSameAcc && v.operator != null;
 	}
 
 	static IVariableRole createGatherer(IVariableDeclaration var) {
 		assert isGatherer(var);
 		Visitor v = new Visitor(var);
-		((IProcedure) var.getParent()).accept(v);
+		((IProcedure) var.getParent()).getBody().accept(v);
 		return new IGatherer() {
 			@Override
 			public IVariableDeclaration getSource() {

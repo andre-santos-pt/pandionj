@@ -2,6 +2,12 @@ package model.program;
 
 import java.util.List;
 
+import model.program.IOperator.OperationType;
+
+/**
+ * Immutable
+ *
+ */
 public interface IExpression extends IProgramElement {
 	IDataType getType();
 	
@@ -9,13 +15,6 @@ public interface IExpression extends IProgramElement {
 	//String concretize();
 //	ISourceElement getParent();
 	
-	default OperationType getOperationType() {
-		return OperationType.OTHER;
-	}
-	
-	enum OperationType {
-		ARITHMETIC, RELATIONAL, LOGICAL, CALL, OTHER;
-	}
 	
 	boolean isDecomposable();
 	
@@ -25,4 +24,7 @@ public interface IExpression extends IProgramElement {
 	
 	List<IExpression> decompose();
 
+	default OperationType getOperationType() {
+		return OperationType.OTHER;
+	}
 }

@@ -21,7 +21,7 @@ public class Test {
 
 //		IProcedureCallExpression randomCall = program.getProcedure("random").callExpression();
 
-		proc.addReturnStatement(factory.literal(3.2));
+		proc.getBody().addReturnStatement(factory.literal(3.2));
 
 		//		IVariableDeclaration rVar = proc.variableDeclaration("r", program.getDataType("double"));
 		//		IVariableAssignment rAss = rVar.assignment(randomCall);
@@ -37,12 +37,12 @@ public class Test {
 //		IVariableDeclaration var2 = main.addVariableDeclaration("b", IDataType.INT);	
 //		IVariableAssignment ass3 = var2.addAssignment(proc.callExpression(factory.literal(2)));
 //		var2.addAssignment(factory.literal(4))
-		IVariableDeclaration a = main.addVariableDeclaration("a", IDataType.INT);
-		ISelection iff = main.addSelection(factory.literal(true));
-		ISelection iff2 = iff.getSelectionBlock().addSelection(factory.binaryExpression(IOperator.GREATER, factory.literal(4), factory.literal(2)));
-		iff2.getSelectionBlock().addReturnStatement(factory.literal(-1));
+		IVariableDeclaration a = main.getBody().addVariableDeclaration("a", IDataType.INT);
+		ISelection iff = main.getBody().addSelection(factory.literal(true));
+		ISelection iff2 = iff.addSelection(factory.binaryExpression(IOperator.GREATER, factory.literal(4), factory.literal(2)));
+		iff2.addReturnStatement(factory.literal(-1));
 		a.addAssignment(factory.literal(2));
-		main.addReturnStatement(a.expression());
+		main.getBody().addReturnStatement(a.expression());
 
 		System.out.println(program);
 		

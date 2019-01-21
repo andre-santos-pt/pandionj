@@ -6,6 +6,8 @@ interface IObjectType extends IStructType {
 
 	List<IProcedure> getProcedures();
 	
+	IAbstractDataType getRealizations();
+	
 	default boolean isCompatibleWith(IAbstractDataType type) {
 		for (IProcedure tp : type.getProcedures()) {
 			boolean match = false;

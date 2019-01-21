@@ -1,6 +1,6 @@
 package model.program;
 
-public interface IIdentifiableElement {
+public interface IIdentifiableElement extends IProgramElement {
 	String getId(); // not null, not empty
 	
 	static boolean isValidIdentifier(String id) {

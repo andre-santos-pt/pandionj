@@ -87,7 +87,7 @@ public class TestArithmeticExpressions {
 		IProgram mockProgram = factory.createProgram();
 		IProcedure mockProcedure = mockProgram.addProcedure("mock", IDataType.VOID);
 		ProgramState mockState = new ProgramState(factory.createProgram());
-		mockState.launchExecution(mockProcedure);
+		mockState.setupExecution(mockProcedure);
 		
 		ExpressionEvaluator eval = new ExpressionEvaluator(expression, mockState.getCallStack());
 		IValue value = eval.evaluate();

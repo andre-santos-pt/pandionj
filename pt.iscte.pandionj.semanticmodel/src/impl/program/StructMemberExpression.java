@@ -46,7 +46,7 @@ class StructMemberExpression extends Expression implements IStructMemberExpressi
 	@Override
 	public IValue evalutate(List<IValue> values, ICallStack stack) {
 		// TODO validate
-		IStructObject object = (IStructObject) stack.getTopFrame().getVariable(getVariable().getId());
+		IStructObject object = (IStructObject) stack.getTopFrame().getVariableValue(getVariable().getId());
 		IValue field = object.getField(getMemberId());
 		return field;
 	}

@@ -4,12 +4,12 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import model.program.semantics.ISemanticProblem;
+
 public interface IVariableAssignment extends IStatement {
 	IVariableDeclaration getVariable();
 	IExpression getExpression();
 	
-	
-	@Override
 	default List<ISemanticProblem> validateSematics() {
 		if(!getVariable().getType().equals(getExpression().getType())) // exact match
 			return ImmutableList.of(ISemanticProblem.create("incompatible types", this, getExpression()));

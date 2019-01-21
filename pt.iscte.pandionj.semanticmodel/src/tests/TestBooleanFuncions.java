@@ -50,7 +50,7 @@ public class TestBooleanFuncions {
 				factory.binaryExpression(IOperator.MOD, nParam.expression(), factory.literal(2)),
 				factory.literal(0));
 		
-		f.addReturnStatement(e);
+		f.getBody().addReturnStatement(e);
 		return f;
 	}
 	
@@ -73,7 +73,7 @@ public class TestBooleanFuncions {
 				factory.binaryExpression(IOperator.MOD, nParam.expression(), factory.literal(2)),
 				factory.literal(0));
 		
-		f.addReturnStatement(e);
+		f.getBody().addReturnStatement(e);
 		return f;
 	}
 	
@@ -82,7 +82,7 @@ public class TestBooleanFuncions {
 		IVariableDeclaration nParam = f.addParameter("n", IDataType.INT);
 		
 		IUnaryExpression e = factory.unaryExpression(IOperator.NOT, evenFunc.callExpression(nParam.expression()));
-		f.addReturnStatement(e);
+		f.getBody().addReturnStatement(e);
 		return f;
 	}
 	
@@ -116,7 +116,7 @@ public class TestBooleanFuncions {
 		IBinaryExpression lower = factory.binaryExpression(IOperator.GREATER_EQ, nParam.expression(), aParam.expression());
 		IBinaryExpression upper = factory.binaryExpression(IOperator.SMALLER_EQ, nParam.expression(), bParam.expression());
 		IBinaryExpression e = factory.binaryExpression(IOperator.AND, lower, upper);
-		f.addReturnStatement(e);
+		f.getBody().addReturnStatement(e);
 		return f;
 	}
 	
@@ -139,7 +139,7 @@ public class TestBooleanFuncions {
 		IBinaryExpression lower = factory.binaryExpression(IOperator.SMALLER, nParam.expression(), aParam.expression());
 		IBinaryExpression upper = factory.binaryExpression(IOperator.GREATER, nParam.expression(), bParam.expression());
 		IBinaryExpression e = factory.binaryExpression(IOperator.OR, lower, upper);
-		f.addReturnStatement(e);
+		f.getBody().addReturnStatement(e);
 		return f;
 	}
 	

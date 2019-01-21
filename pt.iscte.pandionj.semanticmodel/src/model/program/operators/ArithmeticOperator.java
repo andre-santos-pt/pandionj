@@ -9,41 +9,21 @@ import model.machine.IValue;
 import model.program.IBinaryOperator;
 import model.program.IDataType;
 import model.program.IExpression;
-import model.program.IExpression.OperationType;
 
 public enum ArithmeticOperator implements IBinaryOperator {
-	ADD("+") {
-		protected BigDecimal calculate(IValue left, IValue right) {
-			return ((BigDecimal)left.getValue()).add((BigDecimal) right.getValue());
-		}
-	}, 
-	SUB("-") {
-		protected BigDecimal calculate(IValue left, IValue right) {
-			return ((BigDecimal)left.getValue()).subtract((BigDecimal) right.getValue());
-		}
-	},
-	MUL("*") {
-		protected BigDecimal calculate(IValue left, IValue right) {
-			return ((BigDecimal)left.getValue()).multiply((BigDecimal) right.getValue());
-		}
-	},
-	DIV("/") {
-		protected BigDecimal calculate(IValue left, IValue right) {
-			return ((BigDecimal)left.getValue()).divide((BigDecimal) right.getValue());
-		}
-	},
-	MOD("%") {
-		protected BigDecimal calculate(IValue left, IValue right) {
-			return ((BigDecimal)left.getValue()).remainder((BigDecimal) right.getValue());
-		}
-	};
+	ADD("+", (left, right) -> left.add(right)), 
+	SUB("-", (left, right) -> left.subtract(right)),
+	MUL("*", (left, right) -> left.multiply(right)),
+	DIV("/", (left, right) -> left.divide(right)),
+	MOD("%", (left, right) -> left.remainder(right));
 	
-	private String symbol;
+	private final String symbol;
 	
-	private BiFunction<BigDecimal, BigDecimal, BigDecimal> f; // TODO
+	private final BiFunction<BigDecimal, BigDecimal, BigDecimal> f;
 	
-	private ArithmeticOperator(String symbol) {
+	private ArithmeticOperator(String symbol, BiFunction<BigDecimal, BigDecimal, BigDecimal> f) {
 		this.symbol = symbol;
+		this.f = f;
 	}
 	
 	private static IDataType getDataType(IDataType left, IDataType right) {
@@ -73,11 +53,11 @@ public enum ArithmeticOperator implements IBinaryOperator {
 	@Override
 	public IValue apply(IValue left, IValue right) throws ExecutionError {
 		IDataType type = getDataType(left.getType(), right.getType());
-		BigDecimal obj = calculate(left, right);
+		BigDecimal obj = f.apply((BigDecimal) left.getValue(), (BigDecimal) right.getValue());
 		return Value.create(type, obj);
 	}
 	
-	protected abstract BigDecimal calculate(IValue left, IValue right);
+//	protected abstract BigDecimal calculate(IValue left, IValue right);
 	
 	public IDataType getResultType(IExpression left, IExpression right) {
 		return getDataType(left.getType(), right.getType());

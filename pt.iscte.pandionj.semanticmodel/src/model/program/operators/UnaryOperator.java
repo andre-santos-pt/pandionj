@@ -20,6 +20,11 @@ public enum UnaryOperator implements IUnaryOperator {
 		public IDataType getResultType(IExpression exp) {
 			return IDataType.BOOLEAN;
 		}
+		
+		@Override
+		public OperationType getOperationType() {
+			return OperationType.LOGICAL;
+		}
 	},
 	TRUNCATE("(int)") {
 		@Override
@@ -32,13 +37,18 @@ public enum UnaryOperator implements IUnaryOperator {
 		public IDataType getResultType(IExpression exp) {
 			return IDataType.INT;
 		}
+		
+		@Override
+		public OperationType getOperationType() {
+			return OperationType.ARITHMETIC;
+		}
 	},
 	
 	// TODO NEGATION
 	// TODO PLUS
 	;
 	
-	private String symbol;
+	private final String symbol;
 	
 	private UnaryOperator(String symbol) {
 		this.symbol = symbol;

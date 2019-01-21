@@ -13,6 +13,7 @@ class VariableExpression extends Expression implements IVariableExpression {
 	private final IVariableDeclaration variable;
 	
 	public VariableExpression(IVariableDeclaration variable) {
+		assert variable != null;
 		this.variable = variable;
 	}
 
@@ -28,6 +29,16 @@ class VariableExpression extends Expression implements IVariableExpression {
 	
 	@Override
 	public IValue evalutate(List<IValue> values, ICallStack stack) throws ExecutionError {
-		return stack.getTopFrame().getVariable(getVariable().getId());
+		return stack.getTopFrame().getVariableValue(getVariable().getId());
+	}
+	
+	@Override
+	public boolean equals(Object obj) {
+		return obj != null && getClass() == obj.getClass() && variable.equals(obj);
+	}
+	
+	@Override
+	public int hashCode() {
+		return variable.hashCode();
 	}
 }

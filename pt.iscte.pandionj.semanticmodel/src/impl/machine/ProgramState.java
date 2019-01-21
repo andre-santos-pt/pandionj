@@ -37,8 +37,6 @@ public class ProgramState implements IProgramState {
 
 	private ExecutionData data;
 
-	private boolean stepBystep = false;
-
 	public ProgramState(IProgram program) {
 		this(program, 1024, 100, 1024); // TODO Constants?
 	}
@@ -120,11 +118,10 @@ public class ProgramState implements IProgramState {
 		return heap.allocateObject(type);
 	}
 
-	public void launchExecution(IProcedure procedure, Object... args) throws ExecutionError {
+	public void setupExecution(IProcedure procedure, Object... args) throws ExecutionError {
 		if(args.length != procedure.getNumberOfParameters())
 			throw new RuntimeException("incorrect number of arguments for " + procedure);
 
-		//		instructionPointer = procedure.getBody().getStatements().get(0); // TODO instruction pointer
 		data = new ExecutionData();
 
 		Factory factory = new Factory();
@@ -148,13 +145,17 @@ public class ProgramState implements IProgramState {
 		stack.stepIn();
 	}
 
+	public void stepOver() throws ExecutionError {
+		assert !isOver();
+	}
+	
 	public boolean isOver() {
 		return stack.isEmpty();
 	}
 
 	public IExecutionData execute(IProcedure procedure, Object ... args) {
 		try {
-			launchExecution(procedure, args);
+			setupExecution(procedure, args);
 			while(!isOver())
 				stepIn();
 		}
@@ -163,30 +164,6 @@ public class ProgramState implements IProgramState {
 		}
 		return data;
 	}
-
-	//	public IExecutionData execute(IProcedure procedure, Object ... args) {
-	//
-	//		if(args.length != procedure.getNumberOfParameters())
-	//			throw new RuntimeException("incorrect number of arguments for " + procedure);
-	//
-	//		//		instructionPointer = procedure.getBody().getStatements().get(0); // TODO instruction pointer
-	//		data = new ExecutionData();
-	//
-	//		Factory factory = new Factory();
-	//		List<IExpression> procArgs = new ArrayList<>(args.length);
-	//		for(Object a : args)
-	//			procArgs.add(factory.literalMatch(a.toString()));
-	//
-	//		IProcedureCallExpression call = procedure.callExpression(procArgs);
-	//		instructionPointer = call;
-	//		try {
-	//			call.evaluate(stack);
-	//		} catch (ExecutionError e) {
-	//			System.err.println("Execution error: " + e);
-	//		}
-	//		return data;
-	//	}
-
 
 
 	private void addStateListener() {
