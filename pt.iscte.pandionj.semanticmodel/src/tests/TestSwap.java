@@ -15,19 +15,19 @@ import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IFactory;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.IVariableDeclaration;
 
 public class TestSwap {
 
-	private static IProgram program;
+	private static IModule program;
 	private static IProcedure swapProc;
 	private static IProcedure main;
 
 	@BeforeClass
 	public static void setup() {
 		IFactory factory = new Factory();
-		program = factory.createProgram();
+		program = factory.createModule("Swap");
 		
 		swapProc = program.addProcedure("swap", IDataType.VOID);
 		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) swapProc.addParameter("v", factory.arrayType(IDataType.INT, 1), EnumSet.of(IVariableDeclaration.Flag.REFERENCE));

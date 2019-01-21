@@ -9,7 +9,7 @@ abstract class ControlStructure extends ProgramElement implements IControlStruct
 	public ControlStructure(IBlock parent) {
 		this.parent = parent;
 		if(parent != null)
-			((Block) parent).addStatement(this);
+			((Block) parent).addInstruction(this);
 	}
 	
 	@Override

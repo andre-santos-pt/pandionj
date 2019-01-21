@@ -20,7 +20,7 @@ import model.program.IFactory;
 import model.program.ILoop;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.IVariableDeclaration;
 
 public class TestArrays {
@@ -28,7 +28,7 @@ public class TestArrays {
 	@Test
 	public void testNaturals() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
+		IModule program = factory.createModule("Arrays");
 		
 		IProcedure natFunc = program.addProcedure("naturals", factory.arrayType(IDataType.INT, 1));
 		IVariableDeclaration nParam = natFunc.addParameter("n", IDataType.INT);

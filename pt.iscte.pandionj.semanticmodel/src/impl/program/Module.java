@@ -14,16 +14,18 @@ import model.program.IDataType;
 import model.program.IIdentifiableElement;
 import model.program.ILiteral;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.IStructType;
 
-class Program extends ProgramElement implements IProgram {
+class Module extends ProgramElement implements IModule {
+	private final String id;
 	private final Map<String, IConstantDeclaration> constants;
 	private final Map<String, IStructType> structs;
 	private final List<IProcedure> procedures;
 	private final Map<String, IDataType> types;
 	
-	public Program() {
+	public Module(String id) {
+		this.id = id;
 		constants = new LinkedHashMap<String, IConstantDeclaration>();
 		structs = new LinkedHashMap<String, IStructType>();
 		procedures = new ArrayList<IProcedure>();
@@ -33,6 +35,11 @@ class Program extends ProgramElement implements IProgram {
 		
 		procedures.add(new PrintProcedure());
 		procedures.add(new RandomFunction());
+	}
+	
+	@Override
+	public String getId() {
+		return id;
 	}
 	
 	@Override

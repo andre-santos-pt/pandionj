@@ -6,6 +6,7 @@ import model.machine.IValue;
 import model.program.IBlock;
 import model.program.IControlStructure;
 import model.program.IExpression;
+import model.program.IInstruction;
 import model.program.ILoop;
 import model.program.ISelection;
 import model.program.ISelectionWithAlternative;
@@ -13,7 +14,7 @@ import model.program.IProgramElement;
 import model.program.IStatement;
 
 public class BlockIterator {
-	private List<IProgramElement> elements;
+	private List<IInstruction> elements;
 	private int i;
 	private IExpression eval;
 	

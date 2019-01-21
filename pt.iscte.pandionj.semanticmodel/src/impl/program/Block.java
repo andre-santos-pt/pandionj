@@ -11,6 +11,7 @@ import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
+import model.program.IInstruction;
 import model.program.ILoop;
 import model.program.IProcedure;
 import model.program.IProcedureCall;
@@ -25,13 +26,13 @@ import model.program.IVariableDeclaration;
 
 class Block extends ProgramElement implements IBlock {
 	private final ProgramElement parent;
-	private final List<IProgramElement> instructions;
+	private final List<IInstruction> instructions;
 
 	Block(ProgramElement parent, boolean addToParent) {
 		this.parent = parent;
 		this.instructions = new ArrayList<>();
 		if(parent != null && addToParent)
-			((Block) parent).addStatement(this);
+			((Block) parent).addInstruction(this);
 	}
 
 	@Override
@@ -45,11 +46,11 @@ class Block extends ProgramElement implements IBlock {
 	}
 	
 	@Override
-	public List<IProgramElement> getInstructionSequence() {
+	public List<IInstruction> getInstructionSequence() {
 		return Collections.unmodifiableList(instructions);
 	}
 	
-	void addStatement(IProgramElement statement) {
+	void addInstruction(IInstruction statement) {
 		assert statement != null;
 		instructions.add(statement);
 	}

@@ -18,7 +18,7 @@ import model.program.IFactory;
 import model.program.ILiteral;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 
 // TODO more arithmetic cases
 public class TestArithmeticExpressions {
@@ -84,9 +84,10 @@ public class TestArithmeticExpressions {
 	}
 
 	private void test(IExpression expression, IDataType type, Number result) throws ExecutionError {
-		IProgram mockProgram = factory.createProgram();
+		// TODO to setup
+		IModule mockProgram = factory.createModule("Expressions");
 		IProcedure mockProcedure = mockProgram.addProcedure("mock", IDataType.VOID);
-		ProgramState mockState = new ProgramState(factory.createProgram());
+		ProgramState mockState = new ProgramState(mockProgram);
 		mockState.setupExecution(mockProcedure);
 		
 		ExpressionEvaluator eval = new ExpressionEvaluator(expression, mockState.getCallStack());

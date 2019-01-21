@@ -25,7 +25,7 @@ class SemanticChecks {
 	static void checkReturn(IProcedure procedure, List<ISemanticProblem> problems) {
 		IDataType returnType = procedure.getReturnType();
 		procedure.getBody().accept(new IVisitor() {
-			public boolean visitReturn(IReturn returnStatement) {
+			public boolean visit(IReturn returnStatement) {
 				IDataType t = returnStatement.getReturnValueType();
 				if(!t.equals(returnType))
 					problems.add(ISemanticProblem.create("return not compatible with procedure result: " + t + " " + returnType, returnStatement, procedure));

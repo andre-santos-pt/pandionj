@@ -2,6 +2,7 @@ import java.util.Collection;
 import java.util.List;
 
 import model.program.IBlock;
+import model.program.IInstruction;
 import model.program.IProgramElement;
 import model.program.ISelection;
 import model.program.ISelectionWithAlternative;
@@ -15,8 +16,8 @@ public class SelectionRedundancy implements ElementAnalysis<ISelectionWithAltern
 		IBlock b = e.getAlternativeBlock();
 
 		if(!a.isEmpty() && b != null && !b.isEmpty()) {
-			List<IProgramElement> aSeq = a.getInstructionSequence();
-			List<IProgramElement> bSeq = a.getInstructionSequence();
+			List<IInstruction> aSeq = a.getInstructionSequence();
+			List<IInstruction> bSeq = a.getInstructionSequence();
 			int start = 0;
 			while(start < Math.min(aSeq.size(), bSeq.size()) && aSeq.get(start).equals(bSeq.get(start)))
 				start++;

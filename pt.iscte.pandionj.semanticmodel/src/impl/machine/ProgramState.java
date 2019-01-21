@@ -18,7 +18,7 @@ import model.program.IExpression;
 import model.program.ILiteral;
 import model.program.IProcedure;
 import model.program.IProcedureCallExpression;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.IProgramElement;
 import model.program.IStatement;
 import model.program.IStructType;
@@ -26,7 +26,7 @@ import model.program.IVariableAssignment;
 
 public class ProgramState implements IProgramState {
 
-	private final IProgram program;
+	private final IModule program;
 	private final CallStack stack;
 	private final IHeapMemory heap;
 	private final int callStackMax;
@@ -37,11 +37,11 @@ public class ProgramState implements IProgramState {
 
 	private ExecutionData data;
 
-	public ProgramState(IProgram program) {
+	public ProgramState(IModule program) {
 		this(program, 1024, 100, 1024); // TODO Constants?
 	}
 
-	public ProgramState(IProgram program, int callStackMax, int loopIterationMax, int availableMemory) {
+	public ProgramState(IModule program, int callStackMax, int loopIterationMax, int availableMemory) {
 		assert program != null;
 		assert callStackMax >= 1;
 		this.program = program;

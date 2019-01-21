@@ -12,7 +12,7 @@ import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IFactory;
 import model.program.ILiteral;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.IUnaryExpression;
 import model.program.IUnaryOperator;
 import model.program.IVariableDeclaration;
@@ -20,8 +20,8 @@ import model.program.IVariableExpression;
 
 public class Factory implements IFactory {
 	@Override
-	public IProgram createProgram() {
-		return new Program();
+	public IModule createModule(String id) {
+		return new Module(id);
 	}
 
 	@Override

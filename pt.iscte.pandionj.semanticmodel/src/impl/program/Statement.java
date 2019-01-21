@@ -10,7 +10,7 @@ abstract class Statement extends ProgramElement implements IStatement, IExecutab
 	public Statement(IBlock parent, boolean addToParent) {
 		this.parent = parent;
 		if(parent != null && addToParent)
-			((Block) parent).addStatement(this);
+			((Block) parent).addInstruction(this);
 	}
 	
 	@Override

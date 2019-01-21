@@ -13,7 +13,7 @@ import model.program.IDataType;
 import model.program.IFactory;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.IUnaryExpression;
 import model.program.IVariableDeclaration;
 
@@ -22,7 +22,7 @@ public class TestRandom {
 	@Test
 	public void testRandom() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
+		IModule program = factory.createModule("Random");
 		IProcedure proc = program.addProcedure("randomDouble", IDataType.DOUBLE);
 		proc.getBody().addReturnStatement(program.getProcedure("random").callExpression());
 		ProgramState state = new ProgramState(program);
@@ -33,7 +33,7 @@ public class TestRandom {
 	@Test 
 	public void testRandomInt() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
+		IModule program = factory.createModule("Random");
 		IProcedure proc = program.addProcedure("randomInt", IDataType.DOUBLE);
 		IVariableDeclaration minParam = proc.addParameter("min", IDataType.INT);
 		IVariableDeclaration maxParam = proc.addParameter("max", IDataType.INT);

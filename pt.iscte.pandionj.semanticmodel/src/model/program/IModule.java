@@ -2,10 +2,16 @@ package model.program;
 
 import java.util.Collection;
 
+import com.google.common.collect.ImmutableList;
+
 /**
  * Mutable
  */
-public interface IProgram extends IProgramElement {
+public interface IModule extends IIdentifiableElement {
+	default Collection<IModule> getImports() {
+		// TODO imports
+		return ImmutableList.of();
+	}
 	Collection<IConstantDeclaration> getConstants();
 	Collection<IStructType> getStructs();
 	Collection<IProcedure> getProcedures();
@@ -18,22 +24,6 @@ public interface IProgram extends IProgramElement {
 	IProcedure addProcedure(String id, IDataType returnType);
 	
 
-//	// TODO program validation
-//	default List<ISemanticProblem> validateSematics() {
-//		List<ISemanticProblem> problems = new ArrayList<ISemanticProblem>();
-//		
-//		// TODO constants
-//		
-//		Collection<IProcedure> procedures = getProcedures();
-//		for (IProcedure p : procedures) {
-//			for(IProcedure p2 : procedures) {
-//				if(p2 != p && p2.hasSameSignature(p))
-//					problems.add(ISemanticProblem.create("procedures with the same signature", p, p2));
-//			}
-//			problems.addAll(p.validateSematics());
-//		}
-//		return problems;
-//	}
 	
 	IConstantDeclaration getConstant(String id);
 //	default IConstantDeclaration getConstant(String id) {
@@ -74,8 +64,8 @@ public interface IProgram extends IProgramElement {
 	
 	interface IVisitor extends IBlock.IVisitor {
 		default boolean visit(IConstantDeclaration constant) { return true; }
-		default boolean visit(IStructType constant) { return true; }
-		default boolean visit(IProcedure constant) { return true; }
+		default boolean visit(IStructType struct) { return true; }
+		default boolean visit(IProcedure procedure) { return true; }
 	}
 	
 }

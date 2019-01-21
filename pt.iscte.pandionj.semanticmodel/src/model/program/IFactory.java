@@ -8,7 +8,7 @@ import impl.program.Factory;
 public interface IFactory {
 	IFactory INSTANCE = new Factory();
 	
-	IProgram createProgram();
+	IModule createModule(String id);
 	
 	IVariableExpression variableExpression(IVariableDeclaration var);
 	

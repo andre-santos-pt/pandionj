@@ -16,7 +16,7 @@ import model.program.IExpression;
 import model.program.IFactory;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.ISelection;
 import model.program.ISelectionWithAlternative;
 import model.program.IVariableDeclaration;
@@ -24,13 +24,13 @@ import model.program.IVariableDeclaration;
 
 // TODO if if
 public class TestSelection {
-	private static IProgram program;
+	private static IModule program;
 	private static IProcedure maxFunc;
 	
 	@BeforeClass
 	public static void setup() {
 		IFactory factory = new Factory();
-		program = factory.createProgram();
+		program = factory.createModule("Selection");
 		maxFunc = program.addProcedure("max", IDataType.INT);
 		IVariableDeclaration aParam = maxFunc.addParameter("a", IDataType.INT);
 		IVariableDeclaration bParam = maxFunc.addParameter("b", IDataType.INT);

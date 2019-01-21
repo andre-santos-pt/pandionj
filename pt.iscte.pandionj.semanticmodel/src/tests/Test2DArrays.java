@@ -19,7 +19,7 @@ import model.program.IFactory;
 import model.program.ILoop;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.ISelection;
 import model.program.ISelectionWithAlternative;
 import model.program.IVariableDeclaration;
@@ -29,7 +29,7 @@ public class Test2DArrays {
 	@Test
 	public void testIdMatrix() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
+		IModule program = factory.createModule("Arrays2D");
 		
 		IProcedure idFunc = program.addProcedure("idMatrix", factory.arrayType(IDataType.INT, 2));
 		IVariableDeclaration nParam = idFunc.addParameter("n", IDataType.INT);
@@ -66,7 +66,7 @@ public class Test2DArrays {
 	@Test
 	public void testNatMatrix() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
+		IModule program = factory.createModule("NatMatrix");
 		
 		IProcedure natFunc = program.addProcedure("natMatrix", factory.arrayType(IDataType.INT, 2));
 		IVariableDeclaration linesParam = natFunc.addParameter("lines", IDataType.INT);
@@ -118,7 +118,7 @@ public class Test2DArrays {
 	@Test
 	public void testContainsNinMatrix() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
+		IModule program = factory.createModule("ContainsInMatrix");
 		
 		IProcedure findFunc = program.addProcedure("contains", IDataType.BOOLEAN);
 		IArrayVariableDeclaration mParam = (IArrayVariableDeclaration) findFunc.addParameter("m", factory.arrayType(IDataType.INT, 2));

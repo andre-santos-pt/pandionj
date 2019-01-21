@@ -4,15 +4,15 @@ import model.program.IConstantDeclaration;
 import model.program.IConstantExpression;
 import model.program.IDataType;
 import model.program.ILiteral;
-import model.program.IProgram;
+import model.program.IModule;
 
 class ConstantDeclaration extends ProgramElement implements IConstantDeclaration {
-	private final IProgram program;
+	private final IModule program;
 	private final String id;
 	private final IDataType type;
 	private final ILiteral value;
 	
-	public ConstantDeclaration(IProgram program, String id, IDataType type, ILiteral value) {
+	public ConstantDeclaration(IModule program, String id, IDataType type, ILiteral value) {
 		this.program = program;
 		this.id = id;
 		this.type = type;
@@ -20,7 +20,7 @@ class ConstantDeclaration extends ProgramElement implements IConstantDeclaration
 	}
 
 	@Override
-	public IProgram getProgram() {
+	public IModule getProgram() {
 		return program;
 	}
 

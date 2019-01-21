@@ -5,16 +5,15 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Multimap;
 
 import model.program.IBlock;
-import model.program.IExpression;
 import model.program.ILiteral;
-import model.program.IProgram;
+import model.program.IModule;
 
-public class MagicNumbers implements ElementAnalysis<IProgram> {
+public class MagicNumbers implements ElementAnalysis<IModule> {
 
-	private Multimap<String, IExpression> map = ArrayListMultimap.create();
+	private Multimap<String, ILiteral> map = ArrayListMultimap.create();
 	
 	@Override
-	public Collection<IAnalsysItem> perform(IProgram program) {
+	public Collection<IAnalsysItem> perform(IModule program) {
 		program.getProcedures().forEach(p -> p.getBody().accept(new Visitor()));
 		
 //		map.keys().forEach((lit, exps) -> { if(exps.size() > 1) System.err.println("magic " + lit);});
@@ -22,14 +21,12 @@ public class MagicNumbers implements ElementAnalysis<IProgram> {
 	}
 	
 	private class Visitor implements IBlock.IVisitor {
-		
-		
 		@Override
-		public void visitExpression(IExpression expression) {
-			if(expression instanceof ILiteral && ((ILiteral) expression).getType().isNumeric()) {
-				String val = ((ILiteral) expression).getStringValue();
+		public void visit(ILiteral lit) {
+			if(lit.getType().isNumeric()) {
+				String val = lit.getStringValue();
 				if(!val.matches("-1|0|1|0.0"))
-					map.put(val, expression);
+					map.put(val, lit);
 			}
 		}
 	}

@@ -13,7 +13,7 @@ import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IFactory;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.IStructType;
 import model.program.IVariableDeclaration;
 
@@ -22,7 +22,7 @@ public class TestStruct {
 	@Test
 	public void test() {
 		IFactory factory = new Factory();
-		IProgram program = factory.createProgram();
+		IModule program = factory.createModule("Struct");
 		
 		IStructType pointType = program.addStruct("Point");
 		pointType.addMemberVariable("x", IDataType.INT);

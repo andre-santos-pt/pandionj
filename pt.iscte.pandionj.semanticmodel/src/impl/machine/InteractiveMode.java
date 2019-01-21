@@ -4,13 +4,13 @@ import java.util.Arrays;
 import java.util.Scanner;
 
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 
 public class InteractiveMode {
 
-	private IProgram program;
+	private IModule program;
 	
-	public InteractiveMode(IProgram program) {
+	public InteractiveMode(IModule program) {
 		this.program = program;
 	}
 	

@@ -12,7 +12,7 @@ import com.google.common.collect.ImmutableSet;
 public interface IBlock extends IInstruction {
 	IProgramElement getParent();
 
-	List<IProgramElement> getInstructionSequence();
+	List<IInstruction> getInstructionSequence();
 
 	boolean isEmpty();
 
@@ -65,35 +65,42 @@ public interface IBlock extends IInstruction {
 
 
 	default void accept(IVisitor visitor) {
-		for(IProgramElement s : getInstructionSequence()) {
+		for(IInstruction s : getInstructionSequence()) {
 			if(s instanceof IReturn) {
 				IReturn ret = (IReturn) s;
-				if(visitor.visitReturn(ret) && !ret.getReturnValueType().isVoid())
-					visitor.visitExpression(ret.getExpression());
+				if(visitor.visit(ret) && !ret.getReturnValueType().isVoid())
+					visitor.visit(ret.getExpression());
 			}
 			else if(s instanceof IArrayElementAssignment) {
 				IArrayElementAssignment ass = (IArrayElementAssignment) s;
-				if(visitor.visitArrayElementAssignment(ass))
-					visitor.visitExpression(ass.getExpression());
+				if(visitor.visit(ass))
+					visitor.visit(ass.getExpression());
 			}
 			else if(s instanceof IVariableAssignment) {
 				IVariableAssignment ass = (IVariableAssignment) s;
-				if(visitor.visitVariableAssignment(ass))
-					visitor.visitExpression(ass.getExpression());
+				if(visitor.visit(ass))
+					visitor.visit(ass.getExpression());
+			}
+			else if(s instanceof IStructMemberAssignment) {
+				IStructMemberAssignment ass = (IStructMemberAssignment) s;
+				if(visitor.visit(ass))
+					visitor.visit(ass.getExpression());
 			}
 			else if(s instanceof IProcedureCall) {
 				IProcedureCall call = (IProcedureCall) s;
-				if(visitor.visitProcedureCall(call.getProcedure(), call.getArguments()))
-					call.getArguments().forEach(a -> visitor.visitExpression(a));
+				if(visitor.visit(call))
+					call.getArguments().forEach(a -> visitor.visit(a));
 			}
-			else if(s instanceof IProcedureCallExpression) {
-				IProcedureCallExpression call = (IProcedureCallExpression) s;
-				if(visitor.visitProcedureCall(call.getProcedure(), call.getArguments()))
-					call.getArguments().forEach(a -> visitor.visitExpression(a));
+			else if(s instanceof IBreak) {
+				visitor.visit((IBreak) s);
+			}
+			else if(s instanceof IContinue) {
+				visitor.visit((IContinue) s);				
 			}
 			else if(s instanceof ISelection) {
 				ISelection sel = (ISelection) s;
-				if(visitor.visitSelection(sel)) {
+				if(visitor.visit(sel)) {
+					visitor.visit(sel.getGuard());
 					sel.accept(visitor);
 					if(sel instanceof ISelectionWithAlternative)
 						((ISelectionWithAlternative) sel).getAlternativeBlock().accept(visitor);
@@ -101,26 +108,36 @@ public interface IBlock extends IInstruction {
 			}
 			else if(s instanceof ILoop) {
 				ILoop loop = (ILoop) s;
-				if(visitor.visitLoop(loop))
+				if(visitor.visit(loop)) {
+					visitor.visit(loop.getGuard());
 					loop.accept(visitor);
+				}
 			}
 			else if(s instanceof IBlock) { // only single blocks
 				IBlock b = (IBlock) s;
-				if(visitor.visitBlock(b))
+				if(visitor.visit(b))
 					b.accept(visitor);
 			}
 		}
 	}
 
-	interface IVisitor {
-		default boolean visitReturn(IReturn returnStatement) { return false; }
-		default boolean visitArrayElementAssignment(IArrayElementAssignment assignment) { return false;  }
-		default boolean visitVariableAssignment(IVariableAssignment assignment) {  return false; }
-		default boolean visitProcedureCall(IProcedure procedure, List<IExpression> args) { return false;  }
-		default boolean visitSelection(ISelection block) { return false; }
-		default boolean visitLoop(ILoop lool) { return false; }
-		default boolean visitBlock(IBlock block) { return false; }
-		default void visitExpression(IExpression expression) {  }
+	interface IVisitor extends IExpression.IVisitor {
+		// IStatement
+		default boolean visit(IReturn returnStatement) { return true; }
+		default boolean visit(IArrayElementAssignment assignment) { return true;  }
+		default boolean visit(IVariableAssignment assignment) {  return true; }
+		default boolean visit(IStructMemberAssignment assignment) { return true; }
+		default boolean visit(IProcedureCall call) { return true;  }
+		default void visit(IBreak breakStatement) {   }
+		default void visit(IContinue continueStatement) {  }
+		
+		// IControlStructure
+		default boolean visit(ISelection selection) { return true; } // also ISelectionWithAlternative
+		default boolean visit(ILoop loop) { return true; }
+		
+		// other
+		default boolean visit(IBlock block) { return true; }
+		default boolean visit(IExpression expression) { return true;  }
 	}
 
 }

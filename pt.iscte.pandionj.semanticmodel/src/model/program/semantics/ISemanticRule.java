@@ -2,9 +2,9 @@ package model.program.semantics;
 
 import model.program.IProgramElement;
 
-public interface ISemanticRule {
+public interface ISemanticRule<T> {
 
-	boolean applicableTo(IProgramElement element);
+//	boolean applicableTo(IProgramElement element);
 	
-	ISemanticProblem check(IProgramElement element);
+	ISemanticProblem check(T element);
 }

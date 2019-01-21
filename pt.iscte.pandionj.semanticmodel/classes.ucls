@@ -68,8 +68,8 @@
       <operations public="true" package="false" protected="false" private="true" static="false"/>    
     </display>  
   </class>  
-  <class id="8" language="java" name="impl.program.Program" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/impl/program/Program.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="8" language="java" name="impl.program.Module" project="pt.iscte.pandionj.semanticmodel" 
+    file="/pt.iscte.pandionj.semanticmodel/src/impl/program/Module.java" binary="false" corner="BOTTOM_RIGHT">    
     <position height="304" width="347" x="-2" y="17"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      

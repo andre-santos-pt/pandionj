@@ -29,7 +29,7 @@ public interface IGatherer extends IVariableRole {
 		}
 		
 		@Override
-		public boolean visitVariableAssignment(IVariableAssignment assignment) {
+		public boolean visit(IVariableAssignment assignment) {
 			if(assignment.getVariable().equals(var)) {
 				if(first)
 					first = false; // FIXME

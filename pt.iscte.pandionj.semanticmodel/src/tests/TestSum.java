@@ -15,19 +15,19 @@ import model.program.IFactory;
 import model.program.ILoop;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IProgram;
+import model.program.IModule;
 import model.program.IVariableDeclaration;
 
 public class TestSum {
 
-	private static IProgram program;
+	private static IModule program;
 	private static IProcedure sumArrayProc;
 	private static IProcedure main;
 
 	@BeforeClass
 	public static void setup() {
 		IFactory factory = new Factory();
-		program = factory.createProgram();
+		program = factory.createModule("Sum");
 		
 		sumArrayProc = program.addProcedure("sum", IDataType.INT);
 		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) sumArrayProc.addParameter("v", factory.arrayType(IDataType.INT, 1));
