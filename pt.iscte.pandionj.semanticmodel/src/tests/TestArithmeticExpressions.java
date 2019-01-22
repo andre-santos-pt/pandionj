@@ -16,9 +16,9 @@ import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IFactory;
 import model.program.ILiteral;
+import model.program.IModule;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IModule;
 
 // TODO more arithmetic cases
 public class TestArithmeticExpressions {

@@ -1,7 +1,7 @@
 package model.transformer;
 
-import model.program.IProcedure;
 import model.program.IModule;
+import model.program.IProcedure;
 
 public interface ICodeTransformer {
 

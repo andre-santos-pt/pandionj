@@ -16,13 +16,6 @@ public interface IArrayElementAssignment extends IVariableAssignment {
 	IArrayVariableDeclaration getVariable();
 	
 	@Override
-	default List<ISemanticProblem> validateSematics() {
-		if(!getVariable().getComponentType().equals(getExpression().getType()))
-			return ImmutableList.of(ISemanticProblem.create("incompatible types", this, getExpression()));
-		return ImmutableList.of();
-	}
-	
-	@Override
 	default List<IExpression> getExpressionParts() {
 		List<IExpression> list = new ArrayList<IExpression>(getIndexes());
 		list.add(getExpression());

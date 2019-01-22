@@ -9,11 +9,9 @@ import java.util.Set;
 import com.google.common.collect.ImmutableSet;
 
 import model.program.IArrayType;
-import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
-import model.program.IIdentifiableElement;
 import model.program.IProcedure;
 import model.program.IProcedureCallExpression;
 import model.program.IVariableDeclaration;

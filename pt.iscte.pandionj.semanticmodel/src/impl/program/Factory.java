@@ -51,7 +51,7 @@ public class Factory implements IFactory {
 
 	@Override
 	public ILiteral literalMatch(String string) {
-		for(IDataType t : IDataType.DEFAULTS)
+		for(IDataType t : IDataType.VALUE_TYPES)
 			if(t.matchesLiteral(string))
 				return literal(t, string);
 		return null;

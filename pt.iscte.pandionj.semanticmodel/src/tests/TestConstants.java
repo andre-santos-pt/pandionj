@@ -7,9 +7,9 @@ import impl.machine.ProgramState;
 import model.program.IConstantDeclaration;
 import model.program.IDataType;
 import model.program.IFactory;
+import model.program.IModule;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IModule;
 import model.program.IVariableDeclaration;
 
 public class TestConstants {

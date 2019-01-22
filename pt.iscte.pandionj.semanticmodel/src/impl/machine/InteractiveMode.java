@@ -3,8 +3,8 @@ package impl.machine;
 import java.util.Arrays;
 import java.util.Scanner;
 
-import model.program.IProcedure;
 import model.program.IModule;
+import model.program.IProcedure;
 
 public class InteractiveMode {
 

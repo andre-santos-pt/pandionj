@@ -17,9 +17,9 @@ public interface IOperator {
 	IBinaryOperator EQUAL = RelationalOperator.EQUAL;
 	IBinaryOperator DIFFERENT = RelationalOperator.DIFFERENT;
 	IBinaryOperator GREATER = RelationalOperator.GREATER;
-	IBinaryOperator GREATER_EQ = RelationalOperator.GREATER_EQ;
+	IBinaryOperator GREATER_EQ = RelationalOperator.GREATER_EQUAL;
 	IBinaryOperator SMALLER = RelationalOperator.SMALLER;
-	IBinaryOperator SMALLER_EQ = RelationalOperator.SMALLER_EQ;
+	IBinaryOperator SMALLER_EQ = RelationalOperator.SMALLER_EQUAL;
 	
 	IUnaryOperator NOT = UnaryOperator.NOT;
 	

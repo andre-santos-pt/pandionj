@@ -11,9 +11,9 @@ import model.machine.IExecutionData;
 import model.program.IBinaryExpression;
 import model.program.IDataType;
 import model.program.IFactory;
+import model.program.IModule;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IModule;
 import model.program.IUnaryExpression;
 import model.program.IVariableDeclaration;
 

@@ -30,37 +30,14 @@ public interface IDataType extends IIdentifiableElement {
 		return this.equals(BOOLEAN);
 	}
 
-	IDataType VOID = DefaultValueType.VOID;
 	IDataType INT = DefaultValueType.INT;
 	IDataType DOUBLE = DefaultValueType.DOUBLE;
 	IDataType BOOLEAN = DefaultValueType.BOOLEAN;
+	// TODO IDataType CHAR
 	
-	ImmutableCollection<IDataType> DEFAULTS = ImmutableList.of(VOID, INT, DOUBLE, BOOLEAN);
+	ImmutableCollection<IDataType> VALUE_TYPES = ImmutableList.of(INT, DOUBLE, BOOLEAN);
 
 	enum DefaultValueType implements IDataType {
-		VOID {
-			public boolean matches(Object object) {
-				return false;
-			}
-
-			public boolean matchesLiteral(String literal) {
-				return false;
-			}
-
-			public Object create(String literal) {
-				return null;
-			}
-			
-			@Override
-			public Object getDefaultValue() {
-				return null;
-			}
-			
-			@Override
-			public int getMemoryBytes() {
-				return 0;
-			}
-		},
 		INT {
 			public boolean matchesLiteral(String literal) {
 				try {
@@ -177,6 +154,50 @@ public interface IDataType extends IIdentifiableElement {
 		}
 	}
 
+	IDataType VOID = new IDataType() {
+
+		@Override
+		public String getId() {
+			return "void";
+		}
+
+		@Override
+		public void setProperty(String key, Object value) {
+			
+		}
+
+		@Override
+		public Object getProperty(String key) {
+			return null;
+		}
+
+		@Override
+		public boolean matches(Object object) {
+			return false;
+		}
+
+		@Override
+		public boolean matchesLiteral(String literal) {
+			return false;
+		}
+
+		@Override
+		public Object create(String literal) {
+			return null;
+		}
+
+		@Override
+		public Object getDefaultValue() {
+			return null;
+		}
+
+		@Override
+		public int getMemoryBytes() {
+			return 0;
+		}
+	};
+	
+	
 	IDataType UNKNOWN = new IDataType() {
 		@Override
 		public String getId() {

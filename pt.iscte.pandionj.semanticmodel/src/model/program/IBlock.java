@@ -66,6 +66,7 @@ public interface IBlock extends IInstruction {
 
 	default void accept(IVisitor visitor) {
 		for(IInstruction s : getInstructionSequence()) {
+			
 			if(s instanceof IReturn) {
 				IReturn ret = (IReturn) s;
 				if(visitor.visit(ret) && !ret.getReturnValueType().isVoid())
@@ -122,22 +123,24 @@ public interface IBlock extends IInstruction {
 	}
 
 	interface IVisitor extends IExpression.IVisitor {
+		default void	visit(IVariableDeclaration variable)		{ }
+		
 		// IStatement
-		default boolean visit(IReturn returnStatement) { return true; }
-		default boolean visit(IArrayElementAssignment assignment) { return true;  }
-		default boolean visit(IVariableAssignment assignment) {  return true; }
-		default boolean visit(IStructMemberAssignment assignment) { return true; }
-		default boolean visit(IProcedureCall call) { return true;  }
-		default void visit(IBreak breakStatement) {   }
-		default void visit(IContinue continueStatement) {  }
+		default boolean visit(IReturn returnStatement) 				{ return true; }
+		default boolean visit(IArrayElementAssignment assignment) 	{ return true; }
+		default boolean visit(IVariableAssignment assignment) 		{ return true; }
+		default boolean visit(IStructMemberAssignment assignment) 	{ return true; }
+		default boolean visit(IProcedureCall call) 					{ return true; }
+		default void 	visit(IBreak breakStatement) 				{ }
+		default void 	visit(IContinue continueStatement) 			{ }
 		
 		// IControlStructure
-		default boolean visit(ISelection selection) { return true; } // also ISelectionWithAlternative
-		default boolean visit(ILoop loop) { return true; }
+		default boolean visit(ISelection selection) 				{ return true; } // also ISelectionWithAlternative
+		default boolean visit(ILoop loop) 							{ return true; }
 		
 		// other
-		default boolean visit(IBlock block) { return true; }
-		default boolean visit(IExpression expression) { return true;  }
+		default boolean visit(IBlock block) 						{ return true; }
+		default boolean visit(IExpression expression) 				{ return true;  }
 	}
 
 }

@@ -17,11 +17,11 @@ public enum RelationalOperator implements IBinaryOperator {
 	
 	GREATER(">", (left, right) -> compare(left, right) > 0),
 	
-	GREATER_EQ(">=", (left, right) -> compare(left, right) >= 0),
+	GREATER_EQUAL(">=", (left, right) -> compare(left, right) >= 0),
 	
 	SMALLER("<", (left, right) -> compare(left, right) < 0),
 	
-	SMALLER_EQ("<=", (left, right) -> compare(left, right) <= 0);
+	SMALLER_EQUAL("<=", (left, right) -> compare(left, right) <= 0);
 
 	private static int compare(IValue left, IValue right) {
 		return ((BigDecimal) left.getValue()).compareTo((BigDecimal) right.getValue());

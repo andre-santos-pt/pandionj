@@ -15,25 +15,26 @@ public interface IModule extends IIdentifiableElement {
 	Collection<IConstantDeclaration> getConstants();
 	Collection<IStructType> getStructs();
 	Collection<IProcedure> getProcedures();
-	Collection<IDataType> getDataTypes();
 	
-	IDataType getDataType(String id);
+//	Collection<IDataType> getDataTypes();
+
+//	IDataType getDataType(String id);
 
 	IConstantDeclaration addConstant(String id, IDataType type, ILiteral value);
 	IStructType addStruct(String id);
 	IProcedure addProcedure(String id, IDataType returnType);
-	
 
-	
-	IConstantDeclaration getConstant(String id);
-//	default IConstantDeclaration getConstant(String id) {
-//		for (IConstantDeclaration c : getConstants()) {
-//			if(c.getId().equals(id))
-//				return c;
-//		}
-//		return null;
-//	}
-	
+
+
+//	IConstantDeclaration getConstant(String id);
+	//	default IConstantDeclaration getConstant(String id) {
+	//		for (IConstantDeclaration c : getConstants()) {
+	//			if(c.getId().equals(id))
+	//				return c;
+	//		}
+	//		return null;
+	//	}
+
 	// TODO test
 	default IProcedure getProcedure(String id, IDataType ... paramTypes) {
 		for(IProcedure p : getProcedures())
@@ -51,21 +52,33 @@ public interface IModule extends IIdentifiableElement {
 			}
 		return null;
 	}
-	
+
 	default void accept(IVisitor visitor) {
-		getConstants().forEach(c -> visitor.visit(c));
-		getStructs().forEach(s -> visitor.visit(s));
+		getConstants().forEach(c -> {
+			if(visitor.visit(c))
+				visitor.visit(c.getValue());
+		});
+		
+		getStructs().forEach(s -> {
+			if(visitor.visit(s))
+				s.getMemberVariables().forEach(v -> {
+					visitor.visit(v);
+				});
+		});
+		
 		getProcedures().forEach(p -> {
 			if(visitor.visit(p))
 				p.getBody().accept(visitor);
 		});
 	}	
-	
-	
+
+
 	interface IVisitor extends IBlock.IVisitor {
-		default boolean visit(IConstantDeclaration constant) { return true; }
-		default boolean visit(IStructType struct) { return true; }
-		default boolean visit(IProcedure procedure) { return true; }
+		default boolean visit(IConstantDeclaration constant) 	{ return true; }
+		default boolean visit(IStructType struct) 				{ return true; }
+		default boolean visit(IProcedure procedure) 			{ return true; }
 	}
-	
+
+
+
 }

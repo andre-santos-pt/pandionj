@@ -18,7 +18,6 @@ public enum ArithmeticOperator implements IBinaryOperator {
 	MOD("%", (left, right) -> left.remainder(right));
 	
 	private final String symbol;
-	
 	private final BiFunction<BigDecimal, BigDecimal, BigDecimal> f;
 	
 	private ArithmeticOperator(String symbol, BiFunction<BigDecimal, BigDecimal, BigDecimal> f) {
@@ -39,7 +38,6 @@ public enum ArithmeticOperator implements IBinaryOperator {
 			return IDataType.UNKNOWN;
 	}
 	
-	
 	@Override
 	public String toString() {
 		return symbol;
@@ -56,8 +54,6 @@ public enum ArithmeticOperator implements IBinaryOperator {
 		BigDecimal obj = f.apply((BigDecimal) left.getValue(), (BigDecimal) right.getValue());
 		return Value.create(type, obj);
 	}
-	
-//	protected abstract BigDecimal calculate(IValue left, IValue right);
 	
 	public IDataType getResultType(IExpression left, IExpression right) {
 		return getDataType(left.getType(), right.getType());

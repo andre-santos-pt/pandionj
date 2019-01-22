@@ -3,35 +3,28 @@ package impl.program;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import com.google.common.collect.ImmutableList;
 
 import model.program.IConstantDeclaration;
 import model.program.IDataType;
-import model.program.IIdentifiableElement;
 import model.program.ILiteral;
-import model.program.IProcedure;
 import model.program.IModule;
+import model.program.IProcedure;
 import model.program.IStructType;
 
 class Module extends ProgramElement implements IModule {
 	private final String id;
-	private final Map<String, IConstantDeclaration> constants;
-	private final Map<String, IStructType> structs;
+	private final List<IConstantDeclaration> constants;
+	private final List<IStructType> structs;
 	private final List<IProcedure> procedures;
-	private final Map<String, IDataType> types;
 	
 	public Module(String id) {
 		this.id = id;
-		constants = new LinkedHashMap<String, IConstantDeclaration>();
-		structs = new LinkedHashMap<String, IStructType>();
+		constants = new ArrayList<>();
+		structs = new ArrayList<>();
 		procedures = new ArrayList<IProcedure>();
-		types = new LinkedHashMap<>();
-		for(IDataType t : IDataType.DEFAULTS)
-			types.put(t.getId(), t);
 		
 		procedures.add(new PrintProcedure());
 		procedures.add(new RandomFunction());
@@ -44,12 +37,12 @@ class Module extends ProgramElement implements IModule {
 	
 	@Override
 	public Collection<IConstantDeclaration> getConstants() {
-		return ImmutableList.of();
+		return Collections.unmodifiableList(constants);
 	}
 
 	@Override
 	public Collection<IProcedure> getProcedures() {
-		return procedures;
+		return Collections.unmodifiableList(procedures);
 	}
 	
 	@Override
@@ -58,7 +51,7 @@ class Module extends ProgramElement implements IModule {
 		assert type != null;
 		assert value != null;
 		ConstantDeclaration dec = new ConstantDeclaration(this, id, type, value);
-		constants.put(id, dec);
+		constants.add(dec);
 		return dec;
 	}
 	
@@ -72,38 +65,38 @@ class Module extends ProgramElement implements IModule {
 	@Override
 	public IStructType addStruct(String id) {
 		IStructType struct = new StructType(id);
-		structs.put(id, struct);
+		structs.add(struct);
 		return struct;
 	}
 	
-	@Override
-	public IConstantDeclaration getConstant(String id) {
-		return constants.get(id);
-	}
+//	@Override
+//	public IConstantDeclaration getConstant(String id) {
+//		return constants.get(id);
+//	}
 	
 	@Override
 	public Collection<IStructType> getStructs() {
 		return ImmutableList.of();
 	}
 
-	@Override
-	public Collection<IDataType> getDataTypes() {
-		return Collections.unmodifiableCollection(types.values());
-	}
+//	@Override
+//	public Collection<IDataType> getDataTypes() {
+//		return Collections.unmodifiableCollection(types.values());
+//	}
 	
-	@Override
-	public IDataType getDataType(String id) {
-		assert types.containsKey(id);
-		return types.get(id);
-	}
+//	@Override
+//	public IDataType getDataType(String id) {
+//		assert types.containsKey(id);
+//		return types.get(id);
+//	}
 	
 	@Override // TODO pretty print
 	public String toString() {
 		String text = "";
-		for(IConstantDeclaration c : constants.values())
+		for(IConstantDeclaration c : constants)
 			text += c + ";\n";
 		
-		for(IStructType s : structs.values())
+		for(IStructType s : structs)
 			text += s + "\n";
 		
 		for (IProcedure p : procedures) {

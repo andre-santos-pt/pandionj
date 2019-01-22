@@ -10,7 +10,6 @@ import impl.machine.ProgramState;
 import impl.program.Factory;
 import model.machine.IArray;
 import model.machine.IExecutionData;
-import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBinaryExpression;
 import model.program.IBlock;
@@ -18,9 +17,9 @@ import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IFactory;
 import model.program.ILoop;
+import model.program.IModule;
 import model.program.IOperator;
 import model.program.IProcedure;
-import model.program.IModule;
 import model.program.IVariableDeclaration;
 
 public class TestArrays {

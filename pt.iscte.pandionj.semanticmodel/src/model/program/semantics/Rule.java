@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.List;
 
 import model.program.IModule;
-import model.program.IProgramElement;
 
-public abstract class IRule implements IModule.IVisitor {
+public abstract class Rule implements IModule.IVisitor {
 
 //	boolean applicableTo(IProgramElement element);
 	private final List<ISemanticProblem> problems = new ArrayList<>();

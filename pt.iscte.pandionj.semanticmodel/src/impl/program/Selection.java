@@ -1,6 +1,5 @@
 package impl.program;
 
-import model.program.IBlock;
 import model.program.IExpression;
 import model.program.ISelection;
 

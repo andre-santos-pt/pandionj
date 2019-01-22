@@ -16,9 +16,9 @@ import model.program.IBinaryExpression;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.ILiteral;
+import model.program.IModule;
 import model.program.IProcedure;
 import model.program.IProcedureCallExpression;
-import model.program.IModule;
 import model.program.IProgramElement;
 import model.program.IStatement;
 import model.program.IStructType;
@@ -90,7 +90,7 @@ public class ProgramState implements IProgramState {
 
 	@Override
 	public IValue getValue(String value) {
-		for(IDataType type : program.getDataTypes()) {
+		for(IDataType type : IDataType.VALUE_TYPES) {
 			if(type.matchesLiteral(value))
 				return Value.create(type, type.create(value));
 		}
@@ -99,7 +99,7 @@ public class ProgramState implements IProgramState {
 
 	@Override
 	public IValue getValue(Object object) {
-		for(IDataType type : program.getDataTypes()) {
+		for(IDataType type : IDataType.VALUE_TYPES) {
 			if(type.matches(object))
 				return Value.create(type, type.create(object.toString()));
 		}

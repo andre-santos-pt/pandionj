@@ -2,15 +2,12 @@ package impl.machine;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.stream.Collectors;
-
-import com.google.common.collect.ImmutableList;
 
 import impl.machine.ExpressionEvaluator.Step;
 import model.machine.IArray;

@@ -3,10 +3,7 @@ import java.util.List;
 
 import model.program.IBlock;
 import model.program.IInstruction;
-import model.program.IProgramElement;
-import model.program.ISelection;
 import model.program.ISelectionWithAlternative;
-import model.program.semantics.ISemanticProblem;
 
 public class SelectionRedundancy implements ElementAnalysis<ISelectionWithAlternative> {
 

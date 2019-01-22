@@ -4,12 +4,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import model.program.IBlock;
+import model.program.IBlock.IVisitor;
 import model.program.IDataType;
 import model.program.IProcedure;
 import model.program.IReturn;
 import model.program.IVariableDeclaration;
-import model.program.IBlock.IVisitor;
 
 class SemanticChecks {
 	static void checkVariableNames(IProcedure procedure, List<ISemanticProblem> problems) {

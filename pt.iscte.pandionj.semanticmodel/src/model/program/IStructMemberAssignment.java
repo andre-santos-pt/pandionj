@@ -4,11 +4,9 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
-public interface IStructMemberAssignment extends IStatement {
+public interface IStructMemberAssignment extends IVariableAssignment {
 
-	IVariableDeclaration getVariable();
 	String getMemberId();
-	IExpression getExpression();
 
 	@Override
 	default List<IExpression> getExpressionParts() {

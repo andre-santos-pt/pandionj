@@ -14,8 +14,8 @@ import model.machine.IExecutionData;
 import model.program.IArrayVariableDeclaration;
 import model.program.IDataType;
 import model.program.IFactory;
-import model.program.IProcedure;
 import model.program.IModule;
+import model.program.IProcedure;
 import model.program.IVariableDeclaration;
 
 public class TestSwap {

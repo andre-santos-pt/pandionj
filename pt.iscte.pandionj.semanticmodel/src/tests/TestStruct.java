@@ -12,8 +12,8 @@ import model.machine.IExecutionData;
 import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IFactory;
-import model.program.IProcedure;
 import model.program.IModule;
+import model.program.IProcedure;
 import model.program.IStructType;
 import model.program.IVariableDeclaration;
 

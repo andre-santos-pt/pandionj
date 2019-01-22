@@ -51,7 +51,7 @@
   </interface>  
   <interface id="6" language="java" name="model.program.IProcedureCall" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IProcedureCall.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1283" y="1442"/>    
+    <position height="-1" width="-1" x="1518" y="1443"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -101,7 +101,7 @@
     project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IStructMemberAssignment.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="1571" y="1442"/>    
+    <position height="-1" width="-1" x="1341" y="1651"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -272,7 +272,7 @@
   </interface>  
   <interface id="28" language="java" name="model.program.IModule" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IModule.java" binary="false" corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="290" y="440"/>    
+    <position height="-1" width="-1" x="339" y="377"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -293,7 +293,7 @@
   <interface id="30" language="java" name="model.program.IVariableAssignment" project="pt.iscte.pandionj.semanticmodel" 
     file="/pt.iscte.pandionj.semanticmodel/src/model/program/IVariableAssignment.java" binary="false" 
     corner="BOTTOM_RIGHT">    
-    <position height="-1" width="-1" x="984" y="1442"/>    
+    <position height="-1" width="-1" x="1191" y="1432"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
       <attributes public="true" package="true" protected="true" private="true" static="true"/>      
@@ -528,84 +528,84 @@
     <end type="TARGET" refId="25"/>  
   </generalization>  
   <generalization id="61">    
-    <end type="SOURCE" refId="11"/>    
-    <end type="TARGET" refId="19"/>  
-  </generalization>  
-  <generalization id="62">    
     <end type="SOURCE" refId="17"/>    
     <end type="TARGET" refId="19"/>  
   </generalization>  
-  <generalization id="63">    
+  <generalization id="62">    
     <end type="SOURCE" refId="43"/>    
     <end type="TARGET" refId="42"/>  
   </generalization>  
-  <generalization id="64">    
+  <generalization id="63">    
     <end type="SOURCE" refId="25"/>    
     <end type="TARGET" refId="42"/>  
   </generalization>  
-  <generalization id="65">    
+  <generalization id="64">    
     <end type="SOURCE" refId="30"/>    
     <end type="TARGET" refId="19"/>  
   </generalization>  
-  <generalization id="66">    
+  <generalization id="65">    
     <end type="SOURCE" refId="13"/>    
     <end type="TARGET" refId="25"/>  
   </generalization>  
-  <generalization id="67">    
+  <generalization id="66">    
     <end type="SOURCE" refId="27"/>    
     <end type="TARGET" refId="25"/>  
   </generalization>  
-  <nesting id="68">    
+  <nesting id="67">    
     <end type="SOURCE" refId="29"/>    
     <end type="TARGET" refId="22"/>  
   </nesting>  
-  <nesting id="69">    
+  <nesting id="68">    
     <end type="SOURCE" refId="3"/>    
     <end type="TARGET" refId="36"/>  
   </nesting>  
-  <generalization id="70">    
+  <generalization id="69">    
     <end type="SOURCE" refId="5"/>    
     <end type="TARGET" refId="49"/>  
   </generalization>  
-  <generalization id="71">    
+  <generalization id="70">    
     <end type="SOURCE" refId="15"/>    
     <end type="TARGET" refId="25"/>  
   </generalization>  
-  <generalization id="72">    
+  <generalization id="71">    
     <end type="SOURCE" refId="23"/>    
     <end type="TARGET" refId="30"/>  
   </generalization>  
-  <generalization id="73">    
+  <generalization id="72">    
     <end type="SOURCE" refId="39"/>    
     <end type="TARGET" refId="49"/>  
   </generalization>  
-  <generalization id="74">    
+  <generalization id="73">    
     <end type="SOURCE" refId="4"/>    
     <end type="TARGET" refId="8"/>  
   </generalization>  
-  <generalization id="75">    
+  <generalization id="74">    
     <end type="SOURCE" refId="48"/>    
     <end type="TARGET" refId="19"/>  
   </generalization>  
-  <generalization id="76">    
+  <generalization id="75">    
     <end type="SOURCE" refId="21"/>    
     <end type="TARGET" refId="24"/>  
   </generalization>  
-  <generalization id="77">    
+  <generalization id="76">    
     <end type="SOURCE" refId="46"/>    
     <end type="TARGET" refId="3"/>  
   </generalization>  
-  <realization id="78">    
+  <realization id="77">    
     <end type="SOURCE" refId="14"/>    
     <end type="TARGET" refId="29"/>  
   </realization>  
-  <generalization id="79">    
+  <generalization id="78">    
     <end type="SOURCE" refId="19"/>    
     <end type="TARGET" refId="43"/>  
   </generalization>  
-  <generalization id="80">    
+  <generalization id="79">    
     <end type="SOURCE" refId="12"/>    
     <end type="TARGET" refId="47"/>  
+  </generalization>  
+  <generalization id="80">    
+    <end type="SOURCE" refId="11"/>    
+    <end type="TARGET" refId="30"/>  
   </generalization>  
   <generalization id="81">    
     <end type="SOURCE" refId="8"/>    
