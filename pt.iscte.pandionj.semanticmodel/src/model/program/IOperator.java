@@ -5,6 +5,11 @@ import model.program.operators.LogicalOperator;
 import model.program.operators.RelationalOperator;
 import model.program.operators.UnaryOperator;
 
+/**
+ * Immutable
+ * @author andresantos
+ *
+ */
 public interface IOperator {
 	String getSymbol();
 	

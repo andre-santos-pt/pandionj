@@ -30,7 +30,7 @@ public interface IStackFrame {
 	
 	default int getMemory() {
 		int bytes = 0;
-		for (IVariableDeclaration var : getProcedure().getVariables(true)) {
+		for (IVariableDeclaration var : getProcedure().getVariables()) {
 			bytes += var.getType().getMemoryBytes();
 		}
 		return bytes;

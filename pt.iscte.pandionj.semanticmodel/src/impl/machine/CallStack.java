@@ -10,6 +10,7 @@ import model.machine.IProgramState;
 import model.machine.IStackFrame;
 import model.machine.IValue;
 import model.program.IProcedure;
+import model.program.IProcedureDeclaration;
 
 class CallStack implements ICallStack {
 
@@ -65,7 +66,7 @@ class CallStack implements ICallStack {
 	public IStackFrame newFrame(IProcedure procedure, List<IValue> args) {
 		if(next == stack.length)
 			throw new RuntimeException("stack overflow");
-
+		
 		StackFrame parent = getSize() == 0 ? null : getTopFrame();
 		StackFrame newFrame = new StackFrame(this, parent, procedure, args); 
 		stack[next] = newFrame;

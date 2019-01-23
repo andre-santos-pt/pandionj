@@ -53,6 +53,10 @@ public class ProgramState implements IProgramState {
 		addStateListener();
 	}
 
+	public IModule getProgram() {
+		return program;
+	}
+	
 	@Override
 	public ICallStack getCallStack() {
 		return stack;
@@ -119,7 +123,7 @@ public class ProgramState implements IProgramState {
 	}
 
 	public void setupExecution(IProcedure procedure, Object... args) throws ExecutionError {
-		if(args.length != procedure.getNumberOfParameters())
+		if(args.length != procedure.getParameters().size())
 			throw new RuntimeException("incorrect number of arguments for " + procedure);
 
 		data = new ExecutionData();
@@ -133,7 +137,7 @@ public class ProgramState implements IProgramState {
 		instructionPointer = call;
 
 		List<IValue> argsValues = new ArrayList<>();
-		for(int i = 0; i < procedure.getNumberOfParameters(); i++) {
+		for(int i = 0; i < procedure.getParameters().size(); i++) {
 			IValue arg = stack.evaluate((ILiteral) procArgs.get(i));
 			argsValues.add(arg);
 		}
@@ -171,7 +175,7 @@ public class ProgramState implements IProgramState {
 			@Override
 			public void stackFrameCreated(IStackFrame stackFrame) {
 				data.updateCallStackSize(stack);
-
+				System.out.println("> " + stackFrame);
 				stackFrame.addListener(new IStackFrame.IListener() {
 					@Override
 					public void statementExecutionStart(IStatement statement) {

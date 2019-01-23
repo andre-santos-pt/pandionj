@@ -67,7 +67,7 @@ public class ExpressionEvaluator {
 		return new Step(val == null ? null : expStack.pop(), val);
 	}
 	
-	public static class Step {
+	static class Step {
 		final IExpression expression;
 		final IValue value;
 		 

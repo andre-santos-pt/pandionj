@@ -4,19 +4,22 @@ import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
+import impl.machine.ExecutionError;
+import impl.machine.ExecutionError.Type;
 import model.machine.ICallStack;
 import model.machine.IValue;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProcedure;
 import model.program.IProcedureCallExpression;
+import model.program.IProcedureDeclaration;
 
 public class ProcedureCallExpression extends Expression implements IProcedureCallExpression {
 
-	private final IProcedure procedure;
+	private final IProcedureDeclaration procedure;
 	private final ImmutableList<IExpression> args;
 	
-	public ProcedureCallExpression(IProcedure procedure, List<IExpression> args) {
+	public ProcedureCallExpression(IProcedureDeclaration procedure, List<IExpression> args) {
 		this.procedure = procedure;
 		this.args = ImmutableList.copyOf(args);
 	}
@@ -27,7 +30,7 @@ public class ProcedureCallExpression extends Expression implements IProcedureCal
 	}
 
 	@Override
-	public IProcedure getProcedure() {
+	public IProcedureDeclaration getProcedure() {
 		return procedure;
 	}
 
@@ -58,8 +61,9 @@ public class ProcedureCallExpression extends Expression implements IProcedureCal
 	}	
 	
 	@Override
-	public IValue evalutate(List<IValue> values, ICallStack stack) {
-		stack.newFrame(getProcedure(), values);
-		return null; // excepcional case, for pending value from created stack
+	public IValue evalutate(List<IValue> values, ICallStack stack) throws ExecutionError {
+		// excepcional case when null: for pending value from created stack
+		// if builtin procedure returns value
+		return ProcedureCall.executeInternal(stack, getProcedure(), values); 
 	}
 }

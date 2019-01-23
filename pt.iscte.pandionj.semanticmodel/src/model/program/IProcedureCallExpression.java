@@ -3,6 +3,6 @@ package model.program;
 import java.util.List;
 
 public interface IProcedureCallExpression extends IExpression {
-	IProcedure getProcedure();
+	IProcedureDeclaration getProcedure();
 	List<IExpression> getArguments();
 }

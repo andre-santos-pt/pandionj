@@ -58,6 +58,10 @@ public interface IBlock extends IInstruction {
 
 	IReturn addReturnStatement(IExpression expression);
 
+	IBreak addBreakStatement();
+
+	IContinue addContinueStatement();
+	
 	IProcedureCall addProcedureCall(IProcedure procedure, List<IExpression> args);
 	default IProcedureCall addProcedureCall(IProcedure procedure, IExpression ... args) {
 		return addProcedureCall(procedure, Arrays.asList(args));

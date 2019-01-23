@@ -9,11 +9,11 @@ import model.machine.IEvaluable;
 import model.machine.IValue;
 import model.program.IDataType;
 import model.program.IExpression;
-import model.program.IProcedure;
+import model.program.IProcedureDeclaration;
 
 class ProcedureReturnExpression implements IExpression, IEvaluable {
-	final IProcedure procedure;
-	ProcedureReturnExpression(IProcedure procedure) {
+	final IProcedureDeclaration procedure;
+	ProcedureReturnExpression(IProcedureDeclaration procedure) {
 		this.procedure = procedure;
 	}
 

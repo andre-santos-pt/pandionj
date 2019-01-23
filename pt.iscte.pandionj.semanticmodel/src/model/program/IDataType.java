@@ -195,6 +195,11 @@ public interface IDataType extends IIdentifiableElement {
 		public int getMemoryBytes() {
 			return 0;
 		}
+		
+		@Override
+		public String toString() {
+			return "void";
+		}
 	};
 	
 	

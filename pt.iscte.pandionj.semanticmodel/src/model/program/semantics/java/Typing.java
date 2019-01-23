@@ -14,8 +14,8 @@ public class Typing extends Rule {
 
 	@Override
 	public boolean visit(IReturn returnStatement) {
-		if(!returnStatement.getProcedure().getReturnType().equals(returnStatement.getExpression().getType()))
-			addProblem(ISemanticProblem.create("incompatible return", returnStatement, returnStatement.getProcedure().getReturnType()));
+//		if(!returnStatement.getParent().getProcedure().getReturnType().equals(returnStatement.getExpression().getType()))
+//			addProblem(ISemanticProblem.create("incompatible return", returnStatement, returnStatement.getProcedure().getReturnType()));
 		return false;
 	}
 	

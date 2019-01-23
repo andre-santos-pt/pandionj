@@ -24,7 +24,7 @@ public class TestRandom {
 		IFactory factory = new Factory();
 		IModule program = factory.createModule("Random");
 		IProcedure proc = program.addProcedure("randomDouble", IDataType.DOUBLE);
-		proc.getBody().addReturnStatement(program.getProcedure("random").callExpression());
+		proc.getBody().addReturnStatement(program.resolveProcedure("random").callExpression());
 		ProgramState state = new ProgramState(program);
 		IExecutionData data = state.execute(proc);
 		assertEquals(2, data.getTotalProcedureCalls());
@@ -38,7 +38,7 @@ public class TestRandom {
 		IVariableDeclaration minParam = proc.addParameter("min", IDataType.INT);
 		IVariableDeclaration maxParam = proc.addParameter("max", IDataType.INT);
 		IVariableDeclaration rVar = proc.getBody().addVariableDeclaration("r", IDataType.DOUBLE);
-		rVar.addAssignment(program.getProcedure("random").callExpression());
+		rVar.addAssignment(program.resolveProcedure("random").callExpression());
 		IBinaryExpression d = factory.binaryExpression(IOperator.SUB, maxParam.expression(), minParam.expression());
 		IBinaryExpression d1 = factory.binaryExpression(IOperator.ADD, d, factory.literal(1));
 		IBinaryExpression m = factory.binaryExpression(IOperator.MUL, rVar.expression(), d1);

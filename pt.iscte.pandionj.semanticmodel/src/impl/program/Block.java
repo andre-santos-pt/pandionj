@@ -5,10 +5,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import impl.machine.ExecutionError;
+import model.machine.ICallStack;
+import model.machine.IValue;
 import model.program.IArrayElementAssignment;
 import model.program.IArrayType;
 import model.program.IArrayVariableDeclaration;
 import model.program.IBlock;
+import model.program.IBreak;
+import model.program.IContinue;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IInstruction;
@@ -53,11 +58,6 @@ class Block extends ProgramElement implements IBlock {
 	void addInstruction(IInstruction statement) {
 		assert statement != null;
 		instructions.add(statement);
-	}
-
-	@Override
-	public IBlock addBlock() {
-		return new Block(this, true);
 	}
 
 	IBlock addLooseBlock() {
@@ -114,6 +114,12 @@ class Block extends ProgramElement implements IBlock {
 	}
 
 	@Override
+	public IBlock addBlock() {
+		return new Block(this, true);
+	}
+
+	
+	@Override
 	public IVariableAssignment addAssignment(IVariableDeclaration variable, IExpression expression) {
 		return new VariableAssignment(this, variable, expression);
 	}
@@ -140,7 +146,7 @@ class Block extends ProgramElement implements IBlock {
 	
 	@Override
 	public ILoop addLoop(IExpression guard) {
-		return new Loop(this, guard, false);
+		return new Loop(this, guard);
 	}
 
 	@Override
@@ -151,5 +157,46 @@ class Block extends ProgramElement implements IBlock {
 	@Override
 	public IProcedureCall addProcedureCall(IProcedure procedure, List<IExpression> args) {
 		return new ProcedureCall(this, procedure, args);
+	}
+	@Override
+	public IBreak addBreakStatement() {
+		return new Break(this);
+	}
+	
+	@Override
+	public IContinue addContinueStatement() {
+		return new Continue(this);
+	}
+	
+	private static class Break extends Statement implements IBreak {
+		public Break(IBlock parent) {
+			super(parent, true);
+		}
+		
+		@Override
+		public String toString() {
+			return "break";
+		}
+		
+		@Override
+		public boolean execute(ICallStack stack, List<IValue> expressions) throws ExecutionError {
+			return true;
+		}
+	}
+	
+	private static class Continue extends Statement implements IContinue {
+		public Continue(IBlock parent) {
+			super(parent, true);
+		}
+		
+		@Override
+		public String toString() {
+			return "continue";
+		}
+		
+		@Override
+		public boolean execute(ICallStack stack, List<IValue> expressions) throws ExecutionError {
+			return true;
+		}
 	}
 }

@@ -1,6 +1,7 @@
 package model.program;
 
 import java.util.Collection;
+import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
@@ -35,23 +36,34 @@ public interface IModule extends IIdentifiableElement {
 	//		return null;
 	//	}
 
-	// TODO test
-	default IProcedure getProcedure(String id, IDataType ... paramTypes) {
-		for(IProcedure p : getProcedures())
-			if(p.getId().equals(id) && p.getNumberOfParameters() == paramTypes.length) {
-				boolean match = true;
-				int i = 0;
-				for (IVariableDeclaration param : p.getParameters()) {
-					if(!param.getType().equals(paramTypes[i++])) {
-						match = false;
-						break;
-					}
-				}
-				if(match)
-					return p;
-			}
-		return null;
-	}
+//	default IProcedure getProcedure(String id, IDataType ... paramTypes) {
+//		for(IProcedure p : getProcedures())
+//			if(p.getId().equals(id) && p.getParameters().size() == paramTypes.length) {
+//				boolean match = true;
+//				int i = 0;
+//				for (IVariableDeclaration param : p.getParameters()) {
+//					if(!param.getType().equals(paramTypes[i++])) {
+//						match = false;
+//						break;
+//					}
+//				}
+//				if(match)
+//					return p;
+//			}
+//		return null;
+//	}
+	
+	IProcedure resolveProcedure(String id, IDataType ... paramTypes);
+	
+	IProcedure resolveProcedure(IProcedureDeclaration procedureDeclaration);
+	
+//	default IProcedure resolveProcedure(IProcedureDeclaration procedureDeclaration) {
+//		for(IProcedure p : getProcedures())
+//			if(p.hasSameSignature(procedureDeclaration))
+//				return p;
+//		
+//		return null;
+//	}
 
 	default void accept(IVisitor visitor) {
 		getConstants().forEach(c -> {

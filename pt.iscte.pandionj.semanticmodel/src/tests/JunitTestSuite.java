@@ -10,10 +10,12 @@ import org.junit.runners.Suite;
 	TestRandom.class,
 	TestSelection.class,
 	TestSum.class,
+	TestSwap.class,
 	TestArrays.class,
 	Test2DArrays.class,
 	TestConstants.class,
-	TestStruct.class
+	TestStruct.class,
+	TestBuiltinProcedures.class
 })
 
 public class JunitTestSuite {   

@@ -2,18 +2,21 @@ package model.program;
 
 import java.util.List;
 
+/**
+ * Immutable
+ */
 public interface IStatement extends IInstruction {
 	
 	
 	IBlock getParent();
 
-	default IProcedure getProcedure() {
-		IBlock b = getParent();
-		while(b != null && !(b instanceof IProcedure))
-			b = (IBlock) b.getParent();
-		
-		return (IProcedure) b;
-	}
+//	default IProcedure getProcedure() {
+//		IBlock b = getParent();
+//		while(b != null && !(b instanceof IProcedure))
+//			b = (IBlock) b.getParent();
+//		
+//		return (IProcedure) b;
+//	}
 
 //	default int getDepth() {
 //		int d = 1;

@@ -2,7 +2,6 @@ package tests;
 import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
-import java.util.EnumSet;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -30,7 +29,7 @@ public class TestSwap {
 		program = factory.createModule("Swap");
 		
 		swapProc = program.addProcedure("swap", IDataType.VOID);
-		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) swapProc.addParameter("v", factory.arrayType(IDataType.INT, 1), EnumSet.of(IVariableDeclaration.Flag.REFERENCE));
+		IArrayVariableDeclaration vParam = (IArrayVariableDeclaration) swapProc.addParameter("v", factory.arrayType(IDataType.INT, 1));
 		IVariableDeclaration iParam = swapProc.addParameter("i", IDataType.INT);
 		IVariableDeclaration jParam = swapProc.addParameter("j", IDataType.INT);
 		
@@ -39,7 +38,8 @@ public class TestSwap {
 		vParam.elementAssignment(vParam.elementExpression(jParam.expression()), iParam.expression());
 		vParam.elementAssignment(tVar.expression(), jParam.expression());
 		
-		swapProc.getBody().addProcedureCall(program.getProcedure("print", IDataType.INT), jParam.expression());
+//		IProcedure print = program.resolveProcedure("print", IDataType.INT);
+//		swapProc.getBody().addProcedureCall(print, jParam.expression());
 
 		iParam.addAssignment(factory.literal(4));
 		

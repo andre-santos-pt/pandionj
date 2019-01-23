@@ -5,13 +5,14 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 
 import model.program.IConstantDeclaration;
 import model.program.IDataType;
 import model.program.ILiteral;
 import model.program.IModule;
 import model.program.IProcedure;
+import model.program.IProcedureDeclaration;
 import model.program.IStructType;
 
 class Module extends ProgramElement implements IModule {
@@ -20,14 +21,16 @@ class Module extends ProgramElement implements IModule {
 	private final List<IStructType> structs;
 	private final List<IProcedure> procedures;
 	
+	private final List<IProcedure> builtinProcedures;
+	
 	public Module(String id) {
 		this.id = id;
 		constants = new ArrayList<>();
 		structs = new ArrayList<>();
-		procedures = new ArrayList<IProcedure>();
+		procedures = new ArrayList<>();
 		
-		procedures.add(new PrintProcedure());
-		procedures.add(new RandomFunction());
+		builtinProcedures = new ArrayList<>();
+		builtinProcedures.add(new PrintProcedure());
 	}
 	
 	@Override
@@ -40,6 +43,11 @@ class Module extends ProgramElement implements IModule {
 		return Collections.unmodifiableList(constants);
 	}
 
+	@Override
+	public Collection<IStructType> getStructs() {
+		return Collections.unmodifiableList(structs);
+	}
+	
 	@Override
 	public Collection<IProcedure> getProcedures() {
 		return Collections.unmodifiableList(procedures);
@@ -56,6 +64,13 @@ class Module extends ProgramElement implements IModule {
 	}
 	
 	@Override
+	public IStructType addStruct(String id) {
+		IStructType struct = new StructType(id);
+		structs.add(struct);
+		return struct;
+	}
+	
+	@Override
 	public IProcedure addProcedure(String id, IDataType returnType) {
 		IProcedure proc = new Procedure(id, returnType);
 		procedures.add(proc);
@@ -63,32 +78,22 @@ class Module extends ProgramElement implements IModule {
 	}
 	
 	@Override
-	public IStructType addStruct(String id) {
-		IStructType struct = new StructType(id);
-		structs.add(struct);
-		return struct;
+	public IProcedure resolveProcedure(IProcedureDeclaration procedureDeclaration) {
+		for(IProcedure p : Iterables.concat(procedures, builtinProcedures))
+			if(p.hasSameSignature(procedureDeclaration))
+				return p;
+		
+		return null;
 	}
-	
-//	@Override
-//	public IConstantDeclaration getConstant(String id) {
-//		return constants.get(id);
-//	}
 	
 	@Override
-	public Collection<IStructType> getStructs() {
-		return ImmutableList.of();
+	public IProcedure resolveProcedure(String id, IDataType... paramTypes) {
+		for(IProcedure p : Iterables.concat(procedures, builtinProcedures))
+			if(p.matchesSignature(id, paramTypes))
+				return p;
+		
+		return null;
 	}
-
-//	@Override
-//	public Collection<IDataType> getDataTypes() {
-//		return Collections.unmodifiableCollection(types.values());
-//	}
-	
-//	@Override
-//	public IDataType getDataType(String id) {
-//		assert types.containsKey(id);
-//		return types.get(id);
-//	}
 	
 	@Override // TODO pretty print
 	public String toString() {
@@ -108,4 +113,20 @@ class Module extends ProgramElement implements IModule {
 		text = text.replaceAll("\\}", "}\n");
 		return text;
 	}
+	
+//	@Override
+//	public IConstantDeclaration getConstant(String id) {
+//		return constants.get(id);
+//	}
+
+//	@Override
+//	public Collection<IDataType> getDataTypes() {
+//		return Collections.unmodifiableCollection(types.values());
+//	}
+	
+//	@Override
+//	public IDataType getDataType(String id) {
+//		assert types.containsKey(id);
+//		return types.get(id);
+//	}
 }

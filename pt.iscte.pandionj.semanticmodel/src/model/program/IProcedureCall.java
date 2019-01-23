@@ -7,7 +7,7 @@ import com.google.common.collect.ImmutableList;
 import model.program.semantics.ISemanticProblem;
 
 public interface IProcedureCall extends IStatement {
-	IProcedure getProcedure();
+	IProcedureDeclaration getProcedure();
 	List<IExpression> getArguments();
 
 	default boolean isOperation() {
@@ -15,7 +15,7 @@ public interface IProcedureCall extends IStatement {
 	}
 	
 	default List<ISemanticProblem> validateSematics() {
-		if(getProcedure().getNumberOfParameters() != getArguments().size())
+		if(getProcedure().getParameters().size() != getArguments().size())
 			return ImmutableList.of(ISemanticProblem.create("wrong number of arguments", this));
 		
 		// TODO param match

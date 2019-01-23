@@ -9,10 +9,10 @@ interface IObjectType extends IStructType {
 	IAbstractDataType getRealizations();
 	
 	default boolean isCompatibleWith(IAbstractDataType type) {
-		for (IProcedure tp : type.getProcedures()) {
+		for (IProcedureDeclaration tp : type.getProcedures()) {
 			boolean match = false;
 			for(IProcedure p : getProcedures())
-				if(p.hasSameSignature(tp)) {
+				if(p.isEqualTo(tp)) {
 					match = true;
 					break;
 				}

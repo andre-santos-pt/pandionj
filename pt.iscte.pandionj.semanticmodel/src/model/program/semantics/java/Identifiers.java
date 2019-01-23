@@ -47,7 +47,7 @@ public class Identifiers extends Rule {
 		});
 		
 		Map<String, IVariableDeclaration> vars = new HashMap<String, IVariableDeclaration>();
-		procedure.getVariables(true).forEach(v -> {
+		procedure.getVariables().forEach(v -> {
 			if(vars.containsKey(v.getId()))
 				addProblem(ISemanticProblem.create("duplicate local variable name", vars.get(v.getId()), v));
 			else

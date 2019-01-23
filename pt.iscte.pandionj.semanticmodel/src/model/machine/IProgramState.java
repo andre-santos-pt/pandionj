@@ -1,10 +1,12 @@
 package model.machine;
 
 import model.program.IDataType;
+import model.program.IModule;
 import model.program.IProgramElement;
 import model.program.IStructType;
 
 public interface IProgramState {
+	IModule getProgram();
 	ICallStack getCallStack();
 	IHeapMemory getHeapMemory();
 	int getCallStackMaximum();

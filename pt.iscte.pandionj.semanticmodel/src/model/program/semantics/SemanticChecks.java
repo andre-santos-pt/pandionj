@@ -13,7 +13,7 @@ import model.program.IVariableDeclaration;
 class SemanticChecks {
 	static void checkVariableNames(IProcedure procedure, List<ISemanticProblem> problems) {
 		Map<String, IVariableDeclaration> ids = new HashMap<>();
-		for(IVariableDeclaration v : procedure.getVariables(true))
+		for(IVariableDeclaration v : procedure.getVariables())
 			if(ids.containsKey(v.getId()))
 				problems.add(ISemanticProblem.create("duplicate variable names", v, ids.get(v.getId())));
 			else

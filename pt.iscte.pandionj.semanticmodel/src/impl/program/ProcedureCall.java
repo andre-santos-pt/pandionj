@@ -11,19 +11,21 @@ import model.machine.IValue;
 import model.program.IExpression;
 import model.program.IProcedure;
 import model.program.IProcedureCall;
+import model.program.IProcedureDeclaration;
 
 class ProcedureCall extends Statement implements IProcedureCall {
-	private final IProcedure procedure;
+	private final IProcedureDeclaration procedure;
 	private final ImmutableList<IExpression> arguments;
 	
 	public ProcedureCall(Block parent, IProcedure procedure, List<IExpression> arguments) {
 		super(parent, true);
+		assert procedure != null;
 		this.procedure = procedure;
 		this.arguments = ImmutableList.copyOf(arguments);
 	}
 
 	@Override
-	public IProcedure getProcedure() {
+	public IProcedureDeclaration getProcedure() {
 		return procedure;
 	}
 
@@ -54,12 +56,17 @@ class ProcedureCall extends Statement implements IProcedureCall {
 	
 	@Override
 	public boolean execute(ICallStack stack, List<IValue> expressions) throws ExecutionError {
-		IStackFrame newFrame = stack.newFrame(getProcedure(), expressions);
+		executeInternal(stack, getProcedure(), expressions);
 		return true;
 	}
 	
-//	@Override
-//	public IDataType getType() {
-//		return procedure.getReturnType();
-//	}
+	static IValue executeInternal(ICallStack stack, IProcedureDeclaration procedure, List<IValue> expressions) throws ExecutionError {
+		IProcedure p = stack.getProgramState().getProgram().resolveProcedure(procedure);
+		if(p instanceof BuiltinProcedure)
+			return ((BuiltinProcedure) p).hookAction(expressions);
+		else {
+			stack.newFrame(p, expressions);
+			return null;
+		}
+	}
 }

@@ -96,8 +96,9 @@
       <operations public="true" package="false" protected="false" private="true" static="false"/>    
     </display>  
   </class>  
-  <class id="11" language="java" name="impl.program.Procedure.VariablesView" project="pt.iscte.pandionj.semanticmodel" 
-    file="/pt.iscte.pandionj.semanticmodel/src/impl/program/Procedure.java" binary="false" corner="BOTTOM_RIGHT">    
+  <class id="11" language="java" name="impl.program.Procedure.LocalVariablesView" 
+    project="pt.iscte.pandionj.semanticmodel" file="/pt.iscte.pandionj.semanticmodel/src/impl/program/Procedure.java" 
+    binary="false" corner="BOTTOM_RIGHT">    
     <position height="88" width="174" x="2723" y="1501"/>    
     <display autosize="true" stereotype="false" package="false" initial-value="false" signature="true" 
       sort-features="false" accessors="true" visibility="true">      
@@ -437,7 +438,7 @@
   </dependency>  
   <association id="59">    
     <end type="SOURCE" refId="31" navigable="false">      
-      <attribute id="60" name="varsView"/>      
+      <attribute id="60" name="localVarsView"/>      
       <multiplicity id="61" minimum="0" maximum="1"/>    
     </end>    
     <end type="TARGET" refId="11" navigable="true"/>    

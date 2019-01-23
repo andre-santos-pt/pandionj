@@ -9,8 +9,6 @@ import com.google.common.reflect.ClassPath.ClassInfo;
 
 import model.program.IBinaryOperator;
 import model.program.IExpression;
-import model.program.IModule;
-import model.program.IOperator;
 import model.program.IStatement;
 import model.program.IUnaryOperator;
 

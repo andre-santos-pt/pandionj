@@ -44,7 +44,7 @@ class StackFrame implements IStackFrame {
 	}
 
 	public StackFrame(CallStack callStack, StackFrame parent, IProcedure procedure, List<IValue> arguments) {
-		assert procedure.getNumberOfParameters() == arguments.size();
+		assert procedure.getParameters().size() == arguments.size();
 
 		this.callStack = callStack;
 //		this.parent = parent;
@@ -61,7 +61,7 @@ class StackFrame implements IStackFrame {
 			i++;
 		}
 
-		for (IVariableDeclaration var : procedure.getVariables(false)) {
+		for (IVariableDeclaration var : procedure.getLocalVariables()) {
 			IValue defValue = Value.create(var.getType(), var.getType().getDefaultValue());
 			variables.put(var.getId(), new VariableHistory(defValue));
 		}
@@ -114,7 +114,7 @@ class StackFrame implements IStackFrame {
 	@Override
 	public int getMemory() {
 		int bytes = 0;
-		for (IVariableDeclaration var : procedure.getVariables(true))
+		for (IVariableDeclaration var : procedure.getVariables())
 			bytes += var.getType().getMemoryBytes();
 		return bytes;
 	}
@@ -265,7 +265,7 @@ class StackFrame implements IStackFrame {
 			boolean result = executable.execute(this.getCallStack(), values);
 			System.out.println("S " + statement + " " + result);
 			
-			historyStatements.add(new StatementTimestamp(statement));
+			historyStatements.add(new StatementTimestamp(statement, time));
 			
 			for(IListener l : listeners)
 				l.statementExecutionEnd(statement);
@@ -294,12 +294,12 @@ class StackFrame implements IStackFrame {
 		int current;
 		VariableHistory(IValue initialValue) {
 			history = new ArrayList<>();
-			history.add(new ValueTimestamp(initialValue));
+			history.add(new ValueTimestamp(initialValue, time));
 			current = 0;
 		}
 		
 		public void newValue(IValue value) {
-			history.add(new ValueTimestamp(value));
+			history.add(new ValueTimestamp(value, time));
 			current++;
 		}
 
@@ -322,23 +322,23 @@ class StackFrame implements IStackFrame {
 		}
 	}
 	
-	private class ValueTimestamp {
+	private static class ValueTimestamp {
 		final IValue value;
 		final int timestamp;
 		
-		ValueTimestamp(IValue value) {
+		ValueTimestamp(IValue value, int time) {
 			this.value = value;
 			this.timestamp = time;
 		}
 	}
 	
-	private class StatementTimestamp {
+	private static class StatementTimestamp {
 		final IStatement statement;
 		final int timestamp;
 		
-		StatementTimestamp(IStatement statement) {
+		StatementTimestamp(IStatement statement, int time) {
 			this.statement = statement;
-			this.timestamp = time++;
+			this.timestamp = time;
 		}
 	}
 }

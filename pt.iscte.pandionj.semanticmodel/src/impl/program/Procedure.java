@@ -4,7 +4,6 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -19,11 +18,12 @@ import model.program.IVariableDeclaration;
 class Procedure extends ProgramElement implements IProcedure {
 	private final String name;
 	private final List<IVariableDeclaration> variables;
+	private final List<IVariableDeclaration> variablesView;
 	private final ParamsView paramsView;
-	private final VariablesView varsView;
+	private final LocalVariablesView localVarsView;
 	private final IDataType returnType;
+	private final Block body;
 	private int parameters;
-	private Block body;
 	
 	public Procedure(String id, IDataType returnType) {
 		this.name = id;
@@ -31,8 +31,9 @@ class Procedure extends ProgramElement implements IProcedure {
 		this.parameters = 0;
 		this.returnType = returnType;
 
+		variablesView = Collections.unmodifiableList(variables);
 		paramsView = new ParamsView();
-		varsView = new VariablesView();
+		localVarsView = new LocalVariablesView();
 		body = new Block(this, false);
 	}
 
@@ -42,29 +43,32 @@ class Procedure extends ProgramElement implements IProcedure {
 	}
 
 	@Override
-	public Iterable<IVariableDeclaration> getParameters() {
-		return paramsView;
+	public List<IVariableDeclaration> getVariables() {
+		return variablesView;
 	}
 
 	@Override
-	public IVariableDeclaration addParameter(String id, IDataType type, Set<IVariableDeclaration.Flag> flags) {
+	public List<IVariableDeclaration> getParameters() {
+		return paramsView;
+	}
+	
+	@Override
+	public List<IVariableDeclaration> getLocalVariables() {
+		return localVarsView;
+	}
+
+	@Override
+	public IVariableDeclaration addParameter(String id, IDataType type) {
 		IVariableDeclaration param = type instanceof IArrayType ?
 				new ArrayVariableDeclaration(body, id, (IArrayType) type, ImmutableSet.of()) :
-				new VariableDeclaration(body, id, type, flags);
+				new VariableDeclaration(body, id, type, ImmutableSet.of());
+				
 		variables.add(parameters, param);
 		parameters++;
 		return param;
 	}
 
-	@Override
-	public int getNumberOfParameters() {
-		return parameters;
-	}
-
-	@Override
-	public Iterable<IVariableDeclaration> getVariables(boolean includingParams) {
-		return includingParams ? Collections.unmodifiableCollection(variables) : varsView;
-	}
+	
 
 	@Override
 	public IVariableDeclaration getVariable(String id) {
@@ -108,7 +112,7 @@ class Procedure extends ProgramElement implements IProcedure {
 		}
 
 		String vars = "";
-		for(IVariableDeclaration var : getVariables(true))
+		for(IVariableDeclaration var : variables)
 			vars += var +"\n";
 		return returnType + " " + name + "(" + params + ")" + "\n" + vars + body.toString();
 	}
@@ -125,7 +129,7 @@ class Procedure extends ProgramElement implements IProcedure {
 		}
 	}
 
-	private class VariablesView extends AbstractList<IVariableDeclaration> {
+	private class LocalVariablesView extends AbstractList<IVariableDeclaration> {
 		@Override
 		public IVariableDeclaration get(int index) {
 			return variables.get(parameters + index);
