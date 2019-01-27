@@ -1,65 +1,54 @@
 package impl.program;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Parameter;
 import java.util.List;
 
+import impl.machine.Value;
 import model.machine.IValue;
 import model.program.IDataType;
-import model.program.IExpression;
-import model.program.IProcedure;
-import model.program.IProcedureCallExpression;
-import model.program.IProcedureDeclaration;
-import model.program.IVariableDeclaration;
 
-// TODO
-public abstract class BuiltinProcedure extends Procedure {
+// TODO different types
+public class BuiltinProcedure extends Procedure {
 
-//	private Procedure procedure;
+	private Method method;
 	
-	public BuiltinProcedure(String id, IDataType returnType) {
-		super(id, returnType);
+	public BuiltinProcedure(Method method) {
+		super(method.getName(), IDataType.INT);
+		assert isValidForBuiltin(method);
+		this.method = method;
+		for (Parameter p : method.getParameters()) {
+			addParameter(p.getName(), IDataType.INT);
+		}
 	}
 
-	//	@Override
-	//	public boolean execute(ICallStack stack) throws ExecutionError {
-	//		IValue value = stack.getTopFrame().getVariable("value");
-	//		System.out.println(value.getValue());
-	//		return true;
-	//	}
-
-	abstract IValue hookAction(List<IValue> arguments);
+	public static boolean isValidForBuiltin(Method method) {
+		if(!Modifier.isPublic(method.getModifiers()) || !Modifier.isStatic(method.getModifiers()) || !method.getReturnType().equals(int.class))
+			return false;
+		
+		for (Class<?> ptype : method.getParameterTypes()) {
+			if(!ptype.equals(int.class))
+				return false;
+		}
+		return true;
+	}
 	
-//	@Override
-//	public String getId() {
-//		return procedure.getId();
-//	}
-//
-//	@Override
-//	public void setProperty(String key, Object value) {
-//		procedure.setProperty(key, value);
-//	}
-//
-//	@Override
-//	public Object getProperty(String key) {
-//		return procedure.getProperty(key);
-//	}
-//
-//	@Override
-//	public List<IVariableDeclaration> getParameters() {
-//		return procedure.getParameters();
-//	}
-//
-//	@Override
-//	public IDataType getReturnType() {
-//		return procedure.getReturnType();
-//	}
-//
-//	@Override
-//	public IVariableDeclaration addParameter(String id, IDataType type) {
-//		return procedure.addParameter(id, type);
-//	}
-//
-//	@Override
-//	public IProcedureCallExpression callExpression(List<IExpression> args) {
-//		return procedure.callExpression(args);
-//	}
+	public IValue hookAction(List<IValue> arguments) {
+		Object[] args = new Object[arguments.size()];
+		for(int i = 0; i < arguments.size(); i++)
+			args[i] = ((Number) arguments.get(i).getValue()).intValue();
+		try {
+			Object ret = method.invoke(null, args);
+			return Value.create(getReturnType(), ret);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
 }

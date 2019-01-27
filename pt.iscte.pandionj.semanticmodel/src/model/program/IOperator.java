@@ -1,10 +1,5 @@
 package model.program;
 
-import model.program.operators.ArithmeticOperator;
-import model.program.operators.LogicalOperator;
-import model.program.operators.RelationalOperator;
-import model.program.operators.UnaryOperator;
-
 /**
  * Immutable
  * @author andresantos

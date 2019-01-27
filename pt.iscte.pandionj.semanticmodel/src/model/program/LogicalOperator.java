@@ -1,10 +1,7 @@
-package model.program.operators;
+package model.program;
 
 import impl.machine.ExecutionError;
 import model.machine.IValue;
-import model.program.IBinaryOperator;
-import model.program.IDataType;
-import model.program.IExpression;
 
 // TODO step eval
 public enum LogicalOperator implements IBinaryOperator {

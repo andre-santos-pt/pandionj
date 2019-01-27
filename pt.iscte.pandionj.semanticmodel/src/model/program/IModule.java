@@ -1,7 +1,6 @@
 package model.program;
 
 import java.util.Collection;
-import java.util.List;
 
 import com.google.common.collect.ImmutableList;
 
@@ -25,7 +24,7 @@ public interface IModule extends IIdentifiableElement {
 	IStructType addStruct(String id);
 	IProcedure addProcedure(String id, IDataType returnType);
 
-
+	void loadBuildInProcedures(Class<?> staticClass);
 
 //	IConstantDeclaration getConstant(String id);
 	//	default IConstantDeclaration getConstant(String id) {
@@ -86,6 +85,7 @@ public interface IModule extends IIdentifiableElement {
 
 
 	interface IVisitor extends IBlock.IVisitor {
+//		default void setup(IModule module)						{ }
 		default boolean visit(IConstantDeclaration constant) 	{ return true; }
 		default boolean visit(IStructType struct) 				{ return true; }
 		default boolean visit(IProcedure procedure) 			{ return true; }

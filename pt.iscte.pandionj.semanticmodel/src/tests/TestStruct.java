@@ -1,6 +1,7 @@
 package tests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 
@@ -32,7 +33,6 @@ public class TestStruct {
 		IVariableDeclaration pParam = moveProc.addParameter("p", pointType);
 		
 		pParam.addMemberAssignment("x", factory.literal(7));
-		
 		
 		IProcedure main = program.addProcedure("main", IDataType.INT);
 		IBlock body = main.getBody();

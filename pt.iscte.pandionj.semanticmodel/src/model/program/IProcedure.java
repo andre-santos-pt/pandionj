@@ -6,7 +6,7 @@ import java.util.List;
  * Mutable
  */
 public interface IProcedure extends IProcedureDeclaration {
-	
+//	IModule getModule();
 	List<IVariableDeclaration> getLocalVariables();
 	List<IVariableDeclaration> getVariables();
 	IVariableDeclaration getVariable(String id);

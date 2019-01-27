@@ -1,4 +1,4 @@
-package model.program.operators;
+package model.program;
 
 import java.math.BigDecimal;
 import java.util.function.BiFunction;
@@ -6,9 +6,6 @@ import java.util.function.BiFunction;
 import impl.machine.ExecutionError;
 import impl.machine.Value;
 import model.machine.IValue;
-import model.program.IBinaryOperator;
-import model.program.IDataType;
-import model.program.IExpression;
 
 public enum RelationalOperator implements IBinaryOperator {
 	EQUAL("==", (left,right) -> left.getValue().equals(right.getValue())),

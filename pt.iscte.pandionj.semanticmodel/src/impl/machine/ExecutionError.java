@@ -4,7 +4,13 @@ import model.program.IProgramElement;
 
 public class ExecutionError extends Exception {
 	public enum Type {
-		STACK_OVERFLOW, INFINTE_CYCLE, NULL_POINTER, ARRAY_INDEX_BOUNDS, NEGATIVE_ARRAY_SIZE, VALUE_OVERFLOW, OUT_OF_MEMORY;
+		STACK_OVERFLOW, 
+		OUT_OF_MEMORY,
+		NULL_POINTER,
+		ARRAY_INDEX_BOUNDS,
+		NEGATIVE_ARRAY_SIZE,
+		VALUE_OVERFLOW,
+		INFINTE_CYCLE;
 	}
 	
 	private static final long serialVersionUID = 1L;

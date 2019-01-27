@@ -1,6 +1,6 @@
 package tests;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 import java.math.BigDecimal;
 
@@ -93,8 +93,8 @@ public class TestArithmeticExpressions {
 		ExpressionEvaluator eval = new ExpressionEvaluator(expression, mockState.getCallStack());
 		IValue value = eval.evaluate();
 		String text = expression + " = " + value;
-		assertEquals(type, value.getType(), text);
-		assertEquals(new BigDecimal(result.toString()), value.getValue(), text);
+		assertEquals(type, value.getType());
+		assertEquals(new BigDecimal(result.toString()), value.getValue());
 		System.out.println(text);
 	}
 }

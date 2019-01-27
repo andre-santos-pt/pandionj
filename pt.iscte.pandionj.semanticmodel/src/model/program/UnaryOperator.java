@@ -1,12 +1,9 @@
-package model.program.operators;
+package model.program;
 
 import java.math.BigDecimal;
 
 import impl.machine.Value;
 import model.machine.IValue;
-import model.program.IDataType;
-import model.program.IExpression;
-import model.program.IUnaryOperator;
 
 public enum UnaryOperator implements IUnaryOperator {
 	NOT("!") {

@@ -7,22 +7,24 @@ public interface IVariableDeclaration extends IIdentifiableElement {
 	default boolean isStructField() {
 		return getParent() instanceof IStructType;
 	}
-	
+
 	default boolean isLocalVariable() {
 		return getParent() instanceof IBlock;
 	}
-	
+
 	boolean isReference();
+	
+	// TODO remover?
 	boolean isConstant();
 	boolean isParameter();
-	
+
 	IVariableExpression expression();
 	IStructMemberExpression memberExpression(String memberId);
 
 	IVariableAssignment addAssignment(IExpression exp);
-	
+
 	IStructMemberAssignment addMemberAssignment(String memberId, IExpression expression);
-	
+
 
 	enum Flag {
 		REFERENCE, CONSTANT, PARAM, FIELD

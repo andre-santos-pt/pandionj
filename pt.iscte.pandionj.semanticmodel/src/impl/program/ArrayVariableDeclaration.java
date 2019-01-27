@@ -19,7 +19,6 @@ import model.program.IBlock;
 import model.program.IDataType;
 import model.program.IExpression;
 import model.program.IProgramElement;
-import model.program.roles.IVariableRole;
 
 class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVariableDeclaration {
 	private final IArrayType arrayType;
@@ -66,9 +65,6 @@ class ArrayVariableDeclaration extends VariableDeclaration implements IArrayVari
 		return new ArrayElementAssignment((IBlock) parent, this, indexes, expression);
 	}
 
-	public IVariableRole getRole() {
-		return IVariableRole.NONE;
-	}
 
 	@Override
 	public String toString() {

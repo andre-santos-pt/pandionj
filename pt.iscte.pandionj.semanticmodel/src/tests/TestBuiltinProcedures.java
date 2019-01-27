@@ -11,13 +11,20 @@ import model.program.IProcedure;
 
 public class TestBuiltinProcedures {
 
+	public static class TestProcedures {
+		public static int max(int a, int b) {
+			return a > b ? a : b;
+		}
+	}
+	
 	@Test
 	public void test() {
 		IFactory factory = new Factory();
 		IModule program = factory.createModule("Test");
+		program.loadBuildInProcedures(TestBuiltinProcedures.TestProcedures.class);
 		IProcedure proc = program.addProcedure("test", IDataType.VOID);
-		IProcedure print = program.resolveProcedure("print", IDataType.INT);
-		proc.getBody().addProcedureCall(print, factory.literal(4));
+		IProcedure max = program.resolveProcedure("max", IDataType.INT, IDataType.INT);
+		proc.getBody().addProcedureCall(max, factory.literal(4), factory.literal(6));
 		System.out.println(program);
 		ProgramState state = new ProgramState(program);
 		state.execute(proc);

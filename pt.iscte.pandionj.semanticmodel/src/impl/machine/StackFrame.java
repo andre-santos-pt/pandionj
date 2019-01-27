@@ -225,7 +225,7 @@ class StackFrame implements IStackFrame {
 			}
 		}
 		else {
-			System.out.println("C " + current);
+//			System.out.println("C " + current);
 			executor.moveNext(null);
 		}
 		if(executor.isOver())
@@ -263,7 +263,7 @@ class StackFrame implements IStackFrame {
 				l.statementExecutionStart(statement);
 
 			boolean result = executable.execute(this.getCallStack(), values);
-			System.out.println("S " + statement + " " + result);
+//			System.out.println("S " + statement + " " + result);
 			
 			historyStatements.add(new StatementTimestamp(statement, time));
 			
