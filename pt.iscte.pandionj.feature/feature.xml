@@ -2,9 +2,9 @@
 <feature
       id="pt.iscte.pandionj.feature"
       label="PandionJ"
-      version="0.4"
+      version="0.5"
       provider-name="ISCTE-IUL"
-      os="hpux,macosx,win32">
+      os="linux,macosx,win32">
 
    <description url="http://www.example.com/description">
       PandionJ - a pedagogical debugger for Java built on Eclipse.
