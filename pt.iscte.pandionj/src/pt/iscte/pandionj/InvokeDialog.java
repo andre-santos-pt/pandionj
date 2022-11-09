@@ -30,7 +30,7 @@ public class InvokeDialog extends Dialog {
 	@Override
 	protected Control createDialogArea(Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
-        invWidget = new StaticInvocationWidget(composite, this, method, action);
+        invWidget = new StaticInvocationWidget(composite, this, method);
 		return invWidget;
 	}
 

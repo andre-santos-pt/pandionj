@@ -55,7 +55,7 @@ public class StaticInvocationWidget extends Composite {
 	private Combo[] paramBoxes; 
 	private String[] parameterTypes;
 
-	public StaticInvocationWidget(Composite parent, InvokeDialog invokeDialog, IMethod method, InvocationAction action) {
+	public StaticInvocationWidget(Composite parent, InvokeDialog invokeDialog, IMethod method) {
 		super(parent, SWT.NONE);
 		this.invokeDialog = invokeDialog;
 		
@@ -269,10 +269,18 @@ public class StaticInvocationWidget extends Composite {
 	public String[] getValues() {
 		String[] values = new String[paramBoxes.length];
 		for(int j = 0; j < values.length; j++)
-			values[j] = paramBoxes[j].getText();
+			values[j] = trimZeros(paramBoxes[j].getText());
 		return values;
 	}
+	
 
+
+	private String trimZeros(String text) {
+		if(text.startsWith("0") && text.length() > 1)
+			return trimZeros(text.substring(1));
+		else
+			return text;
+	}
 
 	public String getInvocationExpression() {
 		String[] values = getValues();
