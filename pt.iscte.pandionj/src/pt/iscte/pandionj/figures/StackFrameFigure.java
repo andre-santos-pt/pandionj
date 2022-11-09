@@ -37,7 +37,7 @@ public class StackFrameFigure extends Figure {
 		this.objectContainer = objectContainer;
 		this.invisible = invisible;
 
-		setBackgroundColor(PandionJConstants.Colors.VIEW_BACKGROUND);
+		setBackgroundColor(PandionJConstants.Colors.OBJECT);
 		layout = new GridLayout(1, false);
 		layout.verticalSpacing = 4;
 		layout.horizontalSpacing = 2;
@@ -106,7 +106,8 @@ public class StackFrameFigure extends Figure {
 						illustrationArg = ExceptionType.match((String) event.arg);
 					}
 					else if (event.type == StackEvent.Type.RETURN_VALUE) {
-						label.setText(label.getText() + " = " + event.arg);
+						if(!event.arg.equals("null"))
+							label.setText(label.getText() + " = " + event.arg);
 					}
 
 					for (IReferenceModel ref : frame.getReferenceVariables())
@@ -137,7 +138,7 @@ public class StackFrameFigure extends Figure {
 			else if(model.isExecutionFrame())
 				setBackgroundColor(PandionJConstants.Colors.INST_POINTER);
 			else
-				setBackgroundColor(PandionJConstants.Colors.VIEW_BACKGROUND);
+				setBackgroundColor(PandionJConstants.Colors.OBJECT);
 		}
 		layout.layout(this);
 		if(label != null && frame.getSourceFile() != null && frame.getLineNumber() != -1) 

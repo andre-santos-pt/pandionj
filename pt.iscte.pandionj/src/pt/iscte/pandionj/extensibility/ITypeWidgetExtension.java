@@ -53,7 +53,7 @@ public interface ITypeWidgetExtension extends IWidgetExtension<IObjectModel> {
 				});
 			}
 			else {
-				label.setText(":" + type.getElementName());
+				label.setText(":" + (type != null ? type.getElementName() : "") );
 				return label;
 			}
 				

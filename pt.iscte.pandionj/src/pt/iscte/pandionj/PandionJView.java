@@ -119,6 +119,7 @@ public class PandionJView extends ViewPart {
 
 	private void createWidgets(Composite parent) {
 		this.parent = parent;
+		this.parent.setBackground(PandionJConstants.Colors.VIEW_BACKGROUND);
 		String toolTipVersion = "Version " + Platform.getBundle(PandionJConstants.PLUGIN_ID).getVersion().toString();
 		setTitleToolTip(toolTipVersion);
 		parent.setLayout(new GridLayout());

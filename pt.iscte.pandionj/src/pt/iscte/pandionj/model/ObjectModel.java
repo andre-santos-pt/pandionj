@@ -205,15 +205,15 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 		return Collections.unmodifiableMap(references);
 	}
 
-	//	@Override
-	//	public String toString() {
-	//		try {
-	//			return getContent().getValueString();
-	//		} catch (DebugException e) {
-	//			e.printStackTrace();
-	//			return null;
-	//		}
-	//	}
+		@Override
+		public String toString() {
+			try {
+				return ":" + getContent().getReferenceTypeName();
+			} catch (DebugException e) {
+				e.printStackTrace();
+				return null;
+			}
+		}
 
 	//	@Override
 	//	public int hashCode() {

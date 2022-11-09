@@ -67,12 +67,10 @@ public interface PandionJConstants {
 	int VAR_FONT_SIZE = 18;
 
 	interface Colors {
-		Color OBJECT = new Color(Display.getDefault(), 225, 225, 225);
+		Color OBJECT = new Color(Display.getDefault(), 215, 215, 215);
 		Color OBJECT_HEADER_FONT = new Color(Display.getDefault(), 128, 128, 128);
 		
 		Color VARIABLE_BOX = new Color(Display.getDefault(), 255, 255, 255);
-
-		Color ILLUSTRATION = ColorConstants.blue;
 
 		Color ROLE_ANNOTATIONS = ColorConstants.gray;
 		
@@ -82,7 +80,10 @@ public interface PandionJConstants {
 
 		Color SELECT = new Color(Display.getDefault(), 0, 0, 200);
 
-		Color VIEW_BACKGROUND = ColorConstants.white;
+		Color VIEW_BACKGROUND = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
+		
+		Color ILLUSTRATION = isDark(VIEW_BACKGROUND) ? ColorConstants.cyan : ColorConstants.blue;
+		
 		Color ERROR = ColorConstants.red;
 		
 		Color FRAME_BORDER = new Color(Display.getDefault(), 200, 200, 200);
@@ -98,6 +99,11 @@ public interface PandionJConstants {
 		static Color getVarColor(int i) {
 			assert i >= 0;
 			return i >= ROLE_VARS.length ? ColorConstants.black : ROLE_VARS[i];
+		}
+		
+		static boolean isDark(Color c) {
+			long lum = Math.round(0.2126*c.getRed() + 0.7152*c.getGreen() + 0.0722*c.getBlue());
+			return lum < 127;
 		}
 	}
 	
