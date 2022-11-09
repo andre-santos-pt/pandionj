@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+		<accessrules>
+			<accessrule kind="accessible" pattern="com.sun.jdi.*"/>
+		</accessrules>
+	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry excluding="pt/iscte/pandionj2/model/Variable.java|pt/iscte/pandionj2/model/Reference.java|pt/iscte/pandionj/Activator.java|pt/iscte/pandionj/figures/Var.java|pt/iscte/pandionj/tests/TestFigureParser.java|pt/iscte/pandionj/parser2/" kind="src" path="src"/>
 	<classpathentry kind="output" path="bin"/>

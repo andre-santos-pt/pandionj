@@ -6,24 +6,7 @@ Bundle-SymbolicName: pt.iscte.pandionj.launcher;singleton:=true
 Bundle-Version: 0.4
 Bundle-ClassPath: agent.jar,
  lib/javassist.jar
-Export-Package: javassist,
- javassist.bytecode,
- javassist.bytecode.analysis,
- javassist.bytecode.annotation,
- javassist.bytecode.stackmap,
- javassist.compiler,
- javassist.compiler.ast,
- javassist.convert,
- javassist.expr,
- javassist.runtime,
- javassist.scopedpool,
- javassist.tools,
- javassist.tools.reflect,
- javassist.tools.rmi,
- javassist.tools.web,
- javassist.util,
- javassist.util.proxy,
- pt.iscte.pandionj.agent
+Export-Package: pt.iscte.pandionj.agent
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.jdt.launching,
  org.eclipse.ui,
