@@ -233,6 +233,12 @@ public class PandionJView extends ViewPart {
 				String dialogText = "null".equals(message) ? "" : message;
 				if(exc.matches(ArrayIndexOutOfBoundsException.class)) {
 					dialogText = "Array was accessed at the invalid index " + message + ".";
+					String[] parts = message.split("\\s*");
+					for(String p : parts)
+						if(p.matches("-?\\d+")) {
+							message = p;
+							break;
+						}
 				}
 				else if(exc.matches(NullPointerException.class)) {
 					dialogText = "No object can be accessed through a null reference.";

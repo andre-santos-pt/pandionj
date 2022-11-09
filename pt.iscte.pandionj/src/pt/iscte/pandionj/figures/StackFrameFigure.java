@@ -100,7 +100,12 @@ public class StackFrameFigure extends Figure {
 						}
 					}
 					else if(event.type == StackEvent.Type.ARRAY_INDEX_EXCEPTION) {
-						illustrationArg = new Integer((String) event.arg);
+						try {
+							illustrationArg = Integer.parseInt((String) event.arg);
+						}
+						catch(Exception e) {
+							
+						}
 					}
 					else if(event.type == StackEvent.Type.EXCEPTION) {
 						illustrationArg = ExceptionType.match((String) event.arg);

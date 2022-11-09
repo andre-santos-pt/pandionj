@@ -37,7 +37,6 @@ class ValueLabel extends Label {
 	
 	ValueLabel(String fixedValue, boolean isIndexLabel){
 		setText(fixedValue);
-		setOpaque(!isIndexLabel);
 		setPreferredSize(PandionJConstants.POSITION_WIDTH, PandionJConstants.POSITION_WIDTH);
 		if(isIndexLabel){
 			FontManager.setFont(this, PandionJConstants.INDEX_FONT_SIZE);
@@ -45,6 +44,7 @@ class ValueLabel extends Label {
 			setForegroundColor(ColorConstants.gray);
 			setToolTip(new Label(fixedValue));
 		}else{
+			setOpaque(true);
 			FontManager.setFont(this, PandionJConstants.VALUE_FONT_SIZE);
 			setBackgroundColor(ColorConstants.white);
 			setBorder(new LineBorder(ColorConstants.black, PandionJConstants.ARRAY_LINE_WIDTH, SWT.LINE_SOLID));
