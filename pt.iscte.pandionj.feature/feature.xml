@@ -2,8 +2,8 @@
 <feature
       id="pt.iscte.pandionj.feature"
       label="PandionJ"
-      version="0.5"
-      provider-name="ISCTE-IUL"
+      version="0.6"
+      provider-name="Iscte - Instituto Universitario de Lisboa"
       os="linux,macosx,win32">
 
    <description url="http://www.example.com/description">
@@ -163,13 +163,6 @@ This Agreement is governed by the laws of the State of New York and the intellec
 
    <plugin
          id="com.google.guava"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="pt.iscte.pandionj.charts"
          download-size="0"
          install-size="0"
          version="0.0.0"

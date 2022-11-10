@@ -2,6 +2,7 @@ package pt.iscte.pandionj.perspective;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.ui.IFolderLayout;
 import org.eclipse.ui.IPageLayout;
 import org.eclipse.ui.IPerspectiveFactory;
 import org.eclipse.ui.PlatformUI;
@@ -27,7 +28,15 @@ public class PandionJPerspective implements IPerspectiveFactory {
 		factory.addView("pt.iscte.pandionj.view", IPageLayout.RIGHT, 0.5f, factory.getEditorArea());
 		
 //		factory.addStandaloneView(IConsoleConstants.ID_CONSOLE_VIEW, false, IPageLayout.BOTTOM, 0.8f, "pt.iscte.pandionj.view");
-		factory.addView(IConsoleConstants.ID_CONSOLE_VIEW, IPageLayout.BOTTOM, 0.8f, "pt.iscte.pandionj.view");
+		factory.addPlaceholder("test", IPageLayout.BOTTOM, 0.8f, "pt.iscte.pandionj.view");
+		
+		IFolderLayout bottom = factory.createFolder("topLeft",  IPageLayout.BOTTOM, 0.8f, "pt.iscte.pandionj.view");
+		
+		bottom.addView(IConsoleConstants.ID_CONSOLE_VIEW);
+		bottom.addView("org.eclipse.debug.ui.BreakpointView");
+		//factory.addView(IConsoleConstants.ID_CONSOLE_VIEW, IPageLayout.BOTTOM, 0.8f, "pt.iscte.pandionj.view");
+		//factory.addView("org.eclipse.debug.ui.BreakpointView", IPageLayout.BOTTOM, 0.8f, "pt.iscte.pandionj.view");
+		
 		factory.addNewWizardShortcut("org.eclipse.jdt.ui.wizards.JavaProjectWizard");
 		factory.addNewWizardShortcut("pt.iscte.perspective.wizards.NewPackageWizard");
 		factory.addNewWizardShortcut("pt.iscte.perspective.wizards.NewFileWizard");

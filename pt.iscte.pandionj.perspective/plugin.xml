@@ -6,7 +6,7 @@
       <perspective
             class="pt.iscte.pandionj.perspective.PandionJPerspective"
             fixed="true"
-            icon="icons/pandionj.gif"
+            icon="icons/pandionj-icon.png"
             id="pt.iscte.pandionj.perspective"
             name="PandionJ">
          <description>

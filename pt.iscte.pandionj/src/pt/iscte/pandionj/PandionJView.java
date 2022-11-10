@@ -31,6 +31,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -136,6 +137,7 @@ public class PandionJView extends ViewPart {
 		imageLabel.setImage(image);
 		imageLabel.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, true, true));
 
+		
 		Label versionLabel = new Label(introComp, SWT.NONE);
 		versionLabel.setText(getTitleToolTip());
 		versionLabel.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
@@ -158,6 +160,25 @@ public class PandionJView extends ViewPart {
 				MessageDialog.openInformation(Display.getDefault().getActiveShell(), "Installed tags", info);
 			}
 		});
+		
+		Link credit = new Link(introComp, SWT.NONE);
+		credit.setText("Credit: the eagle icon was obtained from <a>Flaticon.com</a>");
+		credit.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
+		credit.addSelectionListener(new SelectionAdapter()  {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Program.launch("https://Flaticon.com");
+            }
+        });
+		Link github = new Link(introComp, SWT.NONE);
+		github.setText("Project hosted on <a>GitHub</a>");
+		github.setLayoutData(new GridData(SWT.CENTER, SWT.BEGINNING, false, false));
+		github.addSelectionListener(new SelectionAdapter()  {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                Program.launch("https://github.com/andre-santos-pt/pandionj");
+            }
+        });
 
 		return introComp;
 	}
