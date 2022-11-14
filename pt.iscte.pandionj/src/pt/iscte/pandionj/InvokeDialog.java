@@ -19,6 +19,7 @@ public class InvokeDialog extends Dialog {
 	private StaticInvocationWidget invWidget;
 	private String invocationExpression;
 	private String[] paramValues;
+	private String[] expressionValues;
 	
 	public InvokeDialog(Shell parentShell, IMethod method, InvocationAction action) {
 		super(parentShell);
@@ -45,17 +46,19 @@ public class InvokeDialog extends Dialog {
 		return super.getInitialSize();
 	}
 	
-	void setValid(boolean valid, String invocationExpression, String[] paramValues) {
+	void setValid(boolean valid, String invocationExpression, String[] paramValues, String[] expressionValues) {
 		if(invokeButton != null)
 			invokeButton.setEnabled(valid);
 		this.invocationExpression = invocationExpression;
 		this.paramValues = paramValues;
+		this.expressionValues = expressionValues;
+		
 	}
 
 	@Override
 	protected void okPressed() {
 		super.okPressed();
-		action.invoke(invocationExpression, paramValues);
+		action.invoke(invocationExpression, paramValues, expressionValues);
 		invWidget.setCache(paramValues);
 	}
 

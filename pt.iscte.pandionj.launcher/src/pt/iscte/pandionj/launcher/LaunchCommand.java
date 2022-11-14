@@ -192,7 +192,7 @@ public class LaunchCommand extends AbstractHandler {
 
 								InvocationAction action = new InvocationAction() {
 									@Override
-									public void invoke(String expression, String[] paramValues) {
+									public void invoke(String expression, String[] paramValues, String[] paramExpressioValues) {
 										args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
 										try {
 											launch(file, lineFinal, t, args, mainMethod);

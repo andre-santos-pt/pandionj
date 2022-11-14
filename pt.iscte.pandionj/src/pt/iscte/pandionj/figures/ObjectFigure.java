@@ -334,7 +334,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 	private void invoke(IObjectModel model, IMethod m, Label resultLabel) {
 
 		PandionJUI.InvocationAction action = new PandionJUI.InvocationAction() {
-			public void invoke(String expression, String[] paramValues) {
+			public void invoke(String expression, String[] paramValues, String[] paramExpressioValues) {
 				model.invoke(m.getElementName(), new InvocationResult() {
 					public void valueReturn(Object o) {
 						PandionJUI.executeUpdate(() -> {
@@ -359,14 +359,14 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 							getModel().getRuntimeModel().evaluationNotify();
 						});
 					}
-				}, paramValues);
+				}, paramExpressioValues);
 			}
 		};
 
 		if(m.getNumberOfParameters() != 0)
 			PandionJUI.openInvocation(m, action);
 		else
-			action.invoke("", NO_PARAMS);
+			action.invoke("", NO_PARAMS, NO_PARAMS);
 	}
 
 	public ConnectionAnchor getIncommingAnchor() {

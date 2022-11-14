@@ -36,7 +36,7 @@ import pt.iscte.pandionj.parser.VarParser;
 public interface PandionJUI {
 
 	interface InvocationAction {
-		void invoke(String expression, String[] paramValues);
+		void invoke(String expression, String[] paramValues, String[] paramExpressioValues);
 	}
 
 //	static void promptInvocation(IFile file, IMethod m, InvocationAction a) {

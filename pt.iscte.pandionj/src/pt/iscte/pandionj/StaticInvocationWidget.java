@@ -2,6 +2,7 @@ package pt.iscte.pandionj;
 
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -136,7 +137,7 @@ public class StaticInvocationWidget extends Composite {
 
 	private void checkValidity() {
 		boolean allvalid = allValid();
-		invokeDialog.setValid(allvalid, allvalid ? getInvocationExpression() : null, getValues());
+		invokeDialog.setValid(allvalid, allvalid ? getInvocationExpression() : null, getValues( method.getParameterTypes()), getExpressionValues());
 	}
 	
 	
@@ -221,7 +222,7 @@ public class StaticInvocationWidget extends Composite {
 	private static String regexBooleanArray = regexArray("(true|false)");
 	private static String regexCharArray = regexArray("'.'");
 	
-//	private static String regexIntMatrix = "\\s*(\\{\\s*\\}\\s*)|(\\{" + regexIntArray + "(," + regexIntArray + ")*" + "\\})\\s*";
+	private static String regexIntMatrix = "\\s*(\\{\\s*\\}\\s*)|(\\{" + regexIntArray + "(," + regexIntArray + ")*" + "\\})\\s*";
 	
 	private boolean validValue(String val, String pType, Combo combo) {
 		try {
@@ -266,10 +267,14 @@ public class StaticInvocationWidget extends Composite {
 	}
 
 
-	public String[] getValues() {
+	public String[] getValues(String[] parameterTypes) {
 		String[] values = new String[paramBoxes.length];
-		for(int j = 0; j < values.length; j++)
+		for(int j = 0; j < values.length; j++) {
 			values[j] = trimZeros(paramBoxes[j].getText());
+			String pType = Signature.getSignatureSimpleName(parameterTypes[j]);
+			//if(pType.endsWith("[]"))
+			//	values[j] = "new " + pType + " " + values[j];
+		}
 		return values;
 	}
 	
@@ -283,13 +288,7 @@ public class StaticInvocationWidget extends Composite {
 	}
 
 	public String getInvocationExpression() {
-		String[] values = getValues();
-		String[] parameterTypes = method.getParameterTypes();
-
-		for(int i = 0; i < values.length; i++) {
-			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
-			values[i] = convertForTypedInvocation(values[i], pType);
-		}
+		String[] values = getExpressionValues();
 
 		try {
 			return (method.isConstructor() ? "new " + method.getElementName() : methodName) + "(" + String.join(", ", values) + ")";
@@ -297,6 +296,17 @@ public class StaticInvocationWidget extends Composite {
 			e.printStackTrace();
 			return null;
 		}
+	}
+	
+	public String[] getExpressionValues() {
+		String[] parameterTypes = method.getParameterTypes();
+		String[] values = getValues(parameterTypes);
+
+		for(int i = 0; i < values.length; i++) {
+			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
+			values[i] = convertForTypedInvocation(values[i], pType);
+		}
+		return values;
 	}
 
 	private String convertForTypedInvocation(String val, String pType) {
