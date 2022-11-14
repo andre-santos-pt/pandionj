@@ -2,7 +2,6 @@ package pt.iscte.pandionj;
 
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +12,12 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.Signature;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.ArrayInitializer;
+import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
@@ -26,7 +31,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import pt.iscte.pandionj.extensibility.PandionJConstants;
-import pt.iscte.pandionj.extensibility.PandionJUI.InvocationAction;
 import pt.iscte.pandionj.model.PrimitiveType;
 
 public class StaticInvocationWidget extends Composite {
@@ -137,7 +141,7 @@ public class StaticInvocationWidget extends Composite {
 
 	private void checkValidity() {
 		boolean allvalid = allValid();
-		invokeDialog.setValid(allvalid, allvalid ? getInvocationExpression() : null, getValues( method.getParameterTypes()), getExpressionValues());
+		invokeDialog.setValid(allvalid, allvalid ? generateInvocationScript() : null, getValues( method.getParameterTypes()), getExpressionValues());
 	}
 	
 	
@@ -203,28 +207,73 @@ public class StaticInvocationWidget extends Composite {
 				allValid = false;
 		}
 
+		if(allValid)
+			System.out.println(generateInvocationScript());
 		return allValid;
 	}
 
 	private boolean valid(Combo combo, String pType) {
-		return validValue(combo.getText(), pType, combo) ||  containsItem(combo, combo.getText());
+		return validValue(combo.getText(), pType) ||  containsItem(combo, combo.getText());
 	}
 
-	private static final String INT_REGEX = "\\-?\\s*\\d+";
-	private static final String DOUBLE_REGEX = "\\-?\\s*\\d*\\.?\\d+";
-	
-	private static String regexArray(String compType) {
-		return "\\s*((\\{\\s*\\})|(\\{\\s*" + compType + "\\s*+(,\\s*" + compType + "\\s*)*\\s*\\}))\\s*";
+	private String baseType(String pType) {
+			return pType.substring(0, pType.indexOf('['));
 	}
 	
-	private static String regexIntArray = regexArray(INT_REGEX);
-	private static String regexDoubleArray = regexArray(DOUBLE_REGEX);
-	private static String regexBooleanArray = regexArray("(true|false)");
-	private static String regexCharArray = regexArray("'.'");
+	private boolean isArrayType1D(String pType) {
+		return pType.endsWith("[]") && !pType.endsWith("[][]");
+	}
 	
-	private static String regexIntMatrix = "\\s*(\\{\\s*\\}\\s*)|(\\{" + regexIntArray + "(," + regexIntArray + ")*" + "\\})\\s*";
+	private boolean isArrayType2D(String pType) {
+		return pType.endsWith("[][]") && !pType.endsWith("[][][]");
+	}
 	
-	private boolean validValue(String val, String pType, Combo combo) {
+	private boolean allSameType(ArrayInitializer init, String pType, boolean dim2) {
+		for(Object o : init.expressions()) {
+			Expression e = (Expression) o;
+			if(e instanceof ArrayInitializer) {
+				boolean tmp = allSameType((ArrayInitializer) e, pType, false);
+				if(!tmp)
+					return false;
+			}
+			else if(e instanceof NullLiteral)  {
+				if(!dim2)
+					return false;
+			}
+			else {
+				if(dim2)
+					return false;
+			String val = e.toString();
+			try {
+				if(pType.equals(String.class.getSimpleName()) && !val.matches("(\"(.)*\")|null")) return false;
+				else if(pType.equals(char.class.getName()) && !val.matches("'.'")) return false;
+				else if(pType.equals(boolean.class.getName()) && !val.matches("true|false")) return false;
+				else if(pType.equals(byte.class.getName())) Byte.parseByte(val);
+				else if(pType.equals(short.class.getName())) Short.parseShort(val);
+				else if(pType.equals(int.class.getName())) Integer.parseInt(val);
+				else if(pType.equals(long.class.getName())) Long.parseLong(val);
+				else if(pType.equals(float.class.getName())) Float.parseFloat(val);
+				else if(pType.equals(double.class.getName())) Double.parseDouble(val);
+			}
+				catch (Exception e2) {
+					return false;
+				}
+			}
+		}
+			
+		return true;
+	}
+	
+	private boolean validValue(String val, String pType) {
+		ASTParser parser = ASTParser.newParser(AST.JLS18);
+			
+		parser.setKind(ASTParser.K_EXPRESSION);
+		parser.setResolveBindings(true);
+		parser.setBindingsRecovery(true);
+		parser.setStatementsRecovery(true);
+		parser.setSource(val.toCharArray());
+		ASTNode exp = parser.createAST(null);
+	
 		try {
 			if(pType.equals(String.class.getSimpleName())) return val.matches("(\"(.)*\")|null");
 			else if(pType.equals(char.class.getName())) return val.matches("'.'");
@@ -236,20 +285,77 @@ public class StaticInvocationWidget extends Composite {
 			else if(pType.equals(float.class.getName())) Float.parseFloat(val);
 			else if(pType.equals(double.class.getName())) Double.parseDouble(val);
 			
-			else if(pType.equals(int.class.getName() + "[]")) return val.matches(regexIntArray);
-			else if(pType.equals(double.class.getName() + "[]")) return val.matches(regexDoubleArray);
-			else if(pType.equals(boolean.class.getName() + "[]")) return val.matches(regexBooleanArray);
-			else if(pType.equals(char.class.getName() + "[]")) return val.matches(regexCharArray);
+			else if(exp instanceof ArrayInitializer && isArrayType1D(pType)) {
+				String baseType = baseType(pType);
+				return allSameType((ArrayInitializer) exp, baseType, false);
+			}
 			
-//			else if(pType.equals(int.class.getName() + "[][]")) return val.matches(regexIntMatrix);
-			
-			else return false;
+			else if(exp instanceof ArrayInitializer && isArrayType2D(pType)) {
+				String baseType = baseType(pType);
+				return allSameType((ArrayInitializer) exp, baseType, true);
+			}
+			else 
+				return false;
 		}
 		catch(RuntimeException e) {
 			return false;
 		}
 		return true;
 	}
+	
+	public String generateInvocationScript() {
+		String[] values = getValues(method.getParameterTypes());
+		
+		StringBuffer buf = new StringBuffer();
+		
+		int i = 0;
+		List<String> args = new ArrayList<>();
+		for (String t : method.getParameterTypes()) {
+			String pType = Signature.getSignatureSimpleName(t);
+			if(isArrayType2D(pType)) {
+				ASTParser parser = ASTParser.newParser(AST.JLS18);
+				parser.setKind(ASTParser.K_EXPRESSION);
+				parser.setResolveBindings(true);
+				parser.setBindingsRecovery(true);
+				parser.setStatementsRecovery(true);
+				parser.setSource(values[i].toCharArray());
+				
+				Expression e = (Expression) parser.createAST(null);
+				if(e instanceof NullLiteral)
+					buf.append(pType + " a$" + i + " = null;\n");
+				else if(e instanceof ArrayInitializer) {
+					ArrayInitializer init = (ArrayInitializer) e;
+					buf.append(pType + " a$" + i + " = new " + baseType(pType) + "[" + init.expressions().size() + "][]" + ";\n");
+					int j = 0;
+					for(Object o : init.expressions()) {
+						if(o instanceof NullLiteral)
+							buf.append("a$" + i + "[" + (j++) + "] = null;\n");
+						else
+							buf.append("a$" + i + "[" + (j++) + "] = new " + baseType(pType) + "[]"  + o.toString() + ";\n");
+					}
+				}
+			}
+			else {
+				buf.append(pType + " a$" + i + " = " + values[i] + ";\n");
+			}
+			args.add("a$"+i);
+			i++;
+		}
+		
+		try {
+			String retType = Signature.getSignatureSimpleName(method.getReturnType());
+			if(!retType.equals("void")) {
+				buf.append(retType + " result = ");
+			}
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+		}
+		
+		buf.append(method.getElementName() + "(" + String.join(",", args) + ");\n");
+		
+		return buf.toString();
+	}
+	
 
 	private String defaultItem(String pType) {
 		if(pType.equals(byte.class.getName())) 		return "0";
@@ -271,31 +377,15 @@ public class StaticInvocationWidget extends Composite {
 		String[] values = new String[paramBoxes.length];
 		for(int j = 0; j < values.length; j++) {
 			values[j] = trimZeros(paramBoxes[j].getText());
-			String pType = Signature.getSignatureSimpleName(parameterTypes[j]);
-			//if(pType.endsWith("[]"))
-			//	values[j] = "new " + pType + " " + values[j];
 		}
 		return values;
 	}
 	
-
-
 	private String trimZeros(String text) {
 		if(text.startsWith("0") && text.length() > 1)
 			return trimZeros(text.substring(1));
 		else
 			return text;
-	}
-
-	public String getInvocationExpression() {
-		String[] values = getExpressionValues();
-
-		try {
-			return (method.isConstructor() ? "new " + method.getElementName() : methodName) + "(" + String.join(", ", values) + ")";
-		} catch (JavaModelException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 	
 	public String[] getExpressionValues() {
@@ -318,9 +408,6 @@ public class StaticInvocationWidget extends Composite {
 		else if(pType.equals(double.class.getName()) && val.indexOf('.') == -1)
 			return val + ".0";
 		
-//		else if(pType.endsWith("[][]") && val.contains("{")) {
-//			return "new " + pType + " " + val;
-//		}
 		else if(pType.endsWith("[]") && val.contains("{")) {
 			if(val.matches("\\s*\\{\\s*\\}\\s*"))
 				return "new " + pType.replace("[]", "[0]");

@@ -143,7 +143,7 @@ public class LaunchCommand extends AbstractHandler {
 					return null;
 				}
 
-				final String agentArgs = type.getFullyQualifiedName().replace('.', '/');
+				final String agentArgs = type.getFullyQualifiedName().replace('.', '/'); // TODO BUG load package private?
 				IMethod mainMethod = type.getMethod("main", new String[] {"[QString;"});
 
 				// normal main()
@@ -193,7 +193,7 @@ public class LaunchCommand extends AbstractHandler {
 								InvocationAction action = new InvocationAction() {
 									@Override
 									public void invoke(String expression, String[] paramValues, String[] paramExpressioValues) {
-										args = agentArgs + "|" + expression.replaceAll("\"", "\\\\\"") + "|" + methodSig;
+										args = agentArgs + "\n" + expression.replaceAll("\"", "\\\\\"");
 										try {
 											launch(file, lineFinal, t, args, mainMethod);
 										} catch (CoreException e) {
@@ -205,7 +205,7 @@ public class LaunchCommand extends AbstractHandler {
 							}
 							else {  // no params
 								if(PandionJUI.checkView()) {
-									args = agentArgs + "|" + (selectedMethod.isConstructor() ? "new " + selectedMethod.getElementName() : selectedMethod.getElementName()) + "()" + "|" + methodSig;
+									args = agentArgs + "\n" +(selectedMethod.isConstructor() ? "new " + selectedMethod.getElementName() : selectedMethod.getElementName()) + "();";
 									launch(file, line, type, args, mainMethod);
 								}
 							}
