@@ -16,7 +16,9 @@ import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
+import org.eclipse.jdt.core.dom.ClassInstanceCreation;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NullLiteral;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
@@ -54,7 +56,6 @@ public class StaticInvocationWidget extends Composite {
 		cache = new HashMap<>();
 	}
 
-	private String methodName;
 	private IMethod method;
 	private InvokeDialog invokeDialog;
 	private Combo[] paramBoxes; 
@@ -67,8 +68,7 @@ public class StaticInvocationWidget extends Composite {
 		this.method = method;
 
 		setLayout(rowLayout);
-
-		methodName = method.getElementName();
+		
 		parameterTypes = method.getParameterTypes();
 		Label label = new Label(this, SWT.NONE);
 		FontManager.setFont(label, PandionJConstants.VAR_FONT_SIZE);
@@ -141,7 +141,7 @@ public class StaticInvocationWidget extends Composite {
 
 	private void checkValidity() {
 		boolean allvalid = allValid();
-		invokeDialog.setValid(allvalid, allvalid ? generateInvocationScript() : null, getValues( method.getParameterTypes()), getExpressionValues());
+		invokeDialog.setValid(allvalid, allvalid ? generateInvocationScript() : null, getValues(), getExpressionValues());
 	}
 	
 	
@@ -207,8 +207,6 @@ public class StaticInvocationWidget extends Composite {
 				allValid = false;
 		}
 
-		if(allValid)
-			System.out.println(generateInvocationScript());
 		return allValid;
 	}
 
@@ -265,7 +263,7 @@ public class StaticInvocationWidget extends Composite {
 	}
 	
 	private boolean validValue(String val, String pType) {
-		ASTParser parser = ASTParser.newParser(AST.JLS18);
+		ASTParser parser = ASTParser.newParser(AST.JLS12);
 			
 		parser.setKind(ASTParser.K_EXPRESSION);
 		parser.setResolveBindings(true);
@@ -294,6 +292,16 @@ public class StaticInvocationWidget extends Composite {
 				String baseType = baseType(pType);
 				return allSameType((ArrayInitializer) exp, baseType, true);
 			}
+//			else if(exp instanceof ClassInstanceCreation) {
+//				ClassInstanceCreation newInst = (ClassInstanceCreation) exp;
+//				//method.getClassFile().get
+//				
+//			}
+//			else if(exp instanceof MethodInvocation) {
+//				
+//				System.out.println(exp);
+//				
+//			}
 			else 
 				return false;
 		}
@@ -304,7 +312,7 @@ public class StaticInvocationWidget extends Composite {
 	}
 	
 	public String generateInvocationScript() {
-		String[] values = getValues(method.getParameterTypes());
+		String[] values = getValues();
 		
 		StringBuffer buf = new StringBuffer();
 		
@@ -313,7 +321,7 @@ public class StaticInvocationWidget extends Composite {
 		for (String t : method.getParameterTypes()) {
 			String pType = Signature.getSignatureSimpleName(t);
 			if(isArrayType2D(pType)) {
-				ASTParser parser = ASTParser.newParser(AST.JLS18);
+				ASTParser parser = ASTParser.newParser(AST.JLS12);
 				parser.setKind(ASTParser.K_EXPRESSION);
 				parser.setResolveBindings(true);
 				parser.setBindingsRecovery(true);
@@ -373,7 +381,7 @@ public class StaticInvocationWidget extends Composite {
 	}
 
 
-	public String[] getValues(String[] parameterTypes) {
+	private String[] getValues() {
 		String[] values = new String[paramBoxes.length];
 		for(int j = 0; j < values.length; j++) {
 			values[j] = trimZeros(paramBoxes[j].getText());
@@ -388,9 +396,9 @@ public class StaticInvocationWidget extends Composite {
 			return text;
 	}
 	
-	public String[] getExpressionValues() {
+	private String[] getExpressionValues() {
 		String[] parameterTypes = method.getParameterTypes();
-		String[] values = getValues(parameterTypes);
+		String[] values = getValues();
 
 		for(int i = 0; i < values.length; i++) {
 			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);

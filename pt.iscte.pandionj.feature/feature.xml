@@ -2,7 +2,7 @@
 <feature
       id="pt.iscte.pandionj.feature"
       label="PandionJ"
-      version="0.6"
+      version="0.7"
       provider-name="Iscte - Instituto Universitario de Lisboa"
       os="linux,macosx,win32">
 

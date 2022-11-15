@@ -30,6 +30,7 @@ public class PandionJAgentScript {
 					ClassPool cp = ClassPool.getDefault();
 					try {
 						CtClass cc = cp.get(s.replace('/', '.'));
+						cp.importPackage(cc.getPackageName());
 						try {
 							// check if real main method exists
 							CtMethod mainMethod = cc.getMethod("main", "([Ljava/lang/String;)V");
@@ -57,7 +58,7 @@ public class PandionJAgentScript {
 			private void generateMain(CtClass cc, String script) throws CannotCompileException, NotFoundException {
 				CtMethod m = CtNewMethod.make("public static void main(String[] args) { }", cc);
 				cc.addMethod(m);
-
+				
 				m.insertAfter(script);
 
 				m.insertAfter("System.exit(0);");

@@ -59,8 +59,6 @@ public class InvokeDialog extends Dialog {
 	@Override
 	protected void okPressed() {
 		super.okPressed();
-//		String script = invWidget.generateInvocationScript();
-//		System.out.println(script);
 		action.invoke(invocationExpression, paramValues, expressionValues);
 		invWidget.setCache(paramValues);
 	}

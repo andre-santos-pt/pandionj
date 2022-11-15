@@ -82,6 +82,8 @@ public interface PandionJConstants {
 
 		Color VIEW_BACKGROUND = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
 		
+		Color FOREGROUND = Display.getDefault().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND);
+		
 		Color ILLUSTRATION = isDark(VIEW_BACKGROUND) ? ColorConstants.cyan : ColorConstants.blue;
 		
 		Color ERROR = ColorConstants.red;

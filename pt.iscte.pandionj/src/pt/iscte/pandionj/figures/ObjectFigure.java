@@ -276,7 +276,8 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 			setLayoutManager(new FlowLayout());
 			button = new Button(shortSig(method));
 			button.setToolTip(new Label(longSig(method)));
-			button.setForegroundColor(ColorConstants.black);
+			button.setForegroundColor(PandionJConstants.Colors.FOREGROUND);
+			button.setBackgroundColor(PandionJConstants.Colors.VIEW_BACKGROUND);
 			FontManager.setFont(button, PandionJConstants.BUTTON_FONT_SIZE);
 			button.setEnabled(methodsEnabled);
 			add(button);

@@ -2,10 +2,10 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: PandionJ Debugger View
 Bundle-SymbolicName: pt.iscte.pandionj;singleton:=true
-Bundle-Version: 0.6
+Bundle-Version: 0.7
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
- org.eclipse.jdt.core;visibility:=reexport,
+ org.eclipse.jdt.core;bundle-version="3.19.0";visibility:=reexport,
  com.google.guava,
  org.eclipse.jdt.debug,
  org.eclipse.ui.ide,
