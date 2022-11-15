@@ -205,7 +205,9 @@ public class LaunchCommand extends AbstractHandler {
 							}
 							else {  // no params
 								if(PandionJUI.checkView()) {
-									args = agentArgs + "\n" +(selectedMethod.isConstructor() ? "new " + selectedMethod.getElementName() : selectedMethod.getElementName()) + "();";
+									args = agentArgs + "\n" + PandionJUI.generateInvocationScript(selectedMethod, 
+											selectedMethod.getElementName() + "()",
+											new String[0]).replaceAll("\"", "\\\\\"");
 									launch(file, line, type, args, mainMethod);
 								}
 							}

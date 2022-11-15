@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 
 import pt.iscte.pandionj.extensibility.PandionJConstants;
+import pt.iscte.pandionj.extensibility.PandionJUI;
 import pt.iscte.pandionj.model.PrimitiveType;
 
 public class StaticInvocationWidget extends Composite {
@@ -141,7 +142,7 @@ public class StaticInvocationWidget extends Composite {
 
 	private void checkValidity() {
 		boolean allvalid = allValid();
-		invokeDialog.setValid(allvalid, allvalid ? generateInvocationScript() : null, getValues(), getExpressionValues());
+		invokeDialog.setValid(allvalid, allvalid ? PandionJUI.generateInvocationScript(method, getInvocationExpression(), getValues()) : null, getValues(), getExpressionValues());
 	}
 	
 	
@@ -214,16 +215,20 @@ public class StaticInvocationWidget extends Composite {
 		return validValue(combo.getText(), pType) ||  containsItem(combo, combo.getText());
 	}
 
-	private String baseType(String pType) {
+	public static String baseType(String pType) {
 			return pType.substring(0, pType.indexOf('['));
 	}
 	
-	private boolean isArrayType1D(String pType) {
+	public static boolean isArrayType1D(String pType) {
 		return pType.endsWith("[]") && !pType.endsWith("[][]");
 	}
 	
-	private boolean isArrayType2D(String pType) {
+	public static boolean isArrayType2D(String pType) {
 		return pType.endsWith("[][]") && !pType.endsWith("[][][]");
+	}
+	
+	public static boolean isPrimitive(String pType) {
+		return pType.matches("boolean|char|byte|short|int|long|double|float");
 	}
 	
 	private boolean allSameType(ArrayInitializer init, String pType, boolean dim2) {
@@ -311,58 +316,7 @@ public class StaticInvocationWidget extends Composite {
 		return true;
 	}
 	
-	public String generateInvocationScript() {
-		String[] values = getValues();
-		
-		StringBuffer buf = new StringBuffer();
-		
-		int i = 0;
-		List<String> args = new ArrayList<>();
-		for (String t : method.getParameterTypes()) {
-			String pType = Signature.getSignatureSimpleName(t);
-			if(isArrayType2D(pType)) {
-				ASTParser parser = ASTParser.newParser(AST.JLS12);
-				parser.setKind(ASTParser.K_EXPRESSION);
-				parser.setResolveBindings(true);
-				parser.setBindingsRecovery(true);
-				parser.setStatementsRecovery(true);
-				parser.setSource(values[i].toCharArray());
-				
-				Expression e = (Expression) parser.createAST(null);
-				if(e instanceof NullLiteral)
-					buf.append(pType + " a$" + i + " = null;\n");
-				else if(e instanceof ArrayInitializer) {
-					ArrayInitializer init = (ArrayInitializer) e;
-					buf.append(pType + " a$" + i + " = new " + baseType(pType) + "[" + init.expressions().size() + "][]" + ";\n");
-					int j = 0;
-					for(Object o : init.expressions()) {
-						if(o instanceof NullLiteral)
-							buf.append("a$" + i + "[" + (j++) + "] = null;\n");
-						else
-							buf.append("a$" + i + "[" + (j++) + "] = new " + baseType(pType) + "[]"  + o.toString() + ";\n");
-					}
-				}
-			}
-			else {
-				buf.append(pType + " a$" + i + " = " + values[i] + ";\n");
-			}
-			args.add("a$"+i);
-			i++;
-		}
-		
-		try {
-			String retType = Signature.getSignatureSimpleName(method.getReturnType());
-			if(!retType.equals("void")) {
-				buf.append(retType + " result = ");
-			}
-		} catch (JavaModelException e) {
-			e.printStackTrace();
-		}
-		
-		buf.append(method.getElementName() + "(" + String.join(",", args) + ");\n");
-		
-		return buf.toString();
-	}
+	
 	
 
 	private String defaultItem(String pType) {
@@ -424,6 +378,17 @@ public class StaticInvocationWidget extends Composite {
 		}
 		else
 			return val;
+	}
+	
+	public String getInvocationExpression() {
+		String[] values = getExpressionValues();
+
+		try {
+			return (method.isConstructor() ? "new " + method.getElementName() : method.getElementName()) + "(" + String.join(", ", values) + ")";
+		} catch (JavaModelException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 
