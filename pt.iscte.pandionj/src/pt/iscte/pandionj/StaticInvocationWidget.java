@@ -268,7 +268,7 @@ public class StaticInvocationWidget extends Composite {
 	}
 	
 	private boolean validValue(String val, String pType) {
-		ASTParser parser = ASTParser.newParser(AST.JLS12);
+		ASTParser parser = ASTParser.newParser(AST.JLS8);
 			
 		parser.setKind(ASTParser.K_EXPRESSION);
 		parser.setResolveBindings(true);

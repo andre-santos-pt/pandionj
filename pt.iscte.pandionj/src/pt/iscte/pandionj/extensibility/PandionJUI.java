@@ -182,7 +182,7 @@ public interface PandionJUI {
 		for (String t : method.getParameterTypes()) {
 			String pType = Signature.getSignatureSimpleName(t);
 			if(StaticInvocationWidget.isArrayType2D(pType)) {
-				ASTParser parser = ASTParser.newParser(AST.JLS12);
+				ASTParser parser = ASTParser.newParser(AST.JLS8);
 				parser.setKind(ASTParser.K_EXPRESSION);
 				parser.setResolveBindings(true);
 				parser.setBindingsRecovery(true);
