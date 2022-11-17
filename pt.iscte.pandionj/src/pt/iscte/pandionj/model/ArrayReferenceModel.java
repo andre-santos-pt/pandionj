@@ -7,7 +7,6 @@ import org.eclipse.jdt.debug.core.IJavaVariable;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
-import pt.iscte.pandionj.extensibility.IVariableModel;
 import pt.iscte.pandionj.parser.VariableInfo;
 
 
