@@ -112,7 +112,7 @@ public class StackFrameFigure extends Figure {
 					}
 					else if (event.type == StackEvent.Type.RETURN_VALUE) {
 						if(!event.arg.equals("null"))
-							label.setText(label.getText() + " = " + event.arg);
+							label.setText(frame.getInvocationExpression());
 					}
 
 					for (IReferenceModel ref : frame.getReferenceVariables())
