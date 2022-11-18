@@ -49,15 +49,6 @@ public interface PandionJUI {
 		void invoke(String expression, String[] paramValues, String[] paramExpressioValues);
 	}
 
-//	static void promptInvocation(IFile file, IMethod m, InvocationAction a) {
-//		PandionJView view = PandionJView.getInstance();
-//		if(view == null)
-//			view = openViewDialog();
-//
-//		if(view != null && m.getNumberOfParameters() != 0)
-//			view.promptInvocation(file, m, a);
-//	}
-
 	static PandionJView openViewDialog() {
 		if(MessageDialog.openConfirm(Display.getDefault().getActiveShell(), "Open PandionJ view", PandionJConstants.Messages.RUN_DIALOG)) {
 			try {
@@ -81,10 +72,6 @@ public interface PandionJUI {
 		PandionJView instance = PandionJView.getInstance();
 		if(instance != null)
 			instance.setFocus();
-//		PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().activate(instance);
-//		IWorkbenchPage activePage = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-//		IViewReference viewRef = activePage.findViewReference(Constants.VIEW_ID);
-//		viewRef.getPart(false).getSite().getSelectionProvider().setSelection(StructuredSelection.EMPTY);
 
 	}
 	
@@ -175,6 +162,7 @@ public interface PandionJUI {
 	}
 	
 	public static String generateInvocationScript(IMethod method, String invocationExpression, String[] values) {
+		invocationExpression = invocationExpression.replace("\"", "\\\\\"");
 		StringBuffer buf = new StringBuffer();
 		
 		int i = 0;
@@ -221,20 +209,45 @@ public interface PandionJUI {
 		if(!retType.equals("void"))
 			buf.append(retType + " result = ");
 		
-		buf.append(method.getElementName() + "(" + String.join(",", args) + ");\n");
+		buf.append(method.getElementName() + "(" + String.join(", ", args) + ");\n");
 		if(!retType.equals("void")) {
-			if(StaticInvocationWidget.isArrayType1D(retType))
-				buf.append("System.out.println(\""  + invocationExpression + " = \" + java.util.Arrays.toString(result));");
+			if(StaticInvocationWidget.isArrayType1D(retType)) {
+				String baseType = StaticInvocationWidget.baseType(retType);
+				buf.append("System.out.print(\""  + invocationExpression + 
+						" = {\");\n");
+				buf.append("for(int i = 0; i < result.length; i++) {");
+				buf.append("if(i != 0) System.out.print(\",\");");
+				if(baseType.equals("String"))
+					buf.append("System.out.print(\"\\\\\"\" + result[i] + \"\\\\\"\");}");
+				else if (baseType.equals("char"))
+					buf.append("System.out.print(\"'\" + result[i] + \"'\");}");
+				else
+					buf.append("System.out.print(result[i]);}");
+				buf.append("System.out.println(\"}\");\n");
+			}
 			else if(StaticInvocationWidget.isArrayType2D(retType)) {
+				String baseType = StaticInvocationWidget.baseType(retType);
 				String spaces = "";
 				for(int s = 0; s < invocationExpression.length() + 4; s++)
 					spaces += " ";
-				buf.append("System.out.print(\"" + invocationExpression + " = [\");");
+				buf.append("System.out.print(\"" + invocationExpression + " = {\");");
 				buf.append("for(int i = 0; i < result.length; i++) {");
-				buf.append("String s = java.util.Arrays.toString(result[i]);");
+				
+				buf.append("String s = \"{\";\n");
+				buf.append("for(int j = 0; j < result[i].length; j++) {\n");
+				buf.append("if(j != 0) s += \",\";\n");
+
+				if(baseType.equals("String"))
+					buf.append("s += \"\\\\\"\" + result[i][j] + \"\\\\\"\";}");
+				else if (baseType.equals("char"))
+					buf.append("s += \"'\" + result[i][j] + \"'\";}");
+				else
+					buf.append("s += result[i][j];}\n");
+				buf.append("s += \"}\";\n");
+				
 				buf.append("if(i != 0) System.out.print(\",\\n" + spaces + "\");");
 				buf.append("System.out.print(s);};");
-				buf.append("System.out.println(\"]\");");
+				buf.append("System.out.println(\"}\");");
 			}
 			else if(retType.equals("String")) {
 				buf.append("System.out.print(\""  + invocationExpression + " = \");");
@@ -244,9 +257,9 @@ public interface PandionJUI {
 			}
 			else if(retType.equals("char")) {
 				buf.append("System.out.print(\""  + invocationExpression + " = \");");
-				buf.append("System.out.print(\"\\\\'\");");
+				buf.append("System.out.print(\"'\");");
 				buf.append("System.out.print(result);");
-				buf.append("System.out.println(\"\\\\\'\");");	
+				buf.append("System.out.println(\"'\");");	
 			}
 			else
 				buf.append("System.out.println(\""  + invocationExpression + " = \" + result);");

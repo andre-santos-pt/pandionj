@@ -3,8 +3,10 @@ package pt.iscte.pandionj;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
@@ -52,7 +54,7 @@ public class StaticInvocationWidget extends Composite {
 		comboLayout.marginHeight = 3;
 		comboLayout.verticalSpacing = 1;
 
-		cache = new HashMap<>();
+		cache = new WeakHashMap<>();
 	}
 
 	private IMethod method;
@@ -168,9 +170,14 @@ public class StaticInvocationWidget extends Composite {
 			assert list.size() == combos.length;
 			for(int i = 0; i < combos.length; i++) {
 				List<String> values = list.get(i);
-				for(String v : values)
-					if(!containsItem(combos[i], v))
+				Iterator<String> it = values.iterator();
+				while(it.hasNext()) {
+					String v = it.next();
+					if(!validValue(v, parameterTypes[i]))
+						it.remove();
+					else if(!containsItem(combos[i], v))
 						combos[i].add(v);
+				}
 
 				if(values.size() > 0)
 					combos[i].select(combos[i].getItemCount()-1);
@@ -406,6 +413,7 @@ public class StaticInvocationWidget extends Composite {
 		}
 	}
 
+	// TODO remove invalid
 	void setCache(String[] values) {
 		String key = getMethodKey(method);
 		List<List<String>> comboValues = cache.get(key);
