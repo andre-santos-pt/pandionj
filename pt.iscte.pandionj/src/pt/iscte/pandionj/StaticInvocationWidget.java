@@ -2,7 +2,6 @@ package pt.iscte.pandionj;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -111,10 +110,11 @@ public class StaticInvocationWidget extends Composite {
 		FontManager.setFont(varName, PandionJConstants.MESSAGE_FONT_SIZE);
 		varName.setForeground(PandionJConstants.Colors.ROLE_ANNOTATIONS);
 		varName.setToolTipText(pType);
-		addRefCombovalues(combo, paramType);
 
 		if(combo.getItemCount() == 0)
 			combo.setText(defaultItem(pType));
+
+		addRefCombovalues(combo, paramType);
 
 		combo.addKeyListener(new KeyAdapter() {
 			//				public void keyPressed(KeyEvent e) {
@@ -149,6 +149,7 @@ public class StaticInvocationWidget extends Composite {
 	private void addRefCombovalues(Combo combo, String paramType) {
 		if(!PrimitiveType.isPrimitiveSig(paramType)) {
 			combo.add("null");
+			
 			IType owner = (IType) method.getParent();
 			try {
 				IField[] fields = owner.getFields();
@@ -160,6 +161,9 @@ public class StaticInvocationWidget extends Composite {
 			} catch (JavaModelException e1) {
 				e1.printStackTrace();
 			}
+			
+			if(paramType.startsWith("["))
+				combo.add("{ }");
 		}
 	}
 
@@ -222,6 +226,10 @@ public class StaticInvocationWidget extends Composite {
 
 	public static String baseType(String pType) {
 			return pType.substring(0, pType.indexOf('['));
+	}
+	
+	public static boolean isArrayType(String pType) {
+		return pType.endsWith("[]");
 	}
 	
 	public static boolean isArrayType1D(String pType) {
@@ -336,6 +344,8 @@ public class StaticInvocationWidget extends Composite {
 
 		if(pType.equals(String.class.getSimpleName())) 	return "\"\"";
 
+		if(isArrayType(pType)) return "{ }";
+		
 		return "null";
 	}
 
@@ -361,7 +371,7 @@ public class StaticInvocationWidget extends Composite {
 
 		for(int i = 0; i < values.length; i++) {
 			String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
-			values[i] = convertForTypedInvocation(values[i], pType);
+			//values[i] = convertForTypedInvocation(values[i], pType);
 		}
 		return values;
 	}
@@ -413,7 +423,6 @@ public class StaticInvocationWidget extends Composite {
 		}
 	}
 
-	// TODO remove invalid
 	void setCache(String[] values) {
 		String key = getMethodKey(method);
 		List<List<String>> comboValues = cache.get(key);

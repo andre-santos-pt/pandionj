@@ -26,7 +26,7 @@ public class ParserManager {
 			tagParser.run();
 			tagParserCache.put(f, tagParser);
 		}
-		r.print();
+		//r.print();
 		return r;
 	}
 	

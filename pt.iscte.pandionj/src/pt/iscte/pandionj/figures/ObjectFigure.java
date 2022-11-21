@@ -344,7 +344,7 @@ public class ObjectFigure extends PandionJFigure<IObjectModel> {
 							try {
 								if(PrimitiveType.isPrimitive(Signature.getSignatureSimpleName(m.getReturnType()))) {
 									String val = o.toString();
-									if(m.getReturnType().equals("char"))
+									if(m.getReturnType().equals("C"))
 										val = "'" + val + "'";
 									resultLabel.setText(" = " + val);
 								}
