@@ -108,7 +108,8 @@ public class PandionJView extends ViewPart {
 		super.dispose();
 		DebugPlugin.getDefault().removeDebugEventListener(debugEventListener);
 		JDIDebugModel.removeJavaBreakpointListener(breakpointListener);
-		FontManager.dispose();
+		FontManager.disposeAll();
+		ImageManager.disposeAll();
 		instance = null;
 	}
 
@@ -422,5 +423,6 @@ public class PandionJView extends ViewPart {
 	public static ErrorHandler getErrorHandler() {
 		return instance.logListener;
 	}
+
 
 }

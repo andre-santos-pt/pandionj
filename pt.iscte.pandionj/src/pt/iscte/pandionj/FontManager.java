@@ -34,7 +34,7 @@ public class FontManager {
 		figure.setFont(getFont(size, styles));
 	}
 
-	public static void dispose() {
+	public static void disposeAll() {
 		for(Font f : instances.values())
 			f.dispose();
 	}

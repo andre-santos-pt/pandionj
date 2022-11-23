@@ -36,6 +36,7 @@ import org.osgi.framework.Bundle;
 
 import pt.iscte.pandionj.ColorManager;
 import pt.iscte.pandionj.FontManager;
+import pt.iscte.pandionj.ImageManager;
 import pt.iscte.pandionj.InvokeDialog;
 import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.RuntimeViewer;
@@ -106,12 +107,10 @@ public interface PandionJUI {
 	 * Get image contained in the 'images' folder of the plugin
 	 */
 	static Image getImage(String name) {
-		Bundle bundle = Platform.getBundle(PandionJConstants.PLUGIN_ID);
-		URL imagePath = FileLocator.find(bundle, new Path(PandionJConstants.IMAGE_FOLDER + "/" + name), null);
-		ImageDescriptor imageDesc = ImageDescriptor.createFromURL(imagePath);
-		return imageDesc.createImage();
+		return ImageManager.getImage(name);
 	}
 
+	
 	interface DebugOperation<T> {
 		T run() throws DebugException;
 	}
