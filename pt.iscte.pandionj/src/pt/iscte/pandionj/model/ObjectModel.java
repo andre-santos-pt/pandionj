@@ -1,6 +1,7 @@
 package pt.iscte.pandionj.model;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -27,6 +28,7 @@ import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.debug.core.IJavaClassType;
 import org.eclipse.jdt.debug.core.IJavaFieldVariable;
 import org.eclipse.jdt.debug.core.IJavaObject;
 import org.eclipse.jdt.debug.core.IJavaPrimitiveValue;
@@ -95,8 +97,17 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 	private void addFields(IJavaObject object) throws DebugException {
 		if(jType == null)
 			return;
-
-		for(IVariable v : object.getVariables()) {
+		IJavaClassType type = (IJavaClassType) object.getJavaType();
+		List<String> fieldNames = Arrays.asList(type.getAllFieldNames());
+ 		List<IVariable> vars = Arrays.asList(object.getVariables());
+ 		vars.sort((a,b) -> {
+			try {
+				return fieldNames.indexOf(a.getName()) - fieldNames.indexOf(b.getName());
+			} catch (DebugException e) {
+				return 0;
+			}
+		});
+		for(IVariable v : vars) {
 			IJavaVariable var = (IJavaVariable) v;
 
 			if(!var.isStatic() && !var.isSynthetic()) {
