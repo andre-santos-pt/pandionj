@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.IExpressionManager;
@@ -301,7 +303,7 @@ implements IRuntimeModel {
 					try {
 						IJavaProject javaProject = getTopFrame().getJavaProject();
 						if(javaProject != null)
-							type = javaProject.findType(obj.getJavaType().getName());
+							type = javaProject.findType(obj.getJavaType().getName(), new NullProgressMonitor());
 					} catch (JavaModelException e1) {
 						e1.printStackTrace();
 					}
