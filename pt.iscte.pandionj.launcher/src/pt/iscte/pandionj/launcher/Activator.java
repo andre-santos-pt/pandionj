@@ -67,7 +67,7 @@ public class Activator extends AbstractUIPlugin {
 								IWorkbenchPage page = window.getActivePage();
 
 								HashMap<String, Object> map = new HashMap<>();
-								map.put(IMarker.LINE_NUMBER, new Integer(line+1));
+								map.put(IMarker.LINE_NUMBER, Integer.valueOf(line+1));
 								IMarker marker = srcFile.createMarker(IMarker.TEXT);
 								marker.setAttributes(map);
 								IEditorPart openEditor = IDE.openEditor(page, marker);

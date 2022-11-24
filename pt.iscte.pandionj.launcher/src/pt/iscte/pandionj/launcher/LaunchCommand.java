@@ -124,7 +124,6 @@ public class LaunchCommand extends AbstractHandler {
 				return null;
 			}
 
-			// FIXME not working if package-private class does not have same name has the file
 			final int lineFinal = line;
 			IJavaElement e = javaProj.findElement(p.removeFirstSegments(1));
 			if(e == null)
@@ -143,7 +142,7 @@ public class LaunchCommand extends AbstractHandler {
 					return null;
 				}
 
-				final String agentArgs = type.getFullyQualifiedName().replace('.', '/'); // TODO BUG load package private?
+				final String agentArgs = type.getFullyQualifiedName().replace('.', '/');
 				IMethod mainMethod = type.getMethod("main", new String[] {"[QString;"});
 
 				// normal main()
@@ -261,7 +260,7 @@ public class LaunchCommand extends AbstractHandler {
 				"Place the cursor at a line of the body of a static method.");
 	}
 
-	private void launch(IResource file, int line, IType type, String agentArgs, IMethod mainMethod)
+	public static void launch(IResource file, int line, IType type, String agentArgs, IMethod mainMethod)
 			throws CoreException {
 		ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
 		ILaunchConfigurationType confType = manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);

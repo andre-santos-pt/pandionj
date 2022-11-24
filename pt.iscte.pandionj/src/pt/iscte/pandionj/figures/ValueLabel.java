@@ -59,7 +59,7 @@ class ValueLabel extends Label {
 			setForegroundColor(textValue.equals(Boolean.TRUE.toString()) ? PandionJConstants.Colors.TRUE : PandionJConstants.Colors.FALSE);
 
 		setToolTip(new Label(textValue));
-		//setAutoFont(PandionJConstants.VALUE_FONT_SIZE, textValue);
+		setAutoFont(PandionJConstants.VALUE_FONT_SIZE, textValue);
 //		if(!model.isBoolean() && textValue.length() > (model.isDecimal() ? 5 : 2))
 //			FontManager.setFont(this, (int) (Constants.VALUE_FONT_SIZE*.66));
 //		else
