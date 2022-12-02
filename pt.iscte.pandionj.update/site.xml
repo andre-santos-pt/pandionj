@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-   <feature url="features/pt.iscte.pandionj.feature_0.8.0.jar" id="pt.iscte.pandionj.feature" version="0.8" os="linux,macosx,win32">
+   <feature url="features/pt.iscte.pandionj.feature_0.8.2.jar" id="pt.iscte.pandionj.feature" version="0.8.2" os="linux,macosx,win32">
       <category name="pandionj"/>
    </feature>
    <category-def name="pandionj" label="PandionJ"/>

@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.parser;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -37,15 +38,22 @@ public class TagParser {
 
 	private Set<String> validTags;
 
-	public TagParser(String path, Set<String> validTags) {
-		parser = JavaSourceParser.createFromFile(path);
+	private TagParser(String path, Set<String> validTags, Charset charSet) {
+		parser = JavaSourceParser.createFromFile(path, charSet);
 		cunit = parser.getCompilationUnit();
 		variables = new ArrayList<>();
 		this.validTags = validTags;
 	}
 
+	private static Charset getCharset(IFile file) {
+		try {
+			return Charset.forName(file.getCharset());
+		} catch (CoreException e) {
+			return Charset.defaultCharset();
+		}
+	}
 	public TagParser(IFile file, Set<String> validTags) {
-		this(file.getLocation().toOSString(), validTags);
+		this(file.getLocation().toOSString(), validTags, getCharset(file));
 		this.file = file;
 
 		try {

@@ -1,5 +1,6 @@
 package pt.iscte.pandionj.tests;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +21,7 @@ public class TestParser {
 	private JavaSourceParser parser;
 
 	public TestParser(String path) {
-		parser = JavaSourceParser.createFromFile(path);
+		parser = JavaSourceParser.createFromFile(path, Charset.defaultCharset());
 	}
 
 	public TestParser(IFile file) {

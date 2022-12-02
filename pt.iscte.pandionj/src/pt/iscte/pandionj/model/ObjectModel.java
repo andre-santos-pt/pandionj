@@ -1,5 +1,7 @@
 package pt.iscte.pandionj.model;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -21,6 +23,7 @@ import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.debug.core.model.IWatchExpressionDelegate;
 import org.eclipse.debug.core.model.IWatchExpressionListener;
 import org.eclipse.debug.core.model.IWatchExpressionResult;
+import org.eclipse.jdi.internal.ObjectReferenceImpl;
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMember;
@@ -41,8 +44,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multiset;
-import com.sun.jdi.InvocationException;
-import com.sun.jdi.ReferenceType;
 
 import pt.iscte.pandionj.ExtensionManager;
 import pt.iscte.pandionj.extensibility.IArrayModel;
@@ -575,27 +576,42 @@ public class ObjectModel extends EntityModel<IJavaObject> implements IObjectMode
 			}
 			else if(exception != null) {
 				String trimExpression = trimExpression(expression);
-				InvocationException cause = (InvocationException) exception.getCause();
-				//				cause.printStackTrace();
-				//				ObjectReference exception2 = cause.exception();
-				ReferenceType referenceType = cause.exception().referenceType();
-				//				Field field = referenceType.fieldByName("NULL_CAUSE_MESSAGE");
-				//				StackTraceElement[] stackTrace = ((InvocationException)exception.getCause()).getStackTrace();
-				//				String message = ((InvocationException)exception.getCause()).getMessage();
-				//				System.out.println(message);
-				//				System.out.println(stackTrace[0].getClassName() + " " + stackTrace[0].getLineNumber());
-				String exceptionType = ((InvocationException)exception.getCause()).exception().referenceType().name();
 				PandionJUI.executeUpdate(() -> {
-					if(exceptionType.equals(IllegalArgumentException.class.getName()))
-						MessageDialog.openError(Display.getDefault().getActiveShell(), "Illegal arguments",
-								trimExpression + " was invoked with illegal argument values.");
-					else if(exceptionType.equals(IllegalStateException.class.getName()))
-						MessageDialog.openError(Display.getDefault().getActiveShell(), "Illegal object state",
-								"the current state of the object does not allow the operation " + trimExpression);
-					else
-						MessageDialog.openError(Display.getDefault().getActiveShell(), "Exception occurred", exceptionType + 
-								"\nSuggestion: execute " + trimExpression + " through code statements step by step.");
+						MessageDialog.openError(Display.getDefault().getActiveShell(), "Exception thrown",
+								trimExpression + " is an invalid invocation.");
 				});
+//				cause2.
+//				try {
+//					Field f = cause2.getClass().getDeclaredField("exception");
+//					f.setAccessible(true);
+//					ObjectReferenceImpl objRef = (ObjectReferenceImpl) f.get(cause2);
+//				} catch (IllegalArgumentException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (IllegalAccessException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (NoSuchFieldException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				} catch (SecurityException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//				}
+//				InvocationTargetException cause = (InvocationTargetException) exception.getCause();
+//				ReferenceType referenceType = cause.getTargetException().
+//				String exceptionType = ((InvocationTargetException)exception.getCause()).getTargetException().referenceType().name();
+//				PandionJUI.executeUpdate(() -> {
+//					if(exceptionType.equals(IllegalArgumentException.class.getName()))
+//						MessageDialog.openError(Display.getDefault().getActiveShell(), "Illegal arguments",
+//								trimExpression + " was invoked with illegal argument values.");
+//					else if(exceptionType.equals(IllegalStateException.class.getName()))
+//						MessageDialog.openError(Display.getDefault().getActiveShell(), "Illegal object state",
+//								"the current state of the object does not allow the operation " + trimExpression);
+//					else
+//						MessageDialog.openError(Display.getDefault().getActiveShell(), "Exception occurred", exceptionType + 
+//								"\nSuggestion: execute " + trimExpression + " through code statements step by step.");
+//				});
 			}
 		}
 

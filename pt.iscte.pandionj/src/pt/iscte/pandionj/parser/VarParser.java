@@ -1,11 +1,13 @@
 package pt.iscte.pandionj.parser;
 
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.ArrayAccess;
@@ -47,13 +49,17 @@ public class VarParser {
 	//TODO MultiMap line -> VariableOperation[]
 	
 	public VarParser(String path) {
-		parser = JavaSourceParser.createFromFile(path);
+		parser = JavaSourceParser.createFromFile(path, Charset.defaultCharset());
 		cunit = parser.getCompilationUnit();
 	}
 	
 	public VarParser(IFile file) {
 		this.file = file;
-		parser = JavaSourceParser.createFromFile(file.getLocation().toOSString());
+		try {
+			parser = JavaSourceParser.createFromFile(file.getLocation().toOSString(), Charset.forName(file.getCharset()) );
+		} catch (CoreException e) {
+			e.printStackTrace();
+		}
 		cunit = parser.getCompilationUnit();
 	}
 

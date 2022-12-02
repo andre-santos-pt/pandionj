@@ -1,8 +1,12 @@
 package pt.iscte.pandionj.parser;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.Map;
 
 import org.eclipse.jdt.core.JavaCore;
@@ -30,9 +34,9 @@ public class JavaSourceParser {
 		parser.setCompilerOptions(options);
 	}
 	
-	public static JavaSourceParser createFromFile(String javaFilePath) {
+	public static JavaSourceParser createFromFile(String javaFilePath, Charset charSet) {
 		validateFilePath(javaFilePath);
-		return new JavaSourceParser(readFileToString(javaFilePath), getClassName(javaFilePath));
+		return new JavaSourceParser(readFileToString(javaFilePath, charSet), getClassName(javaFilePath));
 	}
 	
 	public static JavaSourceParser createFromSource(String source, String className) {
@@ -61,10 +65,10 @@ public class JavaSourceParser {
 		return hasErrors;
 	}
 
-	private static String readFileToString(String filePath) {
+	private static String readFileToString(String filePath, Charset charSet) {
 		StringBuilder fileData = new StringBuilder(1000);
 		try {
-			BufferedReader reader = new BufferedReader(new FileReader(filePath));
+			BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(new File(filePath)), charSet));
 
 			char[] buf = new char[10];
 			int numRead = 0;
