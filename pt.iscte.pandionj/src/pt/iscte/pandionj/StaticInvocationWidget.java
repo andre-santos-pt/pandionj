@@ -2,6 +2,7 @@ package pt.iscte.pandionj;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +54,7 @@ public class StaticInvocationWidget extends Composite {
 		comboLayout.marginHeight = 3;
 		comboLayout.verticalSpacing = 1;
 
-		cache = new WeakHashMap<>();
+		cache = new HashMap<>();
 	}
 
 	private IMethod method;
@@ -173,11 +174,12 @@ public class StaticInvocationWidget extends Composite {
 		if(list != null) {
 			assert list.size() == combos.length;
 			for(int i = 0; i < combos.length; i++) {
+				String pType = Signature.getSignatureSimpleName(parameterTypes[i]);
 				List<String> values = list.get(i);
 				Iterator<String> it = values.iterator();
 				while(it.hasNext()) {
 					String v = it.next();
-					if(!validValue(v, parameterTypes[i]))
+					if(!validValue(v, pType))
 						it.remove();
 					else if(!containsItem(combos[i], v))
 						combos[i].add(v);
