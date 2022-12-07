@@ -20,7 +20,8 @@ import pt.iscte.pandionj.extensibility.IVariableModel;
 public abstract class ArrayModel<T extends IVariableModel> 
 extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
-	private IJavaValue[] elements;
+	//private IJavaValue[] elements;
+	private int arrayLength;
 	private int dimensions;
 	private String componentType;
 	private List<T> elementsModel;
@@ -29,7 +30,8 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 		super(array, runtime);
 		int len = Math.min(array.getLength(), PandionJView.getMaxArrayLength());
 		elementsModel = new ArrayList<T>(len);
-		elements = array.getValues();
+		//elements = array.getValues(); // TODO BUG outofmemory for very large arrays
+		arrayLength = array.getLength();
 		dimensions = getDimensions(array);
 		componentType = getComponentType(array);
 		initArray(array, len);
@@ -134,7 +136,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	}
 
 	public int getLength() {
-		return elements.length;
+		return arrayLength;
 	}
 
 	public int getDimensions() {
@@ -159,7 +161,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 //	}
 
 
-	private static int getDimensions(IJavaArray array)  throws DebugException  {
+	static int getDimensions(IJavaArray array)  throws DebugException  {
 		String sig = array.getJavaType().getSignature();
 		return Signature.getArrayCount(sig);
 	}
@@ -183,8 +185,9 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 	public boolean isMatrix() {
 		if(dimensions < 2)
 			return false;
-
+		
 		try {
+			IJavaValue[] elements = getContent().getValues();
 			for(int i = 0; i < elements.length-1; i++) {
 				if(elements[i].isNull() || elements[i+1].isNull())
 					return false;
@@ -192,8 +195,9 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 					if(((IJavaArray) elements[i]).getLength() != ((IJavaArray) elements[i+1]).getLength())
 						return false;
 			}
-		} catch (DebugException e) {
-			return false;
+			
+		} catch (DebugException e1) {
+			e1.printStackTrace();
 		}
 
 		return true;
@@ -204,7 +208,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 			throw new IllegalStateException("not a matrix");
 
 		try {
-			return new Dimension(getLength() == 0 ? 0 : ((IJavaArray) elements[0]).getLength(), getLength());
+			return new Dimension(getLength() == 0 ? 0 : ((IJavaArray) getContent().getValue(0)).getLength(), getLength());
 		} catch (DebugException e) {
 			e.printStackTrace();
 			getRuntimeModel().setTerminated();
@@ -218,7 +222,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 
 	@Override
 	public String toString() {
-		int lim = Math.min(PandionJView.getMaxArrayLength(), elements.length);
+		int lim = Math.min(PandionJView.getMaxArrayLength(), arrayLength);
 		String els = "{";
 		for(int i = 0; i < lim; i++) {
 			if(i != 0)
@@ -229,7 +233,7 @@ extends EntityModel<IJavaArray> implements IArrayModel<T> {
 				els = "?";
 			}
 		}
-		if(lim < elements.length)
+		if(lim < arrayLength)
 			els += ", ...";
 
 		if(els.length() == 1)

@@ -38,4 +38,8 @@ public interface IObjectModel extends IEntityModel {
 		return false;
 	}
 	
+	default boolean isLibraryClass() {
+		return getType().getFullyQualifiedName().startsWith("java");
+	}
+	
 }

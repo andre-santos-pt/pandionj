@@ -35,15 +35,16 @@ public class IterableWidget implements ITypeWidgetExtension {
 
 	@Override
 	public IFigure createFigure(IObjectModel e, IPropertyProvider args) {
-		Label label = new Label();
-		e.registerDisplayObserver(new ModelObserver<Object>() {
-			@Override
-			public void update(Object arg) {
-				eval(e, label);
-			}
-		});
-		eval(e, label);
-		return label;
+		return ITypeWidgetExtension.NULL_EXTENSION.createFigure(e, args);
+//		Label label = new Label();
+//		e.registerDisplayObserver(new ModelObserver<Object>() {
+//			@Override
+//			public void update(Object arg) {
+//				eval(e, label);
+//			}
+//		});
+//		eval(e, label);
+//		return label;
 	}
 
 	private static void eval(IObjectModel e, Label label) {

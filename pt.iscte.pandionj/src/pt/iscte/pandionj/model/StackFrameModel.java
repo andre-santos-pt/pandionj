@@ -23,6 +23,7 @@ import org.eclipse.jdt.debug.core.IJavaValue;
 import org.eclipse.jdt.debug.core.IJavaVariable;
 import org.eclipse.jdt.internal.debug.core.logicalstructures.JDIReturnValueVariable;
 
+import pt.iscte.pandionj.PandionJView;
 import pt.iscte.pandionj.extensibility.IEntityModel;
 import pt.iscte.pandionj.extensibility.IObjectModel;
 import pt.iscte.pandionj.extensibility.IReferenceModel;
@@ -330,14 +331,17 @@ public class StackFrameModel extends DisplayUpdateObservable<IStackFrameModel.St
 		if(value instanceof IJavaArray) {
 			try {
 				IJavaArray array = (IJavaArray) value;
-				IJavaValue[] values = array.getValues();
+				int lim = Math.min(PandionJView.getMaxArrayLength(), array.getLength());
 				String s = "";
-				for(int i = 0; i < values.length; i++) {
+				for(int i = 0; i < lim; i++) {
 					if(!s.isEmpty())
-						s += ", ";
-					s += valueSpecialChars(values[i]);
+						s += ArrayModel.getDimensions(array) > 1 ? ",\n" : ", ";
+					s += valueSpecialChars(array.getValue(i));
 				}
-				return "[" + s + "]";
+				if(lim < array.getLength())
+					s += ", ...";
+				
+				return "{" + s + "}";
 			}
 			catch (DebugException e) {
 				e.printStackTrace();

@@ -42,7 +42,7 @@ public interface ITypeWidgetExtension extends IWidgetExtension<IObjectModel> {
 			label.setForegroundColor(PandionJConstants.Colors.OBJECT_HEADER_FONT);
 			FontManager.setFont(label, PandionJConstants.OBJECT_HEADER_FONT_SIZE);
 			IType type = e.getType();
-			if(e.isToStringDefined()) {
+			if(e.isToStringDefined() && !e.isLibraryClass()) {
 				invokeToString(e, label);
 				label.setToolTip(new Label("returned by toString()"));
 				e.getRuntimeModel().registerDisplayObserver((event) -> {
